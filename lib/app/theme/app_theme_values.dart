@@ -1,0 +1,55 @@
+import 'dart:ui';
+
+import 'package:reforge/app/theme/app_theme.dart';
+
+class AppThemeValues {
+  static final light = AppTheme(
+    // Beige palette
+    beige50: const Color(0xFF2C180B).withValues(alpha: 0.20),
+    beige100: const Color(0xFFECE7DC),
+    beige200: const Color(0xFFDED8CD),
+    beige300: const Color(0xFFDFDAD3),
+    beige400: const Color(0xFFDDD7CD),
+    beige500: const Color(0xFFE2D4B1),
+    beige600: const Color(0xFFA28675),
+    beige700: const Color(0xFF927769),
+    beige800: const Color(0xFF3B2518),
+    beige900: const Color(0xFF180D05),
+    beige1000: const Color(0xFF0F0802),
+
+    // Orange palette
+    orange100: const Color(0xFFCA5F1C).withValues(alpha: 0.30),
+    orange200: const Color(0xFFEEBCA4),
+    orange300: const Color(0xFFBB623A),
+    orange400: const Color(0xFF9D3C10),
+    orange500: const Color(0xFF9D3C10),
+    orange600: const Color(0xFF4B2105),
+    orange60: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+    orangeButton: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+  );
+
+  static final dark = AppTheme(
+    // Beige palette
+    beige50: const Color(0xFF2C180B).withValues(alpha: 0.20),
+    beige100: const Color(0xFFECE7DC),
+    beige200: const Color(0xFFDED8CD),
+    beige300: const Color(0xFFDFDAD3),
+    beige400: const Color(0xFFDDD7CD),
+    beige500: const Color(0xFFE2D4B1),
+    beige600: const Color(0xFFA28675),
+    beige700: const Color(0xFF927769),
+    beige800: const Color(0xFF3B2518),
+    beige900: const Color(0xFF180D05),
+    beige1000: const Color(0xFF0F0802),
+
+    // Orange palette
+    orange100: const Color(0xFFCA5F1C).withValues(alpha: 0.30),
+    orange200: const Color(0xFFEEBCA4),
+    orange300: const Color(0xFFBB623A),
+    orange400: const Color(0xFF9D3C10),
+    orange500: const Color(0xFF9D3C10),
+    orange600: const Color(0xFF4B2105),
+    orange60: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+    orangeButton: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+  );
+}

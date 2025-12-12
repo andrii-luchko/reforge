@@ -1,0 +1,17 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+linter:
+  rules:
+    sort_pub_dependencies: false
+    public_member_api_docs: false
+    sort_unnamed_constructors_first: false
+    lines_longer_than_80_chars: false
+
+custom_lint:
+  rules:
+    - no_magic_number: false
+    - member_ordering: false
+
+formatter:
+  trailing_commas: preserve
+  page_width: 120
