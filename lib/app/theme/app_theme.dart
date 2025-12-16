@@ -28,6 +28,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.orange600,
     required this.orange60,
     required this.orangeButton,
+
+    required this.card,
   });
 
   // Beige palette
@@ -52,4 +54,5 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   final Color orange600;
   final Color orange60;
   final Color orangeButton;
+  final LinearGradient card;
 }

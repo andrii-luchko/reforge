@@ -11,8 +11,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   flutter_localizations:
     sdk: flutter
+  
+
   cupertino_icons: ^1.0.8
 
   injectable: ^2.7.1
@@ -33,6 +36,9 @@ dependencies:
 
   slang: ^4.11.1
   slang_flutter: ^4.11.0
+
+  flutter_svg: ^2.2.3
+  gradient_borders: ^1.0.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +73,12 @@ flutter_gen:
 flutter:
 
   uses-material-design: true
+
+  shaders:
+    - shaders/sun_rays.frag
+    - shaders/particles.frag
+    - shaders/fire_particles.frag
+
 
   fonts:
     - family: Orbitron

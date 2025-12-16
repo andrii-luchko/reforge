@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/painting.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 class AppThemeValues {
@@ -26,6 +27,16 @@ class AppThemeValues {
     orange600: const Color(0xFF4B2105),
     orange60: const Color(0xFF9D3C10).withValues(alpha: 0.60),
     orangeButton: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+
+    card: LinearGradient(
+      begin: .bottomCenter,
+      end: .topCenter,
+      stops: [0.6, 1],
+      colors: [
+        Color(0xFF180D05),
+        Color(0xFF4A2105),
+      ],
+    ),
   );
 
   static final dark = AppTheme(
@@ -51,5 +62,15 @@ class AppThemeValues {
     orange600: const Color(0xFF4B2105),
     orange60: const Color(0xFF9D3C10).withValues(alpha: 0.60),
     orangeButton: const Color(0xFF9D3C10).withValues(alpha: 0.60),
+
+    card: LinearGradient(
+      begin: .bottomCenter,
+      end: .topCenter,
+      stops: [0.6, 1],
+      colors: [
+        Color(0xFF180D05),
+        Color(0xFF4A2105),
+      ],
+    ),
   );
 }

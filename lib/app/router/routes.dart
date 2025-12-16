@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/features/auth_page.dart';
-import 'package:reforge/features/splash_page.dart';
+import 'package:reforge/features/onboarding/page/onboarding_page.dart';
+import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 
 part 'routes.g.dart';
 
@@ -12,6 +13,16 @@ class SplashPageRoute extends GoRouteData with $SplashPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SplashPage();
+  }
+}
+
+@TypedGoRoute<OnboardingPageRoute>(path: '/onboarding')
+class OnboardingPageRoute extends GoRouteData with $OnboardingPageRoute {
+  const OnboardingPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const OnboardingPage();
   }
 }
 

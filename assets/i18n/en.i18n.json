@@ -1,3 +1,9 @@
 {
-    "testTranslate": "Its a test line"
+    "testTranslate": "Its a test line",
+    "onboarding_page": {
+        "header": "Workout app with factions",
+        "title": "Become Stronger\nThan Yesterday",
+        "subtitle": "Forge your strength, endurance, and flexibility through personalized training and progress tracking.",
+        "button": "Get started"
+    }
 }
