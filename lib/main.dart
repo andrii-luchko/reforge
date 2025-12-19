@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
@@ -19,7 +20,9 @@ void main() async {
 
       binding.allowFirstFrame();
     },
-    (error, stackTrace) {
+    (error, stackTrace) async {
+      final crashlytics = di.getIt<FirebaseCrashlytics>();
+      await crashlytics.recordError(error, stackTrace, fatal: true);
       logger.e('Unexpected error', error, stackTrace);
     },
   );
