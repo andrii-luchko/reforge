@@ -127,7 +127,7 @@ class FireParticlesController extends ChangeNotifier {
 
     double y;
     double alpha;
-    double targetAlpha = 0.4 + random.nextDouble() * 0.5;
+    final targetAlpha = 0.4 + random.nextDouble() * 0.5;
 
     if (isInitial) {
       final randomValue = random.nextDouble();
@@ -159,13 +159,13 @@ class FireParticlesController extends ChangeNotifier {
   void _onTick(Duration elapsed) {
     if (canvasSize == Size.zero) return;
 
-    for (int i = 0; i < particles.length; i++) {
+    for (var i = 0; i < particles.length; i++) {
       final particle = particles[i];
 
-      particle.x += particle.dx;
-      particle.y += particle.dy;
+      particle
+        ..x += particle.dx
+        ..y += particle.dy;
 
-      // Трохи обертання для streak'ів
       if (particle.isStreak) {
         particle.rotation += 0.02;
       }
@@ -192,15 +192,15 @@ class FireParticlesController extends ChangeNotifier {
 }
 
 class FireParticlesPainter extends CustomPainter {
-  final List<FireParticle> particles;
-  final Color startColor;
-  final Color endColor;
-
   FireParticlesPainter({
     required this.particles,
     required this.startColor,
     required this.endColor,
   });
+
+  final List<FireParticle> particles;
+  final Color startColor;
+  final Color endColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -211,19 +211,18 @@ class FireParticlesPainter extends CustomPainter {
       final color = Color.lerp(endColor, startColor, colorProgress)!;
 
       if (particle.isStreak) {
-        // Streak (довга іскра)
         _drawStreak(canvas, particle, color);
       } else {
-        // Dot (коротка іскра)
         _drawDot(canvas, particle, color);
       }
     }
   }
 
   void _drawStreak(Canvas canvas, FireParticle particle, Color color) {
-    canvas.save();
-    canvas.translate(particle.x, particle.y);
-    canvas.rotate(particle.rotation);
+    canvas
+      ..save()
+      ..translate(particle.x, particle.y)
+      ..rotate(particle.rotation);
 
     final paint = Paint()
       ..shader =
@@ -231,9 +230,9 @@ class FireParticlesPainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              color.withOpacity(particle.alpha),
-              color.withOpacity(particle.alpha * 0.3),
-              color.withOpacity(0),
+              color.withValues(alpha: particle.alpha),
+              color.withValues(alpha: particle.alpha * 0.3),
+              color.withValues(alpha: 0),
             ],
             stops: const [0.0, 0.5, 1.0],
           ).createShader(
@@ -245,7 +244,6 @@ class FireParticlesPainter extends CustomPainter {
             ),
           );
 
-    // Малюємо streak як rounded rect
     final rrect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         -particle.size * 0.5,
@@ -256,8 +254,9 @@ class FireParticlesPainter extends CustomPainter {
       Radius.circular(particle.size * 0.5),
     );
 
-    canvas.drawRRect(rrect, paint);
-    canvas.restore();
+    canvas
+      ..drawRRect(rrect, paint)
+      ..restore();
   }
 
   void _drawDot(Canvas canvas, FireParticle particle, Color color) {
@@ -265,9 +264,9 @@ class FireParticlesPainter extends CustomPainter {
       ..shader =
           RadialGradient(
             colors: [
-              color.withOpacity(particle.alpha * 0.9),
-              color.withOpacity(particle.alpha * 0.4),
-              color.withOpacity(0),
+              color.withValues(alpha: particle.alpha * 0.9),
+              color.withValues(alpha: particle.alpha * 0.4),
+              color.withValues(alpha: 0),
             ],
             stops: const [0.0, 0.6, 1.0],
           ).createShader(
@@ -289,18 +288,6 @@ class FireParticlesPainter extends CustomPainter {
 }
 
 class FireParticle {
-  double x;
-  double y;
-  double size;
-  double alpha;
-  double targetAlpha;
-  double dx;
-  double dy;
-  double lifeReduction;
-  bool isStreak;
-  double streakLength;
-  double rotation;
-
   FireParticle({
     required this.x,
     required this.y,
@@ -314,4 +301,16 @@ class FireParticle {
     required this.streakLength,
     required this.rotation,
   });
+
+  double x;
+  double y;
+  double size;
+  double alpha;
+  double targetAlpha;
+  double dx;
+  double dy;
+  double lifeReduction;
+  bool isStreak;
+  double streakLength;
+  double rotation;
 }

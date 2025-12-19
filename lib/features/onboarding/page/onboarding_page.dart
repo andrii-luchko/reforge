@@ -16,14 +16,15 @@ class OnboardingPage extends StatelessWidget {
       body: SizedBox.expand(
         child: Stack(
           children: [
-            SunRaysShaderWidget(
-              color: appTheme.orange500,
-              alignment: const Alignment(-3, -2),
-              intensity: 1,
-              density: 10,
-              rayLength: 5.5,
+            Positioned.fill(
+              child: SunRaysShaderWidget(
+                color: appTheme.orange500,
+                alignment: const Alignment(-3, -2),
+                intensity: 1,
+                density: 10,
+                rayLength: 5.5,
+              ),
             ),
-
             const Positioned.fill(
               child: ParticlesShaderWidget(),
             ),
@@ -47,12 +48,14 @@ class OnboardingPage extends StatelessWidget {
               child: AspectRatio(aspectRatio: 1, child: RepaintBoundary(child: FireParticles())),
             ),
 
-            SunRaysShaderWidget(
-              color: appTheme.orange500,
-              rayLength: 0.5,
-              density: 6,
-              intensity: 5,
-              alignment: const Alignment(0, 0.4),
+            Positioned.fill(
+              child: SunRaysShaderWidget(
+                color: appTheme.orange500,
+                rayLength: 0.4,
+                density: 6,
+                intensity: 5,
+                alignment: const Alignment(0, 0.4),
+              ),
             ),
 
             const OnboardingCard(),

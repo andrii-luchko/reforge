@@ -1,9 +1,75 @@
 {
-    "testTranslate": "Its a test line",
     "onboarding_page": {
         "header": "Workout app with factions",
         "title": "Become Stronger\nThan Yesterday",
         "subtitle": "Forge your strength, endurance, and flexibility through personalized training and progress tracking.",
         "button": "Get started"
+    },
+    "signin": {
+        "title": "Sign in",
+        "subtitle": "Please sign in or create an account",
+        "email_label": "Email",
+        "password_label": "Password",
+        "forgot_password_button": "Forgot a password?",
+        "submit_button": "Sign in",
+        "footer_text_part1": "Do not have an account? ",
+        "footer_text_part2": "Sign up ",
+        "divider_text": "or"
+    },
+    "email_label": "Email",
+    "email_hint": "Enter your email",
+    "password_label": "Password",
+    "password_hint": "Enter your password",
+    "confirm_password_label": "Confirm your password",
+    "confirm_password_hint": "Enter your password",
+    "create_acc": {
+        "title": "Create account",
+        "subtitle": "Join REFORGE and start your journey",
+        "terms_text_part1": "I agree to the ",
+        "terms_text_part2": "Terms of service",
+        "submit_button": "Sign in",
+        "footer_text_part1": "Already have an account? ",
+        "footer_text_part2": "Sign in instead",
+        "divider_text": "or"
+    },
+    "forgot_password": {
+        "title": "Forgot Your Password?",
+        "subtitle": "We will send a password reset link to your email address",
+        "submit_button": "Reset Password"
+    },
+    "reset_send": {
+        "title": "Reset Email Sent",
+        "subtitle(rich)": "We've sent a password reset link \nto $email\nPlease, check your email.",
+        "submit_button": "Resend email"
+    },
+    "create_password": {
+        "title": "Create New Password",
+        "subtitle": "We will send a password reset link to your email address",
+        "new_password_label": "New password",
+        "new_password_hint": "Enter your password",
+        "confirm_new_password_label": "Confirm new password",
+        "confirm_new_password_hint": "Enter your password",
+        "submit_button": "Save new password"
+    },
+    "success_password_change": {
+        "title": "Password Reset Successful",
+        "subtitle": "You have successfully updated your password. You can now use your new password to sign in to your account.",
+        "submit_button": "Sign in"
+    },
+    "common": {
+        "email_label": "Email",
+        "email_hint": "Enter your email",
+        "password_label": "Password",
+        "password_hint": "Enter your password",
+        "confirm_password_label": "Confirm your password",
+        "confirm_password_hint": "Enter your password"
+    },
+    "validation": {
+        "email_required": "Email is required",
+        "email_invalid": "Please enter a valid email address",
+        "password_required": "Password is required",
+        "password_too_short": "Password must be at least 8 characters",
+        "passwords_not_match": "Passwords do not match",
+        "confirm_password_required": "Please confirm your password"
     }
 }

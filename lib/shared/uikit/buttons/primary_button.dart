@@ -33,7 +33,8 @@ class PrimaryButton extends StatelessWidget {
           padding: const EdgeInsets.all(6),
           child: CustomPaint(
             painter: DashedBorderPainter(color: isActive ? appTheme.orange300 : appTheme.beige700),
-            child: Container(
+            child: AnimatedContainer(
+              duration: Durations.medium2,
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(

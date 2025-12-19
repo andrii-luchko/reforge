@@ -1,5 +1,7 @@
 import 'package:talker/talker.dart';
 
+//
+// ignore: specify_nonobvious_property_types
 final logger = _AppLogger.instance;
 
 class _AppLogger {

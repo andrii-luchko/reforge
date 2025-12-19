@@ -3,6 +3,7 @@ import 'package:reforge/app/router/routes.dart';
 
 final router = GoRouter(
   routes: $appRoutes,
-  initialLocation: const OnboardingPageRoute().location,
+  initialLocation: const SplashPageRoute().location,
   debugLogDiagnostics: true,
+  observers: [],
 );

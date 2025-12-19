@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/onboarding/widgets/notched_container.dart';
@@ -68,7 +69,12 @@ class OnboardingCard extends StatelessWidget {
 
                       Padding(
                         padding: const .only(top: 48),
-                        child: PrimaryButton(text: t.onboarding_page.button, onPressed: () {}),
+                        child: PrimaryButton(
+                          text: t.onboarding_page.button,
+                          //
+                          // ignore: inference_failure_on_function_invocation
+                          onPressed: () => const SignInPageRoute().push(context),
+                        ),
                       ),
                     ],
                   ),

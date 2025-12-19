@@ -6,7 +6,6 @@ import 'package:flutter/scheduler.dart';
 class ParticlesShaderWidget extends StatefulWidget {
   const ParticlesShaderWidget({
     super.key,
-    this.child,
     this.color = Colors.white,
     this.quantity = 10.0,
     this.speed = 0.01,
@@ -14,7 +13,6 @@ class ParticlesShaderWidget extends StatefulWidget {
     this.alphaSpeed = 0.5,
   });
 
-  final Widget? child;
   final Color color;
   final double quantity;
   final double speed;
@@ -25,56 +23,73 @@ class ParticlesShaderWidget extends StatefulWidget {
   State<ParticlesShaderWidget> createState() => _ParticlesShaderWidgetState();
 }
 
-class _ParticlesShaderWidgetState extends State<ParticlesShaderWidget> with SingleTickerProviderStateMixin {
-  ui.FragmentProgram? _program;
-  late Ticker _ticker;
-  double _time = 0;
+class _ParticlesShaderWidgetState extends State<ParticlesShaderWidget>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  // ui.FragmentProgram? _program;
+  // late Ticker _ticker;
+  // double _time = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadShader());
-    _ticker = createTicker((elapsed) {
-      setState(() {
-        _time = elapsed.inMilliseconds / 1000.0;
-      });
-    });
-    unawaited(_ticker.start());
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addObserver(this);
+  //   unawaited(_loadShader());
+  //   _ticker = createTicker((elapsed) {
+  //     setState(() {
+  //       _time = elapsed.inMilliseconds / 1000.0;
+  //     });
+  //   });
+  //   unawaited(_ticker.start());
+  // }
 
-  Future<void> _loadShader() async {
-    final program = await ui.FragmentProgram.fromAsset('shaders/particles.frag');
-    setState(() {
-      _program = program;
-    });
-  }
+  // Future<void> _loadShader() async {
+  //   final program = await ui.FragmentProgram.fromAsset('shaders/particles.frag');
+  //   setState(() {
+  //     _program = program;
+  //   });
+  // }
 
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused) {
+  //     _ticker.stop();
+  //   } else if (state == AppLifecycleState.resumed) {
+  //     unawaited(_ticker.start());
+  //   }
+  // }
+
+  // @override
+  // void dispose() {
+  //   WidgetsBinding.instance.removeObserver(this);
+  //   _ticker.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    if (_program == null) return widget.child ?? const SizedBox.shrink();
+    //if (_program == null) return const SizedBox.shrink();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return CustomPaint(
-          size: Size(constraints.maxWidth, constraints.maxHeight),
-          painter: _ParticlesPainter(
-            program: _program!,
-            time: _time,
-            color: widget.color,
-            quantity: widget.quantity,
-            speed: widget.speed,
-            particleSize: widget.particleSize,
-            alphaSpeed: widget.alphaSpeed,
-          ),
-          child: widget.child,
-        );
-      },
+    return RepaintBoundary(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SizedBox();
+          // return SizedBox(
+          //   width: constraints.maxWidth / 2,
+          //   height: constraints.maxHeight / 2,
+          //   child: CustomPaint(
+          //     painter: _ParticlesPainter(
+          //       program: _program!,
+          //       time: _time,
+          //       color: widget.color,
+          //       quantity: widget.quantity,
+          //       speed: widget.speed,
+          //       particleSize: widget.particleSize,
+          //       alphaSpeed: widget.alphaSpeed,
+          //     ),
+          //   ),
+          // );
+        },
+      ),
     );
   }
 }

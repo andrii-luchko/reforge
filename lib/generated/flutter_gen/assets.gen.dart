@@ -27,11 +27,26 @@ class $AssetsImagesGen {
 class $AssetsImagesIconsGen {
   const $AssetsImagesIconsGen();
 
+  /// File path: assets/images/icons/apple.svg
+  String get apple => 'assets/images/icons/apple.svg';
+
+  /// File path: assets/images/icons/check.svg
+  String get check => 'assets/images/icons/check.svg';
+
+  /// File path: assets/images/icons/chevron_left.svg
+  String get chevronLeft => 'assets/images/icons/chevron_left.svg';
+
   /// File path: assets/images/icons/eye.svg
   String get eye => 'assets/images/icons/eye.svg';
 
+  /// File path: assets/images/icons/eye_slash.svg
+  String get eyeSlash => 'assets/images/icons/eye_slash.svg';
+
+  /// File path: assets/images/icons/google.svg
+  String get google => 'assets/images/icons/google.svg';
+
   /// List of all assets
-  List<String> get values => [eye];
+  List<String> get values => [apple, check, chevronLeft, eye, eyeSlash, google];
 }
 
 class $AssetsImagesPngGen {
@@ -40,14 +55,38 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/Faction.png
   AssetGenImage get faction => const AssetGenImage('assets/images/png/Faction.png');
 
+  /// File path: assets/images/png/foreground-512x512.png
+  AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
+
+  /// File path: assets/images/png/gold_envelope.png
+  AssetGenImage get goldEnvelope => const AssetGenImage('assets/images/png/gold_envelope.png');
+
+  /// File path: assets/images/png/gold_envelope_plus.png
+  AssetGenImage get goldEnvelopePlus => const AssetGenImage('assets/images/png/gold_envelope_plus.png');
+
+  /// File path: assets/images/png/icon-1024x1024.png
+  AssetGenImage get icon1024x1024 => const AssetGenImage('assets/images/png/icon-1024x1024.png');
+
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
 
   /// File path: assets/images/png/smoke.png
   AssetGenImage get smoke => const AssetGenImage('assets/images/png/smoke.png');
 
+  /// File path: assets/images/png/splash_logo.png
+  AssetGenImage get splashLogo => const AssetGenImage('assets/images/png/splash_logo.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [faction, noiseAndTexture, smoke];
+  List<AssetGenImage> get values => [
+    faction,
+    foreground512x512,
+    goldEnvelope,
+    goldEnvelopePlus,
+    icon1024x1024,
+    noiseAndTexture,
+    smoke,
+    splashLogo,
+  ];
 }
 
 class $AssetsImagesSvgGen {

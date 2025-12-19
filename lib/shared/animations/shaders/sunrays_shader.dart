@@ -11,7 +11,7 @@ class SunRaysShaderWidget extends StatefulWidget {
     this.intensity = 1.2,
     this.alignment = const Alignment(0, -1.5),
     this.rayLength = 1.5,
-    this.density = 30.0, // <--- Значение по умолчанию
+    this.density = 30.0,
   });
 
   final Widget? child;
@@ -19,65 +19,89 @@ class SunRaysShaderWidget extends StatefulWidget {
   final double intensity;
   final Alignment alignment;
   final double rayLength;
-  final double density; // <--- Новый параметр
+  final double density;
 
   @override
   State<SunRaysShaderWidget> createState() => _SunRaysShaderWidgetState();
 }
 
-class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTickerProviderStateMixin {
-  ui.FragmentProgram? _program;
-  late Ticker _ticker;
-  double _time = 0;
+class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  // ui.FragmentProgram? _program;
+  // late Ticker _ticker;
+  // double _time = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadShader());
-    _ticker = createTicker((elapsed) {
-      setState(() {
-        _time = elapsed.inMilliseconds / 1000.0;
-      });
-    });
-    unawaited(_ticker.start());
-  }
+  // @override
+  // void initState() {
+  //   WidgetsBinding.instance.addObserver(this);
+  //   super.initState();
+  //   unawaited(_loadShader());
+  //   _ticker = createTicker((elapsed) {
+  //     final newTime = elapsed.inMilliseconds / 1000.0;
+  //     if ((newTime - _time).abs() > 0.033) {
+  //       setState(() {
+  //         _time = newTime;
+  //       });
+  //     }
+  //   });
+  //   unawaited(_ticker.start());
+  // }
 
-  Future<void> _loadShader() async {
-    final program = await ui.FragmentProgram.fromAsset('shaders/sun_rays.frag');
-    setState(() {
-      _program = program;
-    });
-  }
+  // Future<void> _loadShader() async {
+  //   final program = await ui.FragmentProgram.fromAsset('shaders/sun_rays.frag');
+  //   setState(() {
+  //     _program = program;
+  //   });
+  // }
 
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused) {
+  //     _ticker.stop();
+  //   } else if (state == AppLifecycleState.resumed) {
+  //     unawaited(_ticker.start());
+  //   }
+  // }
+
+  // @override
+  // void dispose() {
+  //   WidgetsBinding.instance.removeObserver(this);
+  //   _ticker.dispose();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    if (_program == null) {
-      return widget.child ?? const SizedBox.shrink();
-    }
+    return SizedBox();
+    //   if (_program == null) {
+    //     return widget.child ?? const SizedBox.shrink();
+    //   }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return CustomPaint(
-          size: Size(constraints.maxWidth, constraints.maxHeight),
-          painter: _ShaderPainter(
-            program: _program!,
-            time: _time,
-            color: widget.color,
-            intensity: widget.intensity,
-            focalPoint: widget.alignment,
-            rayLength: widget.rayLength,
-            density: widget.density, // <--- Передаем
-          ),
-          child: widget.child,
-        );
-      },
-    );
+    //   return RepaintBoundary(
+    //     child: LayoutBuilder(
+    //       builder: (context, constraints) {
+    //         return Transform.scale(
+    //           scale: 2,
+    //           child: SizedBox(
+    //             width: constraints.maxWidth / 2,
+    //             height: constraints.maxHeight / 2,
+    //             child: CustomPaint(
+    //               painter: _ShaderPainter(
+    //                 program: _program!,
+    //                 time: _time,
+    //                 color: widget.color,
+    //                 intensity: widget.intensity,
+    //                 focalPoint: widget.alignment,
+    //                 rayLength: widget.rayLength,
+    //                 density: widget.density,
+    //               ),
+    //             ),
+    //           ),
+    //         );
+    //       },
+    //     ),
+    //   );
+    // }
   }
 }
 
@@ -124,7 +148,7 @@ class _ShaderPainter extends CustomPainter {
       ..setFloat(8, originY)
       // 9. Ray Length
       ..setFloat(9, rayLength)
-      // 10. Density (Новый индекс)
+      // 10. Density
       ..setFloat(10, density);
 
     final paint = Paint()

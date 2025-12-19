@@ -5,72 +5,7 @@ targets:
         options:
           explicit_to_json: true
       
-
       flutter_gen_runner:
         options:
           output: lib/generated/flutter_gen/
           line_length: 120
-        
-      
-      slang_build_runner:
-        options:
-          base_locale: en
-          fallback_strategy: base_locale
-          input_directory: assets/i18n
-          input_file_pattern: .i18n.json
-          output_directory: lib/generated/i18n
-          output_file_name: translations.g.dart
-          lazy: true
-          locale_handling: true
-          flutter_integration: true
-          namespaces: false
-          translate_var: t
-          enum_name: AppLocale
-          class_name: Translations
-          translation_class_visibility: private
-          key_case: snake
-          key_map_case: camel
-          param_case: pascal
-          sanitization:
-            enabled: true
-            prefix: k
-            case: camel
-          string_interpolation: double_braces
-          flat_map: false
-          translation_overrides: false
-          timestamp: true
-          statistics: true
-          maps:
-            - error.codes
-            - category
-            - iconNames
-          pluralization:
-            auto: cardinal
-            default_parameter: n
-            cardinal:
-              - someKey.apple
-            ordinal:
-              - someKey.place
-          contexts:
-            GenderContext:
-              default_parameter: gender
-              generate_enum: true
-          interfaces:
-            PageData: onboarding.pages.*
-            PageData2:
-              paths:
-                - my.path
-                - cool.pages.*
-              attributes:
-                - String title
-                - String? content
-          obfuscation:
-            enabled: false
-            secret: somekey
-          format:
-            enabled: true
-            width: 150
-          autodoc:
-            enabled: true
-            locales:
-              - en

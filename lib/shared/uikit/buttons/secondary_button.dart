@@ -17,7 +17,7 @@ class SecondaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     final isActive = onPressed != null;
-    final BorderRadius borderRadius = .circular(50);
+    final borderRadius = BorderRadius.circular(50);
 
     return GestureDetector(
       onTap: onPressed,

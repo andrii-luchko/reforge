@@ -11,7 +11,6 @@ uniform float uDensity;
 
 out vec4 fragColor;
 
-// ... (функции шума hash, noise, fbm оставляем без изменений) ...
 float hash(float n) { return fract(sin(n) * 43758.5453123); }
 float noise(vec2 x) {
     vec2 p = floor(x);
@@ -25,7 +24,7 @@ float fbm(vec2 p) {
     float f = 0.0;
     f += 0.50000 * noise(p); p = p * 2.02;
     f += 0.25000 * noise(p); p = p * 2.03;
-    f += 0.12500 * noise(p); p = p * 2.01;
+ 
     return f;
 }
 
@@ -35,6 +34,12 @@ void main() {
     vec2 toLight = uv - lightOrigin;
     
     float dist = length(toLight); 
+
+if (dist > uRayLength + 0.1) {
+        fragColor = vec4(0.0);
+        return; 
+    }
+
     float angle = atan(toLight.y, toLight.x);
     
     float rays = fbm(vec2(angle * uDensity + uTime * 0.3, dist * 1.0));

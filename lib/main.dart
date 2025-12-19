@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
@@ -12,6 +13,7 @@ void main() async {
     () async {
       final binding = WidgetsFlutterBinding.ensureInitialized()..deferFirstFrame();
       await LocaleSettings.useDeviceLocale();
+      await di.configureDependencies();
 
       runApp(TranslationProvider(child: const App()));
 

@@ -6,12 +6,19 @@ linter:
     public_member_api_docs: false
     sort_unnamed_constructors_first: false
     lines_longer_than_80_chars: false
+    
 
 custom_lint:
   rules:
     - no_magic_number: false
     - member_ordering: false
+    - inference_failure_on_instance_creation: false
+    - document_ignores: false
 
 formatter:
   trailing_commas: preserve
   page_width: 120
+analyzer:
+  errors:
+    inference_failure_on_instance_creation: ignore
+    document_ignores: ignore
