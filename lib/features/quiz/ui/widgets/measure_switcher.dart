@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/quiz/domain/measure_system.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class MeasureSwitcher extends StatelessWidget {
   const MeasureSwitcher({
@@ -29,7 +30,7 @@ class MeasureSwitcher extends StatelessWidget {
         children: [
           Expanded(
             child: _MeasureOption(
-              label: MeasurementSystem.metric.weight,
+              label: MeasurementSystem.metric.weight(t),
               isSelected: selectedMeasure == MeasurementSystem.metric,
               onTap: () => onSelected(MeasurementSystem.metric),
             ),
@@ -37,7 +38,7 @@ class MeasureSwitcher extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: _MeasureOption(
-              label: MeasurementSystem.imperial.weight,
+              label: MeasurementSystem.imperial.weight(t),
               isSelected: selectedMeasure == MeasurementSystem.imperial,
               onTap: () => onSelected(MeasurementSystem.imperial),
             ),

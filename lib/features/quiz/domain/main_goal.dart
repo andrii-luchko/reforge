@@ -1,3 +1,5 @@
+import 'package:reforge/generated/i18n/translations.g.dart';
+
 enum MainGoal {
   buildStrength,
   improveEndurance,
@@ -5,25 +7,25 @@ enum MainGoal {
 }
 
 extension FitnessGoalExtension on MainGoal {
-  String get title {
+  String title(Translations t) {
     switch (this) {
       case MainGoal.buildStrength:
-        return 'Build Strength';
+        return t.quiz.steps.main_goal.build_strength.title;
       case MainGoal.improveEndurance:
-        return 'Improve Endurance';
+        return t.quiz.steps.main_goal.improve_endurance.title;
       case MainGoal.enhanceFlexibility:
-        return 'Enhance Flexibility';
+        return t.quiz.steps.main_goal.enhance_flexibility.title;
     }
   }
 
-  String get description {
+  String description(Translations t) {
     switch (this) {
       case MainGoal.buildStrength:
-        return 'Focus on muscle growth and power';
+        return t.quiz.steps.main_goal.build_strength.description;
       case MainGoal.improveEndurance:
-        return 'Run farther and build stamina';
+        return t.quiz.steps.main_goal.improve_endurance.description;
       case MainGoal.enhanceFlexibility:
-        return 'Increase mobility and body control';
+        return t.quiz.steps.main_goal.enhance_flexibility.description;
     }
   }
 }

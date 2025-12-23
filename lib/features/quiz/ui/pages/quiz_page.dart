@@ -7,6 +7,7 @@ import 'package:reforge/features/quiz/domain/measure_system.dart';
 import 'package:reforge/features/quiz/ui/widgets/date_piker.dart';
 import 'package:reforge/features/quiz/ui/widgets/measure_switcher.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/particles_shader.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
@@ -14,7 +15,7 @@ import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
-import 'package:reforge/shared/uikit/step_proggress_indicator.dart';
+import 'package:reforge/shared/uikit/step_progress_indicator.dart';
 
 class QuizPage extends StatelessWidget {
   const QuizPage({super.key});
@@ -31,7 +32,7 @@ class QuizPage extends StatelessWidget {
           Padding(
             padding: const .only(right: 16),
             child: Text(
-              'Onboarding quiz',
+              t.quiz.header,
               style: subheadH1Medium.copyWith(color: appTheme.beige100),
             ),
           ),
@@ -134,7 +135,7 @@ class _QuizFormState extends State<QuizForm> {
           children: [
             Expanded(
               child: SecondaryButton(
-                text: 'Back',
+                text: t.quiz.back_button,
                 onPressed: () {
                   setState(() {
                     if (currentStep > 1) currentStep--;
@@ -146,12 +147,10 @@ class _QuizFormState extends State<QuizForm> {
                 },
               ),
             ),
-            SizedBox(
-              width: 16,
-            ),
+            const SizedBox(width: 16),
             Expanded(
               child: PrimaryButton(
-                text: 'Next',
+                text: t.quiz.next_button,
                 onPressed: () {
                   setState(() {
                     if (currentStep < 7) currentStep++;
@@ -177,12 +176,12 @@ class DateBirthStep extends StatelessWidget {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'What’s your date of birth?',
+          t.quiz.steps.date_of_birth.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
         LabeledAppTextField(
-          label: 'Select date of birth',
+          label: t.quiz.steps.date_of_birth.select_date_label,
           field: FieldDatePicker(
             onDateSelected: (value) {},
           ),
@@ -208,7 +207,7 @@ class _MeasurementSystemStepState extends State<MeasurementSystemStep> {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'Which measurement system do you prefer?',
+          t.quiz.steps.measurement_system.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
@@ -242,7 +241,7 @@ class _MainGoalStepState extends State<MainGoalStep> {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'What’s your main training goal?',
+          t.quiz.steps.main_goal.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
@@ -276,8 +275,8 @@ class FitnessGoalSelector extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: RadioButtonOption(
-            title: goal.title,
-            description: goal.description,
+            title: goal.title(t),
+            description: goal.description(t),
             isSelected: selectedGoal == goal,
             onTap: () => onGoalChanged(goal),
           ),
@@ -392,25 +391,25 @@ enum TrainingLevel {
 }
 
 extension TrainingLevelExtension on TrainingLevel {
-  String get title {
+  String title(Translations translations) {
     switch (this) {
       case TrainingLevel.beginner:
-        return 'Beginner';
+        return translations.quiz.steps.training_level.beginner.title;
       case TrainingLevel.intermediate:
-        return 'Intermediate';
+        return translations.quiz.steps.training_level.intermediate.title;
       case TrainingLevel.advanced:
-        return 'Advanced';
+        return translations.quiz.steps.training_level.advanced.title;
     }
   }
 
-  String get description {
+  String description(Translations translations) {
     switch (this) {
       case TrainingLevel.beginner:
-        return 'I’m new to this';
+        return translations.quiz.steps.training_level.beginner.description;
       case TrainingLevel.intermediate:
-        return 'I’ve trained for 1–3 years';
+        return translations.quiz.steps.training_level.intermediate.description;
       case TrainingLevel.advanced:
-        return '3+ years of consistent training';
+        return translations.quiz.steps.training_level.advanced.description;
     }
   }
 }
@@ -431,7 +430,7 @@ class _TrainLevelStepState extends State<TrainLevelStep> {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'What’s your main training goal?',
+          t.quiz.steps.training_level.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
@@ -465,8 +464,8 @@ class TrainingLevelSelector extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: RadioButtonOption(
-            title: level.title,
-            description: level.description,
+            title: level.title(t),
+            description: level.description(t),
             isSelected: selectedLevel == level,
             onTap: () => onLevelChanged(level),
           ),
@@ -485,14 +484,14 @@ class WorkoutFrequencyStep extends StatelessWidget {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'How many days per week would you like to train?',
+          t.quiz.steps.workout_frequency.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
         LabeledAppTextField(
-          label: 'Select number of days',
+          label: t.quiz.steps.workout_frequency.select_days_label,
           field: PortalSelectField(
-            hintText: 'Select number of days',
+            hintText: t.quiz.steps.workout_frequency.select_days_hint,
             contentBuilder: (_, _) {
               return Container(
                 height: 200,
@@ -502,9 +501,9 @@ class WorkoutFrequencyStep extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         LabeledAppTextField(
-          label: 'Select specific days',
+          label: t.quiz.steps.workout_frequency.select_specific_days_label,
           field: PortalSelectField(
-            hintText: 'Select specific days',
+            hintText: t.quiz.steps.workout_frequency.select_specific_days_hint,
             contentBuilder: (_, _) {
               return Container(
                 height: 200,
@@ -524,14 +523,14 @@ enum Faction {
 }
 
 extension FactionExtension on Faction {
-  String get title {
+  String title(Translations t) {
     switch (this) {
       case Faction.gakki:
-        return 'Gakki';
+        return t.common.factions.gakki;
       case Faction.gyohyo:
-        return 'Gyōhyō';
+        return t.common.factions.gyohyo;
       case Faction.serien:
-        return 'Serien';
+        return t.common.factions.serien;
     }
   }
 }
@@ -552,11 +551,11 @@ class _SelectMainFactionState extends State<SelectMainFaction> {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'Choose Your Path and Enter the Forge',
+          t.quiz.steps.main_faction.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         Text(
-          'Pick your origin and begin your journey with the faction that fits your training style',
+          t.quiz.steps.main_faction.subtitle,
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),
         ),
         const SizedBox(height: 32),
@@ -589,12 +588,12 @@ class _SelectSecondFactionState extends State<SelectSecondFaction> {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'Borrowed Techniques for Your Evolution',
+          t.quiz.steps.second_faction.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 16),
         Text(
-          'Optional cross-training add-ons that let you incorporate techniques from other factions.',
+          t.quiz.steps.second_faction.subtitle,
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),
         ),
         const SizedBox(height: 32),
@@ -615,11 +614,13 @@ class FactionSelector extends StatelessWidget {
   const FactionSelector({
     required this.selectedFaction,
     required this.onFactionChanged,
+    this.isMainFaction = true,
     super.key,
   });
 
   final Faction? selectedFaction;
   final ValueChanged<Faction> onFactionChanged;
+  final bool isMainFaction;
 
   @override
   Widget build(BuildContext context) {
@@ -628,7 +629,7 @@ class FactionSelector extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: RadioButtonOption(
-            title: faction.title,
+            title: faction.title(t),
             isSelected: selectedFaction == faction,
             onTap: () => onFactionChanged(faction),
           ),
