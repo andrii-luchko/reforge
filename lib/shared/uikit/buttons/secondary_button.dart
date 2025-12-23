@@ -25,14 +25,17 @@ class SecondaryButton extends StatelessWidget {
       child: BlurContainer(
         borderRadius: borderRadius,
         child: BaseGlassContainer(
+          padding: const .symmetric(vertical: 4),
           borderRadius: borderRadius,
           width: double.infinity,
           glassEffectGradientAlignmentBegin: Alignment.topLeft,
           glassEffectGradientAlignmentEnd: Alignment.bottomRight,
-          borderGradientStops: const [0.0, 0.11, 0.89, 1.0],
+          borderGradientStops: const [0.0, 0.1, 0.2, 0.5, 0.8, 1.0],
           borderGradientColors: [
+            Colors.transparent,
             appTheme.beige100,
             Colors.transparent,
+            appTheme.beige100,
             Colors.transparent,
             appTheme.beige100,
           ],

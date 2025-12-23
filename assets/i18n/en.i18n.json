@@ -68,7 +68,11 @@
             "gakki": "Gakki",
             "gyohyo": "Gyōhyō",
             "serien": "Serien"
-        }
+        },
+        "back_button": "Back",
+        "next_button": "Next",
+        "submit_button": "Submit",
+        "finish_button": "Finish"
     },
     "validation": {
         "email_required": "Email is required",
@@ -80,8 +84,6 @@
     },
     "quiz": {
         "header": "Onboarding quiz",
-        "back_button": "Back",
-        "next_button": "Next",
         "steps": {
             "date_of_birth": {
                 "title": "What's your date of birth?",
