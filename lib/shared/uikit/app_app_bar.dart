@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppAppBar({required this.onPressed, super.key});
+  const AppAppBar({required this.onPressed, super.key, this.actions});
   final VoidCallback onPressed;
-
+  final List<Widget>? actions;
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -21,9 +21,10 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: onPressed,
         ),
       ),
+      actions: actions,
     );
   }
 
   @override
-  Size get preferredSize => const .fromHeight(kToolbarHeight);
+  Size get preferredSize => const .fromHeight(kToolbarHeight + 12);
 }

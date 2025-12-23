@@ -27,28 +27,16 @@ class SecondaryButton extends StatelessWidget {
         child: BaseGlassContainer(
           borderRadius: borderRadius,
           width: double.infinity,
-          glassEffectGradientAlignmentBegin: .topLeft,
-          glassEffectGradientAlignmentEnd: .bottomRight,
-          borderGradientStops: const [
-            0.0,
-            0.05,
-            0.96,
-            1.0,
-          ],
+          glassEffectGradientAlignmentBegin: Alignment.topLeft,
+          glassEffectGradientAlignmentEnd: Alignment.bottomRight,
+          borderGradientStops: const [0.0, 0.11, 0.89, 1.0],
           borderGradientColors: [
             appTheme.beige100,
             Colors.transparent,
             Colors.transparent,
-
             appTheme.beige100,
           ],
-          surfaceGradientColors: const [
-            Colors.transparent,
-            Colors.transparent,
-          ],
-
           borderColor: appTheme.beige100.withValues(alpha: 0.1),
-
           child: Material(
             borderRadius: borderRadius,
             color: Colors.transparent,

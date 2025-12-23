@@ -37,7 +37,7 @@ class AppThemeValues {
     ),
 
     strokeCard: const Color(0xFF2B221A),
-
+    strokeCalendar: const Color(0xFFC66C32),
     red400: const Color(0xFFCF6B6B),
   );
 
@@ -76,7 +76,7 @@ class AppThemeValues {
     ),
 
     strokeCard: const Color(0xFF2B221A),
-
+    strokeCalendar: const Color(0xFFC66C32),
     red400: const Color(0xFFCF6B6B),
   );
 }

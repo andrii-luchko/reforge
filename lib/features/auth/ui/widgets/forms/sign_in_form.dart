@@ -52,7 +52,7 @@ class _SignInFormState extends State<SignInForm> {
             builder: (context, emailError) {
               return LabeledAppTextField(
                 label: t.common.email_label,
-                field: AppTextfield(
+                field: AppTextField(
                   errorText: emailError,
                   hintText: t.common.email_hint,
                   controller: _emailController,
@@ -70,7 +70,7 @@ class _SignInFormState extends State<SignInForm> {
             builder: (context, passwordError) {
               return LabeledAppTextField(
                 label: t.common.password_label,
-                field: AppTextfield.password(
+                field: AppTextField.password(
                   errorText: passwordError,
                   hintText: t.common.password_hint,
                   controller: _passwordController,

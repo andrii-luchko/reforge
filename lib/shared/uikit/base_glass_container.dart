@@ -51,13 +51,7 @@ class BaseGlassContainer extends StatelessWidget {
               begin: glassEffectGradientAlignmentBegin,
               end: glassEffectGradientAlignmentEnd,
               stops: borderGradientStops,
-              colors:
-                  borderGradientColors ??
-                  [
-                    Colors.transparent,
-                    Colors.white,
-                    Colors.transparent,
-                  ],
+              colors: borderGradientColors!,
             ),
           );
 
@@ -67,12 +61,7 @@ class BaseGlassContainer extends StatelessWidget {
             begin: Alignment.bottomRight,
             end: Alignment.topLeft,
             stops: surfaceGradientStops,
-            colors:
-                surfaceGradientColors ??
-                [
-                  Colors.white.withValues(alpha: 0.1),
-                  Colors.transparent,
-                ],
+            colors: surfaceGradientColors!,
           );
 
     final effectiveBackgroundColor = backgroundColor ?? Colors.black.withValues(alpha: 0.1);
