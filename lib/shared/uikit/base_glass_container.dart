@@ -43,20 +43,37 @@ class BaseGlassContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveBorderColor = borderColor ?? Colors.white.withValues(alpha: 0.1);
 
-    final effectiveBorderGradient =
-        borderGradientColors ??
-        [
-          Colors.transparent,
-          Colors.white,
-          Colors.transparent,
-        ];
+    final borderGradient = borderGradientColors == null
+        ? null
+        : GradientBoxBorder(
+            width: borderWidth,
+            gradient: LinearGradient(
+              begin: glassEffectGradientAlignmentBegin,
+              end: glassEffectGradientAlignmentEnd,
+              stops: borderGradientStops,
+              colors:
+                  borderGradientColors ??
+                  [
+                    Colors.transparent,
+                    Colors.white,
+                    Colors.transparent,
+                  ],
+            ),
+          );
 
-    final effectiveSurfaceGradient =
-        surfaceGradientColors ??
-        [
-          Colors.white.withValues(alpha: 0.1),
-          Colors.transparent,
-        ];
+    final surfaceGradient = surfaceGradientColors == null
+        ? null
+        : LinearGradient(
+            begin: Alignment.bottomRight,
+            end: Alignment.topLeft,
+            stops: surfaceGradientStops,
+            colors:
+                surfaceGradientColors ??
+                [
+                  Colors.white.withValues(alpha: 0.1),
+                  Colors.transparent,
+                ],
+          );
 
     final effectiveBackgroundColor = backgroundColor ?? Colors.black.withValues(alpha: 0.1);
 
@@ -75,21 +92,8 @@ class BaseGlassContainer extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: borderRadius,
-          border: GradientBoxBorder(
-            width: borderWidth,
-            gradient: LinearGradient(
-              begin: glassEffectGradientAlignmentBegin,
-              end: glassEffectGradientAlignmentEnd,
-              stops: borderGradientStops,
-              colors: effectiveBorderGradient,
-            ),
-          ),
-          gradient: LinearGradient(
-            begin: Alignment.bottomRight,
-            end: Alignment.topLeft,
-            stops: surfaceGradientStops,
-            colors: effectiveSurfaceGradient,
-          ),
+          border: borderGradient,
+          gradient: surfaceGradient,
         ),
         child: Container(
           padding: padding,

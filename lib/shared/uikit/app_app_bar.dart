@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -16,8 +15,9 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       leading: Padding(
         padding: const .only(left: 16),
-        child: AppIconButton(
-          iconAsset: Assets.images.icons.chevronLeft,
+        child: AppIconButton.icon(
+          iconData: Icons.chevron_left_rounded,
+          iconSize: 32,
           onPressed: onPressed,
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:reforge/app/router/routes.dart';
 
 final router = GoRouter(
   routes: $appRoutes,
-  initialLocation: const SplashPageRoute().location,
+  initialLocation: const QuizPageRoute().location,
   debugLogDiagnostics: true,
   observers: [],
 );

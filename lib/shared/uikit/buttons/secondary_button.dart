@@ -13,6 +13,7 @@ class SecondaryButton extends StatelessWidget {
 
   final String text;
   final VoidCallback? onPressed;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;

@@ -62,7 +62,8 @@
         "password_label": "Password",
         "password_hint": "Enter your password",
         "confirm_password_label": "Confirm your password",
-        "confirm_password_hint": "Enter your password"
+        "confirm_password_hint": "Enter your password",
+        "step_count": "Step $active/$total"
     },
     "validation": {
         "email_required": "Email is required",
