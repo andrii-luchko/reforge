@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:talker/talker.dart';
 
 //
@@ -14,7 +16,10 @@ class _AppLogger {
       useHistory: false,
       maxHistoryItems: 0,
     ),
-    logger: TalkerLogger(settings: TalkerLoggerSettings(enableColors: false)),
+    logger: TalkerLogger(
+      settings: TalkerLoggerSettings(),
+      output: (String message) => developer.log(message, name: 'Talker'),
+    ),
   );
 
   void e(dynamic message, [Object? exception, StackTrace? stackTrace]) =>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/auth/controllers/validation/auth_validation_cubit.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_redirect_text.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
@@ -101,8 +102,11 @@ class _SignInFormState extends State<SignInForm> {
               return PrimaryButton(
                 text: t.signin.submit_button,
                 onPressed: canSubmit
-                    ? () {
-                        // Handle sign in
+                    ? () async {
+                        await context.read<AuthCubit>().signIn(
+                          email: _emailController.text,
+                          password: _passwordController.text,
+                        );
                       }
                     : null,
               );

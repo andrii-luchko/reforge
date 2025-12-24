@@ -12,5 +12,5 @@ Future<void> configureDependencies() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   const environment = kDebugMode ? Environment.dev : Environment.prod;
 
-  getIt.init(environment: environment);
+  await getIt.init(environment: environment);
 }

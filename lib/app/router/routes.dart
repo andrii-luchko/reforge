@@ -6,6 +6,7 @@ import 'package:reforge/features/auth/ui/pages/reset_send_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_in_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
+import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
@@ -124,5 +125,15 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const QuizPage();
+  }
+}
+
+@TypedGoRoute<HomePageRoute>(path: '/home')
+class HomePageRoute extends GoRouteData with $HomePageRoute {
+  const HomePageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const HomePage();
   }
 }
