@@ -1,8 +1,8 @@
-part of 'forgot_password_cubit.dart';
+part of 'forgot_password_validation_cubit.dart';
 
 @freezed
-sealed class ForgotPasswordState with _$ForgotPasswordState {
-  const factory ForgotPasswordState({
+sealed class ForgotPasswordValidationState with _$ForgotPasswordValidationState {
+  const factory ForgotPasswordValidationState({
     @Default(ForgotPasswordMode.email) ForgotPasswordMode mode,
     @Default('') String email,
     @Default('') String newPassword,
@@ -11,5 +11,5 @@ sealed class ForgotPasswordState with _$ForgotPasswordState {
     String? newPasswordError,
     String? confirmPasswordError,
     @Default(false) bool canSubmit,
-  }) = _ForgotPasswordState;
+  }) = _ForgotPasswordValidationState;
 }

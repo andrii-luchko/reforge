@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_validation_cubit.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/create_new_password_form.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/animations/shaders/particles_shader.dart';
@@ -60,7 +60,7 @@ class CreateNewPasswordPage extends StatelessWidget {
               child: Padding(
                 padding: const .symmetric(horizontal: 16),
                 child: BlocProvider(
-                  create: (context) => di.getIt<ForgotPasswordCubit>()..setMode(.createPassword),
+                  create: (context) => di.getIt<ForgotPasswordValidationCubit>()..setMode(.createPassword),
                   child: const SafeArea(child: CreateNewPasswordForm()),
                 ),
               ),

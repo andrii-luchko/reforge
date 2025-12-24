@@ -4,14 +4,14 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/validators/email.dart';
 import 'package:reforge/app/utils/validators/password.dart';
 
-part 'forgot_password_cubit.freezed.dart';
-part 'forgot_password_state.dart';
+part 'forgot_password_validation_cubit.freezed.dart';
+part 'forgot_password_validation_state.dart';
 
 enum ForgotPasswordMode { email, createPassword }
 
 @injectable
-class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
-  ForgotPasswordCubit() : super(const ForgotPasswordState());
+class ForgotPasswordValidationCubit extends Cubit<ForgotPasswordValidationState> {
+  ForgotPasswordValidationCubit() : super(const ForgotPasswordValidationState());
 
   void setMode(ForgotPasswordMode mode) {
     emit(state.copyWith(mode: mode));
