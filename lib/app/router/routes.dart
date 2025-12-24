@@ -7,6 +7,7 @@ import 'package:reforge/features/auth/ui/pages/sign_in_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
+import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 
 part 'routes.g.dart';
@@ -113,5 +114,15 @@ class SuccessPasswordChangePageRoute extends GoRouteData with $SuccessPasswordCh
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SuccessPasswordChangePage();
+  }
+}
+
+@TypedGoRoute<QuizPageRoute>(path: '/quiz')
+class QuizPageRoute extends GoRouteData with $QuizPageRoute {
+  const QuizPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const QuizPage();
   }
 }

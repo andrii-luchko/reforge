@@ -56,7 +56,7 @@ class _SignUpFormState extends State<SignUpForm> {
             builder: (context, emailError) {
               return LabeledAppTextField(
                 label: t.email_label,
-                field: AppTextfield(
+                field: AppTextField(
                   errorText: emailError,
                   hintText: t.email_hint,
                   controller: _emailController,
@@ -74,7 +74,7 @@ class _SignUpFormState extends State<SignUpForm> {
             builder: (context, passwordError) {
               return LabeledAppTextField(
                 label: t.password_label,
-                field: AppTextfield.password(
+                field: AppTextField.password(
                   errorText: passwordError,
                   hintText: t.password_hint,
                   controller: _passwordController,
@@ -92,7 +92,7 @@ class _SignUpFormState extends State<SignUpForm> {
             builder: (context, confirmPasswordError) {
               return LabeledAppTextField(
                 label: t.confirm_password_label,
-                field: AppTextfield.password(
+                field: AppTextField.password(
                   errorText: confirmPasswordError,
                   hintText: t.confirm_password_hint,
                   controller: _confirmPasswordController,

@@ -13,6 +13,7 @@ class SecondaryButton extends StatelessWidget {
 
   final String text;
   final VoidCallback? onPressed;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
@@ -24,30 +25,21 @@ class SecondaryButton extends StatelessWidget {
       child: BlurContainer(
         borderRadius: borderRadius,
         child: BaseGlassContainer(
+          padding: const .symmetric(vertical: 4),
           borderRadius: borderRadius,
           width: double.infinity,
-          glassEffectGradientAlignmentBegin: .topLeft,
-          glassEffectGradientAlignmentEnd: .bottomRight,
-          borderGradientStops: const [
-            0.0,
-            0.05,
-            0.96,
-            1.0,
-          ],
+          glassEffectGradientAlignmentBegin: Alignment.topLeft,
+          glassEffectGradientAlignmentEnd: Alignment.bottomRight,
+          borderGradientStops: const [0.0, 0.1, 0.2, 0.5, 0.8, 1.0],
           borderGradientColors: [
+            Colors.transparent,
             appTheme.beige100,
             Colors.transparent,
+            appTheme.beige100,
             Colors.transparent,
-
             appTheme.beige100,
           ],
-          surfaceGradientColors: const [
-            Colors.transparent,
-            Colors.transparent,
-          ],
-
           borderColor: appTheme.beige100.withValues(alpha: 0.1),
-
           child: Material(
             borderRadius: borderRadius,
             color: Colors.transparent,

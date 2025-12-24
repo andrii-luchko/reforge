@@ -45,7 +45,7 @@ class _ForgotPasswordEmailFormState extends State<ForgotPasswordEmailForm> {
             builder: (context, emailError) {
               return LabeledAppTextField(
                 label: t.common.email_label,
-                field: AppTextfield(
+                field: AppTextField(
                   hintText: t.common.email_hint,
                   errorText: emailError,
                   controller: _emailController,

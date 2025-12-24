@@ -62,7 +62,17 @@
         "password_label": "Password",
         "password_hint": "Enter your password",
         "confirm_password_label": "Confirm your password",
-        "confirm_password_hint": "Enter your password"
+        "confirm_password_hint": "Enter your password",
+        "step_count": "Step $active/$total",
+        "factions": {
+            "gakki": "Gakki",
+            "gyohyo": "Gyōhyō",
+            "serien": "Serien"
+        },
+        "back_button": "Back",
+        "next_button": "Next",
+        "submit_button": "Submit",
+        "finish_button": "Finish"
     },
     "validation": {
         "email_required": "Email is required",
@@ -71,5 +81,64 @@
         "password_too_short": "Password must be at least 8 characters",
         "passwords_not_match": "Passwords do not match",
         "confirm_password_required": "Please confirm your password"
+    },
+    "quiz": {
+        "header": "Onboarding quiz",
+        "steps": {
+            "date_of_birth": {
+                "title": "What's your date of birth?",
+                "select_date_label": "Select date of birth"
+            },
+            "measurement_system": {
+                "title": "Which measurement system do you prefer?",
+                "metric": "kg",
+                "imperial": "lb"
+            },
+            "main_goal": {
+                "title": "What's your main training goal?",
+                "build_strength": {
+                    "title": "Build Strength",
+                    "description": "Focus on muscle growth and power"
+                },
+                "improve_endurance": {
+                    "title": "Improve Endurance",
+                    "description": "Run farther and build stamina"
+                },
+                "enhance_flexibility": {
+                    "title": "Enhance Flexibility",
+                    "description": "Increase mobility and body control"
+                }
+            },
+            "training_level": {
+                "title": "What's your training level?",
+                "beginner": {
+                    "title": "Beginner",
+                    "description": "I'm new to this"
+                },
+                "intermediate": {
+                    "title": "Intermediate",
+                    "description": "I've trained for 1–3 years"
+                },
+                "advanced": {
+                    "title": "Advanced",
+                    "description": "3+ years of consistent training"
+                }
+            },
+            "workout_frequency": {
+                "title": "How many days per week would you like to train?",
+                "select_days_label": "Select number of days",
+                "select_days_hint": "Select number of days",
+                "select_specific_days_label": "Select specific days",
+                "select_specific_days_hint": "Select specific days"
+            },
+            "main_faction": {
+                "title": "Choose Your Path and Enter the Forge",
+                "subtitle": "Pick your origin and begin your journey with the faction that fits your training style"
+            },
+            "second_faction": {
+                "title": "Borrowed Techniques for Your Evolution",
+                "subtitle": "Optional cross-training add-ons that let you incorporate techniques from other factions."
+            }
+        }
     }
 }

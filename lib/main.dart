@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
@@ -16,7 +17,7 @@ void main() async {
       await LocaleSettings.useDeviceLocale();
       await di.configureDependencies();
 
-      runApp(TranslationProvider(child: const App()));
+      runApp(Portal(child: TranslationProvider(child: const App())));
 
       binding.allowFirstFrame();
     },

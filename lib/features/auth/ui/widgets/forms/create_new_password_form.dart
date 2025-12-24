@@ -47,7 +47,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
             builder: (context, passwordError) {
               return LabeledAppTextField(
                 label: t.common.password_label,
-                field: AppTextfield.password(
+                field: AppTextField.password(
                   errorText: passwordError,
                   hintText: t.common.password_hint,
                   controller: _passwordController,
@@ -65,7 +65,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
             builder: (context, confirmPasswordError) {
               return LabeledAppTextField(
                 label: t.common.confirm_password_label,
-                field: AppTextfield.password(
+                field: AppTextField.password(
                   errorText: confirmPasswordError,
                   hintText: t.common.confirm_password_hint,
                   controller: _confirmPasswordController,

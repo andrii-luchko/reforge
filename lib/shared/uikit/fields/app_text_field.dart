@@ -5,8 +5,8 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 
-class AppTextfield extends StatefulWidget {
-  const AppTextfield({
+class AppTextField extends StatefulWidget {
+  const AppTextField({
     super.key,
 
     this.errorText,
@@ -19,7 +19,7 @@ class AppTextfield extends StatefulWidget {
   }) : _isPasswordField = false,
        isObscured = false;
 
-  const AppTextfield.password({
+  const AppTextField.password({
     super.key,
     this.errorText,
     this.hintText,
@@ -45,10 +45,10 @@ class AppTextfield extends StatefulWidget {
   final Widget? prefixIcon;
 
   @override
-  State<AppTextfield> createState() => _AppTextfieldState();
+  State<AppTextField> createState() => _AppTextFieldState();
 }
 
-class _AppTextfieldState extends State<AppTextfield> {
+class _AppTextFieldState extends State<AppTextField> {
   late bool _obscureText = widget.isObscured;
 
   void _togglePasswordVisibility() {
