@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
-import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_validation_cubit.dart';
+import 'package:reforge/features/auth/controllers/forgot_password/reset_password_cubit.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -28,7 +28,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ForgotPasswordValidationCubit>();
+    final cubit = context.read<ResetPasswordCubit>();
 
     return Column(
       children: [
@@ -42,7 +42,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
 
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: BlocSelector<ForgotPasswordValidationCubit, ForgotPasswordValidationState, String?>(
+          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
             selector: (state) => state.newPasswordError,
             builder: (context, passwordError) {
               return LabeledAppTextField(
@@ -60,7 +60,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
 
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: BlocSelector<ForgotPasswordValidationCubit, ForgotPasswordValidationState, String?>(
+          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
             selector: (state) => state.confirmPasswordError,
             builder: (context, confirmPasswordError) {
               return LabeledAppTextField(
@@ -80,8 +80,8 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
 
         Padding(
           padding: const EdgeInsets.only(top: 32),
-          child: BlocSelector<ForgotPasswordValidationCubit, ForgotPasswordValidationState, bool>(
-            selector: (state) => state.canSubmit,
+          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, bool>(
+            selector: (state) => state.isValid,
             builder: (context, canSubmit) {
               return PrimaryButton(
                 text: t.create_password.submit_button,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -11,10 +13,52 @@ import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/glass_container.dart';
 
-class ResetSendPage extends StatelessWidget {
+class ResetSendPage extends StatefulWidget {
   const ResetSendPage({required this.email, super.key});
 
   final String email;
+
+  @override
+  State<ResetSendPage> createState() => _ResetSendPageState();
+}
+
+class _ResetSendPageState extends State<ResetSendPage> {
+  bool _canResend = false;
+  Timer? _timer;
+
+  static const int _timeoutSeconds = 60;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    setState(() {
+      _canResend = false;
+    });
+
+    _timer = Timer(const Duration(seconds: _timeoutSeconds), () {
+      if (mounted) {
+        setState(() {
+          _canResend = true;
+        });
+      }
+    });
+  }
+
+  void _onResendPressed() {
+    logger.d('Resending email to ${widget.email}...');
+
+    _startTimer();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +145,7 @@ class ResetSendPage extends StatelessWidget {
                                 style: bodyLRegular.copyWith(color: context.appTheme.beige600),
                                 t.reset_send.subtitle(
                                   email: TextSpan(
-                                    text: email,
+                                    text: widget.email,
                                     style: bodyLRegular.copyWith(color: context.appTheme.beige100),
                                   ),
                                 ),
@@ -114,9 +158,7 @@ class ResetSendPage extends StatelessWidget {
                       const Spacer(),
                       PrimaryButton(
                         text: t.reset_send.submit_button,
-                        onPressed: () async {
-                          logger.d('reforge://app/create-new-password?token=test123');
-                        },
+                        onPressed: _canResend ? _onResendPressed : null,
                       ),
                     ],
                   ),

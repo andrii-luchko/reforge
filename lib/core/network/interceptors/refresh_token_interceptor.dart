@@ -13,7 +13,7 @@ class RefreshTokenInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final AuthLocalDataSource _localDataSource;
   final void Function() onTokenRefreshFailed;
-  
+
   // Lazy getter to avoid circular dependency
   AuthRemoteDataSource get _remoteDataSource => di.getIt<AuthRemoteDataSource>();
 

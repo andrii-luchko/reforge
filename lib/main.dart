@@ -11,24 +11,11 @@ import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:talker_bloc_logger/talker_bloc_logger_observer.dart';
-import 'package:talker_bloc_logger/talker_bloc_logger_settings.dart';
 
 void main() async {
   await runZonedGuarded(
     () async {
       final binding = WidgetsFlutterBinding.ensureInitialized()..deferFirstFrame();
-
-      Bloc.observer = TalkerBlocObserver(
-        talker: logger.talker,
-        settings: const TalkerBlocLoggerSettings(
-          printEventFullData: false,
-          printStateFullData: false,
-          printChanges: true,
-          printClosings: true,
-          printCreations: true,
-        ),
-      );
 
       await LocaleSettings.useDeviceLocale();
       await di.configureDependencies();

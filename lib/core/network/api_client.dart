@@ -3,8 +3,12 @@ import 'package:reforge/app/utils/helpers/base_response.dart';
 
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/auth/data/requests/password_reset_confirm_req.dart';
+import 'package:reforge/core/auth/data/requests/password_reset_email_req.dart';
+import 'package:reforge/core/auth/data/requests/password_reset_validate_token_req.dart';
 import 'package:reforge/core/auth/data/requests/refresh_token_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
+import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -18,8 +22,20 @@ abstract class ApiClient {
   @POST('/auth/signin')
   Future<BaseResponse<AuthTokens>> signin(@Body() SignInRequest request);
 
+  @POST('/auth/password-reset/initiate')
+  Future<void> initiatePasswordReset(@Body() PasswordResetEmailRequest request);
+
+  @GET('/auth/password-reset/validate')
+  Future<void> validatePasswordReset(@Queries() PasswordResetValidateTokenRequest request);
+
+  @POST('/auth/password-reset/confirm')
+  Future<void> confirmPasswordReset(@Body() PasswordResetConfirmRequest request);
+
   @POST('/auth/signup')
   Future<BaseResponse<AuthTokens>> signup(@Body() SignUpRequest request);
+
+  @POST('/auth/provider')
+  Future<BaseResponse<AuthTokens>> provider(@Body() SignWithProviderRequest request);
 
   @POST('/auth/refresh')
   Future<BaseResponse<AuthTokens>> refreshToken(@Body() RefreshTokenRequest request);

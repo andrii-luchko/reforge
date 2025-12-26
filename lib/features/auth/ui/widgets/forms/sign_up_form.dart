@@ -3,12 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/auth/controllers/validation/auth_validation_cubit.dart';
+import 'package:reforge/features/auth/ui/widgets/auth_providers_buttons.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_redirect_text.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
 import 'package:reforge/features/auth/ui/widgets/terms_check_box.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/strings.g.dart';
-import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
@@ -147,17 +146,7 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppIconButton(iconAsset: Assets.images.icons.apple),
-                const SizedBox(width: 12),
-                AppIconButton(iconAsset: Assets.images.icons.google),
-              ],
-            ),
-          ),
+          const Padding(padding: EdgeInsets.only(top: 32), child: AuthProvidersButtons()),
         ],
       ),
     );

@@ -8,6 +8,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/datasources/auth_local_datasource.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/auth/data/repositories/auth_repository.dart';
 import 'package:reforge/core/auth/domain/repositories/auth_repository.dart';
 import 'package:reforge/core/auth/services/session_service.dart';
 
@@ -118,8 +119,6 @@ class AuthCubit extends Cubit<AuthState> {
 
     final result = await _authRepository.signup(email, password);
 
-    await Future.delayed(const Duration(seconds: 2));
-
     switch (result) {
       case Success(value: final tokens):
         await _localDataSource.saveTokens(tokens);
@@ -128,6 +127,46 @@ class AuthCubit extends Cubit<AuthState> {
 
       case Error(error: final error):
         emit(AuthState.error('Sign up failed: $error'));
+    }
+  }
+
+  Future<void> signWithGoogle() async {
+    emit(const AuthState.loading());
+
+    final result = await _authRepository.signWithGoogle();
+
+    switch (result) {
+      case Success(value: final tokens):
+        await _localDataSource.saveTokens(tokens);
+
+        emit(AuthState.authenticated(tokens: tokens));
+
+      case Error(error: final error):
+        if (error is AuthCanceledException) {
+          emit(const AuthState.unauthenticated());
+        } else {
+          emit(AuthState.error('Sign up failed: $error'));
+        }
+    }
+  }
+
+  Future<void> signWithApple() async {
+    emit(const AuthState.loading());
+
+    final result = await _authRepository.signWithApple();
+
+    switch (result) {
+      case Success(value: final tokens):
+        await _localDataSource.saveTokens(tokens);
+
+        emit(AuthState.authenticated(tokens: tokens));
+
+      case Error(error: final error):
+        if (error is AuthCanceledException) {
+          emit(const AuthState.unauthenticated());
+        } else {
+          emit(AuthState.error('Sign up failed: $error'));
+        }
     }
   }
 
