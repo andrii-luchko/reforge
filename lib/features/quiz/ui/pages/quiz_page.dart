@@ -9,11 +9,10 @@ import 'package:reforge/features/quiz/ui/widgets/steps/select_main_faction_step.
 import 'package:reforge/features/quiz/ui/widgets/steps/select_second_faction_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/training_level_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/workout_frequency_step.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:reforge/shared/animations/shaders/particles_shader.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/multi_step_form.dart';
 
 class QuizPage extends StatelessWidget {
@@ -26,7 +25,6 @@ class QuizPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppAppBar(
-        onPressed: null,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -37,43 +35,23 @@ class QuizPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SizedBox.expand(
-        child: Stack(
-          children: [
-            const Positioned.fill(child: ParticlesShaderWidget()),
-            Positioned.fill(
-              child: Image.asset(
-                Assets.images.png.smoke.path,
-                fit: BoxFit.fill,
-                opacity: const AlwaysStoppedAnimation<double>(0.5),
-              ),
-            ),
-
-            Positioned.fill(
-              child: Image.asset(
-                Assets.images.png.noiseAndTexture.path,
-                fit: BoxFit.fill,
-              ),
-            ),
-
-            Positioned.fill(
-              child: SunRaysShaderWidget(
-                color: appTheme.orange500,
-                alignment: const Alignment(0, -1.2),
-                intensity: 1,
-                density: 5,
-                rayLength: 0.6,
-              ),
-            ),
-
-            const Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: SafeArea(child: QuizForm()),
-              ),
-            ),
-          ],
+      body: DefaultBackground(
+        body: const Positioned.fill(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: SafeArea(child: QuizForm()),
+          ),
         ),
+
+        additionalAnimations: [
+          Positioned.fill(
+            child: SunRaysShaderWidget(
+              color: appTheme.orange500,
+              alignment: .topCenter,
+              rayLength: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }

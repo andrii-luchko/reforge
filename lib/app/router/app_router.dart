@@ -10,44 +10,44 @@ final AuthCubit authCubit = di.getIt<AuthCubit>();
 
 final router = GoRouter(
   routes: $appRoutes,
-  initialLocation: const SplashPageRoute().location,
+  initialLocation: const QuizPageRoute().location,
   debugLogDiagnostics: true,
   refreshListenable: GoRouterRefreshStream(authCubit.stream),
-  redirect: (context, state) {
-    final currentPath = state.matchedLocation;
-    final authState = authCubit.state;
-    final splash = currentPath == const SplashPageRoute().location;
-    final onboarding = currentPath == const OnboardingPageRoute().location;
-    final signingIn = currentPath.contains(const SignInPageRoute().location);
-    final signingUp = currentPath.contains(const SignUpPageRoute().location);
+  // redirect: (context, state) {
+  //   final currentPath = state.matchedLocation;
+  //   final authState = authCubit.state;
+  //   final splash = currentPath == const SplashPageRoute().location;
+  //   final onboarding = currentPath == const OnboardingPageRoute().location;
+  //   final signingIn = currentPath.contains(const SignInPageRoute().location);
+  //   final signingUp = currentPath.contains(const SignUpPageRoute().location);
 
-    final onAuth = splash || onboarding || signingIn || signingUp;
+  //   final onAuth = splash || onboarding || signingIn || signingUp;
 
-    return authState.when(
-      loading: () => null,
-      error: (_) => null,
-      unauthenticated: () {
-        if (onAuth) {
-          if (onboarding) {
-            return null;
-          }
-          if (splash) {
-            return const OnboardingPageRoute().location;
-          }
+  //   return authState.when(
+  //     loading: () => null,
+  //     error: (_) => null,
+  //     unauthenticated: () {
+  //       if (onAuth) {
+  //         if (onboarding) {
+  //           return null;
+  //         }
+  //         if (splash) {
+  //           return const OnboardingPageRoute().location;
+  //         }
 
-          return null;
-        }
+  //         return null;
+  //       }
 
-        return const SignInPageRoute().location;
-      },
-      authenticated: (user, tokens) {
-        if (onAuth) {
-          return const HomePageRoute().location;
-        }
-        return null;
-      },
-    );
-  },
+  //       return const SignInPageRoute().location;
+  //     },
+  //     authenticated: (user, tokens) {
+  //       if (onAuth) {
+  //         return const HomePageRoute().location;
+  //       }
+  //       return null;
+  //     },
+  //   );
+  // },
   observers: [],
 );
 

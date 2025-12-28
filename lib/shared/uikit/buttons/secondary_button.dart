@@ -25,7 +25,6 @@ class SecondaryButton extends StatelessWidget {
       child: BlurContainer(
         borderRadius: borderRadius,
         child: BaseGlassContainer(
-          padding: const .symmetric(vertical: 4),
           borderRadius: borderRadius,
           width: double.infinity,
           glassEffectGradientAlignmentBegin: Alignment.topLeft,
@@ -49,7 +48,7 @@ class SecondaryButton extends StatelessWidget {
               highlightColor: appTheme.beige100.withValues(alpha: 0.01),
               onTap: onPressed,
               child: Padding(
-                padding: const .symmetric(vertical: 16),
+                padding: const .symmetric(vertical: 20),
                 child: Center(
                   child: Text(
                     text,
