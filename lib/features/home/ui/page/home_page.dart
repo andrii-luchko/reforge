@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
+import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -18,7 +19,9 @@ class HomePage extends StatelessWidget {
         },
       ),
       body: const Center(
-        child: Text('Welcome to the Home Page!'),
+        child: SunRaysShaderWidget(
+          alignment: .topCenter,
+        ),
       ),
     );
   }

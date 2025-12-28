@@ -10,8 +10,8 @@ class SunRaysShaderWidget extends StatefulWidget {
     this.color = Colors.amber,
     this.intensity = 1.2,
     this.alignment = const Alignment(0, -1.5),
-    this.rayLength = 1.5,
-    this.density = 30.0,
+    this.rayLength = 0.5,
+    this.density = 10.0,
   });
 
   final Widget? child;
@@ -27,81 +27,79 @@ class SunRaysShaderWidget extends StatefulWidget {
 
 class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  // ui.FragmentProgram? _program;
-  // late Ticker _ticker;
-  // double _time = 0;
+  ui.FragmentProgram? _program;
+  late Ticker _ticker;
+  double _time = 0;
 
-  // @override
-  // void initState() {
-  //   WidgetsBinding.instance.addObserver(this);
-  //   super.initState();
-  //   unawaited(_loadShader());
-  //   _ticker = createTicker((elapsed) {
-  //     final newTime = elapsed.inMilliseconds / 1000.0;
-  //     if ((newTime - _time).abs() > 0.033) {
-  //       setState(() {
-  //         _time = newTime;
-  //       });
-  //     }
-  //   });
-  //   unawaited(_ticker.start());
-  // }
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+    unawaited(_loadShader());
+    _ticker = createTicker((elapsed) {
+      final newTime = elapsed.inMilliseconds / 1000.0;
+      if ((newTime - _time).abs() > 0.033) {
+        setState(() {
+          _time = newTime;
+        });
+      }
+    });
+    unawaited(_ticker.start());
+  }
 
-  // Future<void> _loadShader() async {
-  //   final program = await ui.FragmentProgram.fromAsset('shaders/sun_rays.frag');
-  //   setState(() {
-  //     _program = program;
-  //   });
-  // }
+  Future<void> _loadShader() async {
+    final program = await ui.FragmentProgram.fromAsset('shaders/sun_rays.frag');
+    setState(() {
+      _program = program;
+    });
+  }
 
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   if (state == AppLifecycleState.paused) {
-  //     _ticker.stop();
-  //   } else if (state == AppLifecycleState.resumed) {
-  //     unawaited(_ticker.start());
-  //   }
-  // }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _ticker.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      unawaited(_ticker.start());
+    }
+  }
 
-  // @override
-  // void dispose() {
-  //   WidgetsBinding.instance.removeObserver(this);
-  //   _ticker.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _ticker.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox();
-    //   if (_program == null) {
-    //     return widget.child ?? const SizedBox.shrink();
-    //   }
-
-    //   return RepaintBoundary(
-    //     child: LayoutBuilder(
-    //       builder: (context, constraints) {
-    //         return Transform.scale(
-    //           scale: 2,
-    //           child: SizedBox(
-    //             width: constraints.maxWidth / 2,
-    //             height: constraints.maxHeight / 2,
-    //             child: CustomPaint(
-    //               painter: _ShaderPainter(
-    //                 program: _program!,
-    //                 time: _time,
-    //                 color: widget.color,
-    //                 intensity: widget.intensity,
-    //                 focalPoint: widget.alignment,
-    //                 rayLength: widget.rayLength,
-    //                 density: widget.density,
-    //               ),
-    //             ),
-    //           ),
-    //         );
-    //       },
-    //     ),
-    //   );
-    // }
+    if (_program == null) {
+      return widget.child ?? const SizedBox.shrink();
+    }
+    const downscale = 2.0;
+    return RepaintBoundary(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Transform.scale(
+            scale: downscale,
+            child: SizedBox(
+              width: constraints.maxWidth / downscale,
+              height: constraints.maxHeight / downscale,
+              child: CustomPaint(
+                painter: _ShaderPainter(
+                  program: _program!,
+                  time: _time,
+                  color: widget.color,
+                  intensity: widget.intensity,
+                  focalPoint: widget.alignment,
+                  rayLength: widget.rayLength,
+                  density: widget.density,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

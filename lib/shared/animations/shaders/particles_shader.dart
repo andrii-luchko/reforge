@@ -25,69 +25,68 @@ class ParticlesShaderWidget extends StatefulWidget {
 
 class _ParticlesShaderWidgetState extends State<ParticlesShaderWidget>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  // ui.FragmentProgram? _program;
-  // late Ticker _ticker;
-  // double _time = 0;
+  ui.FragmentProgram? _program;
+  late Ticker _ticker;
+  double _time = 0;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addObserver(this);
-  //   unawaited(_loadShader());
-  //   _ticker = createTicker((elapsed) {
-  //     setState(() {
-  //       _time = elapsed.inMilliseconds / 1000.0;
-  //     });
-  //   });
-  //   unawaited(_ticker.start());
-  // }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_loadShader());
+    _ticker = createTicker((elapsed) {
+      setState(() {
+        _time = elapsed.inMilliseconds / 1000.0;
+      });
+    });
+    unawaited(_ticker.start());
+  }
 
-  // Future<void> _loadShader() async {
-  //   final program = await ui.FragmentProgram.fromAsset('shaders/particles.frag');
-  //   setState(() {
-  //     _program = program;
-  //   });
-  // }
+  Future<void> _loadShader() async {
+    final program = await ui.FragmentProgram.fromAsset('shaders/particles.frag');
+    setState(() {
+      _program = program;
+    });
+  }
 
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   if (state == AppLifecycleState.paused) {
-  //     _ticker.stop();
-  //   } else if (state == AppLifecycleState.resumed) {
-  //     unawaited(_ticker.start());
-  //   }
-  // }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _ticker.stop();
+    } else if (state == AppLifecycleState.resumed) {
+      unawaited(_ticker.start());
+    }
+  }
 
-  // @override
-  // void dispose() {
-  //   WidgetsBinding.instance.removeObserver(this);
-  //   _ticker.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _ticker.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    //if (_program == null) return const SizedBox.shrink();
+    if (_program == null) return const SizedBox.shrink();
 
     return RepaintBoundary(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return SizedBox();
-          // return SizedBox(
-          //   width: constraints.maxWidth / 2,
-          //   height: constraints.maxHeight / 2,
-          //   child: CustomPaint(
-          //     painter: _ParticlesPainter(
-          //       program: _program!,
-          //       time: _time,
-          //       color: widget.color,
-          //       quantity: widget.quantity,
-          //       speed: widget.speed,
-          //       particleSize: widget.particleSize,
-          //       alphaSpeed: widget.alphaSpeed,
-          //     ),
-          //   ),
-          // );
+          return SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: CustomPaint(
+              painter: _ParticlesPainter(
+                program: _program!,
+                time: _time,
+                color: widget.color,
+                quantity: widget.quantity,
+                speed: widget.speed,
+                particleSize: widget.particleSize,
+                alphaSpeed: widget.alphaSpeed,
+              ),
+            ),
+          );
         },
       ),
     );

@@ -145,6 +145,7 @@ class AuthCubit extends Cubit<AuthState> {
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
+          logger.d(error);
           emit(AuthState.error('Sign up failed: $error'));
         }
     }
