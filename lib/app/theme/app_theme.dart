@@ -35,6 +35,9 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.strokeCalendar,
 
     required this.red400,
+    required this.avatarGradient,
+    required this.menuBar,
+    required this.menuButton,
   });
 
   // Beige palette
@@ -65,4 +68,7 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   final Color strokeCalendar;
 
   final Color red400;
+  final RadialGradient avatarGradient;
+  final LinearGradient menuBar;
+  final LinearGradient menuButton;
 }

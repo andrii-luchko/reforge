@@ -30,6 +30,18 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/apple.svg
   String get apple => 'assets/images/icons/apple.svg';
 
+  /// File path: assets/images/icons/bell.svg
+  String get bell => 'assets/images/icons/bell.svg';
+
+  /// File path: assets/images/icons/calendar.svg
+  String get calendar => 'assets/images/icons/calendar.svg';
+
+  /// File path: assets/images/icons/chart_active.svg
+  String get chartActive => 'assets/images/icons/chart_active.svg';
+
+  /// File path: assets/images/icons/chart_inactive.svg
+  String get chartInactive => 'assets/images/icons/chart_inactive.svg';
+
   /// File path: assets/images/icons/check.svg
   String get check => 'assets/images/icons/check.svg';
 
@@ -42,8 +54,54 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/google.svg
   String get google => 'assets/images/icons/google.svg';
 
+  /// File path: assets/images/icons/home_active.svg
+  String get homeActive => 'assets/images/icons/home_active.svg';
+
+  /// File path: assets/images/icons/home_inactive.svg
+  String get homeInactive => 'assets/images/icons/home_inactive.svg';
+
+  /// File path: assets/images/icons/medal_active.svg
+  String get medalActive => 'assets/images/icons/medal_active.svg';
+
+  /// File path: assets/images/icons/medal_inactive.svg
+  String get medalInactive => 'assets/images/icons/medal_inactive.svg';
+
+  /// File path: assets/images/icons/plates_active.svg
+  String get platesActive => 'assets/images/icons/plates_active.svg';
+
+  /// File path: assets/images/icons/plates_inactive.svg
+  String get platesInactive => 'assets/images/icons/plates_inactive.svg';
+
+  /// File path: assets/images/icons/setting_active.svg
+  String get settingActive => 'assets/images/icons/setting_active.svg';
+
+  /// File path: assets/images/icons/setting_inactive.svg
+  String get settingInactive => 'assets/images/icons/setting_inactive.svg';
+
+  /// File path: assets/images/icons/user.svg
+  String get user => 'assets/images/icons/user.svg';
+
   /// List of all assets
-  List<String> get values => [apple, check, eye, eyeSlash, google];
+  List<String> get values => [
+    apple,
+    bell,
+    calendar,
+    chartActive,
+    chartInactive,
+    check,
+    eye,
+    eyeSlash,
+    google,
+    homeActive,
+    homeInactive,
+    medalActive,
+    medalInactive,
+    platesActive,
+    platesInactive,
+    settingActive,
+    settingInactive,
+    user,
+  ];
 }
 
 class $AssetsImagesPngGen {
@@ -51,6 +109,9 @@ class $AssetsImagesPngGen {
 
   /// File path: assets/images/png/Faction.png
   AssetGenImage get faction => const AssetGenImage('assets/images/png/Faction.png');
+
+  /// File path: assets/images/png/avatar.jpg
+  AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
@@ -76,6 +137,7 @@ class $AssetsImagesPngGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     faction,
+    avatar,
     foreground512x512,
     goldEnvelope,
     goldEnvelopePlus,
