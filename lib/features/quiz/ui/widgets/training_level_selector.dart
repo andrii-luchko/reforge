@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:reforge/features/quiz/domain/training_level.dart';
+import 'package:reforge/features/quiz/domain/enums/training_level.dart';
 import 'package:reforge/features/quiz/ui/widgets/radio_button_option.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 

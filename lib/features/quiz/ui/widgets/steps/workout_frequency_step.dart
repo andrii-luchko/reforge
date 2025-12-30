@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/quiz/controller/quiz_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
@@ -17,20 +19,58 @@ class WorkoutFrequencyStep extends StatefulWidget {
 }
 
 class _WorkoutFrequencyStepState extends State<WorkoutFrequencyStep> {
-  late final List<Text> _numberDaysList = List.generate(
-    7,
-    (i) => Text(
-      '${i + 1}',
-      style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-    ),
-  );
+  late final QuizCubit cubit = context.read<QuizCubit>();
+  late final List<Text> _numberDaysList;
 
   final _numberCountController = TextEditingController();
   final _numberCountPortalController = PortalSelectController();
   final _specificDaysController = TextEditingController();
-  List<WeekDay> _selectedDays = [];
+
   final _specificDaysPortalController = PortalSelectController();
-  final _scrollController = FixedExtentScrollController();
+  late FixedExtentScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final selectedDaysNumber = cubit.state.workoutDaysPerWeek;
+
+    final initialItem = selectedDaysNumber != null && selectedDaysNumber > 0 ? selectedDaysNumber - 1 : 0;
+
+    _scrollController = FixedExtentScrollController(initialItem: initialItem);
+
+    if (selectedDaysNumber != null) {
+      _numberCountController.text = selectedDaysNumber.toString();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _numberDaysList = List.generate(
+      7,
+      (i) => Text(
+        '${i + 1}',
+        style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
+      ),
+    );
+
+    final specificDays = cubit.state.specificWorkoutDays;
+    if (specificDays.isNotEmpty) {
+      _updateSpecificDaysText(specificDays);
+    }
+  }
+
+  void _updateSpecificDaysText(List<WeekDay> value) {
+    final copy = List<WeekDay>.from(value)..sort((a, b) => a.value.compareTo(b.value));
+
+    final text = copy.map<String>((day) => day.label(context)).join(', ');
+
+    if (_specificDaysController.text != text) {
+      _specificDaysController.text = text;
+    }
+  }
 
   @override
   void dispose() {
@@ -50,52 +90,59 @@ class _WorkoutFrequencyStepState extends State<WorkoutFrequencyStep> {
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 32),
-        LabeledAppTextField(
-          label: t.quiz.steps.workout_frequency.select_days_label,
-          field: PortalSelectField(
-            key: const ValueKey('numbers'),
+        BlocSelector<QuizCubit, QuizState, int?>(
+          selector: (state) => state.workoutDaysPerWeek,
 
-            controller: _numberCountController,
-            hintText: t.quiz.steps.workout_frequency.select_days_hint,
-            onTap: _specificDaysPortalController.close,
-            contentBuilder: (_, _) {
-              return ValueScrollPicker(
-                scrollController: _scrollController,
-                onSelectedItemChanged: (i) {
-                  _numberCountController.text = (i + 1).toString();
+          builder: (context, days) {
+            return LabeledAppTextField(
+              label: t.quiz.steps.workout_frequency.select_days_label,
+              field: PortalSelectField(
+                key: const ValueKey('numbers'),
+                controller: _numberCountController,
+                hintText: t.quiz.steps.workout_frequency.select_days_hint,
+                onTap: _specificDaysPortalController.close,
+                contentBuilder: (_, _) {
+                  return ValueScrollPicker(
+                    scrollController: _scrollController,
+                    onSelectedItemChanged: (value) {
+                      final daysCount = value + 1;
+                      _numberCountController.text = daysCount.toString();
+                      cubit.setWorkoutDays(daysCount);
+                    },
+                    children: _numberDaysList,
+                  );
                 },
-                children: _numberDaysList,
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
+
         const SizedBox(height: 16),
-        LabeledAppTextField(
-          key: const ValueKey('specific'),
-          label: t.quiz.steps.workout_frequency.select_specific_days_label,
-          field: PortalSelectField(
-            portalController: _specificDaysPortalController,
-            controller: _specificDaysController,
-            hintText: t.quiz.steps.workout_frequency.select_specific_days_hint,
-            onTap: _numberCountPortalController.close,
-            contentBuilder: (context, _) {
-              return HorizontalWeekDaysPicker(
-                maxSelections: int.tryParse(_numberCountController.text) ?? 0,
-                initialValue: _selectedDays,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedDays = value;
+        BlocSelector<QuizCubit, QuizState, (int?, List<WeekDay>)>(
+          selector: (state) => (state.workoutDaysPerWeek, state.specificWorkoutDays),
 
-                    value.sort((a, b) => a.value.compareTo(b.value));
-
-                    final text = value.map<String>((day) => day.label(context)).join(', ');
-
-                    _specificDaysController.text = text;
-                  });
+          builder: (context, frequency) {
+            return LabeledAppTextField(
+              key: const ValueKey('specific'),
+              label: t.quiz.steps.workout_frequency.select_specific_days_label,
+              field: PortalSelectField(
+                portalController: _specificDaysPortalController,
+                controller: _specificDaysController,
+                hintText: t.quiz.steps.workout_frequency.select_specific_days_hint,
+                onTap: _numberCountPortalController.close,
+                contentBuilder: (context, _) {
+                  return HorizontalWeekDaysPicker(
+                    maxSelections: frequency.$1 ?? 0,
+                    initialValue: frequency.$2,
+                    onChanged: (list) {
+                      _updateSpecificDaysText(list);
+                      cubit.setSpecificDays(list);
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ],
     );
