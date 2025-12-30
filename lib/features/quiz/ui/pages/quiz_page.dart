@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/routes.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -95,7 +96,10 @@ class _QuizFormState extends State<QuizForm> {
       SelectSecondFactionStep(),
     ];
 
-    return BlocBuilder<QuizCubit, QuizState>(
+    return BlocConsumer<QuizCubit, QuizState>(
+      listener: (context, state) {
+        if (state.isSubmitted) const HomePageRoute().go(context);
+      },
       builder: (context, state) {
         final cubit = context.read<QuizCubit>();
 
