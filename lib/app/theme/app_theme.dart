@@ -38,6 +38,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.avatarGradient,
     required this.menuBar,
     required this.menuButton,
+    required this.radioButtonGradient,
+    required this.gradientXpBar,
   });
 
   // Beige palette
@@ -69,6 +71,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
 
   final Color red400;
   final RadialGradient avatarGradient;
+  final RadialGradient radioButtonGradient;
   final LinearGradient menuBar;
   final LinearGradient menuButton;
+  final LinearGradient gradientXpBar;
 }

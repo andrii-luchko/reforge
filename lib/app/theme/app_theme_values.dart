@@ -68,6 +68,28 @@ class AppThemeValues {
 
       stops: [0.1206, 0.9018],
     ),
+
+    radioButtonGradient: const RadialGradient(
+      center: Alignment(-0.88, -0.784),
+      radius: 4.946,
+      colors: [
+        Color.fromARGB(0, 75, 33, 5),
+        Color.fromARGB(106, 75, 33, 5),
+        Color.fromARGB(185, 75, 33, 5),
+      ],
+      stops: [0.0, 0.6248, 1.0],
+    ),
+
+    gradientXpBar: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFFDEB53B),
+        Color(0xFF291F03),
+      ],
+
+      stops: [0.2, 0.9],
+    ),
   );
 
   static final dark = AppTheme(
@@ -129,6 +151,27 @@ class AppThemeValues {
       ],
 
       stops: [0.1206, 0.9018],
+    ),
+    radioButtonGradient: const RadialGradient(
+      center: Alignment(-0.88, -0.784),
+      radius: 4.946,
+      colors: [
+        Color.fromARGB(0, 75, 33, 5),
+        Color.fromARGB(106, 75, 33, 5),
+        Color.fromARGB(185, 75, 33, 5),
+      ],
+      stops: [0.0, 0.6248, 1.0],
+    ),
+
+    gradientXpBar: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFFDEB53B),
+        Color(0xFF291F03),
+      ],
+
+      stops: [0.2, 0.9],
     ),
   );
 }

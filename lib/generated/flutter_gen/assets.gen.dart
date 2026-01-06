@@ -36,6 +36,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/calendar.svg
   String get calendar => 'assets/images/icons/calendar.svg';
 
+  /// File path: assets/images/icons/calendar_2.svg
+  String get calendar2 => 'assets/images/icons/calendar_2.svg';
+
   /// File path: assets/images/icons/chart_active.svg
   String get chartActive => 'assets/images/icons/chart_active.svg';
 
@@ -44,6 +47,9 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/check.svg
   String get check => 'assets/images/icons/check.svg';
+
+  /// File path: assets/images/icons/dumbbell.svg
+  String get dumbbell => 'assets/images/icons/dumbbell.svg';
 
   /// File path: assets/images/icons/eye.svg
   String get eye => 'assets/images/icons/eye.svg';
@@ -78,6 +84,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/setting_inactive.svg
   String get settingInactive => 'assets/images/icons/setting_inactive.svg';
 
+  /// File path: assets/images/icons/timer.svg
+  String get timer => 'assets/images/icons/timer.svg';
+
   /// File path: assets/images/icons/user.svg
   String get user => 'assets/images/icons/user.svg';
 
@@ -86,9 +95,11 @@ class $AssetsImagesIconsGen {
     apple,
     bell,
     calendar,
+    calendar2,
     chartActive,
     chartInactive,
     check,
+    dumbbell,
     eye,
     eyeSlash,
     google,
@@ -100,6 +111,7 @@ class $AssetsImagesIconsGen {
     platesInactive,
     settingActive,
     settingInactive,
+    timer,
     user,
   ];
 }
@@ -160,8 +172,11 @@ class $AssetsImagesSvgGen {
   /// File path: assets/images/svg/logo_splash.svg
   String get logoSplash => 'assets/images/svg/logo_splash.svg';
 
+  /// File path: assets/images/svg/rank_card.svg
+  String get rankCard => 'assets/images/svg/rank_card.svg';
+
   /// List of all assets
-  List<String> get values => [logo, logoAndName, logoSplash];
+  List<String> get values => [logo, logoAndName, logoSplash, rankCard];
 }
 
 class Assets {
