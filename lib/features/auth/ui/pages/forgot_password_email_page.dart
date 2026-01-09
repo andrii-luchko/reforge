@@ -7,6 +7,7 @@ import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/forgot_password_email_form.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
 class ForgotPasswordEmailPage extends StatelessWidget {
   const ForgotPasswordEmailPage({super.key});
@@ -21,29 +22,45 @@ class ForgotPasswordEmailPage extends StatelessWidget {
         onPressed: Navigator.of(context).pop,
       ),
 
-      body: DefaultBackground(
-        body: Positioned.fill(
-          child: Padding(
-            padding: const .symmetric(horizontal: 16),
-            child: BlocProvider(
-              create: (context) => di.getIt<ForgotPasswordCubit>(),
-              child: const SafeArea(child: ForgotPasswordEmailForm()),
+      body: BlocProvider(
+        create: (context) => di.getIt<ForgotPasswordCubit>(),
+        child: DefaultBackground(
+          body: const Positioned.fill(
+            child: Padding(
+              padding: .symmetric(horizontal: 16),
+              child: SafeArea(child: ForgotPasswordEmailForm()),
             ),
           ),
-        ),
 
-        additionalAnimations: [
-          Positioned.fill(
-            child: SunRaysShaderWidget(
-              color: appTheme.orange500,
-              alignment: const Alignment(0, -1.2),
-              intensity: 1,
-              density: 5,
-              rayLength: 0.6,
+          additionalAnimations: [
+            Positioned.fill(
+              child: SunRaysShaderWidget(
+                color: appTheme.orange500,
+                alignment: const Alignment(0, -1.2),
+                intensity: 1,
+                density: 5,
+                rayLength: 0.6,
+              ),
             ),
-          ),
-        ],
+          ],
+          loader: const Positioned.fill(child: _ForgotPasswordLoader()),
+        ),
       ),
+    );
+  }
+}
+
+class _ForgotPasswordLoader extends StatelessWidget {
+  const _ForgotPasswordLoader();
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ForgotPasswordCubit, ForgotPasswordState, bool>(
+      selector: (state) => state.isSubmitting,
+      builder: (context, isSubmitting) {
+        if (!isSubmitting) return const SizedBox.shrink();
+
+        return const Center(child: ScreenLoadingIndicator());
+      },
     );
   }
 }

@@ -28,54 +28,55 @@ class _ForgotPasswordEmailFormState extends State<ForgotPasswordEmailForm> {
   Widget build(BuildContext context) {
     final cubit = context.read<ForgotPasswordCubit>();
 
-    return Column(
-      children: [
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.1,
-        ),
-        AuthTitle(
-          title: t.forgot_password.title,
-          subtitle: t.forgot_password.subtitle,
-        ),
-
-        Padding(
-          padding: const EdgeInsets.only(top: 32),
-          child: BlocSelector<ForgotPasswordCubit, ForgotPasswordState, String?>(
-            selector: (state) => state.emailError,
-            builder: (context, emailError) {
-              return LabeledAppTextField(
-                label: t.common.email_label,
-                field: AppTextField(
-                  hintText: t.common.email_hint,
-                  errorText: emailError,
-                  controller: _emailController,
-                  onChanged: cubit.emailChanged,
-                ),
-              );
-            },
+    return BlocListener<ForgotPasswordCubit, ForgotPasswordState>(
+      listener: (context, state) async {
+        if (state.isSuccess) {
+          // ignore: inference_failure_on_function_invocation
+          await ResetSendPageRoute(email: cubit.state.email).push(context);
+        }
+      },
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.1,
           ),
-        ),
-        const Spacer(),
-        Padding(
-          padding: const EdgeInsets.only(top: 56),
-          child: BlocSelector<ForgotPasswordCubit, ForgotPasswordState, bool>(
-            selector: (state) => state.isValid,
-            builder: (context, canSubmit) {
-              return PrimaryButton(
-                text: t.forgot_password.submit_button,
-                onPressed: canSubmit
-                    ? () async {
-                        // Handle
-
-                        // ignore: inference_failure_on_function_invocation
-                        await ResetSendPageRoute(email: cubit.state.email).push(context);
-                      }
-                    : null,
-              );
-            },
+          AuthTitle(
+            title: t.forgot_password.title,
+            subtitle: t.forgot_password.subtitle,
           ),
-        ),
-      ],
+
+          Padding(
+            padding: const EdgeInsets.only(top: 32),
+            child: BlocSelector<ForgotPasswordCubit, ForgotPasswordState, String?>(
+              selector: (state) => state.emailError,
+              builder: (context, emailError) {
+                return LabeledAppTextField(
+                  label: t.common.email_label,
+                  field: AppTextField(
+                    hintText: t.common.email_hint,
+                    errorText: emailError,
+                    controller: _emailController,
+                    onChanged: cubit.emailChanged,
+                  ),
+                );
+              },
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(top: 56),
+            child: BlocSelector<ForgotPasswordCubit, ForgotPasswordState, bool>(
+              selector: (state) => state.isValid,
+              builder: (context, canSubmit) {
+                return PrimaryButton(
+                  text: t.forgot_password.submit_button,
+                  onPressed: canSubmit ? context.read<ForgotPasswordCubit>().submit : null,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
