@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 
 import 'package:reforge/shared/calendar/enum/calendar_view_mode.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
@@ -38,7 +39,7 @@ class CalendarHeader extends StatelessWidget {
             )
           : null,
       child: Row(
-        crossAxisAlignment: headerTitle == null ? .center : .start,
+        mainAxisAlignment: .spaceBetween,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12, right: 12, bottom: 12),
@@ -48,9 +49,12 @@ class CalendarHeader extends StatelessWidget {
               crossAxisAlignment: headerTitle == null ? .center : .start,
               children: [
                 if (headerTitle != null)
-                  Text(
-                    headerTitle!,
-                    style: subheadH6Regular.copyWith(color: context.appTheme.beige600),
+                  Skeleton.unite(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Text(
+                      headerTitle!,
+                      style: subheadH6Regular.copyWith(color: context.appTheme.beige600),
+                    ),
                   ),
                 GestureDetector(
                   onTap: onHeaderTap,
@@ -62,21 +66,28 @@ class CalendarHeader extends StatelessWidget {
               ],
             ),
           ),
-          const Spacer(),
-          AppIconButton.icon(
-            iconData: Icons.chevron_left_rounded,
-            width: 44,
-            height: 44,
-            iconSize: 22,
-            onPressed: onPrevious,
-          ),
-          const SizedBox(width: 8),
-          AppIconButton.icon(
-            iconData: Icons.chevron_right_rounded,
-            width: 44,
-            height: 44,
-            iconSize: 22,
-            onPressed: onNext,
+
+          Padding(
+            padding: headerTitle == null ? EdgeInsets.zero : const EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                AppIconButton.icon(
+                  iconData: Icons.chevron_left_rounded,
+                  width: 44,
+                  height: 44,
+                  iconSize: 22,
+                  onPressed: onPrevious,
+                ),
+                const SizedBox(width: 8),
+                AppIconButton.icon(
+                  iconData: Icons.chevron_right_rounded,
+                  width: 44,
+                  height: 44,
+                  iconSize: 22,
+                  onPressed: onNext,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -97,41 +108,44 @@ class _HeaderTitleSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final (month, year, useDecoration) = _getDisplayInfo();
 
-    return Container(
-      margin: viewMode == .years ? const EdgeInsets.only(top: 8) : null,
-      padding: viewMode != .years ? const EdgeInsets.all(12).copyWith(left: 0) : const EdgeInsets.all(12),
-      decoration: useDecoration
-          ? BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              color: context.appTheme.orange500,
-            )
-          : null,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (month.isNotEmpty) ...[
+    return Skeleton.unite(
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        margin: viewMode == .years ? const EdgeInsets.only(top: 8) : null,
+        padding: viewMode != .years ? const EdgeInsets.all(12).copyWith(left: 0) : const EdgeInsets.all(12),
+        decoration: useDecoration
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: context.appTheme.orange500,
+              )
+            : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (month.isNotEmpty) ...[
+              Text(
+                month,
+                style: subheadH2Medium.copyWith(
+                  color: context.appTheme.beige100,
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
             Text(
-              month,
+              year,
               style: subheadH2Medium.copyWith(
-                color: context.appTheme.beige100,
+                color: viewMode == .years ? context.appTheme.beige100 : context.appTheme.beige600,
               ),
             ),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            year,
-            style: subheadH2Medium.copyWith(
-              color: viewMode == .years ? context.appTheme.beige100 : context.appTheme.beige600,
-            ),
-          ),
 
-          const SizedBox(width: 4),
-          Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: context.appTheme.beige100,
-            size: 22,
-          ),
-        ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: context.appTheme.beige100,
+              size: 22,
+            ),
+          ],
+        ),
       ),
     );
   }

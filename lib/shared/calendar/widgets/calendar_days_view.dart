@@ -1,10 +1,13 @@
 // field_date_picker.dart
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/gradient_borders.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/shared/calendar/widgets/calendar_day_cell.dart';
 
 import 'package:table_calendar/table_calendar.dart';
+
+typedef CalendarEvent = ({DateTime dateTime, bool hasWorkout});
 
 class CalendarDaysView extends StatefulWidget {
   const CalendarDaysView({
@@ -13,6 +16,8 @@ class CalendarDaysView extends StatefulWidget {
     required this.focusedDay,
     required this.selectedDay,
     required this.onDaySelected,
+    required this.today,
+    this.events = const {},
     super.key,
   });
 
@@ -20,6 +25,8 @@ class CalendarDaysView extends StatefulWidget {
   final DateTime lastDay;
   final DateTime focusedDay;
   final DateTime? selectedDay;
+  final DateTime today;
+  final Map<DateTime, CalendarEvent> events;
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
 
   @override
@@ -28,7 +35,6 @@ class CalendarDaysView extends StatefulWidget {
 
 class _CalendarDaysViewState extends State<CalendarDaysView> {
   late DateTime _focusedDay;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
 
   @override
   void initState() {
@@ -44,18 +50,30 @@ class _CalendarDaysViewState extends State<CalendarDaysView> {
     }
   }
 
+  Widget _buildDayCell(DateTime day) {
+    final event = widget.events[DateUtils.dateOnly(day)];
+
+    final isSelected = widget.selectedDay != null && isSameDay(widget.selectedDay, day);
+    final isToday = isSameDay(day, widget.today);
+
+    return CalendarDayCell(
+      day: day,
+      isSelected: isSelected,
+      isToday: isToday,
+      event: event,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TableCalendar<({DateTime dateTime, bool hasWorkout})>(
+    return TableCalendar<CalendarEvent>(
       firstDay: widget.firstDay,
       lastDay: widget.lastDay,
       focusedDay: _focusedDay,
       selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
-      calendarFormat: _calendarFormat,
       startingDayOfWeek: StartingDayOfWeek.monday,
       onDaySelected: widget.onDaySelected,
       headerVisible: false,
-      onFormatChanged: (format) => setState(() => _calendarFormat = format),
       onPageChanged: (focusedDay) => setState(() => _focusedDay = focusedDay),
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: subheadH7Medium.copyWith(
@@ -65,51 +83,15 @@ class _CalendarDaysViewState extends State<CalendarDaysView> {
           color: context.appTheme.beige700,
         ),
       ),
+      daysOfWeekHeight: 32,
+      rowHeight: 55,
+      availableGestures: .horizontalSwipe,
       calendarBuilders: CalendarBuilders(
-        selectedBuilder: (context, day, _) => _buildCell(context, day, isSelected: true),
-        todayBuilder: (context, day, _) => _buildCell(context, day, isToday: true),
-        defaultBuilder: (context, day, _) => _buildCell(context, day),
-        outsideBuilder: (context, day, _) => _buildCell(context, day),
-        singleMarkerBuilder: (context, day, event) => _buildCell(context, day),
+        selectedBuilder: (context, day, focusedDay) => _buildDayCell(day),
+        todayBuilder: (context, day, focusedDay) => _buildDayCell(day),
+        defaultBuilder: (context, day, focusedDay) => _buildDayCell(day),
+        outsideBuilder: (context, day, focusedDay) => _buildDayCell(day),
       ),
     );
   }
-}
-
-Widget _buildCell(
-  BuildContext context,
-  DateTime day, {
-  bool isSelected = false,
-  bool isToday = false,
-}) {
-  final isWeekend = day.weekday == DateTime.saturday || day.weekday == DateTime.sunday;
-
-  var textStyle = subheadH7Medium.copyWith(
-    color: isWeekend ? context.appTheme.beige600 : context.appTheme.beige100,
-  );
-
-  BoxDecoration? decoration;
-
-  if (isSelected) {
-    decoration = BoxDecoration(
-      color: context.appTheme.orange500,
-      border: GradientBoxBorder(
-        gradient: LinearGradient(colors: [context.appTheme.strokeCalendar, Colors.transparent]),
-      ),
-      borderRadius: BorderRadius.circular(8),
-    );
-    textStyle = textStyle.copyWith(color: context.appTheme.beige100);
-  } else if (isToday) {
-    decoration = BoxDecoration(
-      border: Border.all(color: context.appTheme.orange500, width: 0.5),
-      borderRadius: BorderRadius.circular(8),
-    );
-  }
-
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    alignment: Alignment.center,
-    decoration: decoration,
-    child: Text('${day.day}', style: textStyle),
-  );
 }

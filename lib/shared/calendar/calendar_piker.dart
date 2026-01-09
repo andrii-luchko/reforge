@@ -11,17 +11,22 @@ class CalendarPicker extends StatefulWidget {
     required this.initialDate,
     required this.firstDay,
     required this.lastDay,
+
     required this.onDateSelected,
     this.needBottomLine = true,
     this.headerTitle,
+    this.events = const {},
+    this.selectedDate,
     super.key,
   });
 
   final String? headerTitle;
   final bool needBottomLine;
   final DateTime initialDate;
+  final DateTime? selectedDate;
   final DateTime firstDay;
   final DateTime lastDay;
+  final Map<DateTime, CalendarEvent> events;
   final ValueChanged<DateTime> onDateSelected;
 
   @override
@@ -30,21 +35,16 @@ class CalendarPicker extends StatefulWidget {
 
 class _CalendarPickerState extends State<CalendarPicker> {
   late DateTime _focusedDay;
-  DateTime? _selectedDay;
+
   CalendarViewMode _viewMode = CalendarViewMode.days;
 
   @override
   void initState() {
     super.initState();
     _focusedDay = widget.initialDate;
-    _selectedDay = widget.initialDate;
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-    });
     widget.onDateSelected(selectedDay);
   }
 
@@ -122,8 +122,10 @@ class _CalendarPickerState extends State<CalendarPicker> {
               firstDay: widget.firstDay,
               lastDay: widget.lastDay,
               focusedDay: _focusedDay,
-              selectedDay: _selectedDay,
+              selectedDay: widget.selectedDate,
+              today: widget.initialDate,
               onDaySelected: _onDaySelected,
+              events: widget.events,
             ),
             CalendarViewMode.months => CalendarMonthsView(
               key: const ValueKey('months_view'),

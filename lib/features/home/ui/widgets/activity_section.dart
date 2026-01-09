@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/home/ui/widgets/activity_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
@@ -83,46 +84,7 @@ class ActivitySection extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: appTheme.beige900,
-            border: Border.all(
-              color: appTheme.strokeCard,
-            ),
-          ),
-          padding: const .all(16),
-          child: Row(
-            children: [
-              AppIconButton(iconAsset: Assets.images.icons.calendar2),
-              const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: .start,
-                spacing: 7,
-                children: [
-                  Text(
-                    'Active Days',
-                    style: subheadH3Medium.copyWith(color: appTheme.beige100),
-                  ),
-
-                  Text(
-                    'Tuesday',
-                    style: subheadH6Regular.copyWith(color: appTheme.beige600),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(text: '1', style: primaryStyle),
-                    TextSpan(text: ' / 3', style: secondaryStyle),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        const ActivityTile(),
       ],
     );
   }
