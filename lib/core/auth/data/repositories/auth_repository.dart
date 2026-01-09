@@ -67,7 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
       if (googleToken == null) {
         return Result.error(Exception('Token is empty'));
       }
-      final tokens = await remoteDataSource.signWithProvider(googleToken, AuthProviders.google);
+      final tokens = await remoteDataSource.signWithProvider(token: googleToken, provider: AuthProviders.google);
       logger.d(tokens);
       return const Result.error(AuthCanceledException());
     } on GoogleSignInException catch (e) {
@@ -88,7 +88,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Result.error(Exception('Token is empty'));
       }
 
-      final tokens = await remoteDataSource.signWithProvider(appleToken, AuthProviders.apple);
+      final tokens = await remoteDataSource.signWithProvider(token: appleToken, provider: AuthProviders.apple);
 
       return Result.success(tokens);
     } on SignInWithAppleAuthorizationException catch (e) {
