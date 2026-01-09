@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:reforge/app/router/routes.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -12,7 +13,11 @@ import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   const HomeAppBar({super.key});
 
-  void navigateToCalendar() {}
+  Future<void> navigateToCalendar(BuildContext context) async {
+    // ignore: inference_failure_on_function_invocation
+    await const CalendarPageRoute().push(context);
+  }
+
   void navigateToNotifications() {}
 
   @override
@@ -50,7 +55,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
               padding: const .only(right: 8),
               child: AppIconButton(
                 iconAsset: Assets.images.icons.calendar,
-                onPressed: navigateToCalendar,
+                onPressed: () => navigateToCalendar(context),
               ),
             ),
 

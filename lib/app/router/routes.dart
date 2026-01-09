@@ -8,6 +8,7 @@ import 'package:reforge/features/auth/ui/pages/reset_send_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_in_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
+import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
 import 'package:reforge/features/lore/ui/page/lore_page.dart';
@@ -137,7 +138,11 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
   branches: [
     // 1. Home
     TypedStatefulShellBranch<HomeBranch>(
-      routes: [TypedGoRoute<HomePageRoute>(path: '/home')],
+      routes: [
+        TypedGoRoute<HomePageRoute>(
+          path: '/home',
+        ),
+      ],
     ),
     // 2. Chart
     TypedStatefulShellBranch<LeaderboardBranch>(
@@ -232,5 +237,15 @@ class SettingsPageRoute extends GoRouteData with $SettingsPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const SettingsPage();
+  }
+}
+
+@TypedGoRoute<CalendarPageRoute>(path: '/calendar')
+class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
+  const CalendarPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const CalendarPage();
   }
 }
