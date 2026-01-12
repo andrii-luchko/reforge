@@ -1,67 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/validators/email.dart';
-import 'package:reforge/app/utils/validators/password.dart';
+import 'package:reforge/core/auth/domain/repositories/reset_password_repository.dart';
 
 part 'forgot_password_cubit.freezed.dart';
 part 'forgot_password_state.dart';
 
-enum ForgotPasswordMode { email, createPassword }
-
 @injectable
 class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
-  ForgotPasswordCubit() : super(const ForgotPasswordState());
+  ForgotPasswordCubit(this._repo) : super(const ForgotPasswordState());
 
-  void setMode(ForgotPasswordMode mode) {
-    emit(state.copyWith(mode: mode));
-    _updateCanSubmit();
+  final ResetPasswordRepository _repo;
+
+  void resetState() {
+    emit(const ForgotPasswordState());
   }
 
-  void emailChanged(String email) {
-    final error = validateEmail(email);
-    emit(state.copyWith(email: email, emailError: error));
-    _updateCanSubmit();
+  void emailChanged(String value) {
+    final error = validateEmail(value);
+    emit(state.copyWith(email: value, emailError: error, apiError: null));
   }
 
-  void passwordChanged(String password) {
-    final error = validatePassword(password);
-    emit(state.copyWith(newPassword: password, newPasswordError: error));
+  Future<void> submit() async {
+    emit(state.copyWith(isSubmitting: true));
 
-    if (state.mode == ForgotPasswordMode.createPassword && state.confirmPassword.isNotEmpty) {
-      final confirmError = validateConfirmPassword(state.confirmPassword, password);
-      emit(state.copyWith(confirmPasswordError: confirmError));
+    final result = await _repo.initiate(state.email);
+    switch (result) {
+      case Success():
+        emit(state.copyWith(isSubmitting: false, isSuccess: true));
+      case Error(error: final error):
+        emit(state.copyWith(isSubmitting: false, apiError: error.toString()));
     }
-
-    _updateCanSubmit();
-  }
-
-  void confirmPasswordChanged(String confirmPassword) {
-    final error = validateConfirmPassword(confirmPassword, state.newPassword);
-    emit(
-      state.copyWith(
-        confirmPassword: confirmPassword,
-        confirmPasswordError: error,
-      ),
-    );
-    _updateCanSubmit();
-  }
-
-  void _updateCanSubmit() {
-    final baseValidation = state.emailError == null && state.email.isNotEmpty;
-
-    bool canSubmit;
-
-    if (state.mode == ForgotPasswordMode.email) {
-      canSubmit = baseValidation;
-    } else {
-      canSubmit =
-          state.newPasswordError == null &&
-          state.newPassword.isNotEmpty &&
-          state.confirmPasswordError == null &&
-          state.confirmPassword.isNotEmpty;
-    }
-
-    emit(state.copyWith(canSubmit: canSubmit));
   }
 }

@@ -18,7 +18,17 @@ custom_lint:
 formatter:
   trailing_commas: preserve
   page_width: 120
+  
 analyzer:
+ 
+  exclude:
+    - "**/*.g.dart"       
+    - "**/*.freezed.dart"    
+    - "**/*.config.dart"    
+    - "**/*.gen.dart"       
+    - "lib/generated_plugin_registrant.dart" 
+
   errors:
     inference_failure_on_instance_creation: ignore
     document_ignores: ignore
+    invalid_annotation_target: ignore

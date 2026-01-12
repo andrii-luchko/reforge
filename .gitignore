@@ -52,6 +52,7 @@ app.*.map.json
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
+firebase.json
 
 # Generated
 lib/app/di/service_injector.config.dart
@@ -59,3 +60,6 @@ lib/app/di/service_injector.config.dart
 **.g.dart
 **.theme.dart
 **.mocks.dart
+
+# Others
+env.json
