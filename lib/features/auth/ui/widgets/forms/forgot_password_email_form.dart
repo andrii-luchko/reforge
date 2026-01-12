@@ -19,6 +19,12 @@ class _ForgotPasswordEmailFormState extends State<ForgotPasswordEmailForm> {
   final TextEditingController _emailController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    context.read<ForgotPasswordCubit>().resetState();
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     super.dispose();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -9,6 +8,7 @@ import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/glass_container.dart';
 
 class SuccessPasswordChangePage extends StatelessWidget {
@@ -20,7 +20,7 @@ class SuccessPasswordChangePage extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppAppBar(
-        onPressed: Navigator.of(context).pop,
+        onPressed: () => const SignInPageRoute().go(context),
       ),
 
       body: DefaultBackground(

@@ -10,6 +10,7 @@ import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
+import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 void main() async {
@@ -42,6 +43,9 @@ class App extends StatelessWidget {
         BlocProvider(
           create: (context) => di.getIt<AuthCubit>(),
           lazy: false,
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<ForgotPasswordCubit>(),
         ),
       ],
       child: MaterialApp.router(

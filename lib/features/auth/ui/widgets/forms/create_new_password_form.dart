@@ -30,74 +30,79 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
   Widget build(BuildContext context) {
     final cubit = context.read<ResetPasswordCubit>();
 
-    return Column(
-      children: [
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.05,
-        ),
-        AuthTitle(
-          title: t.create_password.title,
-          subtitle: t.create_password.subtitle,
-        ),
-
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
-            selector: (state) => state.newPasswordError,
-            builder: (context, passwordError) {
-              return LabeledAppTextField(
-                label: t.common.password_label,
-                field: AppTextField.password(
-                  errorText: passwordError,
-                  hintText: t.common.password_hint,
-                  controller: _passwordController,
-                  onChanged: cubit.passwordChanged,
-                ),
-              );
-            },
+    return BlocListener<ResetPasswordCubit, ResetPasswordState>(
+      listener: (context, state) async {
+        if (state.isSuccess) {
+          // ignore: inference_failure_on_function_invocation
+          await const SuccessPasswordChangePageRoute().push(context);
+        }
+      },
+      child: Column(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.05,
           ),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
-            selector: (state) => state.confirmPasswordError,
-            builder: (context, confirmPasswordError) {
-              return LabeledAppTextField(
-                label: t.common.confirm_password_label,
-                field: AppTextField.password(
-                  errorText: confirmPasswordError,
-                  hintText: t.common.confirm_password_hint,
-                  controller: _confirmPasswordController,
-                  onChanged: cubit.confirmPasswordChanged,
-                ),
-              );
-            },
+          AuthTitle(
+            title: t.create_password.title,
+            subtitle: t.create_password.subtitle,
           ),
-        ),
 
-        const Spacer(),
-
-        Padding(
-          padding: const EdgeInsets.only(top: 32),
-          child: BlocSelector<ResetPasswordCubit, ResetPasswordState, bool>(
-            selector: (state) => state.isValid,
-            builder: (context, canSubmit) {
-              return PrimaryButton(
-                text: t.create_password.submit_button,
-                onPressed: canSubmit
-                    ? () {
-                        // TODO: викликати метод для зміни пароля
-
-                        // ignore: inference_failure_on_function_invocation
-                        const SuccessPasswordChangePageRoute().push(context);
-                      }
-                    : null,
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
+              selector: (state) => state.newPasswordError,
+              builder: (context, passwordError) {
+                return LabeledAppTextField(
+                  label: t.common.password_label,
+                  field: AppTextField.password(
+                    errorText: passwordError,
+                    hintText: t.common.password_hint,
+                    controller: _passwordController,
+                    onChanged: cubit.passwordChanged,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: BlocSelector<ResetPasswordCubit, ResetPasswordState, String?>(
+              selector: (state) => state.confirmPasswordError,
+              builder: (context, confirmPasswordError) {
+                return LabeledAppTextField(
+                  label: t.common.confirm_password_label,
+                  field: AppTextField.password(
+                    errorText: confirmPasswordError,
+                    hintText: t.common.confirm_password_hint,
+                    controller: _confirmPasswordController,
+                    onChanged: cubit.confirmPasswordChanged,
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const Spacer(),
+
+          Padding(
+            padding: const EdgeInsets.only(top: 32),
+            child: BlocSelector<ResetPasswordCubit, ResetPasswordState, bool>(
+              selector: (state) => state.isValid,
+              builder: (context, canSubmit) {
+                return PrimaryButton(
+                  text: t.create_password.submit_button,
+                  onPressed: canSubmit
+                      ? () async {
+                          await context.read<ResetPasswordCubit>().submit();
+                        }
+                      : null,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

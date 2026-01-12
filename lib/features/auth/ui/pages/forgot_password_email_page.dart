@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/di/service_injector.dart' as di;
+
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
-import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/forgot_password_email_form.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
 class ForgotPasswordEmailPage extends StatelessWidget {
@@ -22,36 +22,33 @@ class ForgotPasswordEmailPage extends StatelessWidget {
         onPressed: Navigator.of(context).pop,
       ),
 
-      body: BlocProvider(
-        create: (context) => di.getIt<ForgotPasswordCubit>(),
-        child: DefaultBackground(
-          body: const Positioned.fill(
-            child: Padding(
-              padding: .symmetric(horizontal: 16),
-              child: SafeArea(child: ForgotPasswordEmailForm()),
+      body: DefaultBackground(
+        body: const Positioned.fill(
+          child: Padding(
+            padding: .symmetric(horizontal: 16),
+            child: SafeArea(child: ForgotPasswordEmailForm()),
+          ),
+        ),
+
+        additionalAnimations: [
+          Positioned.fill(
+            child: SunRaysShaderWidget(
+              color: appTheme.orange500,
+              alignment: const Alignment(0, -1.2),
+              intensity: 1,
+              density: 5,
+              rayLength: 0.6,
             ),
           ),
-
-          additionalAnimations: [
-            Positioned.fill(
-              child: SunRaysShaderWidget(
-                color: appTheme.orange500,
-                alignment: const Alignment(0, -1.2),
-                intensity: 1,
-                density: 5,
-                rayLength: 0.6,
-              ),
-            ),
-          ],
-          loader: const Positioned.fill(child: _ForgotPasswordLoader()),
-        ),
+        ],
+        loader: const Positioned.fill(child: ForgotPasswordLoader()),
       ),
     );
   }
 }
 
-class _ForgotPasswordLoader extends StatelessWidget {
-  const _ForgotPasswordLoader();
+class ForgotPasswordLoader extends StatelessWidget {
+  const ForgotPasswordLoader({super.key});
   @override
   Widget build(BuildContext context) {
     return BlocSelector<ForgotPasswordCubit, ForgotPasswordState, bool>(

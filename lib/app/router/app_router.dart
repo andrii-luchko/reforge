@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/app_router_observer.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 
@@ -13,6 +14,7 @@ final router = GoRouter(
   initialLocation: const SplashPageRoute().location,
   debugLogDiagnostics: true,
   refreshListenable: GoRouterRefreshStream(authCubit.stream),
+
   redirect: (context, state) {
     final currentPath = state.matchedLocation;
     final authState = authCubit.state;
@@ -21,7 +23,9 @@ final router = GoRouter(
     final signingIn = currentPath.contains(const SignInPageRoute().location);
     final signingUp = currentPath.contains(const SignUpPageRoute().location);
 
-    final onAuth = splash || onboarding || signingIn || signingUp;
+    final resetPassword = currentPath.contains('/create-new-password');
+
+    final onAuth = splash || onboarding || signingIn || signingUp || resetPassword;
 
     return authState.when(
       loading: () => null,
@@ -48,7 +52,9 @@ final router = GoRouter(
       },
     );
   },
-  observers: [],
+  observers: [
+    AppRouterObserver(),
+  ],
 );
 
 class GoRouterRefreshStream extends ChangeNotifier {

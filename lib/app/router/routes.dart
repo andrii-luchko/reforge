@@ -49,11 +49,9 @@ class OnboardingPageRoute extends GoRouteData with $OnboardingPageRoute {
 
     TypedGoRoute<CreateNewPasswordPageRoute>(
       path: 'create-new-password',
-      routes: [
-        TypedGoRoute<SuccessPasswordChangePageRoute>(
-          path: 'success-password-change',
-        ),
-      ],
+    ),
+    TypedGoRoute<SuccessPasswordChangePageRoute>(
+      path: 'success-password-change',
     ),
   ],
 )
