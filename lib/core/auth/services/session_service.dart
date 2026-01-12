@@ -32,4 +32,3 @@ class SessionService {
     _currentTokens = tokens;
   }
 }
-

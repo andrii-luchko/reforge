@@ -12,7 +12,12 @@ abstract interface class AuthRemoteDataSource {
   Future<AuthTokens> signin(String email, String password);
   Future<AuthTokens> signup(String email, String password);
 
-  Future<AuthTokens> signWithProvider(String token, AuthProviders provider);
+  Future<AuthTokens> signWithProvider({
+    required String token,
+    required AuthProviders provider,
+    String? firstName,
+    String? lastName,
+  });
 
   Future<AuthTokens> refreshToken(String refreshToken);
   Future<User> getCurrentUser();
@@ -42,8 +47,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthTokens> signWithProvider(String token, AuthProviders provider) async {
-    final response = await _apiClient.provider(SignWithProviderRequest(token: token, provider: provider));
+  Future<AuthTokens> signWithProvider({
+    required String token,
+    required AuthProviders provider,
+    String? firstName,
+    String? lastName,
+  }) async {
+    final requestBody = SignWithProviderRequest(
+      token: token,
+      provider: provider,
+      firstName: firstName,
+      lastName: lastName,
+    );
+    final response = await _apiClient.provider(requestBody);
 
     return response.data;
   }

@@ -1,7 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/datasources/auth_providers_datasource.dart';
 import 'package:reforge/core/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:reforge/core/auth/data/enums/auth_providers.dart';
@@ -67,9 +66,9 @@ class AuthRepositoryImpl implements AuthRepository {
       if (googleToken == null) {
         return Result.error(Exception('Token is empty'));
       }
-      final tokens = await remoteDataSource.signWithProvider(googleToken, AuthProviders.google);
-      logger.d(tokens);
-      return const Result.error(AuthCanceledException());
+      final tokens = await remoteDataSource.signWithProvider(token: googleToken, provider: AuthProviders.google);
+
+      return Result.success(tokens);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return const Result.error(AuthCanceledException());
@@ -88,7 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Result.error(Exception('Token is empty'));
       }
 
-      final tokens = await remoteDataSource.signWithProvider(appleToken, AuthProviders.apple);
+      final tokens = await remoteDataSource.signWithProvider(token: appleToken, provider: AuthProviders.apple);
 
       return Result.success(tokens);
     } on SignInWithAppleAuthorizationException catch (e) {

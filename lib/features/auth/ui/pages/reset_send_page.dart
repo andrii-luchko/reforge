@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/shared/uikit/default_background.dart';
+import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/features/auth/ui/pages/forgot_password_email_page.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/glass_container.dart';
 
 class ResetSendPage extends StatefulWidget {
@@ -54,8 +57,10 @@ class _ResetSendPageState extends State<ResetSendPage> {
     });
   }
 
-  void _onResendPressed() {
+  Future<void> _onResendPressed() async {
     logger.d('Resending email to ${widget.email}...');
+
+    await context.read<ForgotPasswordCubit>().submit();
 
     _startTimer();
   }
@@ -144,6 +149,7 @@ class _ResetSendPageState extends State<ResetSendPage> {
             ),
           ),
         ),
+        loader: const Positioned.fill(child: ForgotPasswordLoader()),
       ),
     );
   }
