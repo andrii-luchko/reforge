@@ -213,8 +213,8 @@ class _HorizontalWeekDaysPickerState extends State<HorizontalWeekDaysPicker> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: 6,
+        runSpacing: 6,
         children: WeekDay.values.map((day) {
           final isSelected = _selectedDays.contains(day);
           final isDisabled = !isSelected && _selectedDays.length >= widget.maxSelections;
@@ -251,8 +251,8 @@ class SelectableChip extends StatelessWidget {
     return GestureDetector(
       onTap: isDisabled ? null : onPressed,
       child: Container(
-        width: 52,
-        height: 52,
+        width: 42,
+        height: 42,
         padding: const .all(2),
         decoration: BoxDecoration(
           color: isSelected ? context.appTheme.orange500 : context.appTheme.beige900,
@@ -273,7 +273,7 @@ class SelectableChip extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           text,
-          style: subheadH3Medium.copyWith(
+          style: subheadH5Medium.copyWith(
             color: context.appTheme.beige100,
           ),
         ),
