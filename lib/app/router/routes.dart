@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/core/root/ui/page/root_page.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
 import 'package:reforge/features/auth/ui/pages/create_new_password_page.dart';
@@ -17,7 +19,9 @@ import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 import 'package:reforge/features/training_session/ui/pages/workout_details_page.dart';
-import 'package:reforge/features/training_session/ui/pages/workout_quiz_page.dart';
+import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
+import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page.dart';
+import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_page.dart';
 import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
 
 part 'routes.g.dart';
@@ -277,12 +281,36 @@ class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPa
   }
 }
 
-@TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz')
+@TypedShellRoute<WorkoutQuizShellRoute>(
+  routes: [
+    TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz'),
+    TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-summary'),
+  ],
+)
+class WorkoutQuizShellRoute extends ShellRouteData {
+  @override
+  Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
+    return BlocProvider(
+      create: (context) => di.getIt<WorkoutQuizCubit>(),
+      child: navigator,
+    );
+  }
+}
+
 class WorkoutQuizPageRoute extends GoRouteData with $WorkoutQuizPageRoute {
   const WorkoutQuizPageRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const WorkoutQuizPage();
+  }
+}
+
+class WorkoutQuizSummaryPageRoute extends GoRouteData with $WorkoutQuizSummaryPageRoute {
+  const WorkoutQuizSummaryPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const WorkoutQuizSummaryPage();
   }
 }

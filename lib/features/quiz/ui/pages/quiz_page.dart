@@ -73,7 +73,13 @@ class QuizForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quizSteps = QuizSteps.values.map((e) => e.step).toList();
+    final quizSteps = QuizSteps.values
+        .map(
+          (s) => SingleChildScrollView(
+            child: s.step,
+          ),
+        )
+        .toList();
 
     return BlocConsumer<QuizCubit, QuizState>(
       listener: (context, state) {

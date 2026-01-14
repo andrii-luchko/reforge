@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/features/quiz/ui/widgets/radio_button_option.dart';
-import 'package:reforge/features/training_session/domain/enums/energized_level.dart';
-import 'package:reforge/features/training_session/ui/controllers/workout_quiz/workout_quiz_cubit.dart';
+import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/energized_level.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/quiz_title_section.dart';
 

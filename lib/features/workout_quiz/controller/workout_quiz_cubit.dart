@@ -1,12 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reforge/features/training_session/domain/enums/body_feel.dart';
-import 'package:reforge/features/training_session/domain/enums/energized_level.dart';
-import 'package:reforge/features/training_session/domain/enums/hydrated_level.dart';
-import 'package:reforge/features/training_session/domain/enums/sleep_quality.dart';
-import 'package:reforge/features/training_session/domain/enums/stress_level.dart';
-import 'package:reforge/features/training_session/domain/enums/work_out_quiz_steps.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/body_feel.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/energized_level.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/hydrated_level.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/sleep_quality.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/stress_level.dart';
+import 'package:reforge/features/workout_quiz/domain/enums/work_out_quiz_steps.dart';
 
 part 'workout_quiz_cubit.freezed.dart';
 part 'workout_quiz_state.dart';
