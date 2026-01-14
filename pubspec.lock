@@ -1039,7 +1039,6 @@ packages:
     version: "4.9.1"
   retrofit_generator:
     dependency: "direct dev"
-<<<<<<< HEAD
     description:
       name: retrofit_generator
       sha256: "7ec323f3329ad2ca0bcdc96fe02ec7f2486ecfac6cd2d035b03c398ef6f42308"
@@ -1054,14 +1053,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-=======
-    description:
-      name: retrofit_generator
-      sha256: "7ec323f3329ad2ca0bcdc96fe02ec7f2486ecfac6cd2d035b03c398ef6f42308"
-      url: "https://pub.dev"
-    source: hosted
-    version: "10.2.0"
->>>>>>> dev
   shelf:
     dependency: transitive
     description:

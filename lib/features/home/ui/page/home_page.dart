@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -14,18 +13,12 @@ import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
-=======
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/core/auth/controller/auth_cubit.dart';
-import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
->>>>>>> dev
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     return const Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
@@ -152,27 +145,11 @@ class HomeBody extends StatelessWidget {
               const SizedBox(height: 32),
             ],
           ),
-=======
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.logout),
-        onPressed: () {
-          context.read<AuthCubit>().signOut();
-        },
-      ),
-      body: const Center(
-        child: SunRaysShaderWidget(
-          alignment: .topCenter,
->>>>>>> dev
         ),
       ),
     );
   }
 }
-<<<<<<< HEAD
 
 class BadgeListTile extends StatelessWidget {
   const BadgeListTile({
@@ -226,5 +203,3 @@ class BadgeListTile extends StatelessWidget {
     );
   }
 }
-=======
->>>>>>> dev

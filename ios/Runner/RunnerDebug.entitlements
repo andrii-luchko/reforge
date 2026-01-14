@@ -1,27 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<<<<<<< HEAD
-<dict>
-	<key>com.apple.developer.applesignin</key>
-	<array>
-		<string>Default</string>
-	</array>
-	<key>keychain-access-groups</key>
-	<array>
-		<string>$(AppIdentifierPrefix)com.reforgestudios.reforge.ios</string>
-	</array>
-</dict>
-</plist>
-=======
 	<dict>
 		<key>com.apple.developer.applesignin</key>
 		<array>
 			<string>Default</string>
-		</array>
-		<key>com.apple.developer.associated-domains</key>
-		<array>
-			<string>applinks:reforge-platform-backend-yv3l.onrender.com</string>
 		</array>
 		<key>keychain-access-groups</key>
 		<array>
@@ -29,4 +12,3 @@
 		</array>
 	</dict>
 </plist>
->>>>>>> dev
