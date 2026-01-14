@@ -72,11 +72,17 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/medal_inactive.svg
   String get medalInactive => 'assets/images/icons/medal_inactive.svg';
 
+  /// File path: assets/images/icons/pause.svg
+  String get pause => 'assets/images/icons/pause.svg';
+
   /// File path: assets/images/icons/plates_active.svg
   String get platesActive => 'assets/images/icons/plates_active.svg';
 
   /// File path: assets/images/icons/plates_inactive.svg
   String get platesInactive => 'assets/images/icons/plates_inactive.svg';
+
+  /// File path: assets/images/icons/play.svg
+  String get play => 'assets/images/icons/play.svg';
 
   /// File path: assets/images/icons/setting_active.svg
   String get settingActive => 'assets/images/icons/setting_active.svg';
@@ -107,8 +113,10 @@ class $AssetsImagesIconsGen {
     homeInactive,
     medalActive,
     medalInactive,
+    pause,
     platesActive,
     platesInactive,
+    play,
     settingActive,
     settingInactive,
     timer,

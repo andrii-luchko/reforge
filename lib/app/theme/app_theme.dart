@@ -33,6 +33,7 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
 
     required this.strokeCard,
     required this.strokeCalendar,
+    required this.strokeTag,
 
     required this.red400,
     required this.avatarGradient,
@@ -68,6 +69,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   final Color strokeCard;
 
   final Color strokeCalendar;
+
+  final LinearGradient strokeTag;
 
   final Color red400;
   final RadialGradient avatarGradient;

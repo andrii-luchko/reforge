@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/ui/widgets/activity_section.dart';
@@ -53,9 +54,15 @@ class HomeBody extends StatelessWidget {
               Padding(
                 padding: const .only(bottom: 16),
                 child: AppListTile(
-                  leadingIcon: AppIconButton(iconAsset: Assets.images.icons.dumbbell),
+                  leadingIcon: AppIconButton(
+                    iconAsset: Assets.images.icons.dumbbell,
+                  ),
                   title: 'Forge Today’s Workout',
                   subtitle: 'Start workout',
+                  onTap: () async {
+                    // ignore: inference_failure_on_function_invocation
+                    await const WorkoutDetailsPageRoute().push(context);
+                  },
                 ),
               ),
 

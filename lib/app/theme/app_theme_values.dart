@@ -90,6 +90,16 @@ class AppThemeValues {
 
       stops: [0.2, 0.9],
     ),
+
+    strokeTag: LinearGradient(
+      stops: const [0.1034, 0.9862],
+      begin: const Alignment(-1, -0.2),
+      end: const Alignment(1, 0.2),
+      colors: [
+        const Color(0xFFECE7DC).withValues(alpha: 0.4),
+        const Color(0xFFECE7DC).withValues(alpha: 0),
+      ],
+    ),
   );
 
   static final dark = AppTheme(
@@ -172,6 +182,16 @@ class AppThemeValues {
       ],
 
       stops: [0.2, 0.9],
+    ),
+
+    strokeTag: LinearGradient(
+      stops: const [0.1034, 0.9862],
+      begin: const Alignment(-1, -0.2),
+      end: const Alignment(1, 0.2),
+      colors: [
+        const Color(0xFFECE7DC).withValues(alpha: 0.4),
+        const Color(0xFFECE7DC).withValues(alpha: 0),
+      ],
     ),
   );
 }

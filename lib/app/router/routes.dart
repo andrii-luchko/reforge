@@ -16,6 +16,8 @@ import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
+import 'package:reforge/features/training_session/ui/pages/workout_details_page.dart';
+import 'package:reforge/features/training_session/ui/pages/workout_instruction_page.dart';
 
 part 'routes.g.dart';
 part 'deep_link_routes.dart';
@@ -247,5 +249,31 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const CalendarPage();
+  }
+}
+
+@TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details')
+class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute {
+  const WorkoutDetailsPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const WorkoutDetailsPage();
+  }
+}
+
+@TypedGoRoute<WorkoutInstructionPageRoute>(path: '/workout-instruction')
+class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPageRoute {
+  const WorkoutInstructionPageRoute({required this.name, required this.workoutId});
+
+  final String name;
+  final int workoutId;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return WorkoutInstructionPage(
+      name: name,
+      workoutId: workoutId,
+    );
   }
 }

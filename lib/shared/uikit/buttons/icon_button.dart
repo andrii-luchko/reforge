@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
