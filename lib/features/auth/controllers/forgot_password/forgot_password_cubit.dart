@@ -14,6 +14,10 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   final ResetPasswordRepository _repo;
 
+  void resetState() {
+    emit(const ForgotPasswordState());
+  }
+
   void emailChanged(String value) {
     final error = validateEmail(value);
     emit(state.copyWith(email: value, emailError: error, apiError: null));

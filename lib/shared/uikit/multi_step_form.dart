@@ -16,7 +16,7 @@ class MultiStepForm extends StatefulWidget {
     this.onStepChanged,
     this.onCompleted,
     this.onStepValidate,
-
+    this.isNextButtonEnabled = true,
     this.showProgressIndicator = true,
     this.progressIndicatorPadding,
     this.buttonSpacing = 16,
@@ -65,6 +65,8 @@ class MultiStepForm extends StatefulWidget {
 
   /// Curve for page transitions
   final Curve pageTransitionCurve;
+
+  final bool isNextButtonEnabled;
 
   @override
   State<MultiStepForm> createState() => _MultiStepFormState();
@@ -163,7 +165,7 @@ class _MultiStepFormState extends State<MultiStepForm> {
             Expanded(
               child: PrimaryButton(
                 text: _isLastStep ? (widget.finishButtonText) : (widget.nextButtonText),
-                onPressed: _goToNextStep,
+                onPressed: widget.isNextButtonEnabled ? _goToNextStep : null,
               ),
             ),
           ],

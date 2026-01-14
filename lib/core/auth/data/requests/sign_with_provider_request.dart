@@ -9,6 +9,8 @@ sealed class SignWithProviderRequest with _$SignWithProviderRequest {
   const factory SignWithProviderRequest({
     required String token,
     required AuthProviders provider,
+    String? firstName,
+    String? lastName,
   }) = _SignWithProviderRequest;
 
   factory SignWithProviderRequest.fromJson(Map<String, dynamic> json) => _$SignWithProviderRequestFromJson(json);

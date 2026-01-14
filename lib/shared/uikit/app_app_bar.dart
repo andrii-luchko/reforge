@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppAppBar({required this.onPressed, super.key, this.actions});
+  const AppAppBar({this.onPressed, super.key, this.actions});
   final VoidCallback? onPressed;
   final List<Widget>? actions;
   @override

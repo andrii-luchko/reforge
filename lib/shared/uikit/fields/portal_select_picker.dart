@@ -1,8 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
+
+class PortalSelectController {
+  _PortalSelectFieldState? _state;
+
+  void _attach(_PortalSelectFieldState state) {
+    _state = state;
+  }
+
+  void _detach() {
+    _state = null;
+  }
+
+  Future<void> open() async => _state?.open();
+  Future<void> close() async => _state?.close();
+  Future<void> toggle() async => _state?.toggle();
+
+  bool get isOpen => _state?._isOpen ?? false;
+}
 
 typedef PortalContentBuilder = Widget Function(BuildContext context, VoidCallback close);
 
@@ -10,6 +30,8 @@ class PortalSelectField extends StatefulWidget {
   const PortalSelectField({
     required this.contentBuilder,
     this.controller,
+    this.portalController,
+    this.onTap,
     this.hintText,
     this.errorText,
     this.prefixIcon,
@@ -20,7 +42,8 @@ class PortalSelectField extends StatefulWidget {
   });
 
   final TextEditingController? controller;
-
+  final PortalSelectController? portalController;
+  final VoidCallback? onTap;
   final PortalContentBuilder contentBuilder;
 
   final String? hintText;
@@ -44,6 +67,7 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
   @override
   void initState() {
     super.initState();
+    widget.portalController?._attach(this);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 180),
@@ -54,13 +78,33 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
     );
   }
 
-  Future<void> _toggleDropdown() async {
-    if (_isOpen) {
-      await _close();
-    } else {
-      setState(() => _isOpen = true);
-      await _controller.forward();
+  @override
+  void didUpdateWidget(covariant PortalSelectField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.portalController != widget.portalController) {
+      oldWidget.portalController?._detach();
+      widget.portalController?._attach(this);
     }
+  }
+
+  Future<void> toggle() async {
+    if (_isOpen) {
+      await close();
+    } else {
+      await open();
+    }
+  }
+
+  Future<void> open() async {
+    if (_isOpen) return;
+    setState(() => _isOpen = true);
+    await _controller.forward();
+  }
+
+  Future<void> close() async {
+    if (!_isOpen) return;
+    await _controller.reverse();
+    setState(() => _isOpen = false);
   }
 
   Future<void> _close() async {
@@ -83,7 +127,12 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
         child: widget.contentBuilder(context, _close),
       ),
       child: GestureDetector(
-        onTap: _toggleDropdown,
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          widget.onTap?.call();
+
+          unawaited(toggle());
+        },
         child: AbsorbPointer(
           child: AppTextField(
             controller: widget.controller,
@@ -100,6 +149,7 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
 
   @override
   void dispose() {
+    widget.portalController?._detach();
     _controller.dispose();
     super.dispose();
   }

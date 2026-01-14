@@ -10,6 +10,7 @@ import 'package:reforge/core/auth/data/requests/refresh_token_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
+import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'api_client.g.dart';
@@ -40,13 +41,12 @@ abstract class ApiClient {
   @POST('/auth/refresh')
   Future<BaseResponse<AuthTokens>> refreshToken(@Body() RefreshTokenRequest request);
 
+  @POST('/users/profile')
+  Future<BaseResponse<void>> updateProfile(@Body() UpdateProfileRequest request);
+
   @GET('/auth/me')
   Future<BaseResponse<User>> getCurrentUser();
 
   @POST('/auth/logout')
   Future<void> logout();
-
-  // User endpoints
-  @GET('/users/{id}')
-  Future<User> getUser(@Path('id') String id);
 }

@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/quiz/domain/faction.dart';
+import 'package:reforge/features/quiz/controller/quiz_cubit.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/ui/widgets/faction_selector.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-class SelectMainFactionStep extends StatefulWidget {
+class SelectMainFactionStep extends StatelessWidget {
   const SelectMainFactionStep({super.key});
-
-  @override
-  State<SelectMainFactionStep> createState() => _SelectMainFactionStepState();
-}
-
-class _SelectMainFactionStepState extends State<SelectMainFactionStep> {
-  Faction? _selectedFaction;
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +25,14 @@ class _SelectMainFactionStepState extends State<SelectMainFactionStep> {
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),
         ),
         const SizedBox(height: 32),
-        FactionSelector(
-          selectedFaction: _selectedFaction,
-          onFactionChanged: (faction) {
-            setState(() {
-              _selectedFaction = faction;
-            });
+        BlocSelector<QuizCubit, QuizState, Faction?>(
+          selector: (state) => state.mainFaction,
+          builder: (context, mainFaction) {
+            final cubit = context.read<QuizCubit>();
+            return FactionSelector(
+              selectedFaction: mainFaction,
+              onFactionChanged: cubit.setMainFaction,
+            );
           },
         ),
       ],

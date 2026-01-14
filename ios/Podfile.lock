@@ -168,10 +168,12 @@ PODS:
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
   - sign_in_with_apple (0.0.1):
+<<<<<<< HEAD
     - Flutter
   - sqflite_darwin (0.0.4):
+=======
+>>>>>>> dev
     - Flutter
-    - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -188,7 +190,10 @@ DEPENDENCIES:
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
+<<<<<<< HEAD
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+=======
+>>>>>>> dev
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
 
@@ -235,8 +240,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   sign_in_with_apple:
     :path: ".symlinks/plugins/sign_in_with_apple/ios"
+<<<<<<< HEAD
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
+=======
+>>>>>>> dev
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   video_player_avfoundation:
@@ -273,7 +281,10 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
+<<<<<<< HEAD
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+=======
+>>>>>>> dev
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
 
