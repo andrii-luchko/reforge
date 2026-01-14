@@ -20,6 +20,7 @@ class SelectMainFactionStep extends StatelessWidget {
           t.quiz.steps.main_faction.title,
           style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
         ),
+        const SizedBox(height: 16),
         Text(
           t.quiz.steps.main_faction.subtitle,
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),

@@ -147,5 +147,67 @@
                 "subtitle": "Optional cross-training add-ons that let you incorporate techniques from other factions."
             }
         }
+    },
+    "workout_quiz": {
+        "header": "Pre-Workout Check-In",
+        "steps": {
+            "sleep_quality": {
+                "title": "How well did you sleep last night?",
+                "subtitle": "Your sleep affects your recovery, focus, and strength for today's session",
+                "very_poor": "Very Poor",
+                "poor": "Poor",
+                "average": "Average",
+                "good": "Good",
+                "excellent": "Excellent"
+            },
+            "energized_level": {
+                "title": "How energized do you feel right now?",
+                "subtitle": "Your energy level influences intensity, pacing, and how hard you can push during the session.",
+                "very_low": "Very Low",
+                "low": "Low",
+                "moderate": "Moderate",
+                "good": "Good",
+                "high": "High"
+            },
+            "stress_level": {
+                "title": "How stressed do you feel?",
+                "subtitle": "High stress lowers performance, while relaxation improves focus and consistency",
+                "very_stressed": "Very Stressed",
+                "stressed": "Stressed",
+                "neutral": "Neutral",
+                "calm": "Calm",
+                "very_relaxed": "Very Relaxed"
+            },
+            "body_feel": {
+                "title": "How does your body feel?",
+                "subtitle": "Soreness and fatigue indicate how well your muscles recovered after previous sessions",
+                "very_sore": "Very Sore",
+                "sore": "Sore",
+                "slightly_sore": "Slightly Sore",
+                "mostly_fresh": "Mostly Fresh",
+                "fully_fresh": "Fully Fresh"
+            },
+            "hydrated_level": {
+                "title": "How hydrated are you right now?",
+                "subtitle": "Hydration directly affects strength, endurance, and mental clarity",
+                "dehydrated": "Dehydrated",
+                "slightly_dehydrated": "Slightly Dehydrated",
+                "okay": "Okay",
+                "hydrated": "Hydrated",
+                "well_hydrated": "Well Hydrated"
+            },
+            "has_eaten_recently": {
+                "title": "Have you eaten recently?",
+                "subtitle": "Food intake supports energy, stamina, and stable blood sugar during training",
+                "yes": "Yes",
+                "no": "No"
+            },
+            "is_morning_session": {
+                "title": "Is this a morning fasted session?",
+                "subtitle": "Fasted workouts bypass food and hydration penalties and follow adjusted intensity",
+                "yes": "Yes",
+                "no": "No"
+            }
+        }
     }
 }
