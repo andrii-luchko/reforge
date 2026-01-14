@@ -27,6 +27,7 @@ class QuizCubit extends Cubit<QuizState> {
     return switch (currentStep) {
       QuizSteps.dateBirthStep => state.dateOfBirth != null && state.dateOfBirthError == null,
       QuizSteps.measurementSystemStep => true,
+      QuizSteps.bodyWeightStep => state.bodyWeight != null,
       QuizSteps.mainGoalStep => state.mainGoal != null,
       QuizSteps.trainingLevelStep => state.trainingLevel != null,
       QuizSteps.workoutFrequencyStep =>
@@ -46,6 +47,10 @@ class QuizCubit extends Cubit<QuizState> {
 
   void setMeasurementSystem(MeasurementSystem system) {
     emit(state.copyWith(measurementSystem: system));
+  }
+
+  void setBodyWeight(int bodyWeight) {
+    emit(state.copyWith(bodyWeight: bodyWeight));
   }
 
   void setMainGoal(MainGoal goal) {
@@ -77,6 +82,7 @@ class QuizCubit extends Cubit<QuizState> {
     // 1. dateBirthStep
     state.dateOfBirth != null &&
         // 2. measurementSystemStep
+        state.bodyWeight != null &&
         // 3. mainGoalStep
         state.mainGoal != null &&
         // 4. trainingLevelStep
@@ -98,6 +104,7 @@ class QuizCubit extends Cubit<QuizState> {
     final answers = QuizAnswers(
       dateOfBirth: state.dateOfBirth!,
       measurementSystem: state.measurementSystem,
+      bodyWeight: state.bodyWeight!,
       mainGoal: state.mainGoal!,
       trainingLevel: state.trainingLevel!,
       workoutDaysPerWeek: state.workoutDaysPerWeek!,

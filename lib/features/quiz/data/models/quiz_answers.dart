@@ -14,6 +14,8 @@ sealed class QuizAnswers with _$QuizAnswers {
 
     required MeasurementSystem measurementSystem,
 
+    required int bodyWeight,
+
     required MainGoal mainGoal,
 
     required TrainingLevel trainingLevel,

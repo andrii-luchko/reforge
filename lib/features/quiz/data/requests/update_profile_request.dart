@@ -22,7 +22,7 @@ sealed class UpdateProfileRequest with _$UpdateProfileRequest {
     @JsonKey(name: 'experiencedLevel') required TrainingLevel trainingLevel,
     @JsonKey(name: 'workoutsPerWeek') required int workoutDaysPerWeek,
     @JsonKey(name: 'specificDays') required List<int> specificWorkoutDays,
-    double? bodyweight,
+    @JsonKey(name: 'bodyweight') required int bodyWeight,
     @Default(Gender.other) Gender gender,
   }) = _UpdateProfileRequest;
 
@@ -30,10 +30,9 @@ sealed class UpdateProfileRequest with _$UpdateProfileRequest {
 
   factory UpdateProfileRequest.fromQuizAnswers({
     required QuizAnswers answers,
-    double? bodyweight,
   }) {
     return UpdateProfileRequest(
-      bodyweight: bodyweight,
+      bodyWeight: answers.bodyWeight,
       mainFaction: answers.mainFaction,
       secondFaction: answers.secondFaction,
       dateOfBirth: answers.dateOfBirth,

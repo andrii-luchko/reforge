@@ -8,6 +8,8 @@ sealed class QuizState with _$QuizState {
 
     @Default(MeasurementSystem.metric) MeasurementSystem measurementSystem,
 
+    int? bodyWeight,
+
     MainGoal? mainGoal,
 
     TrainingLevel? trainingLevel,

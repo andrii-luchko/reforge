@@ -28,6 +28,7 @@ class DateBirthStep extends StatelessWidget {
             return LabeledAppTextField(
               label: t.quiz.steps.date_of_birth.select_date_label,
               field: FieldDatePicker(
+                hintText: t.quiz.steps.date_of_birth.select_date_label,
                 initialDate: dateData.$1,
                 errorText: dateData.$2,
                 onDateSelected: cubit.setDateOfBirth,

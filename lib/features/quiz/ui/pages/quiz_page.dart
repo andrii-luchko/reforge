@@ -6,6 +6,7 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/quiz/controller/quiz_cubit.dart';
+import 'package:reforge/features/quiz/ui/widgets/steps/body_weight_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/date_birth_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/main_goal_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/measurement_system_step.dart';
@@ -89,6 +90,7 @@ class _QuizFormState extends State<QuizForm> {
     const quizSteps = [
       DateBirthStep(),
       MeasurementSystemStep(),
+      BodyWeightStep(),
       MainGoalStep(),
       TrainingLevelStep(),
       WorkoutFrequencyStep(),

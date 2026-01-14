@@ -97,6 +97,10 @@
                 "metric": "kg",
                 "imperial": "lb"
             },
+            "body_weight": {
+                "title": "What's your current body weight",
+                "select_body_weight_label": "Select your body weight"
+            },
             "main_goal": {
                 "title": "What's your main training goal?",
                 "build_strength": {
