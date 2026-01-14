@@ -18,7 +18,7 @@ class WorkoutListTile extends StatelessWidget {
 
   final String title;
   final String description;
-  final String imageUrl;
+  final String? imageUrl;
   final List<String> tags;
   final VoidCallback? onTap;
 
@@ -54,7 +54,7 @@ class WorkoutListTile extends StatelessWidget {
                 child: _WorkoutDetails(
                   title: title,
                   description: description,
-                  imageUrl: imageUrl,
+
                   tags: tags,
                 ),
               ),
@@ -78,13 +78,11 @@ class _WorkoutDetails extends StatelessWidget {
   const _WorkoutDetails({
     required this.title,
     required this.description,
-    required this.imageUrl,
     required this.tags,
   });
 
   final String title;
   final String description;
-  final String imageUrl;
   final List<String> tags;
 
   @override
@@ -114,12 +112,22 @@ class _WorkoutDetails extends StatelessWidget {
 class _WorkoutImage extends StatelessWidget {
   const _WorkoutImage({required this.imageUrl});
 
-  final String imageUrl;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = imageUrl != null;
+
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(20);
+
+    final errorWidget = ColoredBox(
+      color: appTheme.beige200,
+      child: Icon(
+        Icons.image_not_supported_rounded,
+        color: appTheme.beige600,
+      ),
+    );
     return Skeleton.leaf(
       child: Container(
         width: 73,
@@ -130,6 +138,8 @@ class _WorkoutImage extends StatelessWidget {
           color: appTheme.beige1000.withValues(alpha: 0.2),
           border: GradientBoxBorder(
             gradient: LinearGradient(
+              begin: .topLeft,
+              end: .bottomRight,
               colors: [
                 const Color(0xFFDDD9D1),
                 const Color(0xFFDDD9D1).withValues(alpha: 0),
@@ -139,28 +149,24 @@ class _WorkoutImage extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: borderRadius,
-          child: CachedNetworkImage(
-            imageUrl: imageUrl,
-            fit: BoxFit.cover,
-            progressIndicatorBuilder: (context, url, progress) => ColoredBox(
-              color: appTheme.beige200,
-              child: Center(
-                child: CircularProgressIndicator.adaptive(
-                  value: progress.progress,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    appTheme.beige600,
+          child: hasImage
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl!,
+                  fit: BoxFit.cover,
+                  progressIndicatorBuilder: (context, url, progress) => ColoredBox(
+                    color: appTheme.beige200,
+                    child: Center(
+                      child: CircularProgressIndicator.adaptive(
+                        value: progress.progress,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          appTheme.beige600,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            errorWidget: (context, url, error) => ColoredBox(
-              color: appTheme.beige200,
-              child: Icon(
-                Icons.image_not_supported_rounded,
-                color: appTheme.beige600,
-              ),
-            ),
-          ),
+                  errorWidget: (context, url, error) => errorWidget,
+                )
+              : errorWidget,
         ),
       ),
     );

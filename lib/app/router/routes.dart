@@ -17,7 +17,7 @@ import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 import 'package:reforge/features/training_session/ui/pages/workout_details_page.dart';
-import 'package:reforge/features/training_session/ui/pages/workout_instruction_page.dart';
+import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
 
 part 'routes.g.dart';
 part 'deep_link_routes.dart';
