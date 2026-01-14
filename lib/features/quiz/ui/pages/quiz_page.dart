@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/routes.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/quiz/controller/quiz_cubit.dart';
+import 'package:reforge/features/quiz/ui/widgets/steps/body_weight_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/date_birth_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/main_goal_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/measurement_system_step.dart';
@@ -9,12 +14,12 @@ import 'package:reforge/features/quiz/ui/widgets/steps/select_main_faction_step.
 import 'package:reforge/features/quiz/ui/widgets/steps/select_second_faction_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/training_level_step.dart';
 import 'package:reforge/features/quiz/ui/widgets/steps/workout_frequency_step.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:reforge/shared/animations/shaders/particles_shader.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/multi_step_form.dart';
+import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
 class QuizPage extends StatelessWidget {
   const QuizPage({super.key});
@@ -26,7 +31,6 @@ class QuizPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppAppBar(
-        onPressed: null,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -37,70 +41,88 @@ class QuizPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SizedBox.expand(
-        child: Stack(
-          children: [
-            const Positioned.fill(child: ParticlesShaderWidget()),
-            Positioned.fill(
-              child: Image.asset(
-                Assets.images.png.smoke.path,
-                fit: BoxFit.fill,
-                opacity: const AlwaysStoppedAnimation<double>(0.5),
+      body: BlocProvider(
+        create: (context) => di.getIt<QuizCubit>(),
+        child: DefaultBackground(
+          body: const Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SafeArea(
+                child: QuizForm(),
               ),
             ),
-
-            Positioned.fill(
-              child: Image.asset(
-                Assets.images.png.noiseAndTexture.path,
-                fit: BoxFit.fill,
-              ),
-            ),
-
+          ),
+          additionalAnimations: [
             Positioned.fill(
               child: SunRaysShaderWidget(
                 color: appTheme.orange500,
-                alignment: const Alignment(0, -1.2),
-                intensity: 1,
-                density: 5,
-                rayLength: 0.6,
-              ),
-            ),
-
-            const Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: SafeArea(child: QuizForm()),
+                alignment: .topCenter,
+                rayLength: 0.3,
               ),
             ),
           ],
+          loader: Positioned.fill(
+            child: BlocSelector<QuizCubit, QuizState, bool>(
+              selector: (state) => state.isLoading,
+              builder: (context, isLoading) {
+                return isLoading ? const ScreenLoadingIndicator() : const SizedBox.shrink();
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class QuizForm extends StatelessWidget {
+class QuizForm extends StatefulWidget {
   const QuizForm({super.key});
 
   @override
+  State<QuizForm> createState() => _QuizFormState();
+}
+
+class _QuizFormState extends State<QuizForm> {
+  int _currentStepIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return MultiStepForm(
-      steps: const [
-        DateBirthStep(),
-        MeasurementSystemStep(),
-        MainGoalStep(),
-        TrainingLevelStep(),
-        WorkoutFrequencyStep(),
-        SelectMainFactionStep(),
-        SelectSecondFactionStep(),
-      ],
-      totalSteps: 7,
-      backButtonText: t.common.back_button,
-      nextButtonText: t.common.next_button,
-      finishButtonText: t.common.finish_button,
-      onCompleted: () {
-        // Handle quiz completion
-        // TODO: Navigate to next screen or submit quiz data
+    const quizSteps = [
+      DateBirthStep(),
+      MeasurementSystemStep(),
+      BodyWeightStep(),
+      MainGoalStep(),
+      TrainingLevelStep(),
+      WorkoutFrequencyStep(),
+      SelectMainFactionStep(),
+      SelectSecondFactionStep(),
+    ];
+
+    return BlocConsumer<QuizCubit, QuizState>(
+      listener: (context, state) {
+        if (state.isSubmitted) const HomePageRoute().go(context);
+      },
+      builder: (context, state) {
+        final cubit = context.read<QuizCubit>();
+
+        final isStepValid = cubit.canProceedToNextStep(_currentStepIndex);
+
+        return MultiStepForm(
+          steps: quizSteps,
+          totalSteps: quizSteps.length,
+          backButtonText: t.common.back_button,
+          nextButtonText: t.common.next_button,
+          finishButtonText: t.common.finish_button,
+          isNextButtonEnabled: isStepValid,
+          onStepChanged: (newIndex) {
+            setState(() {
+              _currentStepIndex = newIndex;
+            });
+          },
+          onCompleted: () async {
+            await cubit.onSubmit();
+          },
+        );
       },
     );
   }

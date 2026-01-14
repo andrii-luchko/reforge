@@ -46,43 +46,6 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       logger.d('Tokens found during initialization: $tokens');
-      // Check if tokens are still valid
-      // if (tokens.expiresAt.isAfter(DateTime.now())) {
-      //   // Try to get current user to verify session
-      //   final userResult = await _authRepository.getCurrentUser();
-      //   switch (userResult) {
-      //     case Success(value: final user):
-      //       _sessionService.setSession(user, tokens);
-      //       emit(AuthState.authenticated(user: user, tokens: tokens));
-      //     case Error():
-      //       // Token might be invalid, clear and go to unauthenticated
-      //       await _localDataSource.clearTokens();
-      //       _sessionService.clearSession();
-      //       emit(const AuthState.unauthenticated());
-      //   }
-      // } else {
-      // // Token expired, try to refresh
-      // final refreshResult = await _authRepository.refreshToken(tokens.refreshToken);
-      // switch (refreshResult) {
-      //   case Success(value: final newTokens):
-      //     await _localDataSource.saveTokens(newTokens);
-      //     final userResult = await _authRepository.getCurrentUser();
-      //     switch (userResult) {
-      //       case Success(value: final user):
-      //         _sessionService.setSession(user, newTokens);
-      //         emit(AuthState.authenticated(user: user, tokens: newTokens));
-      //       case Error():
-      //         await _localDataSource.clearTokens();
-      //         _sessionService.clearSession();
-      //         emit(const AuthState.unauthenticated());
-      //     }
-      //   case Error():
-      //     // Refresh failed, clear and go to unauthenticated
-      //     await _localDataSource.clearTokens();
-      //     _sessionService.clearSession();
-      //     emit(const AuthState.unauthenticated());
-      // }
-      //}
     } else {
       emit(const AuthState.unauthenticated());
     }
@@ -97,7 +60,6 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         await _localDataSource.saveTokens(tokens);
 
-        // Get current user after successful sign in
         final userResult = await _authRepository.getCurrentUser();
         switch (userResult) {
           case Success(value: final user):
