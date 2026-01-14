@@ -17,6 +17,7 @@ import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 import 'package:reforge/features/training_session/ui/pages/workout_details_page.dart';
+import 'package:reforge/features/training_session/ui/pages/workout_quiz_page.dart';
 import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
 
 part 'routes.g.dart';
@@ -275,5 +276,15 @@ class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPa
       name: name,
       workoutId: workoutId,
     );
+  }
+}
+
+@TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz')
+class WorkoutQuizPageRoute extends GoRouteData with $WorkoutQuizPageRoute {
+  const WorkoutQuizPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const WorkoutQuizPage();
   }
 }

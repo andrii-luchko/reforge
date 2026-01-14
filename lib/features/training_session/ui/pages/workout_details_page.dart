@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/training_session/ui/widgets/exercise_list_view.dart';
@@ -91,7 +92,13 @@ class WorkoutDetailsBody extends StatelessWidget {
                 child: Skeleton.leaf(
                   child: SizedBox(
                     width: buttonWidth,
-                    child: PrimaryButton(text: 'Start Workout', onPressed: () {}),
+                    child: PrimaryButton(
+                      text: 'Start Workout',
+                      onPressed: () {
+                        // ignore: inference_failure_on_function_invocation
+                        const WorkoutQuizPageRoute().push(context);
+                      },
+                    ),
                   ),
                 ),
               ),
