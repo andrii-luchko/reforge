@@ -21,8 +21,8 @@ class QuizCubit extends Cubit<QuizState> {
 
   final QuizRepository _quizRepository;
 
-  bool canProceedToNextStep(int stepIndex) {
-    final currentStep = QuizSteps.values[stepIndex];
+  bool get isStepValid {
+    final currentStep = QuizSteps.values[state.currentStep];
 
     return switch (currentStep) {
       QuizSteps.dateBirthStep => state.dateOfBirth != null && state.dateOfBirthError == null,
@@ -38,6 +38,10 @@ class QuizCubit extends Cubit<QuizState> {
       QuizSteps.selectMainFactionStep => state.mainFaction != null,
       QuizSteps.selectSecondFactionStep => state.secondFaction != state.mainFaction,
     };
+  }
+
+  void onStepChanged(int index) {
+    emit(state.copyWith(currentStep: index));
   }
 
   void setDateOfBirth(DateTime date) {
