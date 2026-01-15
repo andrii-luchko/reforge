@@ -150,6 +150,15 @@
     },
     "workout_quiz": {
         "header": "Pre-Workout Check-In",
+        "step_titles": {
+            "sleep_quality": "Sleep Quality",
+            "energy_level": "Energy Level",
+            "stress_level": "Stress Level",
+            "soreness": "Soreness",
+            "hydration": "Hydration",
+            "nutrition": "Nutrition",
+            "fasted_session": "Fasted Session"
+        },
         "steps": {
             "sleep_quality": {
                 "title": "How well did you sleep last night?",
@@ -200,7 +209,9 @@
                 "title": "Have you eaten recently?",
                 "subtitle": "Food intake supports energy, stamina, and stable blood sugar during training",
                 "yes": "Yes",
-                "no": "No"
+                "no": "No",
+                "eaten": "Eaten",
+                "fasted": "Fasted"
             },
             "is_morning_session": {
                 "title": "Is this a morning fasted session?",
@@ -208,6 +219,11 @@
                 "yes": "Yes",
                 "no": "No"
             }
+        },
+        "quiz_summary": {
+            "title": "You’re Ready to Begin",
+            "subtitle": "Based on your check-in, here’s your status for today’s session",
+            "button_label": "Start Workout"
         }
     }
 }

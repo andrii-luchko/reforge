@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
-class AuthTitle extends StatelessWidget {
-  const AuthTitle({required this.subtitle, required this.title, super.key});
+class CenteredTitleSection extends StatelessWidget {
+  const CenteredTitleSection({required this.title, required this.subtitle, super.key});
 
   final String title;
   final String subtitle;

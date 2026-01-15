@@ -17,4 +17,19 @@ extension SleepQualityExtension on SleepQuality {
         return t.workout_quiz.steps.sleep_quality.excellent;
     }
   }
+
+  int get score {
+    switch (this) {
+      case SleepQuality.veryPoor:
+        return 1;
+      case SleepQuality.poor:
+        return 2;
+      case SleepQuality.average:
+        return 3;
+      case SleepQuality.good:
+        return 4;
+      case SleepQuality.excellent:
+        return 5;
+    }
+  }
 }
