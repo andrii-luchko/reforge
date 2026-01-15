@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/reset_password_cubit.dart';
-import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/centered_title_section.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
@@ -42,7 +42,7 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.05,
           ),
-          AuthTitle(
+          CenteredTitleSection(
             title: t.create_password.title,
             subtitle: t.create_password.subtitle,
           ),

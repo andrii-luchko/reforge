@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/forgot_password_email_form.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';

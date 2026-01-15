@@ -93,8 +93,10 @@ class _MultiStepFormState extends State<MultiStepForm> {
       setState(() {
         _currentStep--;
       });
+      // ИСПРАВЛЕНИЕ: Используем animateToPage и явный индекс
       unawaited(
-        _controller.previousPage(
+        _controller.animateToPage(
+          _currentStep - 1, // (step 2 -> index 1)
           duration: widget.pageTransitionDuration,
           curve: widget.pageTransitionCurve,
         ),
@@ -106,11 +108,10 @@ class _MultiStepFormState extends State<MultiStepForm> {
   void _goToNextStep() {
     final currentStepIndex = _currentStep - 1;
 
-    // Validate current step if validator is provided
     if (widget.onStepValidate != null) {
       final isValid = widget.onStepValidate!(currentStepIndex);
       if (!isValid) {
-        return; // Don't proceed if validation fails
+        return;
       }
     }
 
@@ -119,14 +120,14 @@ class _MultiStepFormState extends State<MultiStepForm> {
         _currentStep++;
       });
       unawaited(
-        _controller.nextPage(
+        _controller.animateToPage(
+          _currentStep - 1,
           duration: widget.pageTransitionDuration,
           curve: widget.pageTransitionCurve,
         ),
       );
       widget.onStepChanged?.call(_currentStep - 1);
     } else {
-      // Last step - call completion callback
       widget.onCompleted?.call();
     }
   }
@@ -174,4 +175,3 @@ class _MultiStepFormState extends State<MultiStepForm> {
     );
   }
 }
-

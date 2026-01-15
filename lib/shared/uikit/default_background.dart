@@ -18,7 +18,7 @@ class DefaultBackground extends StatelessWidget {
     return SizedBox.expand(
       child: Stack(
         children: [
-          const Positioned.fill(child: ParticlesShaderWidget()),
+          //const Positioned.fill(child: ParticlesShaderWidget()),
           Positioned.fill(
             child: Image.asset(
               Assets.images.png.smoke.path,

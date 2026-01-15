@@ -3,6 +3,7 @@ part of 'quiz_cubit.dart';
 @freezed
 sealed class QuizState with _$QuizState {
   const factory QuizState({
+    @Default(0) int currentStep,
     DateTime? dateOfBirth,
     String? dateOfBirthError,
 

@@ -37,9 +37,9 @@ FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthSta
     },
     authenticated: (tokens, user) {
       if (onAuth) {
-        if (user == null) {
-          return const QuizPageRoute().location;
-        }
+        // if (user == null) {
+        //   return const QuizPageRoute().location;
+        // }
         return const HomePageRoute().location;
       }
       return null;

@@ -6,9 +6,9 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/auth/controllers/validation/auth_validation_cubit.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_providers_buttons.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_redirect_text.dart';
-import 'package:reforge/features/auth/ui/widgets/auth_title.dart';
 
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/centered_title_section.dart';
 
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
@@ -51,7 +51,7 @@ class _SignInFormState extends State<SignInForm> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.13,
           ),
-          AuthTitle(
+          CenteredTitleSection(
             title: t.signin.title,
             subtitle: t.signin.subtitle,
           ),
