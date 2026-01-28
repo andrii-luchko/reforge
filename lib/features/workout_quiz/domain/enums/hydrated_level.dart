@@ -1,6 +1,18 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-enum HydratedLevel { dehydrated, slightlyDehydrated, okay, hydrated, wellHydrated }
+enum HydratedLevel {
+  @JsonValue(1)
+  dehydrated,
+  @JsonValue(2)
+  slightlyDehydrated,
+  @JsonValue(3)
+  okay,
+  @JsonValue(4)
+  hydrated,
+  @JsonValue(5)
+  wellHydrated,
+}
 
 extension HydratedLevelExtension on HydratedLevel {
   String title(Translations t) {

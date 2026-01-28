@@ -26,13 +26,14 @@ class SelectSecondFactionStep extends StatelessWidget {
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),
         ),
         const SizedBox(height: 32),
-        BlocSelector<QuizCubit, QuizState, Faction?>(
-          selector: (state) => state.secondFaction,
+        BlocSelector<QuizCubit, QuizState, List<Faction>>(
+          selector: (state) => state.secondFactions,
           builder: (context, secondFaction) {
             final cubit = context.read<QuizCubit>();
             return FactionSelector(
-              selectedFaction: secondFaction,
-              onFactionChanged: cubit.setSecondFaction,
+              selectedFactions: secondFaction,
+              mainFaction: cubit.state.mainFaction,
+              onFactionToggled: cubit.toggleSecondFaction,
             );
           },
         ),

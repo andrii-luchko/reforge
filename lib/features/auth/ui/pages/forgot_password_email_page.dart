@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
-import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/forgot_password_email_form.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
@@ -30,14 +29,10 @@ class ForgotPasswordEmailPage extends StatelessWidget {
           ),
         ),
 
-        additionalAnimations: [
+        additionalAnimationsOnTop: [
           Positioned.fill(
-            child: SunRaysShaderWidget(
+            child: SunRaysShaderWidget.fromTop(
               color: appTheme.orange500,
-              alignment: const Alignment(0, -1.2),
-              intensity: 1,
-              density: 5,
-              rayLength: 0.6,
             ),
           ),
         ],

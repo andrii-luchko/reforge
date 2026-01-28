@@ -22,7 +22,7 @@ class AppListTile extends StatelessWidget {
     final borderRadius = BorderRadius.circular(20);
 
     return Material(
-      color: Colors.transparent,
+      color: appTheme.beige900,
       borderRadius: borderRadius,
       child: InkWell(
         borderRadius: borderRadius,

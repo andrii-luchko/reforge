@@ -23,6 +23,7 @@ class QuizPage extends StatelessWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      extendBodyBehindAppBar: true,
       appBar: AppAppBar(
         actions: [
           Padding(
@@ -38,20 +39,16 @@ class QuizPage extends StatelessWidget {
         create: (context) => di.getIt<QuizCubit>(),
         child: DefaultBackground(
           body: const Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: SafeArea(
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: QuizForm(),
               ),
             ),
           ),
-          additionalAnimations: [
+          additionalAnimationsOnTop: [
             Positioned.fill(
-              child: SunRaysShaderWidget(
-                color: appTheme.orange500,
-                alignment: .topCenter,
-                rayLength: 0.3,
-              ),
+              child: SunRaysShaderWidget.fromTop(color: appTheme.orange500),
             ),
           ],
           loader: Positioned.fill(

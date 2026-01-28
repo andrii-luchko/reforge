@@ -6,6 +6,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 abstract interface class AuthProvidersDatasource {
   Future<String?> signWithGoogle();
   Future<String?> signWithApple();
+  Future<void> logout();
 }
 
 @Injectable(as: AuthProvidersDatasource)
@@ -31,5 +32,9 @@ class AuthProvidersDatasourceImpl implements AuthProvidersDatasource {
     logger.d(credential);
     //TODO finished tihs stuff
     return credential.identityToken;
+  }
+
+  Future<void> logout() async {
+    await _googleSignIn.signOut();
   }
 }

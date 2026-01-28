@@ -15,7 +15,7 @@ sealed class UpdateProfileRequest with _$UpdateProfileRequest {
   @JsonSerializable(explicitToJson: true)
   const factory UpdateProfileRequest({
     @JsonKey(name: 'primaryFaction') required Faction mainFaction,
-    @JsonKey(name: 'secondaryFaction') required Faction secondFaction,
+    @JsonKey(name: 'secondaryFaction') required Faction? secondFaction,
     @JsonKey(name: 'birthDate') required DateTime dateOfBirth,
     @JsonKey(name: 'measurementSystem') required MeasurementSystem measurementSystem,
     @JsonKey(name: 'trainingGoal') required MainGoal mainGoal,

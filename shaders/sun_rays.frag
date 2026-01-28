@@ -1,51 +1,133 @@
 #version 460 core
+
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uSize;       // Фізичний розмір
+
+
+uniform vec2 uSize;
+
 uniform float uTime;
+
 uniform vec3 uColor;
+
 uniform float uIntensity;
-uniform vec2 uOrigin;     // 0.0 - 1.0
+
+uniform vec2 uOrigin;
+
 uniform float uRayLength;
+
 uniform float uDensity;
+
+
 
 out vec4 fragColor;
 
-float fastNoise(float angle, float dist) {
-    float n = sin(angle * uDensity + uTime * 0.5);
-    n += sin(angle * uDensity * 2.1 - uTime * 0.8 + dist * 5.0) * 0.5;
-    n += sin(angle * uDensity * 4.3 + uTime * 1.2) * 0.25;
-    return max(0.0, n); 
+float hash(float n) {
+
+    return fract(sin(n) * 43758.5453);
+
 }
 
-void main() {
-    // 1. Отримуємо UV (0.0 - 1.0)
-    vec2 uv = FlutterFragCoord().xy / uSize;
-    
-    // 2. Рахуємо вектор від джерела світла до пікселя
-    vec2 distVec = uv - uOrigin;
-    
-    // 3. Коригуємо ТІЛЬКИ вектор відстані на співвідношення сторін
-    // Це робить круги круглими, а не овальними, але не зсуває центр
-    distVec.x *= uSize.x / uSize.y;
-    
-    float dist = length(distVec);
+float noise(float angle) {
 
-    // Early exit
-    if (dist > uRayLength + 0.1) {
+
+
+    float i = floor(angle);
+
+    float f = fract(angle);
+
+    
+
+    float n = mix(hash(i), hash(i + 1.0), smoothstep(0.0, 1.0, f));
+
+    return n;
+
+}
+
+
+
+void main() {
+
+    vec2 uv = FlutterFragCoord().xy / uSize;
+
+    
+
+
+
+    vec2 distVec = uv - uOrigin;
+
+    
+
+    
+
+    distVec.x *= (uSize.x / uSize.y);
+
+    
+
+    
+
+    // distSquared = x*x + y*y
+
+    float distSquared = dot(distVec, distVec);
+
+    float maxLenSq = (uRayLength + 0.1) * (uRayLength + 0.1);
+
+    if (distSquared > maxLenSq) {
+
         fragColor = vec4(0.0);
+
         return;
+
     }
 
-    // 4. Кут рахуємо від скоригованого вектора
-    float angle = atan(distVec.y, distVec.x);
-    
-    float rays = fastNoise(angle, dist);
-    rays = smoothstep(0.3, 1.0, rays); 
+    float dist = sqrt(distSquared);
 
-    // Затухання
-    float lengthFade = 1.0 - smoothstep(uRayLength * 0.5, uRayLength, dist);
-    float alpha = rays * lengthFade * uIntensity;
+    float angle = atan(distVec.y, distVec.x);
+
+    // Нормализуем угол от -PI..PI к 0..1 для удобства
+
+    float normalizedAngle = angle / 3.14159 + 1.0; 
+
+    
+
+    float movingAngle = normalizedAngle * uDensity + uTime * 0.001;
+
+
+
+    // Генерируем лучи
+
+    // Вместо сложения синусов используем "рваный" шум
+
+    float rays = noise(movingAngle * 10.0);       // Основа
+
+    rays += noise(movingAngle * 20.0 + uTime) * 0.5; // Детали
+
+    
+
+    // Усиливаем контраст лучей (делаем их тоньше и ярче)
+
+    rays = pow(rays, 3.0); 
+
+
+
+    // Затухание
+
+    float lengthFade = 1.0 - smoothstep(0.0, uRayLength, dist);
+
+    
+
+    // Доп. фишка: центр ярче ("корона" солнца)
+
+    float coreGlow = 1.0 / (dist * 10.0 + 0.5); 
+
+    
+
+    float alpha = (rays * uIntensity + coreGlow * 0.5) * lengthFade;
+
+    
+
+    // Применяем цвет
 
     fragColor = vec4(uColor * alpha, alpha);
+
 }

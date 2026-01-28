@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 
-FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthState authState) {
+FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthState authState, UserState userState) {
   final currentPath = state.matchedLocation;
 
   final splash = currentPath == const SplashPageRoute().location;
@@ -23,26 +25,38 @@ FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthSta
     error: (_) => null,
     unauthenticated: () {
       if (onAuth) {
-        if (onboarding) {
-          return null;
-        }
         if (splash) {
           return const OnboardingPageRoute().location;
         }
 
-        return null;
-      }
+        if (onboarding) {
+          return null;
+        }
 
-      return const SignInPageRoute().location;
-    },
-    authenticated: (tokens, user) {
-      if (onAuth) {
-        // if (user == null) {
-        //   return const QuizPageRoute().location;
-        // }
-        return const HomePageRoute().location;
+        return null;
+      } else {
+        return const SignInPageRoute().location;
       }
-      return null;
+    },
+    authenticated: (tokens) {
+      if (!onAuth) return null;
+
+      return userState.maybeWhen(
+        loaded: (user) {
+          final target = user.map(
+            newUser: (_) => const QuizPageRoute().location,
+            // onboarded: (_) => const QuizPageRoute().location,
+            onboarded: (_) => const HomePageRoute().location,
+          );
+
+          if (currentPath == target) return null;
+
+          return target;
+        },
+        deleted: () => const SignInPageRoute().location,
+
+        orElse: () => null,
+      );
     },
   );
 }

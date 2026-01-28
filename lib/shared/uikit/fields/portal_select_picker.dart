@@ -38,6 +38,7 @@ class PortalSelectField extends StatefulWidget {
     this.suffixIcon,
     this.portalAnchor = Alignment.topCenter,
     this.targetAnchor = Alignment.bottomCenter,
+    this.heightFactor = 10,
     super.key,
   });
 
@@ -53,6 +54,8 @@ class PortalSelectField extends StatefulWidget {
 
   final Alignment portalAnchor;
   final Alignment targetAnchor;
+
+  final double heightFactor;
 
   @override
   State<PortalSelectField> createState() => _PortalSelectFieldState();
@@ -120,7 +123,7 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
         follower: widget.portalAnchor,
         target: widget.targetAnchor,
         portal: Alignment.centerRight,
-        heightFactor: 10,
+        heightFactor: widget.heightFactor,
       ),
       portalFollower: _PortalContentWrapper(
         animation: _expandAnimation,

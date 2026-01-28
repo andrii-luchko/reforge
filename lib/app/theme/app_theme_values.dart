@@ -1,4 +1,5 @@
 import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 class AppThemeValues {
@@ -100,6 +101,8 @@ class AppThemeValues {
         const Color(0xFFECE7DC).withValues(alpha: 0),
       ],
     ),
+    workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
+    workoutContainerConstrains: const BoxConstraints(maxHeight: 60, maxWidth: 60),
   );
 
   static final dark = AppTheme(
@@ -193,5 +196,8 @@ class AppThemeValues {
         const Color(0xFFECE7DC).withValues(alpha: 0),
       ],
     ),
+
+    workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
+    workoutContainerConstrains: const BoxConstraints(maxHeight: 60),
   );
 }

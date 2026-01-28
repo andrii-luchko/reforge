@@ -1,18 +1,20 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 class FireParticles extends StatefulWidget {
   const FireParticles({
     super.key,
-    this.quantity = 100,
+    this.quantity = 50,
     this.startColor = const Color(0xFFFF6B35),
     this.endColor = const Color(0xFFFFAA00),
     this.minSize = 1.0,
     this.maxSize = 2.5,
     this.minSpeed = 0.8,
-    this.maxSpeed = 2.5,
-    this.fadeSpeed = 0.005,
+    this.maxSpeed = 1.5,
+    this.fadeSpeed = 0.01,
   });
 
   final int quantity;
@@ -28,8 +30,11 @@ class FireParticles extends StatefulWidget {
   State<FireParticles> createState() => _FireParticlesState();
 }
 
-class _FireParticlesState extends State<FireParticles> {
+class _FireParticlesState extends State<FireParticles> with SingleTickerProviderStateMixin {
   late FireParticlesController _controller;
+  ui.Image? _dotImage;
+  ui.Image? _streakImage;
+  bool _assetsLoaded = false;
 
   @override
   void initState() {
@@ -43,37 +48,86 @@ class _FireParticlesState extends State<FireParticles> {
       minSpeed: widget.minSpeed,
       maxSpeed: widget.maxSpeed,
       fadeSpeed: widget.fadeSpeed,
+      vsync: this,
     );
+    _generateAssets();
+  }
+
+  Future<void> _generateAssets() async {
+    const size = 64.0;
+
+    // Генерация dot image
+    final dotRecorder = ui.PictureRecorder();
+    final dotCanvas = Canvas(dotRecorder);
+    final dotPaint = Paint()
+      ..shader = ui.Gradient.radial(
+        const Offset(size / 2, size / 2),
+        size / 2,
+        [
+          Colors.white,
+          Colors.white.withValues(alpha: .7),
+          Colors.white.withValues(alpha: 0.3),
+        ],
+        [0.0, 0.6, 1.0],
+      );
+    dotCanvas.drawCircle(const Offset(size / 2, size / 2), size / 2, dotPaint);
+    final dotPicture = dotRecorder.endRecording();
+    _dotImage = await dotPicture.toImage(size.toInt(), size.toInt());
+    dotPicture.dispose();
+
+    final streakRecorder = ui.PictureRecorder();
+    final streakCanvas = Canvas(streakRecorder);
+    const streakRect = Rect.fromLTWH(0, 0, size / 2, size);
+    final streakPaint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset.zero,
+        const Offset(0, size),
+        [
+          Colors.white,
+          Colors.white.withValues(alpha: .7),
+          Colors.white.withValues(alpha: 0.3),
+        ],
+        [0.0, 0.5, 1.0],
+      );
+    streakCanvas.drawRRect(
+      RRect.fromRectAndRadius(streakRect, const Radius.circular(size / 8)),
+      streakPaint,
+    );
+    final streakPicture = streakRecorder.endRecording();
+    _streakImage = await streakPicture.toImage((size / 2).toInt(), size.toInt());
+    streakPicture.dispose();
+
+    if (mounted) {
+      setState(() {
+        _assetsLoaded = true;
+      });
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _dotImage?.dispose();
+    _streakImage?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_assetsLoaded) return const SizedBox.shrink();
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
-        if (_controller.canvasSize != size) {
-          _controller.updateSize(size);
-        }
+        _controller.updateSize(size);
 
         return RepaintBoundary(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return CustomPaint(
-                size: Size.infinite,
-                painter: FireParticlesPainter(
-                  particles: _controller.particles,
-                  startColor: widget.startColor,
-                  endColor: widget.endColor,
-                ),
-              );
-            },
+          child: CustomPaint(
+            painter: FireParticlesPainter(
+              controller: _controller,
+              dotImage: _dotImage!,
+              streakImage: _streakImage!,
+            ),
           ),
         );
       },
@@ -91,8 +145,16 @@ class FireParticlesController extends ChangeNotifier {
     required this.minSpeed,
     required this.maxSpeed,
     required this.fadeSpeed,
+    required TickerProvider vsync,
   }) {
-    _ticker = Ticker(_onTick)..start();
+    _startR = startColor.red.toDouble();
+    _startG = startColor.green.toDouble();
+    _startB = startColor.blue.toDouble();
+    _endR = endColor.red.toDouble();
+    _endG = endColor.green.toDouble();
+    _endB = endColor.blue.toDouble();
+
+    _ticker = vsync.createTicker(_onTick)..start();
   }
 
   final int quantity;
@@ -104,56 +166,76 @@ class FireParticlesController extends ChangeNotifier {
   final double maxSpeed;
   final double fadeSpeed;
 
+  late final double _startR, _startG, _startB;
+  late final double _endR, _endG, _endB;
+
   List<FireParticle> particles = [];
   Size canvasSize = Size.zero;
   final math.Random random = math.Random();
   late Ticker _ticker;
 
+  final List<FireParticle> _particlePool = [];
+
   void updateSize(Size size) {
+    if (canvasSize == size) return;
     canvasSize = size;
     _initParticles();
   }
 
   void _initParticles() {
+    for (var particle in particles) {
+      _particlePool.add(particle);
+    }
     particles.clear();
+
     for (var i = 0; i < quantity; i++) {
       particles.add(_createParticle(isInitial: true));
     }
   }
 
   FireParticle _createParticle({bool isInitial = false}) {
+    final particle = _particlePool.isNotEmpty ? _particlePool.removeLast() : FireParticle();
+
     final speed = minSpeed + random.nextDouble() * (maxSpeed - minSpeed);
     final isStreak = random.nextDouble() > 0.5;
 
     double y;
     double alpha;
-    final targetAlpha = 0.4 + random.nextDouble() * 0.5;
+    final targetAlpha = 1.0 + random.nextDouble();
 
-    if (isInitial) {
+    if (isInitial && canvasSize != Size.zero) {
       final randomValue = random.nextDouble();
       final biasedRandom = randomValue * randomValue;
       y = canvasSize.height * (1.0 - biasedRandom);
-
       final heightProgress = 1.0 - (y / canvasSize.height);
       alpha = targetAlpha * heightProgress * (0.6 + random.nextDouble() * 0.4);
     } else {
-      y = canvasSize.height + random.nextDouble() * 30;
+      y = canvasSize.height + random.nextDouble() * 30.0;
       alpha = 0.0;
     }
 
-    return FireParticle(
-      x: random.nextDouble() * canvasSize.width,
-      y: y,
-      size: minSize + random.nextDouble() * (maxSize - minSize),
-      alpha: alpha,
-      targetAlpha: targetAlpha,
-      dx: (random.nextDouble() - 0.5) * 0.4,
-      dy: -speed,
-      lifeReduction: fadeSpeed * (0.7 + random.nextDouble() * 0.6),
-      isStreak: isStreak,
-      streakLength: isStreak ? (8.0 + random.nextDouble() * 12.0) : 0.0,
-      rotation: random.nextDouble() * math.pi * 2,
-    );
+    particle
+      ..x = random.nextDouble() * canvasSize.width
+      ..y = y
+      ..size = minSize + random.nextDouble() * (maxSize - minSize)
+      ..baseSize = particle.size
+      ..alpha = alpha
+      ..targetAlpha = targetAlpha
+      ..dx = (random.nextDouble() - 0.5) * 0.4
+      ..dy = -speed
+      ..lifeReduction = fadeSpeed * (0.7 + random.nextDouble() * 0.6)
+      ..isStreak = isStreak
+      ..streakLength = isStreak ? (8.0 + random.nextDouble() * 12.0) : 0.0
+      ..rotation = random.nextDouble() * math.pi * 2.0
+      ..rotationSpeed = (random.nextDouble() - 0.5) * 0.04
+      ..turbulence = random.nextDouble() * 0.3
+      ..turbulencePhase = random.nextDouble() * math.pi * 2.0
+      ..flickerSpeed = 0.1 + random.nextDouble() * 0.15
+      ..flickerPhase = random.nextDouble() * math.pi * 2.0
+      ..heatGlow = random.nextDouble()
+      ..time = 0.0;
+
+    return particle;
   }
 
   void _onTick(Duration elapsed) {
@@ -162,21 +244,38 @@ class FireParticlesController extends ChangeNotifier {
     for (var i = 0; i < particles.length; i++) {
       final particle = particles[i];
 
-      particle
-        ..x += particle.dx
-        ..y += particle.dy;
+      particle.time += 0.016;
+
+      final turbulenceX = math.sin(particle.time * 2.0 + particle.turbulencePhase) * particle.turbulence;
+      final turbulenceY = math.cos(particle.time * 1.5 + particle.turbulencePhase) * particle.turbulence * 0.5;
+
+      particle.x += particle.dx + turbulenceX;
+      particle.y += particle.dy + turbulenceY;
 
       if (particle.isStreak) {
-        particle.rotation += 0.02;
+        particle.rotation += particle.rotationSpeed;
+      } else {
+        particle.rotation += particle.rotationSpeed * 0.5;
       }
 
-      particle.alpha -= particle.lifeReduction;
+      final flicker = math.sin(particle.time * 10.0 * particle.flickerSpeed + particle.flickerPhase);
+      final flickerAmount = 0.15;
 
-      if (particle.alpha < particle.targetAlpha && particle.y > canvasSize.height - 60) {
+      particle.alpha -= particle.lifeReduction;
+      particle.alpha += flicker * flickerAmount * particle.alpha.clamp(0.0, 1.0);
+
+      final pulse = math.sin(particle.time * 8.0 + particle.flickerPhase) * 0.1;
+      particle.size = particle.baseSize * (1.0 + pulse);
+
+      if (particle.alpha < particle.targetAlpha && particle.y > canvasSize.height - 60.0) {
         particle.alpha += 0.08;
       }
 
-      if (particle.alpha <= 0 || particle.y < -50) {
+      final heightProgress = 1.0 - (particle.y / canvasSize.height).clamp(0.0, 1.0);
+      final sizeBoost = 1.0 + heightProgress * 0.4;
+      particle.size *= sizeBoost;
+
+      if (particle.alpha <= 0.0 || particle.y < -50.0) {
         particles[i] = _createParticle();
       }
     }
@@ -184,133 +283,150 @@ class FireParticlesController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Color lerpColor(double t) {
+    final clampedT = t.clamp(0.0, 1.0);
+    return Color.fromARGB(
+      255,
+      (_endR + (_startR - _endR) * clampedT).round(),
+      (_endG + (_startG - _endG) * clampedT).round(),
+      (_endB + (_startB - _endB) * clampedT).round(),
+    );
+  }
+
   @override
   void dispose() {
     _ticker.dispose();
+    _particlePool.clear();
     super.dispose();
   }
 }
 
 class FireParticlesPainter extends CustomPainter {
   FireParticlesPainter({
-    required this.particles,
-    required this.startColor,
-    required this.endColor,
-  });
+    required this.controller,
+    required this.dotImage,
+    required this.streakImage,
+  }) : super(repaint: controller);
 
-  final List<FireParticle> particles;
-  final Color startColor;
-  final Color endColor;
+  final FireParticlesController controller;
+  final ui.Image dotImage;
+  final ui.Image streakImage;
+
+  final Paint _paint = Paint()..isAntiAlias = true;
+  final Matrix4 _matrix = Matrix4.identity();
+
+  static double? _cachedDotW;
+  static double? _cachedDotH;
+  static double? _cachedStreakW;
+  static double? _cachedStreakH;
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (final particle in particles) {
-      if (particle.alpha <= 0) continue;
+    final particles = controller.particles;
+
+    _cachedDotW ??= dotImage.width.toDouble();
+    _cachedDotH ??= dotImage.height.toDouble();
+    _cachedStreakW ??= streakImage.width.toDouble();
+    _cachedStreakH ??= streakImage.height.toDouble();
+
+    final dotW = _cachedDotW!;
+    final dotH = _cachedDotH!;
+    final streakW = _cachedStreakW!;
+    final streakH = _cachedStreakH!;
+
+    _sortParticlesByDepth(particles);
+
+    for (var i = 0; i < particles.length; i++) {
+      final particle = particles[i];
+      if (particle.alpha <= 0.0) continue;
 
       final colorProgress = (particle.alpha / particle.targetAlpha).clamp(0.0, 1.0);
-      final color = Color.lerp(endColor, startColor, colorProgress)!;
+      final color = controller.lerpColor(colorProgress);
+
+      // Эффект "жара" - красноватое свечение у основания
+      final heightFactor = (1.0 - (particle.y / size.height)).clamp(0.0, 1.0);
+      final heatIntensity = heightFactor * particle.heatGlow * 0.3;
+
+      final finalColor = Color.fromARGB(
+        (particle.alpha * 255).clamp(0, 255).toInt(),
+        (color.red + (255 - color.red) * heatIntensity * 0.5).clamp(0, 255).toInt(),
+        (color.green * (1.0 - heatIntensity * 0.3)).clamp(0, 255).toInt(),
+        (color.blue * (1.0 - heatIntensity * 0.5)).clamp(0, 255).toInt(),
+      );
+
+      _paint.colorFilter = ColorFilter.mode(finalColor, BlendMode.modulate);
 
       if (particle.isStreak) {
-        _drawStreak(canvas, particle, color);
+        final scaleX = particle.size / (streakW / 2.0);
+        final scaleY = particle.streakLength / streakH;
+
+        _matrix.setIdentity();
+        _matrix.translate(particle.x, particle.y);
+        _matrix.rotateZ(particle.rotation);
+        _matrix.scale(scaleX, scaleY);
+        _matrix.translate(-streakW / 2.0, 0);
+
+        canvas
+          ..save()
+          ..transform(_matrix.storage)
+          ..drawImage(streakImage, Offset.zero, _paint)
+          ..restore();
       } else {
-        _drawDot(canvas, particle, color);
+        final scale = (particle.size * 2.5) / (dotW / 2.0);
+
+        _matrix.setIdentity();
+        _matrix.translate(particle.x, particle.y);
+        _matrix.scale(scale, scale);
+        _matrix.translate(-dotW / 2.0, -dotH / 2.0);
+
+        canvas
+          ..save()
+          ..transform(_matrix.storage)
+          ..drawImage(dotImage, Offset.zero, _paint)
+          ..restore();
       }
     }
   }
 
-  void _drawStreak(Canvas canvas, FireParticle particle, Color color) {
-    canvas
-      ..save()
-      ..translate(particle.x, particle.y)
-      ..rotate(particle.rotation);
+  void _sortParticlesByDepth(List<FireParticle> particles) {
+    for (var i = 1; i < particles.length; i++) {
+      final particle = particles[i];
+      var j = i - 1;
 
-    final paint = Paint()
-      ..shader =
-          LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              color.withValues(alpha: particle.alpha),
-              color.withValues(alpha: particle.alpha * 0.3),
-              color.withValues(alpha: 0),
-            ],
-            stops: const [0.0, 0.5, 1.0],
-          ).createShader(
-            Rect.fromLTWH(
-              -particle.size * 0.5,
-              0,
-              particle.size,
-              particle.streakLength,
-            ),
-          );
-
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        -particle.size * 0.5,
-        0,
-        particle.size,
-        particle.streakLength,
-      ),
-      Radius.circular(particle.size * 0.5),
-    );
-
-    canvas
-      ..drawRRect(rrect, paint)
-      ..restore();
-  }
-
-  void _drawDot(Canvas canvas, FireParticle particle, Color color) {
-    final paint = Paint()
-      ..shader =
-          RadialGradient(
-            colors: [
-              color.withValues(alpha: particle.alpha * 0.9),
-              color.withValues(alpha: particle.alpha * 0.4),
-              color.withValues(alpha: 0),
-            ],
-            stops: const [0.0, 0.6, 1.0],
-          ).createShader(
-            Rect.fromCircle(
-              center: Offset(particle.x, particle.y),
-              radius: particle.size * 2.5,
-            ),
-          );
-
-    canvas.drawCircle(
-      Offset(particle.x, particle.y),
-      particle.size * 2.5,
-      paint,
-    );
+      var maxChecks = 5;
+      while (j >= 0 && maxChecks > 0 && particles[j].y < particle.y) {
+        particles[j + 1] = particles[j];
+        j--;
+        maxChecks--;
+      }
+      particles[j + 1] = particle;
+    }
   }
 
   @override
-  bool shouldRepaint(FireParticlesPainter oldDelegate) => true;
+  bool shouldRepaint(covariant FireParticlesPainter oldDelegate) {
+    return true;
+  }
 }
 
 class FireParticle {
-  FireParticle({
-    required this.x,
-    required this.y,
-    required this.size,
-    required this.alpha,
-    required this.targetAlpha,
-    required this.dx,
-    required this.dy,
-    required this.lifeReduction,
-    required this.isStreak,
-    required this.streakLength,
-    required this.rotation,
-  });
-
-  double x;
-  double y;
-  double size;
-  double alpha;
-  double targetAlpha;
-  double dx;
-  double dy;
-  double lifeReduction;
-  bool isStreak;
-  double streakLength;
-  double rotation;
+  double x = 0;
+  double y = 0;
+  double size = 0;
+  double baseSize = 0;
+  double alpha = 0;
+  double targetAlpha = 0;
+  double dx = 0;
+  double dy = 0;
+  double lifeReduction = 0;
+  bool isStreak = false;
+  double streakLength = 0;
+  double rotation = 0;
+  double rotationSpeed = 0;
+  double turbulence = 0;
+  double turbulencePhase = 0;
+  double flickerSpeed = 0;
+  double flickerPhase = 0;
+  double heatGlow = 0;
+  double time = 0;
 }

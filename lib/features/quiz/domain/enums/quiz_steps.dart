@@ -8,7 +8,7 @@ enum QuizSteps {
   mainGoalStep,
   trainingLevelStep,
   workoutFrequencyStep,
-  selectMainFactionStep,
+  // selectMainFactionStep,
   selectSecondFactionStep,
 }
 
@@ -21,7 +21,7 @@ extension QuizStepsX on QuizSteps {
       QuizSteps.mainGoalStep => const MainGoalStep(),
       QuizSteps.trainingLevelStep => const TrainingLevelStep(),
       QuizSteps.workoutFrequencyStep => const WorkoutFrequencyStep(),
-      QuizSteps.selectMainFactionStep => const SelectMainFactionStep(),
+      //QuizSteps.selectMainFactionStep => const SelectMainFactionStep(),
       QuizSteps.selectSecondFactionStep => const SelectSecondFactionStep(),
     };
   }

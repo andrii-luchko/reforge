@@ -7,11 +7,13 @@ import 'package:reforge/features/home/ui/widgets/home_app_bar.dart';
 import 'package:reforge/features/home/ui/widgets/portal_dropdown.dart';
 import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_list_tile.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
 
 class HomePage extends StatelessWidget {
@@ -19,13 +21,22 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final appTheme = context.appTheme;
+    return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
       backgroundColor: Colors.transparent,
-      appBar: HomeAppBar(),
-      body: HomeBody(),
+      appBar: const HomeAppBar(),
+      body: DefaultBackground(
+        body: const HomeBody(),
+
+        additionalAnimationsOnTop: [
+          Positioned.fill(
+            child: SunRaysShaderWidget.home(color: appTheme.orange500),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -60,8 +71,7 @@ class HomeBody extends StatelessWidget {
                   title: 'Forge Today’s Workout',
                   subtitle: 'Start workout',
                   onTap: () async {
-                    // ignore: inference_failure_on_function_invocation
-                    await const WorkoutDetailsPageRoute().push(context);
+                    await const WorkoutDetailsPageRoute().push<void>(context);
                   },
                 ),
               ),

@@ -13,24 +13,26 @@ typedef StepModel = ({
 class InstructionSection extends StatelessWidget {
   const InstructionSection({
     required this.steps,
+    this.needDecoration = true,
     super.key,
   });
 
   final Map<String, String> steps;
-
+  final bool needDecoration;
   @override
   Widget build(BuildContext context) {
     final entriesList = steps.entries.toList();
+    final decoration = BoxDecoration(
+      color: context.appTheme.beige900,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: context.appTheme.strokeCard,
+      ),
+    );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.appTheme.beige900,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.appTheme.strokeCard,
-        ),
-      ),
+      decoration: needDecoration ? decoration : null,
       child: Column(
         crossAxisAlignment: .start,
         children: [
@@ -39,23 +41,25 @@ class InstructionSection extends StatelessWidget {
             style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
           ),
           const SizedBox(height: 8),
+          if (entriesList.isEmpty)
+            const InstructionEmpty()
+          else
+            ...List.generate(entriesList.length, (index) {
+              final entry = entriesList[index];
+              final isLast = index == entriesList.length - 1;
 
-          ...List.generate(entriesList.length, (index) {
-            final entry = entriesList[index];
-            final isLast = index == entriesList.length - 1;
+              final numberString = (index + 1).toString().padLeft(2, '0');
 
-            final numberString = (index + 1).toString().padLeft(2, '0');
-
-            return StepItem(
-              step: (
-                number: numberString,
-                title: entry.key,
-                description: entry.value,
-                isActive: index == 0,
-              ),
-              isLast: isLast,
-            );
-          }),
+              return StepItem(
+                step: (
+                  number: numberString,
+                  title: entry.key,
+                  description: entry.value,
+                  isActive: index == 0,
+                ),
+                isLast: isLast,
+              );
+            }),
         ],
       ),
     );
@@ -207,5 +211,35 @@ class TimelinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant TimelinePainter oldDelegate) {
     return oldDelegate.isActive != isActive || oldDelegate.isLast != isLast;
+  }
+}
+
+class InstructionEmpty extends StatelessWidget {
+  const InstructionEmpty({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.construction_rounded,
+              size: 48,
+              color: context.appTheme.orange500,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "We are currently working on\ninstructions for this exercise",
+              textAlign: TextAlign.center,
+              style: subheadH6Regular.copyWith(
+                color: context.appTheme.beige600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

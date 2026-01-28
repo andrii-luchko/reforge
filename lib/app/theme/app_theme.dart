@@ -41,6 +41,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.menuButton,
     required this.radioButtonGradient,
     required this.gradientXpBar,
+    required this.workoutContainerBorderRadius,
+    required this.workoutContainerConstrains,
   });
 
   // Beige palette
@@ -78,4 +80,7 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   final LinearGradient menuBar;
   final LinearGradient menuButton;
   final LinearGradient gradientXpBar;
+
+  final BoxConstraints workoutContainerConstrains;
+  final BorderRadius workoutContainerBorderRadius;
 }

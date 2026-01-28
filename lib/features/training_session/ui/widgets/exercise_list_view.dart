@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/features/training_session/data/models/exercise_details.dart';
 import 'package:reforge/features/training_session/ui/widgets/workout_list_tile.dart';
-import 'package:reforge/features/workout_instruction/data/models/exercise_details.dart';
 
 class ExerciseListView extends StatelessWidget {
   const ExerciseListView({required this.exercises, super.key});
@@ -20,8 +20,8 @@ class ExerciseListView extends StatelessWidget {
         return WorkoutListTile(
           title: exercise.name,
           description: exercise.description,
-          imageUrl: exercise.imageUrl,
-          tags: const ['10 reps', 'xp 1500'],
+          imageUrl: exercise.thumbnailInstructionUrl,
+          // tags: exercise.,
           onTap: () async {
             await WorkoutInstructionPageRoute(
               name: exercise.name,

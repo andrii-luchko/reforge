@@ -24,6 +24,8 @@ class AppVideoPlayer extends StatefulWidget {
 class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControlsMixin {
   VideoPlayerController? _controller;
 
+  bool _hasError = false;
+
   @override
   VideoPlayerController get controller => _controller!;
 
@@ -40,17 +42,23 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControl
             ..initialize()
                 .then((_) {
                   if (mounted) {
-                    setState(() {});
-
+                    setState(() {
+                      _hasError = false;
+                    });
                     startHideTimer();
                   }
                 })
                 // ignore: inference_failure_on_untyped_parameter, discarded_futures
                 .catchError((error) {
                   logger.e('Video initialization failed: $error');
-
-                  if (mounted) setState(() => _controller = null);
+                  if (mounted) {
+                    setState(() {
+                      _hasError = true;
+                    });
+                  }
                 });
+    } else {
+      _hasError = true;
     }
   }
 
@@ -70,6 +78,7 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControl
             builder: (context) => FullScreenPlayer(controller: _controller!),
           ),
         )
+        // ignore: discarded_futures
         .then((_) {
           unawaited(SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]));
           unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
@@ -80,47 +89,55 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControl
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
-    final isReady = _controller != null && _controller!.value.isInitialized && !_controller!.value.hasError;
-
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: appTheme.beige900,
-          border: Border.all(
-            color: appTheme.strokeCard,
-          ),
+          border: Border.all(color: appTheme.strokeCard),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: !isReady
-              ? const VideoUnavailableWidget()
-              : ValueListenableBuilder(
-                  valueListenable: _controller!,
-                  builder: (context, controller, _) {
-                    if (controller.hasError) return const VideoUnavailableWidget();
-
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: toggleControls,
-                          child: VideoPlayer(_controller!),
-                        ),
-                        VideoControlsOverlay(
-                          controller: _controller!,
-                          isVisible: showControls,
-                          onPlayPause: togglePlay,
-                          onFullscreen: _enterFullScreen,
-                          onBackdropTap: toggleControls,
-                        ),
-                      ],
-                    );
-                  },
-                ),
+          child: _buildContent(),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_hasError || (_controller != null && _controller!.value.hasError)) {
+      return const VideoUnavailableWidget();
+    }
+
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator.adaptive(),
+      );
+    }
+
+    return ValueListenableBuilder(
+      valueListenable: _controller!,
+      builder: (context, value, _) {
+        if (value.hasError) return const VideoUnavailableWidget();
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            GestureDetector(
+              onTap: toggleControls,
+              child: VideoPlayer(_controller!),
+            ),
+            VideoControlsOverlay(
+              controller: _controller!,
+              isVisible: showControls,
+              onPlayPause: togglePlay,
+              onFullscreen: _enterFullScreen,
+              onBackdropTap: toggleControls,
+            ),
+          ],
+        );
+      },
     );
   }
 }

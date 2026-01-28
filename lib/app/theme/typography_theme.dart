@@ -106,3 +106,10 @@ const bodyLRegular = TextStyle(
   height: 1.3,
   fontVariations: <FontVariation>[FontVariation('wght', 400)],
 );
+
+const pickerBaseStyle = TextStyle(
+  fontSize: 28,
+  fontFamily: 'Helvetica',
+  fontWeight: FontWeight.w500,
+  letterSpacing: 0.4,
+);

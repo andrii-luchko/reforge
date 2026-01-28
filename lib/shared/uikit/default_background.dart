@@ -1,29 +1,38 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
-import 'package:reforge/shared/animations/shaders/particles_shader.dart';
 
 class DefaultBackground extends StatelessWidget {
   const DefaultBackground({
     required this.body,
     this.loader,
-    this.additionalAnimations = const [],
+    this.additionalAnimationsBehind = const [],
+    this.additionalAnimationsOnTop = const [],
+    this.additionalWidgetsAfterBody = const [],
     super.key,
   });
 
   final Widget body;
   final Positioned? loader;
-  final List<Widget> additionalAnimations;
+  final List<Widget> additionalAnimationsBehind;
+  final List<Widget> additionalAnimationsOnTop;
+  final List<Widget> additionalWidgetsAfterBody;
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Stack(
         children: [
-          //const Positioned.fill(child: ParticlesShaderWidget()),
+          Positioned.fill(
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+          ),
+          ...additionalAnimationsBehind,
           Positioned.fill(
             child: Image.asset(
               Assets.images.png.smoke.path,
               fit: .fill,
-              opacity: const AlwaysStoppedAnimation<double>(0.5),
+              opacity: const AlwaysStoppedAnimation<double>(0.2),
             ),
           ),
 
@@ -33,11 +42,9 @@ class DefaultBackground extends StatelessWidget {
               fit: .fill,
             ),
           ),
-
-          ...additionalAnimations,
-
+          ...additionalAnimationsOnTop,
           body,
-
+          ...additionalWidgetsAfterBody,
           ?loader,
         ],
       ),

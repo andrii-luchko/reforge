@@ -31,8 +31,8 @@ class SelectMainFactionStep extends StatelessWidget {
           builder: (context, mainFaction) {
             final cubit = context.read<QuizCubit>();
             return FactionSelector(
-              selectedFaction: mainFaction,
-              onFactionChanged: cubit.setMainFaction,
+              selectedFactions: mainFaction == null ? [] : [mainFaction],
+              onFactionToggled: cubit.setMainFaction,
             );
           },
         ),

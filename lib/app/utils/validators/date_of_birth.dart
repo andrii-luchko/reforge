@@ -1,6 +1,6 @@
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-String? validateDateOfBirth(DateTime? value, [DateTime? currentTime]) {
+String? validateDateOfBirth(DateTime? value, {DateTime? currentTime, int minAge = 10}) {
   if (value == null) {
     return t.validation.date_of_birth_required;
   }
@@ -20,6 +20,10 @@ String? validateDateOfBirth(DateTime? value, [DateTime? currentTime]) {
 
   if (age > 100) {
     return t.validation.date_of_birth_invalid;
+  }
+
+  if (age < minAge) {
+    return t.validation.date_of_birth_too_young(mimAge: minAge);
   }
 
   return null;

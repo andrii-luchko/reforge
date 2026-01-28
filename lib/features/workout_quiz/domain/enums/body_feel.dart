@@ -1,10 +1,16 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 enum BodyFeel {
+  @JsonValue(1)
   verySore,
+  @JsonValue(2)
   sore,
+  @JsonValue(3)
   slightlySore,
+  @JsonValue(4)
   mostlyFresh,
+  @JsonValue(5)
   fullyFresh,
 }
 

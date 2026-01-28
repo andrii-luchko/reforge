@@ -1,7 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:reforge/core/auth/data/enums/auth_providers.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
-import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/auth/data/requests/refresh_token_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
@@ -20,7 +19,6 @@ abstract interface class AuthRemoteDataSource {
   });
 
   Future<AuthTokens> refreshToken(String refreshToken);
-  Future<User> getCurrentUser();
   Future<void> logout();
 }
 
@@ -69,12 +67,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final response = await _apiClient.refreshToken(
       RefreshTokenRequest(refreshToken: refreshToken),
     );
-    return response.data;
-  }
-
-  @override
-  Future<User> getCurrentUser() async {
-    final response = await _apiClient.getCurrentUser();
     return response.data;
   }
 

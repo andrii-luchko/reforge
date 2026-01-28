@@ -133,6 +133,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/avatar.jpg
   AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
+  /// File path: assets/images/png/badge.png
+  AssetGenImage get badge => const AssetGenImage('assets/images/png/badge.png');
+
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
 
@@ -148,6 +151,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
 
+  /// File path: assets/images/png/shader_noise.png
+  AssetGenImage get shaderNoise => const AssetGenImage('assets/images/png/shader_noise.png');
+
   /// File path: assets/images/png/smoke.png
   AssetGenImage get smoke => const AssetGenImage('assets/images/png/smoke.png');
 
@@ -158,11 +164,13 @@ class $AssetsImagesPngGen {
   List<AssetGenImage> get values => [
     faction,
     avatar,
+    badge,
     foreground512x512,
     goldEnvelope,
     goldEnvelopePlus,
     icon1024x1024,
     noiseAndTexture,
+    shaderNoise,
     smoke,
     splashLogo,
   ];

@@ -38,11 +38,7 @@ class SuccessPasswordChangePage extends StatelessWidget {
                       SizedBox(
                         height: 200,
                         width: 200,
-                        child: SunRaysShaderWidget(
-                          alignment: .center,
-                          density: 4,
-                          color: appTheme.orange400,
-                        ),
+                        child: SunRaysShaderWidget.fromBehind(color: appTheme.orange500),
                       ),
 
                       BlurContainer(

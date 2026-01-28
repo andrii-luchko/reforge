@@ -11,12 +11,39 @@ enum MeasurementSystem {
 }
 
 extension MeasurementSystemExtension on MeasurementSystem {
-  String weight(Translations t) {
+  String weightName(Translations t) {
     switch (this) {
       case MeasurementSystem.metric:
-        return t.quiz.steps.measurement_system.metric;
+        return t.measure_system.weight.metric_name;
       case MeasurementSystem.imperial:
-        return t.quiz.steps.measurement_system.imperial;
+        return t.measure_system.weight.imperial_name;
+    }
+  }
+
+  String weightSymbol(Translations t) {
+    switch (this) {
+      case MeasurementSystem.metric:
+        return t.measure_system.weight.metric_symbol;
+      case MeasurementSystem.imperial:
+        return t.measure_system.weight.imperial_symbol;
+    }
+  }
+
+  String distanceSymbol(Translations t) {
+    switch (this) {
+      case MeasurementSystem.metric:
+        return t.measure_system.distance.metric_symbol;
+      case MeasurementSystem.imperial:
+        return t.measure_system.distance.imperial_symbol;
+    }
+  }
+
+  String distanceTitle(Translations t) {
+    switch (this) {
+      case MeasurementSystem.metric:
+        return t.measure_system.distance.metric_name;
+      case MeasurementSystem.imperial:
+        return t.measure_system.distance.imperial_name;
     }
   }
 }

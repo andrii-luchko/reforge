@@ -1,19 +1,25 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/features/workout_quiz/data/models/workout_quiz_answers.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/body_feel.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/energized_level.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/hydrated_level.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/sleep_quality.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/stress_level.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/work_out_quiz_steps.dart';
+import 'package:reforge/features/workout_quiz/domain/repositories/workout_quiz_repository.dart';
 
 part 'workout_quiz_cubit.freezed.dart';
 part 'workout_quiz_state.dart';
 
 @injectable
 class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
-  WorkoutQuizCubit() : super(const WorkoutQuizState());
+  WorkoutQuizCubit(this._workoutQuizRepository) : super(const WorkoutQuizState());
+
+  final WorkoutQuizRepository _workoutQuizRepository;
 
   bool get isStepValid {
     final currentStep = WorkOutQuizSteps.values[state.currentStep];
@@ -27,6 +33,23 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
       WorkOutQuizSteps.hasEatenRecentlyStep => true,
       WorkOutQuizSteps.isMorningSessionStep => true,
     };
+  }
+
+  Future<bool> isTodaySubmitted() async {
+    emit(state.copyWith(isLoading: true, apiError: null));
+
+    final result = await _workoutQuizRepository.isQuizTodaySubmitted();
+    logger.d(result);
+
+    switch (result) {
+      case Success(value: _):
+        emit(state.copyWith(isSubmitted: result.value, isLoading: false));
+        return result.value;
+
+      case Error(error: final error):
+        emit(state.copyWith(isSubmitted: false, isLoading: false, apiError: error.toString()));
+        return false;
+    }
   }
 
   void onStepChanged(int index) {
@@ -78,22 +101,34 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
 
     emit(state.copyWith(isLoading: true, apiError: null));
 
-    try {
-      await Future.delayed(const Duration(seconds: 1));
+    final answers = WorkoutQuizAnswers(
+      sleepQuality: state.sleepQuality!,
+      energizedLevel: state.energizedLevel!,
+      stressLevel: state.stressLevel!,
+      bodyFeel: state.bodyFeel!,
+      hydratedLevel: state.hydratedLevel!,
+      hasEatenRecently: state.hasEatenRecently,
+      isMorningSession: state.isMorningSession,
+    );
 
-      emit(
-        state.copyWith(
-          isLoading: false,
-          isSubmitted: true,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          apiError: e.toString(),
-        ),
-      );
+    final result = await _workoutQuizRepository.submitQuiz(answers);
+
+    switch (result) {
+      case Success(value: _):
+        emit(
+          state.copyWith(
+            isLoading: false,
+            isSubmitted: true,
+          ),
+        );
+      case Error(error: final error):
+        emit(
+          state.copyWith(
+            isLoading: false,
+            isSubmitted: false,
+            apiError: error.toString(),
+          ),
+        );
     }
   }
 }

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/features/splash/ui/widgets/splash_app_logo.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/animations/particles/fire_particles.dart';
-
-import 'package:reforge/shared/animations/shaders/particles_shader.dart';
+import 'package:reforge/shared/animations/particles/particles.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -14,7 +13,7 @@ class SplashPage extends StatelessWidget {
       body: SizedBox.expand(
         child: Stack(
           children: [
-            const Positioned.fill(child: ParticlesShaderWidget()),
+            const Positioned.fill(child: ParticlesWidget()),
 
             Positioned.fill(
               child: Image.asset(

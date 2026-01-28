@@ -1,6 +1,18 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-enum EnergizedLevel { veryLow, low, moderate, good, high }
+enum EnergizedLevel {
+  @JsonValue(1)
+  veryLow,
+  @JsonValue(2)
+  low,
+  @JsonValue(3)
+  moderate,
+  @JsonValue(4)
+  good,
+  @JsonValue(5)
+  high,
+}
 
 extension EnergizedLevelExtension on EnergizedLevel {
   String title(Translations t) {

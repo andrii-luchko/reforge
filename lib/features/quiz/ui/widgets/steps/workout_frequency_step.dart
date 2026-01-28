@@ -41,13 +41,14 @@ class _WorkoutFrequencyStepState extends State<WorkoutFrequencyStep> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _numberDaysList = List.generate(
-      7,
-      (i) => Text(
-        '${i + 1}',
+    _numberDaysList = List.generate(3, (i) {
+      final dayValue = i + 3;
+
+      return Text(
+        '$dayValue',
         style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-      ),
-    );
+      );
+    });
 
     final specificDays = cubit.state.specificWorkoutDays;
     if (specificDays.isNotEmpty) {
@@ -96,11 +97,15 @@ class _WorkoutFrequencyStepState extends State<WorkoutFrequencyStep> {
                 onTap: _specificDaysPortalController.close,
                 contentBuilder: (_, _) {
                   final selectedDaysNumber = cubit.state.workoutDaysPerWeek;
-                  final initialItem = selectedDaysNumber != null && selectedDaysNumber > 0 ? selectedDaysNumber : 0;
+                  final initialItem = (selectedDaysNumber != null && selectedDaysNumber >= 3)
+                      ? (selectedDaysNumber - 3)
+                      : 0;
+
                   return ValueScrollPicker(
                     initialItem: initialItem,
-                    onSelectedItemChanged: (value) {
-                      final daysCount = value + 1;
+
+                    onSelectedItemChanged: (index) {
+                      final daysCount = index + 3;
                       _numberCountController.text = daysCount.toString();
                       cubit.setWorkoutDays(daysCount);
                     },

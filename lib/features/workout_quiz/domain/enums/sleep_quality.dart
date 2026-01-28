@@ -1,6 +1,18 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-enum SleepQuality { veryPoor, poor, average, good, excellent }
+enum SleepQuality {
+  @JsonValue(1)
+  veryPoor,
+  @JsonValue(2)
+  poor,
+  @JsonValue(3)
+  average,
+  @JsonValue(4)
+  good,
+  @JsonValue(5)
+  excellent,
+}
 
 extension SleepQualityExtension on SleepQuality {
   String title(Translations t) {

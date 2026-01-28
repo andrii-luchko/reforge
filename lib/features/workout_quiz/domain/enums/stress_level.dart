@@ -1,10 +1,16 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 enum StressLevel {
+  @JsonValue(1)
   veryStressed,
+  @JsonValue(2)
   stressed,
+  @JsonValue(3)
   neutral,
+  @JsonValue(4)
   calm,
+  @JsonValue(5)
   veryRelaxed,
 }
 

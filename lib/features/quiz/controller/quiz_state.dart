@@ -23,7 +23,7 @@ sealed class QuizState with _$QuizState {
 
     Faction? mainFaction,
 
-    Faction? secondFaction,
+    @Default([]) List<Faction> secondFactions,
     String? secondFactionError,
 
     @Default(false) bool isLoading,

@@ -36,7 +36,7 @@ class _BodyWeightStepState extends State<BodyWeightStep> {
   }
 
   String _formatWeight(int weight) {
-    final unit = _cubit.state.measurementSystem.weight(t);
+    final unit = _cubit.state.measurementSystem.weightSymbol(t);
     return '$weight $unit';
   }
 

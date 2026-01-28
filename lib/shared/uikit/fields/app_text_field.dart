@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
@@ -11,11 +12,17 @@ class AppTextField extends StatefulWidget {
 
     this.errorText,
     this.hintText,
+    this.initialValue,
     this.controller,
     this.focusNode,
     this.suffixIcon,
     this.prefixIcon,
     this.onChanged,
+    this.maxLines = 1,
+    this.minLines = 1,
+    this.maxLength,
+    this.keyboardType,
+    this.inputFormatters,
   }) : _isPasswordField = false,
        isObscured = false;
 
@@ -27,13 +34,22 @@ class AppTextField extends StatefulWidget {
     this.focusNode,
     this.prefixIcon,
     this.onChanged,
+    this.maxLength,
+    this.initialValue,
+    this.inputFormatters,
   }) : suffixIcon = null,
        isObscured = true,
+       maxLines = 1,
+       minLines = 1,
+       keyboardType = TextInputType.visiblePassword,
        _isPasswordField = true;
 
   final String? errorText;
   final String? hintText;
+
+  final String? initialValue;
   final TextEditingController? controller;
+
   final FocusNode? focusNode;
 
   final ValueChanged<String>? onChanged;
@@ -43,6 +59,14 @@ class AppTextField extends StatefulWidget {
 
   final Widget? suffixIcon;
   final Widget? prefixIcon;
+
+  final int? maxLines;
+  final int minLines;
+
+  final int? maxLength;
+
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -59,8 +83,8 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(50);
-
+    final isMultiline = widget.maxLines == null || widget.maxLines! > 1;
+    final borderRadius = BorderRadius.circular(isMultiline ? 20 : 50);
     final contentStyle = bodyLRegular.copyWith(color: context.appTheme.beige100);
     final hintStyle = bodyLRegular.copyWith(color: context.appTheme.beige600);
 
@@ -80,19 +104,28 @@ class _AppTextFieldState extends State<AppTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        TextField(
+        TextFormField(
+          initialValue: widget.initialValue,
+
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
+
+          keyboardType: widget.keyboardType,
+
           controller: widget.controller,
           focusNode: widget.focusNode,
           onChanged: widget.onChanged,
+
           onTapOutside: (_) => FocusScope.of(context).unfocus(),
           style: contentStyle,
           cursorHeight: 15,
           cursorWidth: 1,
+          maxLength: widget.maxLength,
           cursorColor: context.appTheme.beige100,
           cursorErrorColor: context.appTheme.red400,
           obscureText: _obscureText,
           obscuringCharacter: '*',
-
+          inputFormatters: widget.inputFormatters,
           decoration: InputDecoration(
             hintText: widget.hintText,
             hintStyle: hintStyle,

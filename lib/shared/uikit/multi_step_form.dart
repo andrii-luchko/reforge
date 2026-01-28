@@ -93,10 +93,10 @@ class _MultiStepFormState extends State<MultiStepForm> {
       setState(() {
         _currentStep--;
       });
-      // ИСПРАВЛЕНИЕ: Используем animateToPage и явный индекс
+
       unawaited(
         _controller.animateToPage(
-          _currentStep - 1, // (step 2 -> index 1)
+          _currentStep - 1,
           duration: widget.pageTransitionDuration,
           curve: widget.pageTransitionCurve,
         ),
@@ -175,3 +175,4 @@ class _MultiStepFormState extends State<MultiStepForm> {
     );
   }
 }
+

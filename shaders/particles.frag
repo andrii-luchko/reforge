@@ -1,12 +1,12 @@
 #version 460 core
 #include <flutter/runtime_effect.glsl>
 
-uniform vec2 uResolution;   // Розмір екрану (було uSize)
+uniform vec2 uResolution;
 uniform float uTime;
 uniform vec3 uColor;
 uniform float uQuantity;
 uniform float uSpeed;
-uniform float uParticleSize; // Розмір частинки (було uSize)
+uniform float uParticleSize;
 uniform float uAlphaSpeed;
 
 out vec4 fragColor;
@@ -17,38 +17,44 @@ float hash(vec2 p) {
     return fract(p.x * p.y);
 }
 
+vec2 hash2(vec2 p) {
+    float x = hash(p);
+    float y = hash(p + vec2(12.34, 56.78));
+    return vec2(x, y) * 2.0 - 1.0;
+}
+
 void main() {
     vec2 uv = FlutterFragCoord().xy / uResolution;
     uv.x *= uResolution.x / uResolution.y;
     
     vec2 gridUV = uv * uQuantity;
     vec2 gridID = floor(gridUV);
+    vec2 localUV = fract(gridUV);
     
     vec3 color = vec3(0.0);
+    
+ 
+    float absoluteSize = uParticleSize;
     
     for(int y = -1; y <= 1; y++) {
         for(int x = -1; x <= 1; x++) {
             vec2 offset = vec2(float(x), float(y));
             vec2 neighborID = gridID + offset;
             
-            float n = hash(neighborID);
-            
-            float randomAngle = hash(neighborID + 1.0) * 6.28;
-            vec2 direction = vec2(cos(randomAngle), sin(randomAngle));
-            
+            vec2 direction = hash2(neighborID + 1.0); 
             vec2 moveShift = direction * uTime * uSpeed;
-            
             vec2 startPos = vec2(hash(neighborID), hash(neighborID + 2.0));
             vec2 particlePos = fract(startPos + moveShift) + offset;
             
-            vec2 localUV = fract(gridUV);
             float dist = length(localUV - particlePos);
             
-            float circle = 1.0 - smoothstep(uParticleSize - 0.01, uParticleSize + 0.01, dist);
+            float circle = 1.0 - smoothstep(absoluteSize, absoluteSize + (0.005 * uQuantity), dist);
             
-            float fade = sin(uTime * uAlphaSpeed + n * 10.0) * 0.5 + 0.5;
-            
-            color += circle * fade * uColor;
+            if (circle > 0.0) {
+                 float n = hash(neighborID);
+                 float fade = sin(uTime * uAlphaSpeed + n * 10.0) * 0.5 + 0.5;
+                 color += circle * fade * uColor;
+            }
         }
     }
     

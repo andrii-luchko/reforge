@@ -1,8 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/core/root/ui/page/root_page.dart';
+import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
 import 'package:reforge/features/auth/ui/pages/create_new_password_page.dart';
 import 'package:reforge/features/auth/ui/pages/forgot_password_email_page.dart';
@@ -18,14 +20,23 @@ import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
+import 'package:reforge/features/training_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/training_session/controllers/workout_congratulations/workout_congratulations_cubit.dart';
+import 'package:reforge/features/training_session/controllers/workout_flow/workout_flow_cubit.dart';
+import 'package:reforge/features/training_session/ui/pages/active_workout_page.dart';
+import 'package:reforge/features/training_session/ui/pages/active_workout_shell.dart';
+import 'package:reforge/features/training_session/ui/pages/start_running_page.dart';
+import 'package:reforge/features/training_session/ui/pages/workout_congratulations_page.dart';
+import 'package:reforge/features/training_session/ui/pages/workout_congratulations_shell.dart';
 import 'package:reforge/features/training_session/ui/pages/workout_details_page.dart';
-import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
-import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page.dart';
-import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_page.dart';
+import 'package:reforge/features/training_session/ui/widgets/active_workout_page/no_workout_error_widget.dart';
 import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
+import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
+import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_page.dart';
+import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page.dart';
 
-part 'routes.g.dart';
 part 'deep_link_routes.dart';
+part 'routes.g.dart';
 
 @TypedGoRoute<SplashPageRoute>(path: '/')
 class SplashPageRoute extends GoRouteData with $SplashPageRoute {
@@ -255,7 +266,50 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
   }
 }
 
-@TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details')
+@TypedShellRoute<WorkoutShellRoute>(
+  routes: [
+    TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details'),
+    TypedGoRoute<WorkoutInstructionPageRoute>(path: '/workout-instruction'),
+    TypedShellRoute<WorkoutQuizShellRoute>(
+      routes: [
+        TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz'),
+        TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-summary'),
+      ],
+    ),
+    TypedShellRoute<ActiveWorkoutsShellRoute>(
+      routes: [
+        TypedGoRoute<ActiveWorkoutPageRoute>(path: '/active-workout'),
+      ],
+    ),
+
+    TypedGoRoute<StartRunningPageRoute>(path: '/start-running'),
+    TypedShellRoute<WorkoutCongratulationsShellRoute>(
+      routes: [
+        TypedGoRoute<WorkoutCongratulationsPageRoute>(path: '/workout-congratulations'),
+      ],
+    ),
+  ],
+)
+class WorkoutShellRoute extends ShellRouteData {
+  @override
+  Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(
+          value: di.getIt<WorkoutFlowCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<WorkoutQuizCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<WorkoutCongratulationsCubit>(),
+        ),
+      ],
+      child: navigator,
+    );
+  }
+}
+
 class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute {
   const WorkoutDetailsPageRoute();
 
@@ -265,7 +319,6 @@ class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute 
   }
 }
 
-@TypedGoRoute<WorkoutInstructionPageRoute>(path: '/workout-instruction')
 class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPageRoute {
   const WorkoutInstructionPageRoute({required this.name, required this.workoutId});
 
@@ -281,19 +334,10 @@ class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPa
   }
 }
 
-@TypedShellRoute<WorkoutQuizShellRoute>(
-  routes: [
-    TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz'),
-    TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-summary'),
-  ],
-)
 class WorkoutQuizShellRoute extends ShellRouteData {
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
-    return BlocProvider(
-      create: (context) => di.getIt<WorkoutQuizCubit>(),
-      child: navigator,
-    );
+    return navigator;
   }
 }
 
@@ -312,5 +356,74 @@ class WorkoutQuizSummaryPageRoute extends GoRouteData with $WorkoutQuizSummaryPa
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const WorkoutQuizSummaryPage();
+  }
+}
+
+class ActiveWorkoutsShellRoute extends ShellRouteData {
+  @override
+  Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
+    return BlocProvider(
+      create: (context) => di.getIt<TimerCubit>(),
+      child: ActiveWorkoutShell(child: navigator),
+    );
+  }
+}
+
+class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
+  const ActiveWorkoutPageRoute({required this.exerciseId});
+
+  final int exerciseId;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return BlocBuilder<WorkoutFlowCubit, WorkoutFlowState>(
+      key: ValueKey(exerciseId),
+      builder: (context, flowState) {
+        final workoutSessionId = flowState.workoutSessionId;
+        final programDay = flowState.programDay;
+
+        if (workoutSessionId == null || programDay == null) {
+          return const NoWorkoutErrorWidget();
+        }
+
+        final programExercise = programDay.exercises.firstWhereOrNull(
+          (e) => e.exerciseDetails.id == exerciseId,
+        );
+
+        if (programExercise == null) {
+          return const NoWorkoutErrorWidget();
+        }
+
+        return BlocProvider(
+          create: (context) => di.getIt<ActiveExerciseCubit>(param1: workoutSessionId, param2: programExercise),
+          child: const ActiveWorkoutPage(),
+        );
+      },
+    );
+  }
+}
+
+class StartRunningPageRoute extends GoRouteData with $StartRunningPageRoute {
+  const StartRunningPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const StartRunningPage();
+  }
+}
+
+class WorkoutCongratulationsShellRoute extends ShellRouteData {
+  @override
+  Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
+    return WorkoutCongratulationsShell(child: navigator);
+  }
+}
+
+class WorkoutCongratulationsPageRoute extends GoRouteData with $WorkoutCongratulationsPageRoute {
+  const WorkoutCongratulationsPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const WorkoutCongratulationsPage();
   }
 }

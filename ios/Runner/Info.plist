@@ -18,6 +18,11 @@
 		<array>
 			<string>en</string>
 		</array>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>We need permission to save your workout results to your gallery.</string>
+
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>We need access to your photos to let you choose a profile picture.</string>
 		<key>CFBundleName</key>
 		<string>reforge</string>
 		<key>CFBundlePackageType</key>
@@ -26,7 +31,8 @@
 		<string>$(FLUTTER_BUILD_NAME)</string>
 		<key>CFBundleSignature</key>
 		<string>????</string>
-
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false />
 		<key>GIDClientID</key>
 		<string>351894320736-olvqknlg64put5lb74vf5guqhqpo7kmu.apps.googleusercontent.com</string>
 		<key>CFBundleURLTypes</key>
@@ -67,4 +73,5 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 	</dict>
+
 </plist>

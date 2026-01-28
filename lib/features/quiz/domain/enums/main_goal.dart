@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 @JsonEnum()
@@ -28,6 +29,17 @@ extension FitnessGoalExtension on MainGoal {
         return t.quiz.steps.main_goal.improve_endurance.description;
       case MainGoal.enhanceFlexibility:
         return t.quiz.steps.main_goal.enhance_flexibility.description;
+    }
+  }
+
+  Faction get faction {
+    switch (this) {
+      case MainGoal.buildStrength:
+        return Faction.gakki;
+      case MainGoal.improveEndurance:
+        return Faction.gyohyo;
+      case MainGoal.enhanceFlexibility:
+        return Faction.serien;
     }
   }
 }

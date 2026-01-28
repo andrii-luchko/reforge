@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/summary_widget.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -16,27 +17,17 @@ class WorkoutQuizSummaryPage extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
-      extendBody: true,
 
       body: DefaultBackground(
         body: const WorkoutQuizSummaryBody(),
-        additionalAnimations: [
+        additionalAnimationsOnTop: [
+          Positioned.fill(child: SunRaysShaderWidget.fromTop(color: appTheme.orange500)),
           Positioned.fill(
             child: SunRaysShaderWidget(
               color: appTheme.orange500,
-              alignment: const Alignment(0, -1.2),
-              intensity: 1,
-              density: 5,
-              rayLength: 0.6,
-            ),
-          ),
-          Positioned.fill(
-            child: SunRaysShaderWidget(
-              color: appTheme.orange500,
-              alignment: const Alignment(0, 0.2),
-              intensity: 1,
-              density: 5,
-              rayLength: 0.12,
+              alignment: const Alignment(0, 0.05),
+              rayLength: 0.03,
+              density: 1,
             ),
           ),
         ],
@@ -66,7 +57,9 @@ class WorkoutQuizSummaryBody extends StatelessWidget {
             const Spacer(),
             PrimaryButton(
               text: t.workout_quiz.quiz_summary.button_label,
-              onPressed: () {},
+              onPressed: () {
+                const ActiveWorkoutPageRoute(exerciseId: 1).go(context);
+              },
             ),
           ],
         ),

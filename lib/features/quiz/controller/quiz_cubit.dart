@@ -35,8 +35,8 @@ class QuizCubit extends Cubit<QuizState> {
             state.workoutDaysPerWeek! > 0 &&
             state.specificWorkoutDays.isNotEmpty &&
             state.workoutDaysPerWeek == state.specificWorkoutDays.length),
-      QuizSteps.selectMainFactionStep => state.mainFaction != null,
-      QuizSteps.selectSecondFactionStep => state.secondFaction != state.mainFaction,
+      //QuizSteps.selectMainFactionStep => state.mainFaction != null,
+      QuizSteps.selectSecondFactionStep => true,
     };
   }
 
@@ -44,7 +44,7 @@ class QuizCubit extends Cubit<QuizState> {
     emit(state.copyWith(currentStep: index));
   }
 
-  void setDateOfBirth(DateTime date) {
+  void setDateOfBirth(DateTime? date) {
     final error = validateDateOfBirth(date);
     emit(state.copyWith(dateOfBirth: date, dateOfBirthError: error));
   }
@@ -58,7 +58,12 @@ class QuizCubit extends Cubit<QuizState> {
   }
 
   void setMainGoal(MainGoal goal) {
-    emit(state.copyWith(mainGoal: goal));
+    emit(
+      state.copyWith(
+        mainGoal: goal,
+        mainFaction: goal.faction,
+      ),
+    );
   }
 
   void setTrainingLevel(TrainingLevel level) {
@@ -77,8 +82,20 @@ class QuizCubit extends Cubit<QuizState> {
     emit(state.copyWith(mainFaction: faction));
   }
 
-  void setSecondFaction(Faction faction) {
-    emit(state.copyWith(secondFaction: faction));
+  // void setSecondFaction(Faction faction) {
+  //   emit(state.copyWith(secondFaction: faction));
+  // }
+
+  void toggleSecondFaction(Faction faction) {
+    final currentList = List<Faction>.from(state.secondFactions);
+
+    if (currentList.contains(faction)) {
+      currentList.remove(faction);
+    } else {
+      currentList.add(faction);
+    }
+
+    emit(state.copyWith(secondFactions: currentList));
   }
 
   bool get isFormComplete {
@@ -114,7 +131,7 @@ class QuizCubit extends Cubit<QuizState> {
       workoutDaysPerWeek: state.workoutDaysPerWeek!,
       specificWorkoutDays: state.specificWorkoutDays.map((e) => e.value).toList(),
       mainFaction: state.mainFaction!,
-      secondFaction: state.secondFaction!,
+      secondFaction: state.secondFactions.firstOrNull,
     );
 
     final result = await _quizRepository.submitQuiz(answers);

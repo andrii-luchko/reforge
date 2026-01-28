@@ -5,12 +5,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/core/auth/data/datasources/auth_local_datasource.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
-import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/auth/data/repositories/auth_repository.dart';
-import 'package:reforge/core/auth/domain/repositories/auth_repository.dart';
-import 'package:reforge/core/auth/services/session_service.dart';
+import 'package:reforge/core/auth/domain/repositories/auth_repository.dart' as domain;
 
 part 'auth_cubit.freezed.dart';
 part 'auth_state.dart';
@@ -19,35 +16,24 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit(
     this._authRepository,
-    this._localDataSource,
-    this._sessionService,
   ) : super(const AuthState.loading()) {
     unawaited(_initialize());
   }
 
-  final AuthRepository _authRepository;
-  final AuthLocalDataSource _localDataSource;
-  final SessionService _sessionService;
+  final domain.AuthRepository _authRepository;
 
   Future<void> _initialize() async {
-    final tokens = await _localDataSource.getTokens();
-    if (tokens != null) {
-      // Try to get current user to verify session
-      final userResult = await _authRepository.getCurrentUser();
-      switch (userResult) {
-        case Success(value: final user):
-          _sessionService.setSession(user, tokens);
-          emit(AuthState.authenticated(user: user, tokens: tokens));
-        case Error():
-          // Token might be invalid, clear and go to unauthenticated
-          await _localDataSource.clearTokens();
-          _sessionService.clearSession();
+    final result = await _authRepository.getTokens();
+    switch (result) {
+      case Success(value: final tokens):
+        if (tokens != null) {
+          emit(AuthState.authenticated(tokens: tokens));
+          logger.d('Tokens found during initialization: $tokens');
+        } else {
           emit(const AuthState.unauthenticated());
-      }
-
-      logger.d('Tokens found during initialization: $tokens');
-    } else {
-      emit(const AuthState.unauthenticated());
+        }
+      case Error(error: final error):
+        emit(AuthState.error('get tokens failed: $error'));
     }
   }
 
@@ -58,19 +44,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
-        await _localDataSource.saveTokens(tokens);
-
-        final userResult = await _authRepository.getCurrentUser();
-        switch (userResult) {
-          case Success(value: final user):
-            _sessionService.setSession(user, tokens);
-            emit(AuthState.authenticated(user: user, tokens: tokens));
-          case Error(error: final error):
-            logger.e('Failed to get current user after sign in: $error');
-            // Even if getCurrentUser fails, we have tokens, so we're authenticated
-            // But we should handle this better - maybe store a minimal user or retry
-            emit(AuthState.authenticated(tokens: tokens));
-        }
+        emit(AuthState.authenticated(tokens: tokens));
       case Error(error: final error):
         emit(AuthState.error('Sign in failed: $error'));
     }
@@ -83,10 +57,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
-        await _localDataSource.saveTokens(tokens);
-
         emit(AuthState.authenticated(tokens: tokens));
-
       case Error(error: final error):
         emit(AuthState.error('Sign up failed: $error'));
     }
@@ -99,10 +70,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
-        await _localDataSource.saveTokens(tokens);
-
         emit(AuthState.authenticated(tokens: tokens));
-
       case Error(error: final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
@@ -120,10 +88,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
-        await _localDataSource.saveTokens(tokens);
-
         emit(AuthState.authenticated(tokens: tokens));
-
       case Error(error: final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
@@ -134,8 +99,19 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() async {
-    await _localDataSource.clearTokens();
-    _sessionService.clearSession();
-    emit(const AuthState.unauthenticated());
+    final currentState = state;
+
+    if (state is! _Authenticated) return;
+    emit(const AuthState.loading());
+
+    final result = await _authRepository.signOut();
+
+    switch (result) {
+      case Success():
+        emit(const AuthState.unauthenticated());
+      case Error(error: final error):
+        emit(AuthState.error('Sign up failed: $error'));
+        emit(currentState);
+    }
   }
 }

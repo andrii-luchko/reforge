@@ -11,6 +11,13 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
+import 'package:reforge/features/training_session/data/models/program_day.dart';
+import 'package:reforge/features/training_session/data/models/workout_session.dart';
+import 'package:reforge/features/training_session/data/models/workout_summary.dart';
+import 'package:reforge/features/training_session/data/requests/complete_set_request.dart';
+import 'package:reforge/features/training_session/data/requests/complete_workout_session_request.dart';
+import 'package:reforge/features/training_session/data/requests/start_workout_session_request.dart';
+import 'package:reforge/features/workout_quiz/data/requests/workout_quiz_request.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'api_client.g.dart';
@@ -41,12 +48,47 @@ abstract class ApiClient {
   @POST('/auth/refresh')
   Future<BaseResponse<AuthTokens>> refreshToken(@Body() RefreshTokenRequest request);
 
+  //Quiz
   @POST('/users/profile')
   Future<BaseResponse<void>> updateProfile(@Body() UpdateProfileRequest request);
 
-  @GET('/auth/me')
+  //User
+  @GET('/users/me')
   Future<BaseResponse<User>> getCurrentUser();
+
+  @DELETE('/users/me')
+  Future<BaseResponse<void>> deleteUser();
+
+  @DELETE('/users/{id}')
+  Future<BaseResponse<void>> deleteUserById(@Path('id') int id);
 
   @POST('/auth/logout')
   Future<void> logout();
+
+  //Training session
+  @GET('/workout-programs/program-days/{programDayId}')
+  Future<BaseResponse<List<ProgramDay>>> getWorkoutByDay(@Path('programDayId') int programDayId);
+
+  //
+  @POST('/workout-exercise-set-sessions')
+  Future<void> completeSet(@Body() CreateSetSessionRequest request);
+
+  @POST('/workout-sessions')
+  Future<BaseResponse<WorkoutSession>> starWorkoutSession(@Body() StartWorkoutSessionRequest request);
+
+  @DELETE('/workout-sessions/{id}')
+  Future<BaseResponse<dynamic>> deleteWorkoutSession(@Path('id') int workoutSessionId);
+
+  @PATCH('/workout-sessions/{id}/complete')
+  Future<BaseResponse<WorkoutSessionSummary>> completeWorkoutSession(
+    @Path('id') int workoutSessionId,
+    @Body() CompleteWorkoutSessionRequest request,
+  );
+
+  //Training quiz
+  @GET('/user-workout-readiness/users/{id}/check')
+  Future<BaseResponse<bool>> isQuizTodaySubmitted(@Path('id') int userId);
+
+  @POST('/user-workout-readiness')
+  Future<BaseResponse<void>> submitWorkoutQuiz(@Body() WorkoutQuizRequest request);
 }

@@ -26,7 +26,7 @@ sealed class QuizAnswers with _$QuizAnswers {
 
     required Faction mainFaction,
 
-    required Faction secondFaction,
+    required Faction? secondFaction,
   }) = _QuizAnswers;
 
   factory QuizAnswers.fromJson(Map<String, dynamic> json) => _$QuizAnswersFromJson(json);

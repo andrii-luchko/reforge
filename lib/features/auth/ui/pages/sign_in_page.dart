@@ -32,14 +32,10 @@ class _SignInPageState extends State<SignInPage> {
             ),
           ),
         ),
-        additionalAnimations: [
+        additionalAnimationsOnTop: [
           Positioned.fill(
-            child: SunRaysShaderWidget(
+            child: SunRaysShaderWidget.fromTop(
               color: appTheme.orange500,
-              alignment: const Alignment(0, -1.2),
-              intensity: 1,
-              density: 5,
-              rayLength: 0.6,
             ),
           ),
         ],
