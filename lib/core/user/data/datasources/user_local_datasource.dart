@@ -9,24 +9,20 @@ abstract interface class UserLocalDataSource {
 
 @Injectable(as: UserLocalDataSource)
 class UserLocalDataSourceImpl implements UserLocalDataSource {
-  // TODO: Implement using shared_preferences or similar
   User? _cachedUser;
 
   @override
   Future<void> saveUser(User user) async {
     _cachedUser = user;
-    // TODO: Persist to local storage
   }
 
   @override
   Future<User?> getUser() async {
     return _cachedUser;
-    // TODO: Load from local storage
   }
 
   @override
   Future<void> clearUser() async {
     _cachedUser = null;
-    // TODO: Clear from local storage
   }
 }

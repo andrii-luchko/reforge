@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_common/ui/workout_navigation_mixin.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/exercise_section.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/start_workout_button.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/workout_details_section.dart';
-
+import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 

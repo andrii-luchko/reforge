@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_common/models/workout_set.dart';
 
 part 'previous_exercise_result.freezed.dart';
 

@@ -3,12 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
-
+import 'package:reforge/features/active_workout/ui/widgets/active_workout_app_bar.dart';
+import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
+import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
-import 'package:reforge/features/active_workout/ui/widgets/active_workout_app_bar.dart';
-import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:toastification/toastification.dart';
 

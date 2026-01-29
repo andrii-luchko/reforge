@@ -26,14 +26,14 @@ class _ParticlesShaderWidgetState extends State<ParticlesShaderWidget> {
   ui.FragmentShader? _shader;
   Timer? _timer;
 
-  final ValueNotifier<double> _timeNotifier = ValueNotifier(0.0);
+  final ValueNotifier<double> _timeNotifier = ValueNotifier(0);
 
   final DateTime _startTime = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _loadShader();
+    unawaited(_loadShader());
 
     _timer = Timer.periodic(const Duration(milliseconds: 33), (_) {
       final elapsed = DateTime.now().difference(_startTime);
@@ -116,13 +116,16 @@ class _ParticlesPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final colorRed = (color.r * 255.0).round().clamp(0, 255);
+    final colorGreen = (color.g * 255.0).round().clamp(0, 255);
+    final colorBlue = (color.b * 255.0).round().clamp(0, 255);
     shader
       ..setFloat(0, size.width)
       ..setFloat(1, size.height)
       ..setFloat(2, timeNotifier.value)
-      ..setFloat(3, color.red / 255.0)
-      ..setFloat(4, color.green / 255.0)
-      ..setFloat(5, color.blue / 255.0)
+      ..setFloat(3, colorRed / 255.0)
+      ..setFloat(4, colorGreen / 255.0)
+      ..setFloat(5, colorBlue / 255.0)
       ..setFloat(6, quantity)
       ..setFloat(7, speed)
       ..setFloat(8, particleSize)

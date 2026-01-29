@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/constants/workout_constants.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/active_workout/ui/widgets/previous_result_dialog.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/rest_timer/ui/widgets/rest_timer/rest_timer_dialog.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/active_workout/ui/widgets/previous_result_dialog.dart';
-import 'package:reforge/features/rest_timer/ui/widgets/rest_timer/rest_timer_dialog.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/edit_dialog_template.dart';

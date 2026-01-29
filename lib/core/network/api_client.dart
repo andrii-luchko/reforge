@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:reforge/app/utils/helpers/base_response.dart';
-
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/auth/data/requests/password_reset_confirm_req.dart';
@@ -11,11 +10,11 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
+import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
-import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
 import 'package:reforge/features/workout_quiz/data/requests/workout_quiz_request.dart';

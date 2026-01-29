@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_common/domain/enums/tier.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 
 part 'workout_congratulations_content.freezed.dart';
 

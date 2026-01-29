@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/features/workout_common/domain/enums/tier.dart';
+import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';

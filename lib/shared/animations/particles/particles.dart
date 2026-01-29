@@ -1,5 +1,6 @@
 // ignore_for_file: omit_local_variable_types
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -47,7 +48,7 @@ class _ParticlesWidgetState extends State<ParticlesWidget> with SingleTickerProv
     );
 
     if (widget.enabled) {
-      _controller.repeat();
+      unawaited(_controller.repeat());
     }
   }
 
@@ -92,7 +93,7 @@ class _ParticlesWidgetState extends State<ParticlesWidget> with SingleTickerProv
 
     if (widget.enabled != oldWidget.enabled) {
       if (widget.enabled) {
-        _controller.repeat();
+        unawaited(_controller.repeat());
       } else {
         _controller.stop();
       }

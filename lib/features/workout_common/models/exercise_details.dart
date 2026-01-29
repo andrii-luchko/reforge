@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_common/models/tier.dart';
 
 part 'exercise_details.freezed.dart';
 part 'exercise_details.g.dart';

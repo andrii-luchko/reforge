@@ -35,7 +35,7 @@ class SummaryContentWidget extends StatelessWidget {
     final appTheme = context.appTheme;
     final items = <Widget>[];
 
-    int itemNumber = 1;
+    var itemNumber = 1;
 
     if (content.newLevel != null) {
       items.add(
@@ -47,40 +47,40 @@ class SummaryContentWidget extends StatelessWidget {
       );
     }
 
-    items.add(
-      SummaryRowWidget(
-        number: itemNumber++,
-        title: t.workout_congratulations.xp_earned,
-        tag: Expanded(
-          flex: 2,
-          child: Row(
-            spacing: 16,
-            children: [
-              Flexible(
-                child: HorizontalXPBar(
-                  progress: content.xpProgress ?? 0.2,
+    items
+      ..add(
+        SummaryRowWidget(
+          number: itemNumber++,
+          title: t.workout_congratulations.xp_earned,
+          tag: Expanded(
+            flex: 2,
+            child: Row(
+              spacing: 16,
+              children: [
+                Flexible(
+                  child: HorizontalXPBar(
+                    progress: content.xpProgress ?? 0.2,
+                  ),
                 ),
-              ),
-              Text(
-                '+${content.xpEarned.toString().replaceAllMapped(
-                  RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                  (Match m) => '${m[1]},',
-                )} XP',
-                style: subheadH8Semibold.copyWith(color: appTheme.beige100),
-              ),
-            ],
+                Text(
+                  '+${content.xpEarned.toString().replaceAllMapped(
+                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                    (Match m) => '${m[1]},',
+                  )} XP',
+                  style: subheadH8Semibold.copyWith(color: appTheme.beige100),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-
-    items.add(
-      SummaryRowWidget(
-        number: itemNumber++,
-        title: t.workout_congratulations.duration,
-        tag: AppTag(text: _formatDuration(content.timeSpent)),
-      ),
-    );
+      )
+      ..add(
+        SummaryRowWidget(
+          number: itemNumber++,
+          title: t.workout_congratulations.duration,
+          tag: AppTag(text: _formatDuration(content.timeSpent)),
+        ),
+      );
 
     return SingleChildScrollView(
       child: Column(

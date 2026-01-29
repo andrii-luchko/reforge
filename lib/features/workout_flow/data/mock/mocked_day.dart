@@ -1,7 +1,7 @@
+import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/exercise_details.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day.dart';
 import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
 final List<ExerciseDetails> newMockExercises = [
   // ID 1: Barbell Deadlift

@@ -1,18 +1,21 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
-import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
+import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
-part 'active_exercise_state.dart';
 part 'active_exercise_cubit.freezed.dart';
+part 'active_exercise_state.dart';
 
 @injectable
 class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
@@ -21,7 +24,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
   ) : super(const ActiveExerciseState()) {
-    _init();
+    unawaited(_init());
   }
 
   final TrainingSessionRepository repository;

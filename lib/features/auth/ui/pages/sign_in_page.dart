@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
-
 import 'package:reforge/features/auth/controllers/validation/auth_validation_cubit.dart';
-import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_screen_loader.dart';
 import 'package:reforge/features/auth/ui/widgets/forms/sign_in_form.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
+import 'package:reforge/shared/uikit/default_background.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});

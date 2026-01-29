@@ -111,8 +111,8 @@ class HomeBody extends StatelessWidget {
                               padding: const EdgeInsets.all(8),
                               child: Row(
                                 children: [
-                                  Text('Last week'),
-                                  SizedBox(
+                                  const Text('Last week'),
+                                  const SizedBox(
                                     width: 8,
                                   ),
                                   SelectorSuffixIcon(

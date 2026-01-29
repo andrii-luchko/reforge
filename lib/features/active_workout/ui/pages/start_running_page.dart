@@ -30,6 +30,7 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
     _mainController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
+      // ignore: discarded_futures
     )..repeat(reverse: true);
 
     _breatheAnimation = CurvedAnimation(
@@ -46,7 +47,7 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
         setState(() {
           _currentCount--;
         });
-        HapticFeedback.mediumImpact();
+        unawaited(HapticFeedback.mediumImpact());
       } else {
         timer.cancel();
         _onCountdownFinished();
@@ -183,7 +184,7 @@ class _CounterTextState extends State<CounterText> {
     ).createShader(shaderRect);
 
     _maskShader2 = const LinearGradient(
-      begin: Alignment(-2.0, -2.0),
+      begin: Alignment(-2, -2),
       end: Alignment.bottomCenter,
       colors: [
         Color(0xFF703C16),

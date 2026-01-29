@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_common/ui/widgets/workout_container.dart';
-import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
+import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/ui/widgets/uikit/workout_done_button.dart';
 import 'package:reforge/features/workout_common/ui/widgets/uikit/workout_field.dart';
+import 'package:reforge/features/workout_common/ui/widgets/workout_container.dart';
+import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_row_layout.dart';
 
 class WorkoutExerciseRow extends StatelessWidget {

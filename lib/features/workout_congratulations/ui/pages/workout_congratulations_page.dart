@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
-import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
+import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/achievement_content_widget.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/rank_card_content_widget.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/share_content_widgets.dart';

@@ -67,8 +67,8 @@ class _NotchedBorderPainter extends CustomPainter {
     required this.notchWidth,
     required this.notchDepth,
     required this.notchCornerRadius,
-    this.borderGradient,
     required this.notchBottomWidthRatio,
+    this.borderGradient,
   });
 
   final Color borderColor;
@@ -104,17 +104,16 @@ class _NotchedBorderPainter extends CustomPainter {
     final w = size.width;
     final centerX = w / 2;
 
-    path.moveTo(0, cornerRadius);
-    path.quadraticBezierTo(0, 0, cornerRadius, 0);
-
-    path.lineTo(centerX - (notchWidth / 2) - notchCornerRadius, 0);
-
-    path.quadraticBezierTo(
-      centerX - (notchWidth / 2),
-      0,
-      centerX - (notchWidth / 2) + notchCornerRadius,
-      notchCornerRadius,
-    );
+    path
+      ..moveTo(0, cornerRadius)
+      ..quadraticBezierTo(0, 0, cornerRadius, 0)
+      ..lineTo(centerX - (notchWidth / 2) - notchCornerRadius, 0)
+      ..quadraticBezierTo(
+        centerX - (notchWidth / 2),
+        0,
+        centerX - (notchWidth / 2) + notchCornerRadius,
+        notchCornerRadius,
+      );
 
     final topHalfWidth = notchWidth / 2;
     final bottomHalfWidth = topHalfWidth * notchBottomWidthRatio;

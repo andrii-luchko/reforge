@@ -111,6 +111,7 @@ class _DateInputFieldState extends State<DateInputField> {
       } else {
         widget.onDateSelected(null);
       }
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       widget.onDateSelected(null);
     }
@@ -134,9 +135,8 @@ class _DateInputFieldState extends State<DateInputField> {
 }
 
 class _DateTextFormatter extends TextInputFormatter {
+  const _DateTextFormatter({required this.separator});
   final String separator;
-
-  _DateTextFormatter({required this.separator});
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -145,9 +145,9 @@ class _DateTextFormatter extends TextInputFormatter {
     if (text.length > 10) return oldValue;
 
     final buffer = StringBuffer();
-    for (int i = 0; i < text.length; i++) {
+    for (var i = 0; i < text.length; i++) {
       buffer.write(text[i]);
-      var nonZeroIndex = i + 1;
+      final nonZeroIndex = i + 1;
 
       if ((nonZeroIndex == 2 || nonZeroIndex == 4) && nonZeroIndex != text.length) {
         buffer.write(separator);

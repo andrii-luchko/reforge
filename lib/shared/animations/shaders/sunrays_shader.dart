@@ -100,6 +100,7 @@ class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTi
           _program = program;
         });
       }
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       debugPrint('Shader error: $e');
     }

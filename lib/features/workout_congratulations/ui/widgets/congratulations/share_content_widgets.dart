@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/features/workout_common/domain/enums/tier.dart';
+import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
@@ -110,7 +110,7 @@ class SummaryShareContent extends StatelessWidget {
     final appTheme = context.appTheme;
     final items = <Widget>[];
 
-    int itemNumber = 1;
+    var itemNumber = 1;
 
     if (content.newLevel != null) {
       items.add(
@@ -122,40 +122,40 @@ class SummaryShareContent extends StatelessWidget {
       );
     }
 
-    items.add(
-      SummaryRowWidget(
-        number: itemNumber++,
-        title: t.workout_congratulations.xp_earned,
-        tag: Expanded(
-          flex: 2,
-          child: Row(
-            spacing: 8,
-            children: [
-              Flexible(
-                child: HorizontalXPBar(
-                  progress: content.xpProgress ?? 0.0,
+    items
+      ..add(
+        SummaryRowWidget(
+          number: itemNumber++,
+          title: t.workout_congratulations.xp_earned,
+          tag: Expanded(
+            flex: 2,
+            child: Row(
+              spacing: 8,
+              children: [
+                Flexible(
+                  child: HorizontalXPBar(
+                    progress: content.xpProgress ?? 0.0,
+                  ),
                 ),
-              ),
-              Text(
-                '+${content.xpEarned.toString().replaceAllMapped(
-                  RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                  (Match m) => '${m[1]},',
-                )} XP',
-                style: subheadH8Semibold.copyWith(color: appTheme.beige100),
-              ),
-            ],
+                Text(
+                  '+${content.xpEarned.toString().replaceAllMapped(
+                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                    (Match m) => '${m[1]},',
+                  )} XP',
+                  style: subheadH8Semibold.copyWith(color: appTheme.beige100),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-
-    items.add(
-      SummaryRowWidget(
-        number: itemNumber++,
-        title: t.workout_congratulations.duration,
-        tag: AppTag(text: _formatDuration(content.timeSpent)),
-      ),
-    );
+      )
+      ..add(
+        SummaryRowWidget(
+          number: itemNumber++,
+          title: t.workout_congratulations.duration,
+          tag: AppTag(text: _formatDuration(content.timeSpent)),
+        ),
+      );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -175,7 +175,6 @@ class SummaryShareContent extends StatelessWidget {
         SizedBox(
           width: MediaQuery.of(context).size.width,
           child: FittedBox(
-            fit: BoxFit.contain,
             child: SizedBox(
               width: 400,
               child: StaggeredSummaryCard(items: items),

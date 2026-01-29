@@ -3,14 +3,14 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 class GridSelectionView extends StatelessWidget {
-  final int itemCount;
-  final Widget Function(BuildContext, int) itemBuilder;
-
   const GridSelectionView({
     required this.itemCount,
     required this.itemBuilder,
     super.key,
   });
+
+  final int itemCount;
+  final Widget Function(BuildContext, int) itemBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +33,16 @@ class GridSelectionView extends StatelessWidget {
 }
 
 class SelectableGridCell extends StatelessWidget {
-  final String text;
-  final bool isSelected;
-  final VoidCallback onTap;
-
   const SelectableGridCell({
     required this.text,
     required this.isSelected,
     required this.onTap,
     super.key,
   });
+
+  final String text;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
