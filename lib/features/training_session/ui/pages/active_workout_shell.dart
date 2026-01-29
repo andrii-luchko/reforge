@@ -48,13 +48,16 @@ class ActiveWorkoutShell extends StatelessWidget {
 
         BlocListener<WorkoutFlowCubit, WorkoutFlowState>(
           listenWhen: (previous, current) {
-            return previous.currentExercise != current.currentExercise ||
-                previous.isCompleted != current.isCompleted ||
-                previous.isCanceled != current.isCanceled;
+            if (previous.sessionStatus != current.sessionStatus) return true;
+
+            if (previous.currentExerciseIndex != current.currentExerciseIndex) return true;
+
+            return false;
           },
           listener: (context, flowState) {
             if (flowState.isCanceled) {
               const HomePageRoute().go(context);
+              return;
             }
 
             if (flowState.isCompleted) {
@@ -67,10 +70,12 @@ class ActiveWorkoutShell extends StatelessWidget {
                     WorkoutCongratulationsContent.summary(WorkoutSummaryContent.fromSessionSummary(summary)),
                   ],
                 );
-
                 const WorkoutCongratulationsPageRoute().go(context);
               }
-            } else if (flowState.currentExercise != null) {
+              return;
+            }
+
+            if (flowState.currentExercise != null) {
               ActiveWorkoutPageRoute(
                 exerciseId: flowState.currentExercise!.exerciseDetails.id,
               ).go(context);

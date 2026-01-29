@@ -4,14 +4,13 @@ import 'package:reforge/features/training_session/domain/enums/workout_metrics.d
 
 part 'workout_set.freezed.dart';
 
-part 'workout_set.g.dart';
-
 @freezed
 sealed class WorkoutSet with _$WorkoutSet {
   const WorkoutSet._();
 
   factory WorkoutSet({
-    required String id,
+    required int id,
+    int? setNumber,
     Duration? time,
     double? distance,
     double? pace,
@@ -22,8 +21,6 @@ sealed class WorkoutSet with _$WorkoutSet {
     @Default(false) bool isDone,
     @Default(false) bool isBusy,
   }) = _WorkoutSet;
-
-  factory WorkoutSet.fromJson(Map<String, dynamic> json) => _$WorkoutSetFromJson(json);
 
   bool get isEmpty =>
       time == null && distance == null && pace == null && weight == null && reps == null && degrees == null;

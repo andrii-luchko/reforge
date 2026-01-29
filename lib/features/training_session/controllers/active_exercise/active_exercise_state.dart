@@ -10,6 +10,7 @@ sealed class ActiveExerciseState with _$ActiveExerciseState {
 
     Tier? selectedTier,
 
+    PreviousExerciseResult? previousResult,
     String? error,
     String? setValidationError,
     @Default(false) bool isLoading,

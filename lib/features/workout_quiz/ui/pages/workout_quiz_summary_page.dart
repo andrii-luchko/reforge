@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/features/training_session/ui/mixins/workout_navigation_mixin.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/summary_widget.dart';
+import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/centered_title_section.dart';
@@ -31,12 +32,13 @@ class WorkoutQuizSummaryPage extends StatelessWidget {
             ),
           ),
         ],
+        loader: const Positioned.fill(child: WorkoutQuizLoader()),
       ),
     );
   }
 }
 
-class WorkoutQuizSummaryBody extends StatelessWidget {
+class WorkoutQuizSummaryBody extends StatelessWidget with WorkoutNavigationMixin {
   const WorkoutQuizSummaryBody({super.key});
 
   @override
@@ -57,9 +59,7 @@ class WorkoutQuizSummaryBody extends StatelessWidget {
             const Spacer(),
             PrimaryButton(
               text: t.workout_quiz.quiz_summary.button_label,
-              onPressed: () {
-                const ActiveWorkoutPageRoute(exerciseId: 1).go(context);
-              },
+              onPressed: () async => handleStartWorkout(context),
             ),
           ],
         ),

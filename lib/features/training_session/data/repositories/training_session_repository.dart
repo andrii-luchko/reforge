@@ -65,6 +65,30 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   }
 
   @override
+  Future<Result<({String? notes, List<WorkoutSet>? sets})?>> getPreviousResults({
+    required int workoutSessionId,
+    required int programExerciseId,
+    required MeasurementSystem system,
+  }) async {
+    try {
+      final response = await _apiClient.getPreviousExercise(workoutSessionId, programExerciseId);
+
+      final data = response.data;
+
+      if (data == null) {
+        return const Result.success(null);
+      } else {
+        final list = data.sets?.map((set) => set.toWorkoutSet(system)).toList();
+        final notes = data.notes;
+
+        return Result.success((notes: notes, sets: list));
+      }
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
   Future<Result<WorkoutSessionSummary>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,
@@ -112,6 +136,12 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
     required int workoutProgramExerciseId,
     required String note,
   }) async {
-    return const Result.success(null);
+    try {
+      await _apiClient.saveExerciseNotes(workoutSessionId, workoutProgramExerciseId, exerciseId, note);
+
+      return const Result.success(null);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
   }
 }

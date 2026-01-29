@@ -7,15 +7,17 @@ import 'package:reforge/features/training_session/ui/widgets/app_tags_list_view.
 import 'package:reforge/shared/app_cached_net_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class WorkoutListTile extends StatefulWidget {
-  const WorkoutListTile({
+// ==========================================
+// 1. Static Version (Compact, Fixed Size)
+// ==========================================
+
+class StaticWorkoutTile extends StatelessWidget {
+  const StaticWorkoutTile({
     required this.title,
     required this.description,
     required this.imageUrl,
     this.tags,
-    this.children,
     this.onTap,
-    this.initiallyExpanded = false,
     this.showTrailingIcon = true,
     super.key,
   });
@@ -24,22 +26,72 @@ class WorkoutListTile extends StatefulWidget {
   final String description;
   final String? imageUrl;
   final List<String>? tags;
-  final List<Widget>? children;
   final VoidCallback? onTap;
-  final bool initiallyExpanded;
   final bool showTrailingIcon;
 
   @override
-  State<WorkoutListTile> createState() => _WorkoutListTileState();
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return _BaseWorkoutTileContainer(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: _TileHeaderContent(
+          title: title,
+          description: description,
+          imageUrl: imageUrl,
+          tags: tags,
+
+          imageSize: const Size(62, 62),
+          isDescriptionExpanded: false,
+          trailing: showTrailingIcon
+              ? Icon(
+                  Icons.chevron_right_rounded,
+                  color: appTheme.beige200,
+                  size: 32,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
 }
 
-class _WorkoutListTileState extends State<WorkoutListTile> with SingleTickerProviderStateMixin {
+// ==========================================
+// 2. Expandable Version (Animated, Large Image)
+// ==========================================
+
+class ExpandableWorkoutTile extends StatefulWidget {
+  const ExpandableWorkoutTile({
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.children,
+    this.tags,
+    this.onTap,
+    this.initiallyExpanded = false,
+    super.key,
+  });
+
+  final String title;
+  final String description;
+  final String? imageUrl;
+  final List<String>? tags;
+  final List<Widget> children;
+  final VoidCallback? onTap;
+  final bool initiallyExpanded;
+
+  @override
+  State<ExpandableWorkoutTile> createState() => _ExpandableWorkoutTileState();
+}
+
+class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _iconTurns;
   late final Animation<double> _heightFactor;
 
   bool _isExpanded = false;
-  bool get _hasChildren => widget.children != null && widget.children!.isNotEmpty;
 
   @override
   void initState() {
@@ -48,7 +100,6 @@ class _WorkoutListTileState extends State<WorkoutListTile> with SingleTickerProv
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-
     _iconTurns = Tween<double>(begin: 0, end: 0.5).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
@@ -65,105 +116,111 @@ class _WorkoutListTileState extends State<WorkoutListTile> with SingleTickerProv
   }
 
   void _handleTap() {
-    if (_hasChildren) {
-      setState(() {
-        _isExpanded = !_isExpanded;
-        if (_isExpanded) {
-          unawaited(_controller.forward());
-        } else {
-          unawaited(_controller.reverse());
-        }
-      });
-
-      widget.onTap?.call();
-    } else {
-      widget.onTap?.call();
-    }
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        unawaited(_controller.forward());
+      } else {
+        unawaited(_controller.reverse());
+      }
+    });
+    widget.onTap?.call();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final imageSize = (widget.tags == null || widget.tags!.isEmpty)
+            ? Size.lerp(const Size(73, 85), const Size(62, 62), _controller.value)!
+            : const Size(73, 85);
+
+        return _BaseWorkoutTileContainer(
+          onTap: _handleTap,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: _TileHeaderContent(
+                  title: widget.title,
+                  description: widget.description,
+                  imageUrl: widget.imageUrl,
+                  tags: widget.tags,
+                  imageSize: imageSize,
+                  isDescriptionExpanded: _isExpanded, // Анимируем текст
+                  trailing: RotationTransition(
+                    turns: _iconTurns,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: appTheme.beige200,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              ),
+              _ExpandableBody(
+                heightFactor: _heightFactor,
+                children: widget.children,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ==========================================
+// Shared Private Components
+// ==========================================
+
+class _BaseWorkoutTileContainer extends StatelessWidget {
+  const _BaseWorkoutTileContainer({
+    required this.child,
+    this.onTap,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(20);
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Material(
-          color: appTheme.beige900,
-          borderRadius: borderRadius,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: borderRadius,
-              gradient: appTheme.radioButtonGradient,
-              border: Border.all(color: appTheme.strokeCard),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _TileHeader(
-                  title: widget.title,
-                  description: widget.description,
-                  imageUrl: widget.imageUrl,
-                  tags: widget.tags,
-                  onTap: _handleTap,
-                  borderRadius: borderRadius,
-                  isExpanded: _isExpanded,
-                  animationValue: _controller.value,
-
-                  trailing: _buildTrailingIcon(appTheme),
-                ),
-
-                if (_hasChildren)
-                  _ExpandableBody(
-                    heightFactor: _heightFactor,
-                    children: widget.children!,
-                  ),
-              ],
-            ),
+    return Material(
+      color: appTheme.beige900,
+      borderRadius: borderRadius,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        splashColor: appTheme.beige100.withValues(alpha: 0.1),
+        highlightColor: appTheme.beige100.withValues(alpha: 0.01),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            gradient: appTheme.radioButtonGradient,
+            border: Border.all(color: appTheme.strokeCard),
           ),
-        );
-      },
-    );
-  }
-
-  Widget? _buildTrailingIcon(AppTheme appTheme) {
-    if (_hasChildren) {
-      return RotationTransition(
-        turns: _iconTurns,
-        child: Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: appTheme.beige200,
-          size: 32,
+          child: child,
         ),
-      );
-    }
-
-    if (widget.onTap != null && widget.showTrailingIcon) {
-      return Icon(
-        Icons.chevron_right_rounded,
-        color: appTheme.beige200,
-        size: 32,
-      );
-    }
-
-    return const SizedBox(
-      height: 32,
-      width: 32,
+      ),
     );
   }
 }
 
-class _TileHeader extends StatelessWidget {
-  const _TileHeader({
+class _TileHeaderContent extends StatelessWidget {
+  const _TileHeaderContent({
     required this.title,
     required this.description,
     required this.imageUrl,
     required this.tags,
-    required this.onTap,
-    required this.borderRadius,
-    required this.isExpanded,
-    required this.animationValue,
+    required this.imageSize,
+    required this.isDescriptionExpanded,
     this.trailing,
   });
 
@@ -171,78 +228,33 @@ class _TileHeader extends StatelessWidget {
   final String description;
   final String? imageUrl;
   final List<String>? tags;
-  final VoidCallback onTap;
-  final BorderRadius borderRadius;
-  final bool isExpanded;
-  final double animationValue;
+  final Size imageSize;
+  final bool isDescriptionExpanded;
   final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-    final noTags = tags == null || tags!.isEmpty;
-
-    final currentImageSize = noTags
-        ? Size.lerp(const Size(73, 85), const Size(62, 62), animationValue)!
-        : const Size(73, 85);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: borderRadius,
-      splashColor: appTheme.beige100.withValues(alpha: 0.1),
-      highlightColor: appTheme.beige100.withValues(alpha: 0.01),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            _WorkoutImage(
-              imageUrl: imageUrl,
-              size: currentImageSize,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 4,
-              child: _WorkoutDetails(
-                title: title,
-                description: description,
-                tags: tags,
-                isExpanded: isExpanded,
-              ),
-            ),
-            if (trailing != null) ...[
-              const SizedBox(width: 8),
-              Skeleton.ignore(child: trailing!),
-            ],
-          ],
+    return Row(
+      children: [
+        _WorkoutImage(
+          imageUrl: imageUrl,
+          size: imageSize,
         ),
-      ),
-    );
-  }
-}
-
-class _ExpandableBody extends StatelessWidget {
-  const _ExpandableBody({
-    required this.heightFactor,
-    required this.children,
-  });
-
-  final Animation<double> heightFactor;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: Align(
-        alignment: Alignment.topCenter,
-        heightFactor: heightFactor.value,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: children,
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 4,
+          child: _WorkoutDetails(
+            title: title,
+            description: description,
+            tags: tags,
+            isExpanded: isDescriptionExpanded,
           ),
         ),
-      ),
+        if (trailing != null) ...[
+          const SizedBox(width: 8),
+          Skeleton.ignore(child: trailing!),
+        ],
+      ],
     );
   }
 }
@@ -333,6 +345,33 @@ class _WorkoutImage extends StatelessWidget {
         child: ClipRRect(
           borderRadius: borderRadius,
           child: hasImage ? AppCachedNetImage(imageUrl: imageUrl!) : const AppImageErrorWidget(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpandableBody extends StatelessWidget {
+  const _ExpandableBody({
+    required this.heightFactor,
+    required this.children,
+  });
+
+  final Animation<double> heightFactor;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: Align(
+        alignment: Alignment.topCenter,
+        heightFactor: heightFactor.value,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children,
+          ),
         ),
       ),
     );

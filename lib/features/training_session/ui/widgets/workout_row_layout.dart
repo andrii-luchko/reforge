@@ -10,7 +10,7 @@ class WorkoutRowLayout extends StatelessWidget {
 
   final Widget setsCell;
   final List<Widget> metricCells;
-  final Widget doneCell;
+  final Widget? doneCell;
 
   static const double setsWidth = 60;
   static const double doneWidth = 92;
@@ -35,10 +35,11 @@ class WorkoutRowLayout extends StatelessWidget {
           );
         }),
 
-        SizedBox(
-          width: doneWidth,
-          child: doneCell,
-        ),
+        if (doneCell != null)
+          SizedBox(
+            width: doneWidth,
+            child: doneCell,
+          ),
       ],
     );
   }

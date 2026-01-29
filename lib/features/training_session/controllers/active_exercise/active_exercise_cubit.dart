@@ -8,6 +8,7 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/training_session/data/models/program_exercise.dart';
 import 'package:reforge/features/training_session/data/models/tier.dart';
 import 'package:reforge/features/training_session/data/models/workout_set.dart';
+import 'package:reforge/features/training_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/training_session/domain/repositories/training_session_repository.dart';
 
 part 'active_exercise_state.dart';
@@ -27,18 +28,46 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   final int workoutSessionId;
   final ProgramExercise programExercise;
 
-  void _init() {
+  Future<void> _init() async {
     emit(state.copyWith(isLoading: true));
 
     final measurementSystem = repository.getUserMeasurementSystem() ?? MeasurementSystem.metric;
 
+    final previousResult = await _getPreviousResult(measurementSystem);
+
     emit(
       state.copyWith(
         isLoading: false,
-        sets: [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch.toString())],
+        previousResult: previousResult,
+        sets: [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)],
         measureSystem: measurementSystem,
       ),
     );
+  }
+
+  Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {
+    final result = await repository.getPreviousResults(
+      programExerciseId: programExercise.id,
+      workoutSessionId: workoutSessionId,
+      system: system,
+    );
+    switch (result) {
+      case Success(value: final value):
+        if (value == null || value.sets == null) {
+          return null;
+        }
+        return PreviousExerciseResult(
+          name: programExercise.exerciseDetails.name,
+          description: programExercise.exerciseDetails.description,
+          metrics: programExercise.exerciseDetails.metrics,
+          imageUrl: programExercise.exerciseDetails.thumbnailInstructionUrl,
+          sets: value.sets ?? [],
+          notes: value.notes,
+        );
+
+      case Error():
+        return null;
+    }
   }
 
   void setTier(Tier newTier) {
@@ -51,11 +80,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void addSet() {
-    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch.toString());
+    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch);
     emit(state.copyWith(sets: [...state.sets, newSet]));
   }
 
-  void updateSet(String setId, WorkoutSet newSetData) {
+  void updateSet(int setId, WorkoutSet newSetData) {
     final updatedList = state.sets.map((s) {
       return s.id == setId ? newSetData : s;
     }).toList();
@@ -63,12 +92,12 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     emit(state.copyWith(sets: updatedList, setValidationError: null));
   }
 
-  void removeSet(String setId) {
+  void removeSet(int setId) {
     final updatedList = state.sets.where((s) => s.id != setId).toList();
     emit(state.copyWith(sets: updatedList));
   }
 
-  Future<void> markSetDone(String setId) async {
+  Future<void> markSetDone(int setId) async {
     if (state.isLoading) return;
 
     final currentSet = state.sets.firstWhereOrNull((s) => s.id == setId);

@@ -1,17 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/features/training_session/controllers/workout_flow/workout_flow_cubit.dart';
+import 'package:reforge/features/training_session/ui/mixins/workout_navigation_mixin.dart';
 import 'package:reforge/features/training_session/ui/widgets/details_page/exercise_section.dart';
 import 'package:reforge/features/training_session/ui/widgets/details_page/start_workout_button.dart';
 import 'package:reforge/features/training_session/ui/widgets/details_page/workout_details_section.dart';
-import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
+
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class WorkoutDetailsBody extends StatelessWidget {
+class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
   const WorkoutDetailsBody({super.key});
 
   @override
@@ -56,27 +54,7 @@ class WorkoutDetailsBody extends StatelessWidget {
 
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: StartWorkoutButton(
-                      onPressed: () async {
-                        final quizCubit = context.read<WorkoutQuizCubit>();
-                        final flowCubit = context.read<WorkoutFlowCubit>();
-
-                        final isTodaySubmitted = await quizCubit.isTodaySubmitted();
-
-                        if (isTodaySubmitted && context.mounted) {
-                          await flowCubit.startWorkout();
-                          final currentExercise = flowCubit.state.currentExercise;
-                          if (currentExercise != null && context.mounted) {
-                            unawaited(
-                              ActiveWorkoutPageRoute(exerciseId: currentExercise.exerciseDetails.id).push(context),
-                            );
-                          }
-                        } else {
-                          // ignore: use_build_context_synchronously
-                          unawaited(const WorkoutQuizPageRoute().push(context));
-                        }
-                      },
-                    ),
+                    child: StartWorkoutButton(onPressed: () async => handleStartWorkout(context)),
                   ),
                 ],
               ),

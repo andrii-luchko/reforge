@@ -3,7 +3,9 @@ import 'package:reforge/app/constants/workout_constants.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/training_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/training_session/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/training_session/ui/widgets/previous_result_dialog.dart';
 import 'package:reforge/features/training_session/ui/widgets/rest_timer/rest_timer_dialog.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
@@ -16,6 +18,21 @@ import 'package:reforge/shared/pickers/integer_scroll_piker.dart';
 
 class WorkoutDialogs {
   const WorkoutDialogs._();
+
+  static Future<void> pastResultsDialog(
+    BuildContext context,
+    PreviousExerciseResult result,
+    MeasurementSystem system,
+  ) {
+    return AppDialog.show<void>(
+      context,
+      child: PreviousResultDialog(
+        result: result,
+        system: system,
+      ),
+    );
+  }
+
   static Future<int?> restTimerDialog(
     BuildContext context,
   ) {

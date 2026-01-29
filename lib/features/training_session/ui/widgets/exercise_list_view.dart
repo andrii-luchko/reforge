@@ -17,7 +17,7 @@ class ExerciseListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final exercise = exercises[index];
 
-        return WorkoutListTile(
+        return StaticWorkoutTile(
           title: exercise.name,
           description: exercise.description,
           imageUrl: exercise.thumbnailInstructionUrl,

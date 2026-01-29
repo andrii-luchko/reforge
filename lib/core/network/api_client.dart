@@ -11,6 +11,7 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
+import 'package:reforge/features/training_session/data/models/exercise_session_dto.dart';
 import 'package:reforge/features/training_session/data/models/program_day.dart';
 import 'package:reforge/features/training_session/data/models/workout_session.dart';
 import 'package:reforge/features/training_session/data/models/workout_summary.dart';
@@ -72,6 +73,24 @@ abstract class ApiClient {
   //
   @POST('/workout-exercise-set-sessions')
   Future<void> completeSet(@Body() CreateSetSessionRequest request);
+
+  @GET(
+    '/workout-exercise-sessions/sessions/{workout_session_id}/program-exercises/{workout_program_exercise_id}/previous',
+  )
+  Future<BaseResponse<ExerciseSessionDTO?>> getPreviousExercise(
+    @Path('workout_session_id') int workoutSessionId,
+    @Path('workout_program_exercise_id') int programExerciseId,
+  );
+
+  @PATCH(
+    '/workout-exercise-sessions/sessions/{workout_session_id}/program-exercises/{workout_program_exercise_id}/exercises/{exercise_id}/notes',
+  )
+  Future<void> saveExerciseNotes(
+    @Path('workout_session_id') int workoutSessionId,
+    @Path('workout_program_exercise_id') int programExerciseId,
+    @Path('exercise_id') int exerciseId,
+    @BodyExtra('note') String note,
+  );
 
   @POST('/workout-sessions')
   Future<BaseResponse<WorkoutSession>> starWorkoutSession(@Body() StartWorkoutSessionRequest request);

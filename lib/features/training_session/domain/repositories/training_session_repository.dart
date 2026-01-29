@@ -29,6 +29,12 @@ abstract interface class TrainingSessionRepository {
     required WorkoutSet set,
   });
 
+  Future<Result<({String? notes, List<WorkoutSet>? sets})?>> getPreviousResults({
+    required int workoutSessionId,
+    required int programExerciseId,
+    required MeasurementSystem system,
+  });
+
   Future<Result<void>> saveWorkoutNote({
     required int exerciseId,
     required int workoutSessionId,

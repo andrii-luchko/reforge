@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkoutDoneButton extends StatelessWidget {
   const WorkoutDoneButton._({
@@ -48,26 +49,28 @@ class WorkoutDoneButton extends StatelessWidget {
 
     final contentColor = appTheme.beige100;
 
-    return Material(
-      borderRadius: appTheme.workoutContainerBorderRadius,
+    return Skeleton.leaf(
+      child: Material(
+        borderRadius: appTheme.workoutContainerBorderRadius,
 
-      clipBehavior: Clip.hardEdge,
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        splashFactory: InkSparkle.splashFactory,
-        splashColor: appTheme.orange100.withValues(alpha: 0.1),
-        highlightColor: appTheme.orange100.withValues(alpha: 0.1),
-        child: AnimatedContainer(
-          duration: Durations.medium2,
-          constraints: appTheme.workoutContainerConstrains,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isDone ? appTheme.beige800 : appTheme.orange400,
-            borderRadius: appTheme.workoutContainerBorderRadius,
-          ),
-          child: Center(
-            child: _buildContent(contentColor),
+        clipBehavior: Clip.hardEdge,
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          splashFactory: InkSparkle.splashFactory,
+          splashColor: appTheme.orange100.withValues(alpha: 0.1),
+          highlightColor: appTheme.orange100.withValues(alpha: 0.1),
+          child: AnimatedContainer(
+            duration: Durations.medium2,
+            constraints: appTheme.workoutContainerConstrains,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDone ? appTheme.beige800 : appTheme.orange400,
+              borderRadius: appTheme.workoutContainerBorderRadius,
+            ),
+            child: Center(
+              child: _buildContent(contentColor),
+            ),
           ),
         ),
       ),

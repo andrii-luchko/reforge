@@ -90,14 +90,20 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
   }
 
   Future<void> cancelWorkout(int workoutSessionDuration) async {
-    await _finishWorkout(.canceled, workoutSessionDuration);
+    // Если уже отменено или закончено - ничего не делаем, чтобы не спамить в UI
+    if (state.isFinished) return;
+
+    await _finishWorkout(WorkoutSessionStatus.canceled, workoutSessionDuration);
   }
 
   Future<void> _finishWorkout(WorkoutSessionStatus status, int workoutSessionDuration) async {
     final currentState = state;
     final workoutSessionId = currentState.workoutSessionId;
 
-    if (state.isFinished || workoutSessionId == null) return;
+    if (workoutSessionId == null) {
+      emit(state.copyWith(sessionStatus: status, isLoading: false));
+      return;
+    }
 
     emit(state.copyWith(isLoading: true));
 
@@ -108,13 +114,17 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
     );
 
     switch (result) {
-      case Success():
+      case Success(value: final summary):
         emit(
-          state.copyWith(sessionStatus: status, summary: result.value, isLoading: false),
+          state.copyWith(sessionStatus: status, summary: summary, isLoading: false),
         );
       case Error(error: final error):
         emit(
-          state.copyWith(error: 'Failed to ${status.name} workout: $error', isLoading: false),
+          state.copyWith(
+            sessionStatus: status,
+            error: 'Failed to sync cancel: $error',
+            isLoading: false,
+          ),
         );
     }
   }

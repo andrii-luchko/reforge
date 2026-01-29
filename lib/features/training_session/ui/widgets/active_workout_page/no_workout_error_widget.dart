@@ -11,6 +11,8 @@ class NoWorkoutErrorWidget extends StatelessWidget {
     return Container(
       margin: const .all(16),
       padding: const .all(16),
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
 
@@ -21,6 +23,7 @@ class NoWorkoutErrorWidget extends StatelessWidget {
       ),
 
       child: Column(
+        mainAxisSize: .min,
         children: [
           const Icon(Icons.error),
           Text(

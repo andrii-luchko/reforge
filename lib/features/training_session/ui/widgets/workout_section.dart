@@ -15,7 +15,7 @@ class WorkoutSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: .start,
       children: [
-        WorkoutListTile(
+        ExpandableWorkoutTile(
           title: exercise.name,
           description: exercise.description,
           imageUrl: exercise.thumbnailInstructionUrl,
