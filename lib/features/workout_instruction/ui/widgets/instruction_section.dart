@@ -144,12 +144,6 @@ class StepItem extends StatelessWidget {
 }
 
 class TimelinePainter extends CustomPainter {
-  final bool isLast;
-  final bool isActive;
-  final Color activeColor;
-  final Color inactiveColor;
-  final double dotRadius;
-
   TimelinePainter({
     required this.isLast,
     required this.isActive,
@@ -157,6 +151,12 @@ class TimelinePainter extends CustomPainter {
     required this.inactiveColor,
     this.dotRadius = 4.0,
   });
+
+  final bool isLast;
+  final bool isActive;
+  final Color activeColor;
+  final Color inactiveColor;
+  final double dotRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -231,7 +231,7 @@ class InstructionEmpty extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              "We are currently working on\ninstructions for this exercise",
+              'We are currently working on\ninstructions for this exercise',
               textAlign: TextAlign.center,
               style: subheadH6Regular.copyWith(
                 color: context.appTheme.beige600,

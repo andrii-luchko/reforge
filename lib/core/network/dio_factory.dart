@@ -27,9 +27,9 @@ class DioFactory {
       RefreshTokenInterceptor(
         dio,
         localDataSource,
-        () {
+        () async {
           // Just clear tokens, AuthCubit will handle the state change
-          localDataSource.clearTokens();
+          await localDataSource.clearTokens();
         },
       ),
 

@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 
 typedef PortalContentBuilder = Widget Function(BuildContext context, VoidCallback close);
 
+// ignore: avoid_positional_boolean_parameters
 typedef PortalTriggerBuilder = Widget Function(BuildContext context, bool isOpen);
 
 class PortalDropdown extends StatefulWidget {

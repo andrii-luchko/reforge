@@ -9,6 +9,7 @@ import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
 class PortalSelectController {
   _PortalSelectFieldState? _state;
 
+  // ignore: use_setters_to_change_properties
   void _attach(_PortalSelectFieldState state) {
     _state = state;
   }

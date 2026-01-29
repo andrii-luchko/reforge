@@ -114,12 +114,17 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthTokens>> signWithApple() async {
     try {
-      final appleToken = await authProvidersDatasource.signWithApple();
-      if (appleToken == null) {
+      final data = await authProvidersDatasource.signWithApple();
+      if (data.token == null) {
         return Result.error(Exception('Token is empty'));
       }
 
-      final tokens = await remoteDataSource.signWithProvider(token: appleToken, provider: AuthProviders.apple);
+      final tokens = await remoteDataSource.signWithProvider(
+        token: data.token!,
+        provider: AuthProviders.apple,
+        firstName: data.name,
+        lastName: data.surname,
+      );
       await localDataSource.saveTokens(tokens);
       return Result.success(tokens);
     } on SignInWithAppleAuthorizationException catch (e) {

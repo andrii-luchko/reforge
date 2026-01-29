@@ -5,7 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 abstract interface class AuthProvidersDatasource {
   Future<String?> signWithGoogle();
-  Future<String?> signWithApple();
+  Future<({String? token, String? name, String? surname})> signWithApple();
   Future<void> logout();
 }
 
@@ -21,7 +21,7 @@ class AuthProvidersDatasourceImpl implements AuthProvidersDatasource {
   }
 
   @override
-  Future<String?> signWithApple() async {
+  Future<({String? token, String? name, String? surname})> signWithApple() async {
     final credential = await SignInWithApple.getAppleIDCredential(
       scopes: [
         AppleIDAuthorizationScopes.email,
@@ -30,10 +30,11 @@ class AuthProvidersDatasourceImpl implements AuthProvidersDatasource {
     );
 
     logger.d(credential);
-    //TODO finished tihs stuff
-    return credential.identityToken;
+
+    return (token: credential.identityToken, name: credential.givenName, surname: credential.familyName);
   }
 
+  @override
   Future<void> logout() async {
     await _googleSignIn.signOut();
   }

@@ -30,12 +30,12 @@ mixin VideoPlayerControlsMixin<T extends StatefulWidget> on State<T> {
   void togglePlay() {
     setState(() {
       if (controller.value.isPlaying) {
-        controller.pause();
+        unawaited(controller.pause());
 
         showControls = true;
         _hideTimer?.cancel();
       } else {
-        controller.play();
+        unawaited(controller.play());
 
         startHideTimer();
       }

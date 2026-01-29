@@ -50,13 +50,12 @@ class _FireParticlesState extends State<FireParticles> with SingleTickerProvider
       fadeSpeed: widget.fadeSpeed,
       vsync: this,
     );
-    _generateAssets();
+    unawaited(_generateAssets());
   }
 
   Future<void> _generateAssets() async {
     const size = 64.0;
 
-    // Генерация dot image
     final dotRecorder = ui.PictureRecorder();
     final dotCanvas = Canvas(dotRecorder);
     final dotPaint = Paint()
@@ -147,13 +146,14 @@ class FireParticlesController extends ChangeNotifier {
     required this.fadeSpeed,
     required TickerProvider vsync,
   }) {
-    _startR = startColor.red.toDouble();
-    _startG = startColor.green.toDouble();
-    _startB = startColor.blue.toDouble();
-    _endR = endColor.red.toDouble();
-    _endG = endColor.green.toDouble();
-    _endB = endColor.blue.toDouble();
+    _startR = (startColor.r * 255.0).round().clamp(0, 255).toDouble();
+    _startG = (startColor.g * 255.0).round().clamp(0, 255).toDouble();
+    _startB = (startColor.b * 255.0).round().clamp(0, 255).toDouble();
+    _endR = (endColor.r * 255.0).round().clamp(0, 255).toDouble();
+    _endG = (endColor.g * 255.0).round().clamp(0, 255).toDouble();
+    _endB = (endColor.b * 255.0).round().clamp(0, 255).toDouble();
 
+    // ignore: discarded_futures
     _ticker = vsync.createTicker(_onTick)..start();
   }
 
@@ -166,8 +166,12 @@ class FireParticlesController extends ChangeNotifier {
   final double maxSpeed;
   final double fadeSpeed;
 
-  late final double _startR, _startG, _startB;
-  late final double _endR, _endG, _endB;
+  late final double _startR;
+  late final double _startG;
+  late final double _startB;
+  late final double _endR;
+  late final double _endG;
+  late final double _endB;
 
   List<FireParticle> particles = [];
   Size canvasSize = Size.zero;
@@ -183,10 +187,9 @@ class FireParticlesController extends ChangeNotifier {
   }
 
   void _initParticles() {
-    for (var particle in particles) {
-      _particlePool.add(particle);
-    }
-    particles.clear();
+    particles
+      ..forEach(_particlePool.add)
+      ..clear();
 
     for (var i = 0; i < quantity; i++) {
       particles.add(_createParticle(isInitial: true));
@@ -242,15 +245,14 @@ class FireParticlesController extends ChangeNotifier {
     if (canvasSize == Size.zero) return;
 
     for (var i = 0; i < particles.length; i++) {
-      final particle = particles[i];
-
-      particle.time += 0.016;
+      final particle = particles[i]..time += 0.016;
 
       final turbulenceX = math.sin(particle.time * 2.0 + particle.turbulencePhase) * particle.turbulence;
       final turbulenceY = math.cos(particle.time * 1.5 + particle.turbulencePhase) * particle.turbulence * 0.5;
 
-      particle.x += particle.dx + turbulenceX;
-      particle.y += particle.dy + turbulenceY;
+      particle
+        ..x += particle.dx + turbulenceX
+        ..y += particle.dy + turbulenceY;
 
       if (particle.isStreak) {
         particle.rotation += particle.rotationSpeed;
@@ -259,10 +261,11 @@ class FireParticlesController extends ChangeNotifier {
       }
 
       final flicker = math.sin(particle.time * 10.0 * particle.flickerSpeed + particle.flickerPhase);
-      final flickerAmount = 0.15;
+      const flickerAmount = 0.15;
 
-      particle.alpha -= particle.lifeReduction;
-      particle.alpha += flicker * flickerAmount * particle.alpha.clamp(0.0, 1.0);
+      particle
+        ..alpha -= particle.lifeReduction
+        ..alpha += flicker * flickerAmount * particle.alpha.clamp(0.0, 1.0);
 
       final pulse = math.sin(particle.time * 8.0 + particle.flickerPhase) * 0.1;
       particle.size = particle.baseSize * (1.0 + pulse);
@@ -343,15 +346,17 @@ class FireParticlesPainter extends CustomPainter {
       final colorProgress = (particle.alpha / particle.targetAlpha).clamp(0.0, 1.0);
       final color = controller.lerpColor(colorProgress);
 
-      // Эффект "жара" - красноватое свечение у основания
       final heightFactor = (1.0 - (particle.y / size.height)).clamp(0.0, 1.0);
       final heatIntensity = heightFactor * particle.heatGlow * 0.3;
 
+      final colorRed = (color.r * 255.0).round().clamp(0, 255);
+      final colorGreen = (color.g * 255.0).round().clamp(0, 255);
+      final colorBlue = (color.b * 255.0).round().clamp(0, 255);
       final finalColor = Color.fromARGB(
         (particle.alpha * 255).clamp(0, 255).toInt(),
-        (color.red + (255 - color.red) * heatIntensity * 0.5).clamp(0, 255).toInt(),
-        (color.green * (1.0 - heatIntensity * 0.3)).clamp(0, 255).toInt(),
-        (color.blue * (1.0 - heatIntensity * 0.5)).clamp(0, 255).toInt(),
+        (colorRed + (255 - colorRed) * heatIntensity * 0.5).clamp(0, 255).toInt(),
+        (colorGreen * (1.0 - heatIntensity * 0.3)).clamp(0, 255).toInt(),
+        (colorBlue * (1.0 - heatIntensity * 0.5)).clamp(0, 255).toInt(),
       );
 
       _paint.colorFilter = ColorFilter.mode(finalColor, BlendMode.modulate);
@@ -360,11 +365,15 @@ class FireParticlesPainter extends CustomPainter {
         final scaleX = particle.size / (streakW / 2.0);
         final scaleY = particle.streakLength / streakH;
 
-        _matrix.setIdentity();
-        _matrix.translate(particle.x, particle.y);
-        _matrix.rotateZ(particle.rotation);
-        _matrix.scale(scaleX, scaleY);
-        _matrix.translate(-streakW / 2.0, 0);
+        _matrix
+          ..setIdentity()
+          // ignore: deprecated_member_use
+          ..translate(particle.x, particle.y)
+          ..rotateZ(particle.rotation)
+          // ignore: deprecated_member_use
+          ..scale(scaleX, scaleY)
+          // ignore: deprecated_member_use
+          ..translate(-streakW / 2.0);
 
         canvas
           ..save()
@@ -374,10 +383,14 @@ class FireParticlesPainter extends CustomPainter {
       } else {
         final scale = (particle.size * 2.5) / (dotW / 2.0);
 
-        _matrix.setIdentity();
-        _matrix.translate(particle.x, particle.y);
-        _matrix.scale(scale, scale);
-        _matrix.translate(-dotW / 2.0, -dotH / 2.0);
+        _matrix
+          ..setIdentity()
+          // ignore: deprecated_member_use
+          ..translate(particle.x, particle.y)
+          // ignore: deprecated_member_use
+          ..scale(scale, scale)
+          // ignore: deprecated_member_use
+          ..translate(-dotW / 2.0, -dotH / 2.0);
 
         canvas
           ..save()

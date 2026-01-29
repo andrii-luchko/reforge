@@ -25,7 +25,7 @@ class OnboardingHeader extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: .only(top: 16),
+          padding: const .only(top: 16),
           child: Text(
             t.onboarding_page.header,
             style: subheadH3Medium.copyWith(color: context.appTheme.beige700),

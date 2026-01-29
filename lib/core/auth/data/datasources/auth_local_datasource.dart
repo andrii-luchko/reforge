@@ -7,8 +7,7 @@ abstract interface class AuthLocalDataSource {
   Future<AuthTokens?> getTokens();
   Future<void> clearTokens();
   Future<bool> hasAccessToken();
-  //TODO: REMOVE IT. FOR TEST ONLY.
-  Future<void> setQuizFinished();
+
   Future<bool> isQuizFinished();
 }
 
@@ -17,11 +16,6 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   AuthLocalDataSourceImpl(this._secureStorage);
 
   final FlutterSecureStorage _secureStorage;
-
-  @override
-  Future<void> setQuizFinished() async {
-    await _secureStorage.write(key: 'quiz_finished', value: true.toString());
-  }
 
   @override
   Future<bool> isQuizFinished() async {

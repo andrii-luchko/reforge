@@ -4,8 +4,10 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 class AppTag extends StatelessWidget {
-  const AppTag({super.key, required this.text});
+  const AppTag({required this.text, super.key});
+
   final String text;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;

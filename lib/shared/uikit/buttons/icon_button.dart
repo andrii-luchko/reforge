@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
@@ -38,35 +39,42 @@ class AppIconButton extends StatelessWidget {
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(50);
 
-    return GestureDetector(
-      onTap: onPressed,
-      child: BlurContainer(
-        borderRadius: borderRadius,
-        child: BaseGlassContainer(
+    return Skeleton.replace(
+      width: width,
+      height: height,
+      replacement: Bone.circle(
+        size: width,
+      ),
+      child: GestureDetector(
+        onTap: onPressed,
+        child: BlurContainer(
           borderRadius: borderRadius,
-          width: width,
-          height: height,
-          glassEffectGradientAlignmentBegin: .topLeft,
-          glassEffectGradientAlignmentEnd: .bottomRight,
-          borderGradientColors: [
-            appTheme.beige100,
-            Colors.transparent,
-            Colors.transparent,
-            appTheme.beige100,
-          ],
-          backgroundColor: appTheme.beige50,
-          borderColor: appTheme.beige100.withValues(alpha: 0.1),
-          child: Material(
+          child: BaseGlassContainer(
             borderRadius: borderRadius,
-            color: Colors.transparent,
-            child: InkWell(
+            width: width,
+            height: height,
+            glassEffectGradientAlignmentBegin: .topLeft,
+            glassEffectGradientAlignmentEnd: .bottomRight,
+            borderGradientColors: [
+              appTheme.beige100,
+              Colors.transparent,
+              Colors.transparent,
+              appTheme.beige100,
+            ],
+            backgroundColor: appTheme.beige50,
+            borderColor: appTheme.beige100.withValues(alpha: 0.1),
+            child: Material(
               borderRadius: borderRadius,
-              splashFactory: InkSparkle.splashFactory,
-              splashColor: appTheme.beige100.withValues(alpha: 0.1),
-              highlightColor: appTheme.beige100.withValues(alpha: 0.01),
-              onTap: onPressed,
-              child: Center(
-                child: _buildIcon(appTheme),
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: borderRadius,
+                splashFactory: InkSparkle.splashFactory,
+                splashColor: appTheme.beige100.withValues(alpha: 0.1),
+                highlightColor: appTheme.beige100.withValues(alpha: 0.01),
+                onTap: onPressed,
+                child: Center(
+                  child: _buildIcon(appTheme),
+                ),
               ),
             ),
           ),

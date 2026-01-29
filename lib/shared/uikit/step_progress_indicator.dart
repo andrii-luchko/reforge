@@ -66,25 +66,15 @@ class StepProgressIndicator extends StatelessWidget {
 
 class ProgressiveDotsEffect extends BasicIndicatorEffect {
   const ProgressiveDotsEffect({
-    double offset = 0.0,
-    double dotWidth = 16.0,
-    double dotHeight = 16.0,
-    double spacing = 8.0,
-    double radius = 16.0,
-    Color? dotColor,
-    Color? activeDotColor,
-    double strokeWidth = 1.0,
-    PaintingStyle paintStyle = PaintingStyle.fill,
-  }) : super(
-         dotWidth: dotWidth,
-         dotHeight: dotHeight,
-         spacing: spacing,
-         radius: radius,
-         strokeWidth: strokeWidth,
-         paintStyle: paintStyle,
-         dotColor: dotColor,
-         activeDotColor: activeDotColor,
-       );
+    super.dotWidth = 16.0,
+    super.dotHeight = 16.0,
+    super.spacing = 8.0,
+    super.radius = 16.0,
+    super.dotColor,
+    super.activeDotColor,
+    super.strokeWidth = 1.0,
+    super.paintStyle = PaintingStyle.fill,
+  });
 
   @override
   IndicatorPainter buildPainter(int count, double offset, DefaultIndicatorColors indicatorColors) {
@@ -126,51 +116,37 @@ class _ProgressiveDotsPainter extends IndicatorPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Определяем текущий активный индекс (целая часть)
-    final int current = offset.floor();
+    final current = offset.floor();
 
-    // Определяем прогресс перехода к следующей точке (от 0.0 до 1.0)
-    final double progress = offset - current;
+    final progress = offset - current;
 
-    // Цвета по умолчанию или из темы
-    final Color defaultDotColor = effect.dotColor ?? indicatorColors.inactive;
-    final Color defaultActiveDotColor = effect.activeDotColor ?? indicatorColors.active;
+    final defaultDotColor = effect.dotColor ?? indicatorColors.inactive;
+    final defaultActiveDotColor = effect.activeDotColor ?? indicatorColors.active;
 
-    // Начальная позиция отрисовки с учетом ширины точки и отступа
-    double dotOffset = -effect.spacing / 2;
+    var dotOffset = -effect.spacing / 2;
 
-    // Подготовка Paint объекта
-    final Paint paint = Paint()
+    final paint = Paint()
       ..strokeWidth = effect.strokeWidth
       ..style = effect.paintStyle;
 
-    for (int i = 0; i < count; i++) {
-      // Рассчитываем позицию точки
-      // Логика взята из стандартных пейнтеров smooth_page_indicator
+    for (var i = 0; i < count; i++) {
       dotOffset += effect.spacing + effect.dotWidth;
-      final double xPos = dotOffset - effect.dotWidth / 2;
-      final double yPos = size.height / 2;
+      final xPos = dotOffset - effect.dotWidth / 2;
+      final yPos = size.height / 2;
 
-      Color color = defaultDotColor;
+      var color = defaultDotColor;
 
       if (i <= current) {
-        // 1. Прошедшие точки и текущая активная точка
-        // Они всегда окрашены в активный цвет
         color = defaultActiveDotColor;
       } else if (i == current + 1) {
-        // 2. Следующая точка (к которой мы свайпаем)
-        // Она плавно переходит из dotColor в activeDotColor
         color = Color.lerp(defaultDotColor, defaultActiveDotColor, progress)!;
       } else {
-        // 3. Будущие точки (дальше чем +1)
-        // Остаются стандартного цвета
         color = defaultDotColor;
       }
 
       paint.color = color;
 
-      // Рисуем RRect (закругленный прямоугольник/круг)
-      final RRect rRect = RRect.fromLTRBR(
+      final rRect = RRect.fromLTRBR(
         xPos - effect.dotWidth / 2,
         yPos - effect.dotHeight / 2,
         xPos + effect.dotWidth / 2,
