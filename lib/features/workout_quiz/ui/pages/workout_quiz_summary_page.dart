@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/features/training_session/ui/mixins/workout_navigation_mixin.dart';
+import 'package:reforge/features/workout_common/ui/workout_navigation_mixin.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/summary_widget.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
