@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 class AppCachedNetImage extends StatelessWidget {
-  const AppCachedNetImage({required this.imageUrl, super.key});
+  const AppCachedNetImage({required this.imageUrl, this.fit = BoxFit.cover, super.key});
 
   final String imageUrl;
+  final BoxFit fit;
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      fit: BoxFit.cover,
+      fit: fit,
       progressIndicatorBuilder: (context, url, progress) => ColoredBox(
         color: appTheme.beige200,
         child: Center(

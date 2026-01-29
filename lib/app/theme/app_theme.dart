@@ -43,6 +43,13 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.gradientXpBar,
     required this.workoutContainerBorderRadius,
     required this.workoutContainerConstrains,
+
+    required this.silverGradient,
+    required this.goldGradient,
+    required this.ironGradient,
+    required this.steelGradient,
+    required this.bronzeGradient,
+    required this.woodGradient,
   });
 
   // Beige palette
@@ -83,4 +90,11 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
 
   final BoxConstraints workoutContainerConstrains;
   final BorderRadius workoutContainerBorderRadius;
+
+  final LinearGradient silverGradient;
+  final LinearGradient goldGradient;
+  final LinearGradient bronzeGradient;
+  final LinearGradient ironGradient;
+  final LinearGradient steelGradient;
+  final LinearGradient woodGradient;
 }

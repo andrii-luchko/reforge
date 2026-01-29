@@ -102,6 +102,58 @@ class AppThemeValues {
     ),
     workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
     workoutContainerConstrains: const BoxConstraints(maxHeight: 60, maxWidth: 60),
+
+    silverGradient: const LinearGradient(
+      colors: [
+        Color(0xFFFFFFFF),
+        Color(0xFF3E3D3A),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    goldGradient: const LinearGradient(
+      colors: [
+        Color(0xFFD4AF37),
+        Color(0xFFF7EF8A),
+        Color(0xFFB8860B),
+        Color(0xFFD4AF37),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    bronzeGradient: const LinearGradient(
+      colors: [
+        Color(0xFFF3986E),
+        Color(0xFF6F2807),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    ironGradient: const LinearGradient(
+      colors: [
+        Color(0xFF595959),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    steelGradient: const LinearGradient(
+      colors: [
+        Color(0xFF484747),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    woodGradient: const LinearGradient(
+      colors: [
+        Color(0xFFC66C32),
+        Color(0xFFC66C32),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
   );
 
   static final dark = AppTheme(
@@ -198,5 +250,57 @@ class AppThemeValues {
 
     workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
     workoutContainerConstrains: const BoxConstraints(maxHeight: 60),
+
+    silverGradient: const LinearGradient(
+      colors: [
+        Color(0xFFFFFFFF),
+        Color(0xFF3E3D3A),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    goldGradient: const LinearGradient(
+      colors: [
+        Color(0xFFD4AF37),
+        Color(0xFFF7EF8A),
+        Color(0xFFB8860B),
+        Color(0xFFD4AF37),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    bronzeGradient: const LinearGradient(
+      colors: [
+        Color(0xFFF3986E),
+        Color(0xFF6F2807),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    ironGradient: const LinearGradient(
+      colors: [
+        Color(0xFF595959),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    steelGradient: const LinearGradient(
+      colors: [
+        Color(0xFF484747),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    woodGradient: const LinearGradient(
+      colors: [
+        Color(0xFFC66C32),
+        Color(0xFFC66C32),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
   );
 }
