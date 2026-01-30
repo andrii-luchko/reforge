@@ -282,6 +282,10 @@
         "duration": "Duration",
         "share_rank_message": "You've just crushed your workout — spread the word and inspire others to carve their path too",
         "share_summary_title": "I just leveled up in Reforge!",
-        "share_summary_subtitle": "I pushed past my limits and leveled up. The forge burns hotter and I'm not stopping here. 🔥"
+        "share_summary_subtitle": "I pushed past my limits and leveled up. The forge burns hotter and I'm not stopping here. 🔥",
+        "milestone_unlocked_title": "New Milestone Unlocked!",
+        "milestone_unlocked_subtitle(rich)": "Tempered in heat and discipline. You have forged the ${Name(name)}, Tier ${Tier(tier)}. A permanent mark of your evolution.",
+        "share_achievement_title": "New Milestone Forged! ⚔️",
+        "share_achievement_message": "I just unlocked a new achievement in Reforge. The grind doesn't stop, and the fire burns hotter."
     }
 }

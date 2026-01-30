@@ -52,7 +52,7 @@ class SunRaysImageContainer extends StatelessWidget {
             width: width,
             child: GlassContainer(
               padding: const EdgeInsets.all(16),
-              child: _buildImage(),
+              child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: _buildImage()),
             ),
           ),
         ),
@@ -69,6 +69,11 @@ class SunRaysImageContainer extends StatelessWidget {
     } else {
       return AppCachedNetImage(
         imageUrl: _path,
+        errorWidget: const Icon(
+          Icons.image_not_supported_rounded,
+        ),
+        // errorWidget: Image.asset(Assets.images.png.icon1024x1024.path),
+        // fit: BoxFit.contain,
       );
     }
   }

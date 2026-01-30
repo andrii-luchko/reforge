@@ -105,9 +105,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     if (state.isLoading) return;
 
     final currentSet = state.sets.firstWhereOrNull((s) => s.id == setId);
+
     if (currentSet == null || currentSet.isDone) return;
 
     final metrics = programExercise.exerciseDetails.metrics;
+
     if (!currentSet.isValid(metrics)) {
       emit(state.copyWith(setValidationError: 'Please fill all fields'));
       return;

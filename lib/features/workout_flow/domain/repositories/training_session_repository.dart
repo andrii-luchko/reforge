@@ -1,13 +1,13 @@
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 
 abstract interface class TrainingSessionRepository {
-  Future<Result<ProgramDayEntity>> getWorkoutByDay(int day);
+  Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day);
 
   MeasurementSystem? getUserMeasurementSystem();
 
@@ -15,7 +15,7 @@ abstract interface class TrainingSessionRepository {
 
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId);
 
-  Future<Result<WorkoutSessionSummary>> endWorkoutSession({
+  Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,
     required int workoutSessionDuration,

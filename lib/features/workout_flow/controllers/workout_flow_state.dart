@@ -17,10 +17,12 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
 
     WorkoutSessionStatus? sessionStatus,
 
-    WorkoutSessionSummary? summary,
+    WorkoutSessionSummaryEntity? summary,
 
     String? error,
   }) = _WorkoutFlowState;
+
+  bool get isEmptyData => programDay == null;
 
   bool get isFinished =>
       sessionStatus == WorkoutSessionStatus.completed || sessionStatus == WorkoutSessionStatus.canceled;

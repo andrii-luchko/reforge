@@ -2,82 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
-import 'package:reforge/features/workout_common/domain/enums/tier.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
 import 'package:reforge/shared/sunrays_image_container.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
-import 'package:reforge/shared/uikit/avatar_card.dart';
-import 'package:reforge/shared/uikit/glass_container.dart';
 import 'package:reforge/shared/uikit/staggered_summary_card.dart';
 
-class RankCardShareContent extends StatelessWidget {
-  const RankCardShareContent({
-    required this.content,
-    super.key,
-  });
-
-  final RankCardContent content;
-
-  @override
-  Widget build(BuildContext context) {
-    final tierTitle = content.tier.title(t);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          t.workout_congratulations.share_rank_message,
-          style: bodyLRegular.copyWith(color: context.appTheme.beige600),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: MediaQuery.of(context).size.width * 0.5,
-          child: FittedBox(
-            child: GlassContainer(
-              padding: const EdgeInsets.all(16),
-              child: AvatarCard(
-                faction: content.faction,
-                lvl: content.level,
-                rankName: tierTitle,
-                xpValue: content.xpProgress,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-}
-
-/// Share content for achievement
 class AchievementShareContent extends StatelessWidget {
   const AchievementShareContent({
-    required this.content,
+    required this.imageUrl,
+    required this.title,
+    required this.description,
     super.key,
   });
 
-  final AchievementContent content;
+  final String? imageUrl;
+  final String title;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SunRaysImageContainer.asset(
-          asset: content.imageAsset,
-          reyLength: 0.07,
-          width: 150,
-          height: 150,
-        ),
+        if (imageUrl == null)
+          SunRaysImageContainer.asset(
+            reyLength: 0.07,
+            width: 150,
+            height: 150,
+            asset: Assets.images.png.badge.path,
+          )
+        else
+          SunRaysImageContainer.network(
+            reyLength: 0.07,
+            width: 150,
+            height: 150,
+            url: imageUrl!,
+          ),
+
         const SizedBox(height: 16),
         CenteredTitleSection(
-          title: content.title,
-          subtitle: content.description,
+          title: title,
+          subtitle: description,
         ),
         const SizedBox(height: 16),
       ],
@@ -85,14 +52,20 @@ class AchievementShareContent extends StatelessWidget {
   }
 }
 
-/// Share content for default summary
 class SummaryShareContent extends StatelessWidget {
   const SummaryShareContent({
-    required this.content,
+    required this.newLevel,
+    required this.xpEarned,
+    required this.timeSpentSec,
+    required this.xpProgress,
     super.key,
   });
 
-  final WorkoutSummaryContent content;
+  final int? newLevel;
+  final double? xpProgress;
+  final int xpEarned;
+
+  final int timeSpentSec;
 
   String _formatDuration(Duration duration) {
     final hours = duration.inHours;
@@ -112,12 +85,12 @@ class SummaryShareContent extends StatelessWidget {
 
     var itemNumber = 1;
 
-    if (content.newLevel != null) {
+    if (newLevel != null) {
       items.add(
         SummaryRowWidget(
           number: itemNumber++,
           title: t.workout_congratulations.new_level,
-          tag: AppTag(text: '${content.newLevel} ${t.common.lv}'),
+          tag: AppTag(text: '$newLevel ${t.common.lv}'),
         ),
       );
     }
@@ -134,11 +107,11 @@ class SummaryShareContent extends StatelessWidget {
               children: [
                 Flexible(
                   child: HorizontalXPBar(
-                    progress: content.xpProgress ?? 0.0,
+                    progress: xpProgress ?? 0.2,
                   ),
                 ),
                 Text(
-                  '+${content.xpEarned.toString().replaceAllMapped(
+                  '+${xpEarned.toString().replaceAllMapped(
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                     (Match m) => '${m[1]},',
                   )} XP',
@@ -153,25 +126,38 @@ class SummaryShareContent extends StatelessWidget {
         SummaryRowWidget(
           number: itemNumber++,
           title: t.workout_congratulations.duration,
-          tag: AppTag(text: _formatDuration(content.timeSpent)),
+          tag: AppTag(text: _formatDuration(Duration(seconds: timeSpentSec))),
         ),
       );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 32,
       children: [
-        SunRaysImageContainer.asset(
-          asset: Assets.images.png.badge.path,
-          reyLength: 0.07,
-          width: 150,
-          height: 150,
+        Material(
+          borderRadius: BorderRadius.circular(20),
+          elevation: 3,
+          child: Container(
+            height: 150,
+            width: 150,
+            decoration: BoxDecoration(
+              color: appTheme.beige900,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: context.appTheme.strokeCard),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                Assets.images.png.foreground512x512.path,
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 16),
         CenteredTitleSection(
           title: t.workout_congratulations.share_summary_title,
           subtitle: t.workout_congratulations.share_summary_subtitle,
         ),
-        const SizedBox(height: 16),
+
         SizedBox(
           width: MediaQuery.of(context).size.width,
           child: FittedBox(

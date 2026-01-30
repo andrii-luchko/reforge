@@ -24,13 +24,17 @@ class NoWorkoutErrorWidget extends StatelessWidget {
 
       child: Column(
         mainAxisSize: .min,
+        mainAxisAlignment: .center,
+        spacing: 16,
         children: [
-          const Icon(Icons.error),
+          const Icon(Icons.error, size: 48),
+
           Text(
-            'Something went wrong and we cant find right exercise\nPlease try again later',
+            'Something went wrong and we cant find right exercise.\n\nPlease try again later',
             style: subheadH1Medium.copyWith(
               color: appTheme.beige100,
             ),
+            textAlign: .center,
           ),
         ],
       ),

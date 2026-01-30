@@ -59,7 +59,7 @@ class _DynamicWorkoutFormState extends State<DynamicWorkoutForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (widget.isTiered)
+        if (widget.isTiered && widget.tiers.isNotEmpty)
           TierSection(
             tiers: widget.tiers,
             controller: _controller,

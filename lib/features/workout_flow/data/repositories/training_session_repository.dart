@@ -4,6 +4,7 @@ import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
@@ -26,10 +27,14 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   final UserSessionService _userSessionService;
 
   @override
-  Future<Result<ProgramDayEntity>> getWorkoutByDay(int day) async {
+  Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
     try {
       final response = await _apiClient.getWorkoutByDay(day);
-      return Result.success(response.data.first.toEntity());
+      if (response.data.isEmpty) {
+        return const Result.success(null);
+      } else {
+        return Result.success(response.data.first.toEntity());
+      }
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -89,7 +94,7 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   }
 
   @override
-  Future<Result<WorkoutSessionSummary>> endWorkoutSession({
+  Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,
     required int workoutSessionDuration,
@@ -98,7 +103,7 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
       final request = CompleteWorkoutSessionRequest(status: status, durationInSeconds: workoutSessionDuration);
       final response = await _apiClient.completeWorkoutSession(workoutSessionId, request);
 
-      return Result.success(response.data);
+      return Result.success(response.data.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
     }

@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 class AppCachedNetImage extends StatelessWidget {
-  const AppCachedNetImage({required this.imageUrl, this.fit = BoxFit.cover, super.key});
+  const AppCachedNetImage({required this.imageUrl, this.fit = BoxFit.cover, this.errorWidget, super.key});
 
   final String imageUrl;
   final BoxFit fit;
+  final Widget? errorWidget;
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
@@ -24,7 +25,7 @@ class AppCachedNetImage extends StatelessWidget {
           ),
         ),
       ),
-      errorWidget: (context, url, error) => const AppImageErrorWidget(),
+      errorWidget: (context, url, error) => errorWidget ?? const AppImageErrorWidget(),
     );
   }
 }
