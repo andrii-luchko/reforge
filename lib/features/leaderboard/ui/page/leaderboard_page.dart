@@ -196,7 +196,7 @@ class LeaderBoardList extends StatelessWidget {
     return SliverList.separated(
       itemCount: users.length,
       itemBuilder: (context, index) {
-        final isMe = index == currentUserIndex;
+        // final isMe = index == currentUserIndex;
 
         final user = users[index];
 

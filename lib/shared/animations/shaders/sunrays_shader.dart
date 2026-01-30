@@ -92,15 +92,15 @@ class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTi
   @override
   void initState() {
     super.initState();
-    //unawaited(_loadShader());
+    unawaited(_loadShader());
 
-    // _ticker = createTicker((elapsed) {
-    //   final now = elapsed.inMilliseconds / 1000.0;
+    _ticker = createTicker((elapsed) {
+      final now = elapsed.inMilliseconds / 1000.0;
 
-    //   _timeNotifier.value = now % 10000.0;
-    // });
+      _timeNotifier.value = now % 10000.0;
+    });
 
-    // unawaited(_ticker?.start());
+    unawaited(_ticker?.start());
   }
 
   Future<void> _loadShader() async {

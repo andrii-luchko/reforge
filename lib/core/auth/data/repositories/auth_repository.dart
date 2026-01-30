@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
@@ -29,8 +32,28 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthTokens?>> getTokens() async {
     try {
-      final tokens = await localDataSource.getTokens();
-      return Result.success(tokens);
+      final localTokens = await localDataSource.getTokens();
+      if (localTokens == null) {
+        return const Result.success(null);
+      } else {
+        final refreshedTokens = await refreshToken(localTokens.refreshToken);
+
+        switch (refreshedTokens) {
+          case Success(value: final value):
+            return Result.success(value);
+          case Error(error: final error):
+            if (error is DioException) {
+              if (error.type == DioExceptionType.connectionTimeout ||
+                  error.type == DioExceptionType.receiveTimeout ||
+                  error.type == DioExceptionType.connectionError ||
+                  error.error is SocketException) {
+                return Result.success(localTokens);
+              }
+            }
+
+            return const Result.success(null);
+        }
+      }
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -85,7 +108,16 @@ class AuthRepositoryImpl implements AuthRepository {
       final tokens = await remoteDataSource.refreshToken(refreshToken);
       await localDataSource.saveTokens(tokens);
       return Result.success(tokens);
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+
+      if (statusCode == 401 || statusCode == 403) {
+        await localDataSource.clearTokens();
+      }
+
+      return Result.error(e);
     } on Exception catch (e) {
+      await localDataSource.clearTokens();
       return Result.error(e);
     }
   }
