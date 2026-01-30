@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/workout_common/models/exercise_details.dart';
 import 'package:reforge/features/workout_common/ui/widgets/exercise_list_view.dart';
+import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 
 class ExerciseSection extends StatelessWidget {
   const ExerciseSection({
@@ -10,7 +10,7 @@ class ExerciseSection extends StatelessWidget {
     super.key,
   });
 
-  final List<ExerciseDetails> exercises;
+  final List<ExerciseDetailsEntity> exercises;
 
   @override
   Widget build(BuildContext context) {

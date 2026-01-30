@@ -40,7 +40,7 @@ List<LeaderboardUserModel> generateMockUsers() {
     'Master',
   ];
 
-  int currentXp = 250000;
+  var currentXp = 250000;
 
   return List.generate(100, (index) {
     final rank = index + 1;
@@ -50,7 +50,7 @@ List<LeaderboardUserModel> generateMockUsers() {
 
     final name = '$prefix$suffix${random.nextInt(999)}';
 
-    int drop = random.nextInt(1900) + 100;
+    final drop = random.nextInt(1900) + 100;
     currentXp = (currentXp - drop).clamp(0, 9999999);
 
     String? avatar;

@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_common/models/exercise_details.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 
 part 'program_exercise.freezed.dart';
 part 'program_exercise.g.dart';
@@ -17,4 +18,17 @@ sealed class ProgramExercise with _$ProgramExercise {
   }) = _ProgramExercise;
 
   factory ProgramExercise.fromJson(Map<String, dynamic> json) => _$ProgramExerciseFromJson(json);
+}
+
+extension ProgramExerciseToEntityX on ProgramExercise {
+  ProgramExerciseEntity toEntity() {
+    return ProgramExerciseEntity(
+      id: id,
+      programDayId: programDayId,
+      sets: sets,
+      order: order,
+
+      exerciseDetails: exerciseDetails.toEntity(),
+    );
+  }
 }

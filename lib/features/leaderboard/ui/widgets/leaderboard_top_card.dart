@@ -15,7 +15,7 @@ class ImmortalForcesCard extends StatelessWidget {
     const double designWidth = 358;
     const double designHeight = 226;
 
-    final silverGradient = LinearGradient(
+    const silverGradient = LinearGradient(
       colors: [
         Color(0xFFFFFFFF),
         Color(0xFF3E3D3A),
@@ -23,7 +23,7 @@ class ImmortalForcesCard extends StatelessWidget {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
-    final goldGradient = LinearGradient(
+    const goldGradient = LinearGradient(
       colors: [
         Color(0xFFD4AF37),
         Color(0xFFF7EF8A),
@@ -52,15 +52,15 @@ class ImmortalForcesCard extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Align(
-                      alignment: Alignment(0.0, -0.8),
-                      child: const GradientTextHeader(),
+                    const Align(
+                      alignment: Alignment(0, -0.8),
+                      child: GradientTextHeader(),
                     ),
 
                     Align(
-                      alignment: Alignment(-0.9, -0.2),
+                      alignment: const Alignment(-0.9, -0.2),
                       child: SizedBox.fromSize(
-                        size: Size(108, 32),
+                        size: const Size(108, 32),
                         child: CustomPaint(
                           painter: RhombusPainter(),
                           child: Center(
@@ -68,7 +68,7 @@ class ImmortalForcesCard extends StatelessWidget {
                               'Might',
                               style: subheadH5Medium.copyWith(
                                 color: context.appTheme.beige100,
-                                height: 1.0,
+                                height: 1,
                               ),
                             ),
                           ),
@@ -77,9 +77,9 @@ class ImmortalForcesCard extends StatelessWidget {
                     ),
 
                     Align(
-                      alignment: Alignment(0.9, 0.2),
+                      alignment: const Alignment(0.9, 0.2),
                       child: SizedBox.fromSize(
-                        size: Size(108, 32),
+                        size: const Size(108, 32),
                         child: CustomPaint(
                           painter: RhombusPainter(),
                           child: Center(
@@ -89,9 +89,9 @@ class ImmortalForcesCard extends StatelessWidget {
                       ),
                     ),
                     Align(
-                      alignment: Alignment(0.9, -0.2),
+                      alignment: const Alignment(0.9, -0.2),
                       child: SizedBox.fromSize(
-                        size: Size(108, 32),
+                        size: const Size(108, 32),
                         child: CustomPaint(
                           painter: RhombusPainter(),
                           child: Center(
@@ -102,9 +102,9 @@ class ImmortalForcesCard extends StatelessWidget {
                     ),
 
                     Align(
-                      alignment: Alignment(-0.9, 0.2),
+                      alignment: const Alignment(-0.9, 0.2),
                       child: SizedBox.fromSize(
-                        size: Size(108, 32),
+                        size: const Size(108, 32),
                         child: CustomPaint(
                           painter: RhombusPainter(),
                           child: Center(
@@ -129,9 +129,9 @@ class ImmortalForcesCard extends StatelessWidget {
                       ),
                     ),
 
-                    Center(
+                    const Center(
                       child: LeaderBoardAvatar(
-                        size: const Size(88, 88),
+                        size: Size(88, 88),
                         borderGradientColors: goldGradient,
 
                         imageUrl: 'https://i.pravatar.cc/150?img=12',
@@ -139,14 +139,14 @@ class ImmortalForcesCard extends StatelessWidget {
                     ),
 
                     Align(
-                      alignment: Alignment(0.0, 0.8),
+                      alignment: const Alignment(0, 0.8),
                       child: SizedBox.fromSize(
-                        size: Size(108, 32),
+                        size: const Size(108, 32),
                         child: CustomPaint(
                           painter: RhombusPainter(
                             strokeGradientColors: [
-                              Color(0xFFD4AD38),
-                              Color(0xFF5D4B17),
+                              const Color(0xFFD4AD38),
+                              const Color(0xFF5D4B17),
                             ],
                           ),
                           child: Center(
@@ -156,34 +156,34 @@ class ImmortalForcesCard extends StatelessWidget {
                       ),
                     ),
 
-                    Align(
+                    const Align(
                       alignment: Alignment(-0.85, -0.9),
                       child: LeaderBoardAvatar(
-                        size: const Size(64, 64),
+                        size: Size(64, 64),
                         imageUrl: 'https://i.pravatar.cc/150?img=12',
                         borderGradientColors: silverGradient,
                       ),
                     ),
-                    Align(
+                    const Align(
                       alignment: Alignment(0.85, 0.9),
                       child: LeaderBoardAvatar(
-                        size: const Size(64, 64),
+                        size: Size(64, 64),
                         imageUrl: 'https://i.pravatar.cc/150?img=12',
                         borderGradientColors: silverGradient,
                       ),
                     ),
-                    Align(
+                    const Align(
                       alignment: Alignment(-0.85, 0.9),
                       child: LeaderBoardAvatar(
-                        size: const Size(64, 64),
+                        size: Size(64, 64),
                         imageUrl: 'https://i.pravatar.cc/150?img=12',
                         borderGradientColors: silverGradient,
                       ),
                     ),
-                    Align(
+                    const Align(
                       alignment: Alignment(0.85, -0.9),
                       child: LeaderBoardAvatar(
-                        size: const Size(64, 64),
+                        size: Size(64, 64),
                         imageUrl: 'https://i.pravatar.cc/150?img=12',
                         borderGradientColors: silverGradient,
                       ),
@@ -226,18 +226,17 @@ class GradientLine extends StatelessWidget {
   }
 }
 
-// --- Текст с градиентом ---
 class GradientTextHeader extends StatelessWidget {
   const GradientTextHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min, // Колонка не будет жадничать место
-      crossAxisAlignment: CrossAxisAlignment.center, // Выравнивание самих виджетов
+      mainAxisSize: MainAxisSize.min,
+
       children: [
-        _buildGradientText("IMMORTAL", context),
-        _buildGradientText("FORGES", context),
+        _buildGradientText('IMMORTAL', context),
+        _buildGradientText('FORGES', context),
       ],
     );
   }
@@ -251,7 +250,7 @@ class GradientTextHeader extends StatelessWidget {
       ).createShader(bounds),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 12,
           fontFamily: FontFamily.mechsuit,
           color: Colors.white,

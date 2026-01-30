@@ -11,7 +11,8 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
-import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+
+import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 part 'active_exercise_cubit.freezed.dart';
@@ -29,7 +30,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
   final TrainingSessionRepository repository;
   final int workoutSessionId;
-  final ProgramExercise programExercise;
+  final ProgramExerciseEntity programExercise;
 
   Future<void> _init() async {
     emit(state.copyWith(isLoading: true));

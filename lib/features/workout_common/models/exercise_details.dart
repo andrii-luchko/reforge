@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+
 import 'package:reforge/features/workout_common/models/tier.dart';
+import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 
 part 'exercise_details.freezed.dart';
 part 'exercise_details.g.dart';
@@ -15,7 +17,7 @@ sealed class ExerciseDetails with _$ExerciseDetails {
     required String description,
     required String key,
 
-    @Default([]) List<WorkoutMetric> metrics,
+    @Default([]) List<String> metrics,
 
     @Default(false) bool isTiered,
     @Default([]) List<Tier> tiers,
@@ -26,4 +28,41 @@ sealed class ExerciseDetails with _$ExerciseDetails {
   }) = _ExerciseDetails;
 
   factory ExerciseDetails.fromJson(Map<String, dynamic> json) => _$ExerciseDetailsFromJson(json);
+}
+
+extension ExerciseDetailsToEntityX on ExerciseDetails {
+  ExerciseDetailsEntity toEntity() {
+    return ExerciseDetailsEntity(
+      id: id,
+      name: name,
+      description: description,
+      key: key,
+
+      metrics: metrics.map(_mapStringToMetric).whereType<WorkoutMetric>().toList(),
+      isTiered: isTiered,
+      tiers: tiers,
+      videoInstructionUrl: videoInstructionUrl,
+      thumbnailInstructionUrl: thumbnailInstructionUrl,
+      instructionsSteps: instructionsSteps,
+    );
+  }
+
+  WorkoutMetric? _mapStringToMetric(String value) {
+    switch (value) {
+      case 'weightKg':
+        return WorkoutMetric.weight;
+      case 'reps':
+        return WorkoutMetric.reps;
+      case 'durationSec':
+        return WorkoutMetric.time;
+      case 'distanceM':
+        return WorkoutMetric.distance;
+      case 'speedKmH':
+        return WorkoutMetric.pace;
+      case 'angleDeg':
+        return WorkoutMetric.degrees;
+      default:
+        return null;
+    }
+  }
 }

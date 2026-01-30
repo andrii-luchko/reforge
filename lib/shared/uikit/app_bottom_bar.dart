@@ -26,59 +26,57 @@ class AppBottomBar extends StatelessWidget {
     final currentIndex = navigationShell.currentIndex;
 
     return Container(
-      child: Container(
-        width: double.infinity,
-        padding: const .all(6),
-        margin: const .only(left: 10, right: 10, bottom: 24),
-        decoration: BoxDecoration(
-          color: appTheme.beige900,
-          border: GradientBoxBorder(gradient: appTheme.menuBar),
-          borderRadius: BorderRadius.circular(50),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.8),
-              offset: const Offset(0, 20),
-              blurRadius: 30,
-              spreadRadius: 20,
-            ),
-          ],
-        ),
+      width: double.infinity,
+      padding: const .all(6),
+      margin: const .only(left: 10, right: 10, bottom: 24),
+      decoration: BoxDecoration(
+        color: appTheme.beige900,
+        border: GradientBoxBorder(gradient: appTheme.menuBar),
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.8),
+            offset: const Offset(0, 20),
+            blurRadius: 30,
+            spreadRadius: 20,
+          ),
+        ],
+      ),
 
-        child: Row(
-          mainAxisAlignment: .spaceBetween,
-          children: [
-            AppBottomBarItem(
-              activeIcon: Assets.images.icons.homeActive,
-              inactiveIcon: Assets.images.icons.homeInactive,
-              isActive: currentIndex == 0,
-              onTap: () => onTabSelect(0),
-            ),
-            AppBottomBarItem(
-              activeIcon: Assets.images.icons.chartActive,
-              inactiveIcon: Assets.images.icons.chartInactive,
-              isActive: currentIndex == 1,
-              onTap: () => onTabSelect(1),
-            ),
-            AppBottomBarItem(
-              activeIcon: Assets.images.icons.platesActive,
-              inactiveIcon: Assets.images.icons.platesInactive,
-              isActive: currentIndex == 2,
-              onTap: () => onTabSelect(2),
-            ),
-            AppBottomBarItem(
-              activeIcon: Assets.images.icons.medalActive,
-              inactiveIcon: Assets.images.icons.medalInactive,
-              isActive: currentIndex == 3,
-              onTap: () => onTabSelect(3),
-            ),
-            AppBottomBarItem(
-              activeIcon: Assets.images.icons.settingActive,
-              inactiveIcon: Assets.images.icons.settingInactive,
-              isActive: currentIndex == 4,
-              onTap: () => onTabSelect(4),
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: .spaceBetween,
+        children: [
+          AppBottomBarItem(
+            activeIcon: Assets.images.icons.homeActive,
+            inactiveIcon: Assets.images.icons.homeInactive,
+            isActive: currentIndex == 0,
+            onTap: () => onTabSelect(0),
+          ),
+          AppBottomBarItem(
+            activeIcon: Assets.images.icons.chartActive,
+            inactiveIcon: Assets.images.icons.chartInactive,
+            isActive: currentIndex == 1,
+            onTap: () => onTabSelect(1),
+          ),
+          AppBottomBarItem(
+            activeIcon: Assets.images.icons.platesActive,
+            inactiveIcon: Assets.images.icons.platesInactive,
+            isActive: currentIndex == 2,
+            onTap: () => onTabSelect(2),
+          ),
+          AppBottomBarItem(
+            activeIcon: Assets.images.icons.medalActive,
+            inactiveIcon: Assets.images.icons.medalInactive,
+            isActive: currentIndex == 3,
+            onTap: () => onTabSelect(3),
+          ),
+          AppBottomBarItem(
+            activeIcon: Assets.images.icons.settingActive,
+            inactiveIcon: Assets.images.icons.settingInactive,
+            isActive: currentIndex == 4,
+            onTap: () => onTabSelect(4),
+          ),
+        ],
       ),
     );
   }

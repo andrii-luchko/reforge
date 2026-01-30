@@ -12,6 +12,7 @@ import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 @Injectable(as: TrainingSessionRepository)
@@ -25,10 +26,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   final UserSessionService _userSessionService;
 
   @override
-  Future<Result<ProgramDay>> getWorkoutByDay(int day) async {
+  Future<Result<ProgramDayEntity>> getWorkoutByDay(int day) async {
     try {
       final response = await _apiClient.getWorkoutByDay(day);
-      return Result.success(response.data.first);
+      return Result.success(response.data.first.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
     }

@@ -132,8 +132,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       ),
                     ),
 
-                    SliverPadding(
-                      padding: const .only(bottom: 16),
+                    const SliverPadding(
+                      padding: .only(bottom: 16),
                       sliver: SliverToBoxAdapter(
                         child: ImmortalForcesCard(),
                       ),

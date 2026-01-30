@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -56,9 +57,9 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
   void _start() {
     _lastElapsed = Duration.zero;
     if (widget.autoStopDuration != null) {
-      _controller.forward(from: 0);
+      unawaited(_controller.forward(from: 0));
     } else {
-      _controller.repeat();
+      unawaited(_controller.repeat());
     }
   }
 
@@ -79,8 +80,8 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
     _indices = Uint16List(count * 6);
 
     for (var i = 0; i < count; i++) {
-      var v = i * 4;
-      var ix = i * 6;
+      final v = i * 4;
+      final ix = i * 6;
       _indices[ix] = v;
       _indices[ix + 1] = v + 1;
       _indices[ix + 2] = v + 2;
