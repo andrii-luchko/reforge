@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/gradient_borders.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/app/utils/formatters/xp_formatter.dart';
-
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
-import 'package:reforge/features/leaderboard/domain/enum/leaderboard_type.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_top_card.dart';
+import 'package:reforge/features/leaderboard/controller/leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/factions_leaderboard_view.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/leader_board_users_list.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/sparks.dart';
-import 'package:reforge/features/quiz/domain/enums/faction.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/users_leaderboard_view.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:reforge/shared/base_list_tile_container.dart';
-import 'package:reforge/shared/switchers/multi_options_switcher.dart';
-import 'package:reforge/shared/uikit/app_tag.dart';
+import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/binary_option_switcher.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 
@@ -28,53 +22,51 @@ class LeaderboardPage extends StatefulWidget {
 
 class _LeaderboardPageState extends State<LeaderboardPage> {
   final ScrollController _scrollController = ScrollController();
-
-  LeaderboardMode _selectedMode = LeaderboardMode.users;
-  Faction _selectedFaction = .gakki;
-  late List<LeaderboardUserModel> users;
-  LeaderboardUserModel? currentUser;
-  int? currentUserIndex;
-
   bool _isStickyVisible = false;
 
-  final double _headersHeight = 520;
-
+  final double _baseHeaderHeight = 160;
+  final double _usersHeaderHeight = 380;
   final double _tileHeight = 80;
   final double _separatorHeight = 8;
+
   @override
   void initState() {
     super.initState();
-    users = generateMockUsers();
-
-    if (users.length > 25) {
-      currentUserIndex = 25;
-      currentUser = users[currentUserIndex!];
-    }
-
     _scrollController.addListener(_onScroll);
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _onScroll() {
-    if (currentUserIndex == null) return;
+    if (!mounted) return;
 
-    final userTopY = _headersHeight + (currentUserIndex! * _tileHeight) + (currentUserIndex! * _separatorHeight);
+    final cubit = context.read<LeaderboardCubit>();
+    final state = cubit.state;
 
+    if (state.mode != LeaderboardMode.users || state.currentUserIndex == null) {
+      if (_isStickyVisible) setState(() => _isStickyVisible = false);
+      return;
+    }
+
+    final index = state.currentUserIndex!;
+
+    final totalHeaderOffset = _baseHeaderHeight + _usersHeaderHeight;
+
+    final userTopY = totalHeaderOffset + (index * _tileHeight) + (index * _separatorHeight);
     final userBottomY = userTopY + _tileHeight;
 
-    final screenTopY = _scrollController.offset;
-
-    final screenBottomY = _scrollController.offset + _scrollController.position.viewportDimension;
+    final screenTopY = _scrollController.hasClients ? _scrollController.offset : 0.0;
+    final screenBottomY = screenTopY + _scrollController.position.viewportDimension;
 
     final isUserVisibleOnScreen = (userBottomY > screenTopY) && (userTopY < screenBottomY);
-
     final shouldShowSticky = !isUserVisibleOnScreen;
 
     if (_isStickyVisible != shouldShowSticky) {
-      setState(() {
-        _isStickyVisible = shouldShowSticky;
-      });
+      setState(() => _isStickyVisible = shouldShowSticky);
     }
   }
 
@@ -83,184 +75,93 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: DefaultBackground(
-        body: Stack(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const .symmetric(horizontal: 16),
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                    SliverAppBar(
-                      backgroundColor: Colors.transparent,
-                      title: Text(
-                        'LeaderBoard',
-                        style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-                      ),
-                      centerTitle: false,
-                    ),
+        body: SafeArea(
+          bottom: false,
+          child: BlocConsumer<LeaderboardCubit, LeaderboardState>(
+            listener: (context, state) {
+              if (state.status == LeaderboardStatus.success) {
+                WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+              }
+            },
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  CustomScrollView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        sliver: SliverAppBar(
+                          backgroundColor: Colors.transparent,
+                          surfaceTintColor: Colors.transparent,
+                          elevation: 0,
+                          scrolledUnderElevation: 0,
+                          automaticallyImplyLeading: false,
+                          centerTitle: false,
 
-                    SliverPadding(
-                      padding: const .only(bottom: 32),
-                      sliver: SliverToBoxAdapter(
-                        child: BinaryOptionSwitcher<LeaderboardMode>(
-                          selectedValue: _selectedMode,
-                          firstValue: .users,
-                          secondValue: .factions,
-                          labelBuilder: (value) => value.title(t),
-                          onSelected: (value) {
-                            setState(() {
-                              _selectedMode = value;
-                            });
-                          },
+                          floating: true,
+
+                          title: Text(
+                            'LeaderBoard',
+                            style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
+                          ),
+
+                          bottom: PreferredSize(
+                            preferredSize: const Size.fromHeight(72),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: BinaryOptionSwitcher<LeaderboardMode>(
+                                selectedValue: state.mode,
+                                firstValue: LeaderboardMode.users,
+                                secondValue: LeaderboardMode.factions,
+                                labelBuilder: (value) => value.title(t),
+                                onSelected: (value) {
+                                  context.read<LeaderboardCubit>().changeMode(value);
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
 
-                    SliverPadding(
-                      padding: const .only(bottom: 32),
-                      sliver: SliverToBoxAdapter(
-                        child: MultiOptionSwitcher<Faction>(
-                          selectedValue: _selectedFaction,
-                          values: Faction.values,
-                          labelBuilder: (value) => value.title(t),
-                          onSelected: (value) => setState(() {
-                            _selectedFaction = value;
-                          }),
-                        ),
-                      ),
-                    ),
+                      if (state.mode == LeaderboardMode.users) UsersLeaderboardSlivers(state: state),
 
-                    const SliverPadding(
-                      padding: .only(bottom: 16),
-                      sliver: SliverToBoxAdapter(
-                        child: ImmortalForcesCard(),
-                      ),
-                    ),
+                      if (state.mode == LeaderboardMode.factions) const FactionsLeaderboardSlivers(),
 
-                    SliverAppBar(
-                      backgroundColor: Colors.transparent,
-                      title: Text(
-                        'Leaderboard list',
-                        style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-                      ),
-                      centerTitle: false,
-                    ),
-
-                    LeaderBoardList(
-                      currentUserIndex: currentUserIndex,
-                      users: users,
-                    ),
-
-                    const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
-                  ],
-                ),
-              ),
-            ),
-
-            if (currentUser != null)
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                left: 16,
-                right: 16,
-
-                bottom: _isStickyVisible ? 10 : -150,
-                child: SafeArea(
-                  top: false,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: RisingAuraEffect(
-                      child: LeaderboardListTile(user: currentUser!),
-                    ),
+                      const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
+                    ],
                   ),
-                ),
-              ),
-          ],
+
+                  if (state.mode == LeaderboardMode.users && state.currentUser != null)
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      left: 16,
+                      right: 16,
+                      bottom: _isStickyVisible ? 100 : -150,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: RisingAuraEffect(
+                          child: LeaderboardUserListTile(user: state.currentUser!),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class LeaderBoardList extends StatelessWidget {
-  const LeaderBoardList({required this.users, required this.currentUserIndex, super.key});
-
-  final List<LeaderboardUserModel> users;
-  final int? currentUserIndex;
-  @override
-  Widget build(BuildContext context) {
-    return SliverList.separated(
-      itemCount: users.length,
-      itemBuilder: (context, index) {
-        // final isMe = index == currentUserIndex;
-
-        final user = users[index];
-
-        return LeaderboardListTile(user: user);
-      },
-      separatorBuilder: (context, index) => const SizedBox(
-        height: 8,
-      ),
-    );
-  }
-}
-
-class LeaderboardListTile extends StatelessWidget {
-  const LeaderboardListTile({required this.user, super.key});
-
-  final LeaderboardUserModel user;
-
-  @override
-  Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-    return Container(
-      decoration: BoxDecoration(
-        border: GradientBoxBorder(
-          gradient: getGradientByRank(user.rank, context),
-        ),
-        borderRadius: BorderRadius.circular(20),
-        color: appTheme.beige900,
-      ),
-      child: BaseListTileContainer(
-        child: Row(
-          children: [
-            SizedBox(
-              width: 50,
-              child: Text(
-                user.rank.toString(),
-                style: subheadH3Medium.copyWith(color: appTheme.beige100),
-              ),
-            ),
-            const SizedBox(width: 8),
-            LeaderBoardAvatar(
-              borderGradientColors: getGradientByRank(user.rank, context),
-              imageUrl: user.avatarUrl,
-              gradientWidth: 1.5,
-              secondBorderWidth: 0,
-              size: const Size(48, 48),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 4,
-              child: Text(
-                user.username,
-                style: subheadH3Medium.copyWith(color: appTheme.beige100),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 12),
-            AppTag(
-              text: 'XP:${XpFormatter.precise(user.xp)}',
-
-              textStyle: subheadH8Semibold.copyWith(color: appTheme.beige100),
-            ),
-          ],
-        ),
+        additionalAnimationsBehind: const [ParticlesWidget()],
       ),
     );
   }

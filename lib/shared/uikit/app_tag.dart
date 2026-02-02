@@ -14,7 +14,7 @@ class AppTag extends StatelessWidget {
 
     final ts = textStyle ?? subheadH5Medium.copyWith(color: appTheme.beige100);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50),
         color: appTheme.orange500,

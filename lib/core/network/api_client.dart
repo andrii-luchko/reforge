@@ -109,4 +109,11 @@ abstract class ApiClient {
 
   @POST('/user-workout-readiness')
   Future<BaseResponse<void>> submitWorkoutQuiz(@Body() WorkoutQuizRequest request);
+
+  //Leaderboard
+
+  // @GET('/user-workout-readiness/users/{id}/check')
+  // Future<BaseResponse<bool>> isQuizTodaySubmitted(@Path('id') int userId);
+
+  // Future<BaseResponse<bool>> getImmortalForges(@Path('id') int userId);
 }

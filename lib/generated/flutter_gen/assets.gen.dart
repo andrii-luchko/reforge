@@ -130,11 +130,20 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/Faction.png
   AssetGenImage get faction => const AssetGenImage('assets/images/png/Faction.png');
 
+  /// File path: assets/images/png/Faction_serien.png
+  AssetGenImage get factionSerien => const AssetGenImage('assets/images/png/Faction_serien.png');
+
   /// File path: assets/images/png/avatar.jpg
   AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
   /// File path: assets/images/png/badge.png
   AssetGenImage get badge => const AssetGenImage('assets/images/png/badge.png');
+
+  /// File path: assets/images/png/faction_gakki.png
+  AssetGenImage get factionGakki => const AssetGenImage('assets/images/png/faction_gakki.png');
+
+  /// File path: assets/images/png/faction_gyohyo.png
+  AssetGenImage get factionGyohyo => const AssetGenImage('assets/images/png/faction_gyohyo.png');
 
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
@@ -163,8 +172,11 @@ class $AssetsImagesPngGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     faction,
+    factionSerien,
     avatar,
     badge,
+    factionGakki,
+    factionGyohyo,
     foreground512x512,
     goldEnvelope,
     goldEnvelopePlus,
@@ -191,8 +203,11 @@ class $AssetsImagesSvgGen {
   /// File path: assets/images/svg/rank_card.svg
   String get rankCard => 'assets/images/svg/rank_card.svg';
 
+  /// File path: assets/images/svg/trophy.svg
+  String get trophy => 'assets/images/svg/trophy.svg';
+
   /// List of all assets
-  List<String> get values => [logo, logoAndName, logoSplash, rankCard];
+  List<String> get values => [logo, logoAndName, logoSplash, rankCard, trophy];
 }
 
 class Assets {

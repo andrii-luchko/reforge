@@ -12,6 +12,7 @@ class RisingAuraEffect extends StatefulWidget {
     super.key,
     this.particleColor = const Color(0xFFD4AF37),
     this.particleCount = 50,
+    this.particleSize = 0.5,
   });
 
   final Widget child;
@@ -19,6 +20,7 @@ class RisingAuraEffect extends StatefulWidget {
   final Duration? autoStopDuration;
   final Color particleColor;
   final int particleCount;
+  final double particleSize;
 
   @override
   State<RisingAuraEffect> createState() => _RisingAuraEffectState();
@@ -174,7 +176,7 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
 
     _velY[i] = -15.0 - _rng.nextDouble() * 20.0;
     _velX[i] = (_rng.nextDouble() - 0.5) * 15.0;
-    _sizes[i] = 0.5 + _rng.nextDouble();
+    _sizes[i] = widget.particleSize + _rng.nextDouble();
     _phases[i] = _rng.nextDouble() * math.pi * 2;
   }
 
@@ -199,8 +201,8 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: .center,
       children: [
-        RepaintBoundary(child: widget.child),
         if (widget.enabled)
           Positioned.fill(
             child: IgnorePointer(
@@ -215,6 +217,7 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
               ),
             ),
           ),
+        RepaintBoundary(child: widget.child),
       ],
     );
   }

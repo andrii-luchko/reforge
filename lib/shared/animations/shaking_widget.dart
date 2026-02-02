@@ -8,11 +8,13 @@ class ShakingWidget extends StatefulWidget {
     super.key,
     this.shakeIntensity = 5.0,
     this.shakeDuration = const Duration(milliseconds: 1000),
+    this.enabled = true,
   });
 
   final Widget child;
   final double shakeIntensity;
   final Duration shakeDuration;
+  final bool enabled;
 
   @override
   State<ShakingWidget> createState() => _ShakingWidgetState();
@@ -40,8 +42,9 @@ class _ShakingWidgetState extends State<ShakingWidget> with SingleTickerProvider
             curve: Curves.easeInOut,
           ),
         );
-
-    unawaited(_controller.repeat(reverse: true));
+    if (widget.enabled) {
+      unawaited(_controller.repeat(reverse: true));
+    }
   }
 
   @override
@@ -52,18 +55,20 @@ class _ShakingWidgetState extends State<ShakingWidget> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(
-            0,
-            _animation.value,
-          ),
-          child: child,
-        );
-      },
-      child: widget.child,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(
+              0,
+              _animation.value,
+            ),
+            child: child,
+          );
+        },
+        child: widget.child,
+      ),
     );
   }
 }
