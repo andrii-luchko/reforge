@@ -129,7 +129,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
                       if (state.mode == LeaderboardMode.factions) const FactionsLeaderboardSlivers(),
 
-                      const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
+                      SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing)),
                     ],
                   ),
 

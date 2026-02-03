@@ -26,6 +26,9 @@ void main() async {
       runApp(
         Portal(
           child: ToastificationWrapper(
+            config: const ToastificationConfig(
+              maxToastLimit: 3,
+            ),
             child: TranslationProvider(
               child: const App(),
             ),

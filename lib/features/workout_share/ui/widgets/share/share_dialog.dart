@@ -9,7 +9,6 @@ import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
-import 'package:reforge/shared/uikit/toasts/app_simple_toast.dart';
 import 'package:toastification/toastification.dart';
 
 class ShareButton extends StatelessWidget {
@@ -122,11 +121,7 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
                           final saved = await widget.controller.captureAndSaveToGallery(_contentKey);
 
                           if (saved) {
-                            toastification.showCustomToast(
-                              (context, item) {
-                                return const Center(child: AppSimpleToast(text: 'Saved'));
-                              },
-                            );
+                            toastification.showSimpleToast('Saved');
                           }
                         }),
                       ),

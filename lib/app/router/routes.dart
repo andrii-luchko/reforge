@@ -22,6 +22,7 @@ import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
+import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/ui/page/lore_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
@@ -240,7 +241,10 @@ class LorePageRoute extends GoRouteData with $LorePageRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const LorePage();
+    return BlocProvider(
+      create: (context) => di.getIt<LoreCubit>(),
+      child: const LorePage(),
+    );
   }
 }
 

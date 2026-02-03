@@ -154,6 +154,8 @@ class AppThemeValues {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
+
+    sliverBottomSpacing: 200,
   );
 
   static final dark = AppTheme(
@@ -302,5 +304,7 @@ class AppThemeValues {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
+
+    sliverBottomSpacing: 200,
   );
 }
