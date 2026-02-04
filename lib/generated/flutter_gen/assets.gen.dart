@@ -39,6 +39,12 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/calendar_2.svg
   String get calendar2 => 'assets/images/icons/calendar_2.svg';
 
+  /// File path: assets/images/icons/calendar_alt.svg
+  String get calendarAlt => 'assets/images/icons/calendar_alt.svg';
+
+  /// File path: assets/images/icons/camera.svg
+  String get camera => 'assets/images/icons/camera.svg';
+
   /// File path: assets/images/icons/chart_active.svg
   String get chartActive => 'assets/images/icons/chart_active.svg';
 
@@ -48,6 +54,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/check.svg
   String get check => 'assets/images/icons/check.svg';
 
+  /// File path: assets/images/icons/computing.svg
+  String get computing => 'assets/images/icons/computing.svg';
+
   /// File path: assets/images/icons/dumbbell.svg
   String get dumbbell => 'assets/images/icons/dumbbell.svg';
 
@@ -56,6 +65,9 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/eye_slash.svg
   String get eyeSlash => 'assets/images/icons/eye_slash.svg';
+
+  /// File path: assets/images/icons/gallery.svg
+  String get gallery => 'assets/images/icons/gallery.svg';
 
   /// File path: assets/images/icons/google.svg
   String get google => 'assets/images/icons/google.svg';
@@ -90,11 +102,26 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/setting_inactive.svg
   String get settingInactive => 'assets/images/icons/setting_inactive.svg';
 
+  /// File path: assets/images/icons/sms.svg
+  String get sms => 'assets/images/icons/sms.svg';
+
   /// File path: assets/images/icons/timer.svg
   String get timer => 'assets/images/icons/timer.svg';
 
+  /// File path: assets/images/icons/trash.svg
+  String get trash => 'assets/images/icons/trash.svg';
+
   /// File path: assets/images/icons/user.svg
   String get user => 'assets/images/icons/user.svg';
+
+  /// File path: assets/images/icons/wallet.svg
+  String get wallet => 'assets/images/icons/wallet.svg';
+
+  /// File path: assets/images/icons/weight.svg
+  String get weight => 'assets/images/icons/weight.svg';
+
+  /// File path: assets/images/icons/weight_alt.svg
+  String get weightAlt => 'assets/images/icons/weight_alt.svg';
 
   /// List of all assets
   List<String> get values => [
@@ -102,12 +129,16 @@ class $AssetsImagesIconsGen {
     bell,
     calendar,
     calendar2,
+    calendarAlt,
+    camera,
     chartActive,
     chartInactive,
     check,
+    computing,
     dumbbell,
     eye,
     eyeSlash,
+    gallery,
     google,
     homeActive,
     homeInactive,
@@ -119,8 +150,13 @@ class $AssetsImagesIconsGen {
     play,
     settingActive,
     settingInactive,
+    sms,
     timer,
+    trash,
     user,
+    wallet,
+    weight,
+    weightAlt,
   ];
 }
 

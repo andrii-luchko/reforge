@@ -1,4 +1,6 @@
-import 'package:bloc/bloc.dart';
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
@@ -12,7 +14,7 @@ part 'leaderboard_cubit.freezed.dart';
 @injectable
 class LeaderboardCubit extends Cubit<LeaderboardState> {
   LeaderboardCubit() : super(const LeaderboardState()) {
-    loadUsers(Faction.gakki);
+    unawaited(loadUsers(Faction.gakki));
   }
 
   Future<void> loadUsers(Faction faction, {bool forceRefresh = false}) async {
@@ -36,9 +38,6 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-
-      // TODO: Заменить на реальный вызов репозитория
-      // final newUsers = await _repository.getLeaderboard(faction);
       final newUsers = generateMockUsers();
 
       final updatedCache = Map<Faction, List<LeaderboardUserModel>>.from(state.usersCache);
@@ -52,6 +51,7 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       );
 
       _updateCurrentUser(newUsers);
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       emit(state.copyWith(status: LeaderboardStatus.error));
     }

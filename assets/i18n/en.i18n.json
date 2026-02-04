@@ -82,6 +82,7 @@
         "delete_button": "Delete",
         "skip_button": "Skip",
         "continue_button": "Continue",
+        "save_changes_button": "Save changes",
         "lv": "lv"
     },
     "validation": {
@@ -94,7 +95,15 @@
         "date_of_birth_required": "Valid date of birth is required",
         "date_of_birth_future": "Date of birth cannot be in the future",
         "date_of_birth_invalid": "Please enter a valid date",
-        "date_of_birth_too_young": "Please enter a valid date $mimAge"
+        "date_of_birth_too_young": "Please enter a valid date $mimAge",
+        "nameRequired": "Name is required",
+        "nameMinLength": "Name must be at least 2 characters",
+        "nameMaxLength": "Name must be less than 100 characters",
+        "nameInvalidCharacters": "Name can only contain letters",
+        "select_days_count": "Please select how many days you want to train",
+        "select_at_least_one_day": "Please select at least one specific day",
+        "too_many_days_selected": "You've selected $selected days, but your goal is $max per week. Deselect some days.",
+        "not_enough_days_selected": "You've only selected $selected days, but you planned $max."
     },
     "quiz": {
         "header": "Onboarding quiz",

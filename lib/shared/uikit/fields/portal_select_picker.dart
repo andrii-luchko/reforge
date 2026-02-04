@@ -35,19 +35,25 @@ class PortalSelectField extends StatefulWidget {
     this.onTap,
     this.hintText,
     this.errorText,
+    this.initialText,
     this.prefixIcon,
     this.suffixIcon,
     this.portalAnchor = Alignment.topCenter,
     this.targetAnchor = Alignment.bottomCenter,
     this.heightFactor = 10,
     super.key,
-  });
+  }) : assert(
+         !(controller != null && initialText != null),
+         'You cannot pass both controller and initialText at the same time. '
+         'Use one or the other to avoid data conflicts.',
+       );
 
   final TextEditingController? controller;
   final PortalSelectController? portalController;
   final VoidCallback? onTap;
   final PortalContentBuilder contentBuilder;
 
+  final String? initialText;
   final String? hintText;
   final String? errorText;
   final Widget? prefixIcon;
@@ -139,6 +145,7 @@ class _PortalSelectFieldState extends State<PortalSelectField> with SingleTicker
         },
         child: AbsorbPointer(
           child: AppTextField(
+            initialValue: widget.initialText,
             controller: widget.controller,
             hintText: widget.hintText,
             errorText: widget.errorText,

@@ -7,7 +7,7 @@ import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_factions.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/factions/faction_mode-picker.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/factions/faction_mode_picker.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/victory_point_section.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_faction_list.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';

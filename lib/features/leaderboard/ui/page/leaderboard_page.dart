@@ -76,6 +76,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       backgroundColor: Colors.transparent,
       body: DefaultBackground(
         body: SafeArea(
+          top: false,
           bottom: false,
           child: BlocConsumer<LeaderboardCubit, LeaderboardState>(
             listener: (context, state) {

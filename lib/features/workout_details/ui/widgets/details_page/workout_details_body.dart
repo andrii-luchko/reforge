@@ -41,7 +41,7 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
+                        //  physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: .start,
                           children: [

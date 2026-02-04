@@ -156,6 +156,13 @@ class AppThemeValues {
     ),
 
     sliverBottomSpacing: 200,
+
+    cardNavigation: const LinearGradient(
+      begin: Alignment(-0.53, -1),
+      end: Alignment(0.96, 1),
+      colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
+      stops: [0.6, 1.0],
+    ),
   );
 
   static final dark = AppTheme(
@@ -306,5 +313,12 @@ class AppThemeValues {
     ),
 
     sliverBottomSpacing: 200,
+
+    cardNavigation: const LinearGradient(
+      begin: Alignment(-0.53, -1),
+      end: Alignment(0.96, 1),
+      colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
+      stops: [0.6, 1.0],
+    ),
   );
 }

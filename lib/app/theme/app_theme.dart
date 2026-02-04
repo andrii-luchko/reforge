@@ -51,6 +51,7 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.bronzeGradient,
     required this.woodGradient,
     required this.sliverBottomSpacing,
+    required this.cardNavigation,
   });
 
   // Beige palette
@@ -100,4 +101,6 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
   final LinearGradient woodGradient;
 
   final double sliverBottomSpacing;
+
+  final LinearGradient cardNavigation;
 }

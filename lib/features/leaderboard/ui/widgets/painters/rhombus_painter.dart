@@ -93,9 +93,9 @@ class RhombusPainter extends CustomPainter {
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadow.blurSigma);
 
         final shadowPath = scaledPath.shift(shadow.offset);
-        canvas.drawPath(shadowPath, shadowPaint);
-
-        canvas.restore();
+        canvas
+          ..drawPath(shadowPath, shadowPaint)
+          ..restore();
       }
     }
 

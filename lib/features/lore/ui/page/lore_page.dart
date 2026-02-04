@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/plate_list_tile.dart';
+import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -15,7 +17,10 @@ class LorePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Colors.transparent,
-      body: DefaultBackground(body: LoreBody()),
+      body: DefaultBackground(
+        body: LoreBody(),
+        additionalAnimationsBehind: [ParticlesWidget()],
+      ),
     );
   }
 }
@@ -28,6 +33,7 @@ class LoreBody extends StatelessWidget {
     final appTheme = context.appTheme;
 
     return SafeArea(
+      top: false,
       child: RefreshIndicator(
         onRefresh: () => context.read<LoreCubit>().loadLore(),
         child: BlocBuilder<LoreCubit, LoreState>(
@@ -71,7 +77,7 @@ class LoreBody extends StatelessWidget {
                         return Skeleton.replace(
                           replacement: const LoreCardShimmer(),
                           child: PlateListTile(model: item),
-                        );
+                        ).animateEntrance();
                       },
                       separatorBuilder: (context, index) => const SizedBox(height: 8),
                     ),
