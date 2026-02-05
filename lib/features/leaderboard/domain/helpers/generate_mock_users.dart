@@ -42,7 +42,7 @@ List<LeaderboardUserModel> generateMockUsers() {
 
   var currentXp = 250000;
 
-  return List.generate(100, (index) {
+  return List.generate(10, (index) {
     final rank = index + 1;
 
     final prefix = prefixes[random.nextInt(prefixes.length)];

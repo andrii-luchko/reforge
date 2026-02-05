@@ -4,7 +4,7 @@ import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart
 
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/quiz_title_section.dart';
-import 'package:reforge/shared/uikit/binary_option_switcher.dart';
+import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 
 class IsMorningSessionStep extends StatelessWidget {
   const IsMorningSessionStep({super.key});
@@ -23,10 +23,9 @@ class IsMorningSessionStep extends StatelessWidget {
           selector: (state) => state.isMorningSession,
           builder: (context, value) {
             final cubit = context.read<WorkoutQuizCubit>();
-            return BinaryOptionSwitcher<bool>(
+            return MultiOptionSwitcher<bool>(
               selectedValue: value,
-              firstValue: true,
-              secondValue: false,
+              values: const [true, false],
               labelBuilder: (value) =>
                   value ? t.workout_quiz.steps.is_morning_session.yes : t.workout_quiz.steps.is_morning_session.no,
               onSelected: cubit.setIsMorningSession,

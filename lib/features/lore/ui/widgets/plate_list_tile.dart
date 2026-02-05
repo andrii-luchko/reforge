@@ -138,6 +138,7 @@ class PlateDetails extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
           Container(
+            margin: const .symmetric(horizontal: 6),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: context.appTheme.beige900,

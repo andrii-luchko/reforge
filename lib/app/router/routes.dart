@@ -20,7 +20,9 @@ import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
-import 'package:reforge/features/leaderboard/controller/leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
+
+import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/ui/page/lore_page.dart';
@@ -229,8 +231,15 @@ class LeaderboardPageRoute extends GoRouteData with $LeaderboardPageRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return BlocProvider(
-      create: (context) => di.getIt<LeaderboardCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => di.getIt<UsersLeaderboardCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<FactionsLeaderboardCubit>(),
+        ),
+      ],
       child: const LeaderboardPage(),
     );
   }

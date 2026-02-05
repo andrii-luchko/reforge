@@ -10,6 +10,7 @@ import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dar
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderBoardUsersList extends StatelessWidget {
   const LeaderBoardUsersList({required this.users, required this.currentUserIndex, super.key});
@@ -24,10 +25,12 @@ class LeaderBoardUsersList extends StatelessWidget {
         // final isMe = index == currentUserIndex;
 
         final user = users[index];
-        return LeaderboardUserListTile(
-          key: ValueKey(user.rank),
-          user: user,
-        ).animateEntrance();
+        return Skeleton.leaf(
+          child: LeaderboardUserListTile(
+            key: ValueKey(user.rank),
+            user: user,
+          ).animateEntrance(),
+        );
       },
       separatorBuilder: (context, index) => const SizedBox(
         height: 8,

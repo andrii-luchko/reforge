@@ -1,21 +1,12 @@
 import 'package:flutter/widgets.dart';
 
-class NotchedFactionLeaderboardCard extends CustomPainter {
-  NotchedFactionLeaderboardCard({
-    required this.strokeGradient,
-    this.backgroundColor,
+class FactionPathFactory {
+  static Path getNotchedPath(Size size) {
+    const designWidth = 358.0;
+    const designHeight = 156.0;
 
-    this.fillGradient,
-  });
-
-  final Color? backgroundColor;
-  final Gradient? fillGradient;
-  final Gradient strokeGradient;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final sx = size.width / 358.0;
-    final sy = size.height / 156.0;
+    final sx = size.width / designWidth;
+    final sy = size.height / designHeight;
     final matrix = Matrix4.diagonal3Values(sx, sy, 1);
 
     final path = Path()
@@ -37,7 +28,33 @@ class NotchedFactionLeaderboardCard extends CustomPainter {
       ..cubicTo(8.9543, 156, 0, 147.046, 0, 136)
       ..close();
 
-    final scaledPath = path.transform(matrix.storage);
+    return path.transform(matrix.storage);
+  }
+}
+
+class FactionCardClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) => FactionPathFactory.getNotchedPath(size);
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class NotchedFactionLeaderboardCard extends CustomPainter {
+  NotchedFactionLeaderboardCard({
+    required this.strokeGradient,
+    this.backgroundColor,
+
+    this.fillGradient,
+  });
+
+  final Color? backgroundColor;
+  final Gradient? fillGradient;
+  final Gradient strokeGradient;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scaledPath = FactionPathFactory.getNotchedPath(size);
     final bounds = scaledPath.getBounds();
 
     if (backgroundColor != null) {

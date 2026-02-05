@@ -1,16 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/leaderboard/controller/leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/factions_leaderboard_view.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/leader_board_users_list.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/sparks.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/users_leaderboard_view.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/users/users_leaderboard_view.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
-import 'package:reforge/shared/uikit/binary_option_switcher.dart';
+import 'package:reforge/shared/switchers/multi_options_switcher.dart';
+
 import 'package:reforge/shared/uikit/default_background.dart';
 
 class LeaderboardPage extends StatefulWidget {
@@ -21,145 +24,131 @@ class LeaderboardPage extends StatefulWidget {
 }
 
 class _LeaderboardPageState extends State<LeaderboardPage> {
-  final ScrollController _scrollController = ScrollController();
-  bool _isStickyVisible = false;
+  final ValueNotifier<LeaderboardMode> _leaderboardModeNotifier = ValueNotifier(.users);
 
-  final double _baseHeaderHeight = 160;
-  final double _usersHeaderHeight = 380;
-  final double _tileHeight = 80;
-  final double _separatorHeight = 8;
+  bool _onScrollNotification(ScrollUpdateNotification notification, BuildContext context) {
+    final metrics = notification.metrics;
 
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
+    const threshold = 200.0;
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+    if (_leaderboardModeNotifier.value == LeaderboardMode.users &&
+        metrics.pixels >= metrics.maxScrollExtent - threshold) {
+      final cubit = context.read<UsersLeaderboardCubit>();
 
-  void _onScroll() {
-    if (!mounted) return;
-
-    final cubit = context.read<LeaderboardCubit>();
-    final state = cubit.state;
-
-    if (state.mode != LeaderboardMode.users || state.currentUserIndex == null) {
-      if (_isStickyVisible) setState(() => _isStickyVisible = false);
-      return;
+      if (!cubit.state.isLoading && !cubit.state.hasReachedMax) {
+        unawaited(cubit.loadNextPage());
+      }
     }
 
-    final index = state.currentUserIndex!;
-
-    final totalHeaderOffset = _baseHeaderHeight + _usersHeaderHeight;
-
-    final userTopY = totalHeaderOffset + (index * _tileHeight) + (index * _separatorHeight);
-    final userBottomY = userTopY + _tileHeight;
-
-    final screenTopY = _scrollController.hasClients ? _scrollController.offset : 0.0;
-    final screenBottomY = screenTopY + _scrollController.position.viewportDimension;
-
-    final isUserVisibleOnScreen = (userBottomY > screenTopY) && (userTopY < screenBottomY);
-    final shouldShowSticky = !isUserVisibleOnScreen;
-
-    if (_isStickyVisible != shouldShowSticky) {
-      setState(() => _isStickyVisible = shouldShowSticky);
-    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+
       body: DefaultBackground(
         body: SafeArea(
           top: false,
           bottom: false,
-          child: BlocConsumer<LeaderboardCubit, LeaderboardState>(
-            listener: (context, state) {
-              if (state.status == LeaderboardStatus.success) {
-                WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
-              }
-            },
-            builder: (context, state) {
-              return Stack(
-                children: [
-                  CustomScrollView(
-                    controller: _scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverAppBar(
-                          backgroundColor: Colors.transparent,
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 0,
-                          scrolledUnderElevation: 0,
-                          automaticallyImplyLeading: false,
-                          centerTitle: false,
 
-                          floating: true,
+          child: Stack(
+            children: [
+              NotificationListener<ScrollUpdateNotification>(
+                onNotification: (n) => _onScrollNotification(n, context),
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverAppBar(
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      automaticallyImplyLeading: false,
+                      centerTitle: false,
 
-                          title: Text(
-                            'LeaderBoard',
-                            style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-                          ),
+                      floating: true,
 
-                          bottom: PreferredSize(
-                            preferredSize: const Size.fromHeight(72),
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 24),
-                              child: BinaryOptionSwitcher<LeaderboardMode>(
-                                selectedValue: state.mode,
-                                firstValue: LeaderboardMode.users,
-                                secondValue: LeaderboardMode.factions,
-                                labelBuilder: (value) => value.title(t),
-                                onSelected: (value) {
-                                  context.read<LeaderboardCubit>().changeMode(value);
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
+                      title: Text(
+                        'LeaderBoard',
+                        style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
                       ),
 
-                      if (state.mode == LeaderboardMode.users) UsersLeaderboardSlivers(state: state),
-
-                      if (state.mode == LeaderboardMode.factions) const FactionsLeaderboardSlivers(),
-
-                      SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing)),
-                    ],
-                  ),
-
-                  if (state.mode == LeaderboardMode.users && state.currentUser != null)
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      left: 16,
-                      right: 16,
-                      bottom: _isStickyVisible ? 100 : -150,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: RisingAuraEffect(
-                          child: LeaderboardUserListTile(user: state.currentUser!),
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(72),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+                          child: ValueListenableBuilder(
+                            valueListenable: _leaderboardModeNotifier,
+                            builder: (context, value, child) {
+                              return MultiOptionSwitcher<LeaderboardMode>(
+                                selectedValue: value,
+                                values: LeaderboardMode.values,
+                                labelBuilder: (value) => value.title(t),
+                                onSelected: (value) {
+                                  _leaderboardModeNotifier.value = value;
+                                },
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
-                ],
-              );
-            },
+
+                    ValueListenableBuilder(
+                      valueListenable: _leaderboardModeNotifier,
+                      builder: (context, mode, child) {
+                        if (mode == LeaderboardMode.users) {
+                          return const UsersLeaderboardSlivers();
+                        } else {
+                          return const FactionsLeaderboardSlivers();
+                        }
+                      },
+                    ),
+
+                    SliverPadding(
+                      padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing),
+                    ),
+                  ],
+                ),
+              ),
+
+              ValueListenableBuilder(
+                valueListenable: _leaderboardModeNotifier,
+                builder: (context, mode, child) {
+                  final visible = mode == LeaderboardMode.users;
+                  return BlocBuilder<UsersLeaderboardCubit, UsersLeaderboardState>(
+                    builder: (context, state) {
+                      if (state.currentUser == null) return const SizedBox.shrink();
+
+                      return AnimatedPositioned(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        left: 16,
+                        right: 16,
+                        bottom: visible ? 100 : -150,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: RisingAuraEffect(
+                            child: LeaderboardUserListTile(user: state.currentUser!),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
           ),
         ),
         additionalAnimationsBehind: const [ParticlesWidget()],

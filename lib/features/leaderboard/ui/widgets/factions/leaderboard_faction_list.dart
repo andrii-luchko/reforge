@@ -10,6 +10,7 @@ import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dar
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderboardFactionList extends StatelessWidget {
   const LeaderboardFactionList({required this.factions, required this.mode, super.key});
@@ -24,11 +25,16 @@ class LeaderboardFactionList extends StatelessWidget {
       itemBuilder: (context, index) {
         final faction = factions[index];
 
-        return LeaderboardFactionListTile(
-          key: ValueKey(faction.name),
-          faction: faction,
-        ).animateEntrance(
-          index: index,
+        final rank = index + 1;
+        return Skeleton.leaf(
+          child:
+              LeaderboardFactionListTile(
+                key: ValueKey(faction.name),
+                faction: faction,
+                rank: rank,
+              ).animateEntrance(
+                index: index,
+              ),
         );
       },
       separatorBuilder: (context, index) => const SizedBox(
@@ -39,16 +45,18 @@ class LeaderboardFactionList extends StatelessWidget {
 }
 
 class LeaderboardFactionListTile extends StatelessWidget {
-  const LeaderboardFactionListTile({required this.faction, super.key});
+  const LeaderboardFactionListTile({required this.faction, required this.rank, super.key});
 
   final LeaderboardFactionModel faction;
+  final int rank;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     return Container(
       decoration: BoxDecoration(
         border: GradientBoxBorder(
-          gradient: getGradientByRank(faction.rank, context),
+          gradient: getGradientByRank(rank, context),
         ),
         borderRadius: BorderRadius.circular(20),
         color: appTheme.beige900,
@@ -62,14 +70,14 @@ class LeaderboardFactionListTile extends StatelessWidget {
                 child: SizedBox(
                   width: 50,
                   child: Text(
-                    faction.rank.toString(),
+                    rank.toString(),
                     style: subheadH3Medium.copyWith(color: appTheme.beige100),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               LeaderBoardAvatar.asset(
-                borderGradientColors: getGradientByRank(faction.rank, context),
+                borderGradientColors: getGradientByRank(rank, context),
                 assetPath: faction.avatarAsset,
                 gradientWidth: 1.5,
                 secondBorderWidth: 0,
@@ -85,6 +93,10 @@ class LeaderboardFactionListTile extends StatelessWidget {
                     style: subheadH3Medium.copyWith(color: appTheme.beige100),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    strutStyle: StrutStyle.fromTextStyle(
+                      subheadH3Medium,
+                      forceStrutHeight: true,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   SizedBox(

@@ -2,13 +2,13 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 
 enum FactionMode {
   global,
-  current,
+  currentFight,
 }
 
 extension FactionModeX on FactionMode {
   String title(Translations t) {
     switch (this) {
-      case FactionMode.current:
+      case FactionMode.currentFight:
         return 'Current fight';
       case FactionMode.global:
         return 'Global';

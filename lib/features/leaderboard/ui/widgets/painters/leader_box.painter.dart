@@ -3,12 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-class LeaderBoxPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
+class LeaderBoxPath {
+  static Path getPath(Size size) {
     final sx = size.width / 358.0;
     final sy = size.height / 266.0;
-
     final matrix = Matrix4.diagonal3Values(sx, sy, 1);
 
     final path = Path()
@@ -43,7 +41,22 @@ class LeaderBoxPainter extends CustomPainter {
       ..cubicTo(0.5, 3.85786, 3.85786, 0.5, 8, 0.5)
       ..close();
 
-    final scaledPath = path.transform(matrix.storage);
+    return path.transform(matrix.storage);
+  }
+}
+
+class LeaderBoxClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) => LeaderBoxPath.getPath(size);
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class LeaderBoxPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scaledPath = LeaderBoxPath.getPath(size);
 
     final fillPaint = Paint()
       ..style = PaintingStyle.fill
@@ -58,7 +71,6 @@ class LeaderBoxPainter extends CustomPainter {
 
     final stroke1Paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1 * math.min(sx, sy)
       ..shader = ui.Gradient.radial(
         Offset.zero,
         1,
@@ -78,7 +90,6 @@ class LeaderBoxPainter extends CustomPainter {
 
     final stroke2Paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1 * math.min(sx, sy)
       ..shader = ui.Gradient.radial(
         Offset.zero,
         1,

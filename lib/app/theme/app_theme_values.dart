@@ -163,6 +163,16 @@ class AppThemeValues {
       colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
       stops: [0.6, 1.0],
     ),
+
+    factionCardFillGradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: [0.53, 1.0],
+      colors: [
+        Color(0x004A2105),
+        Color(0xFF4A2105),
+      ],
+    ),
   );
 
   static final dark = AppTheme(
@@ -319,6 +329,16 @@ class AppThemeValues {
       end: Alignment(0.96, 1),
       colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
       stops: [0.6, 1.0],
+    ),
+
+    factionCardFillGradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: [0.53, 1.0],
+      colors: [
+        Color(0x004A2105),
+        Color(0xFF4A2105),
+      ],
     ),
   );
 }

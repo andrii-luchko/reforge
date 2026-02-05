@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:reforge/app/theme/app_theme.dart';
@@ -11,71 +10,81 @@ class MultiOptionSwitcher<T> extends StatelessWidget {
     required this.values,
     required this.labelBuilder,
     required this.onSelected,
-    this.maxOptions = 5,
+    this.height = 56.0,
+    this.padding = const EdgeInsets.all(2),
     this.borderRadius,
+    this.itemTextStyle,
     super.key,
-  }) : assert(values.length >= 2, 'At least 2 values must be passed'),
-       assert(values.length <= maxOptions, 'Too many elements for such a switch');
+  }) : assert(values.length >= 2, 'At least 2 values must be passed');
 
   final T? selectedValue;
   final List<T> values;
   final String Function(T value) labelBuilder;
   final ValueChanged<T> onSelected;
-  final int maxOptions;
+
+  final double height;
+  final EdgeInsets padding;
   final BorderRadius? borderRadius;
+  final TextStyle? itemTextStyle;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     final selectedIndex = values.indexOf(selectedValue as T);
-    final borderRadius = this.borderRadius ?? BorderRadius.circular(50);
+
+    final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(12);
+
+    final effectiveTextStyle = itemTextStyle ?? subheadH3Medium.copyWith(color: appTheme.beige100);
+
     return Container(
-      height: 56,
-      padding: const EdgeInsets.all(2),
+      height: height,
+      padding: padding,
       decoration: BoxDecoration(
         color: appTheme.beige900,
-        borderRadius: borderRadius,
+        borderRadius: effectiveBorderRadius,
         border: Border.all(color: appTheme.strokeCard),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final itemWidth = (constraints.maxWidth) / values.length;
+          final availableWidth = constraints.maxWidth;
+          final itemWidth = availableWidth / values.length;
 
           return Stack(
             children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOutCubic,
+              if (selectedIndex != -1)
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOutCubic,
 
-                left: selectedIndex != -1 ? selectedIndex * itemWidth : 0,
-                width: itemWidth,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: appTheme.orange500,
-                    borderRadius: borderRadius,
+                  left: selectedIndex * itemWidth,
+                  width: itemWidth,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: appTheme.orange500,
+                      borderRadius: BorderRadius.circular(
+                        (effectiveBorderRadius.topLeft.x - padding.horizontal / 2).clamp(0, 100),
+                      ),
+                    ),
                   ),
                 ),
-              ),
 
               Row(
                 children: values.map((value) {
-                  // final isSelected = value == selectedValue;
-
                   return Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        onSelected(value);
-                        unawaited(HapticFeedback.lightImpact());
+                        if (selectedValue != value) {
+                          onSelected(value);
+                          unawaited(HapticFeedback.lightImpact());
+                        }
                       },
                       behavior: HitTestBehavior.opaque,
                       child: Center(
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 200),
-                          style: subheadH5Medium.copyWith(
-                            color: appTheme.beige100,
-                          ),
+                          style: effectiveTextStyle,
                           child: Text(
                             labelBuilder(value),
                             textAlign: TextAlign.center,

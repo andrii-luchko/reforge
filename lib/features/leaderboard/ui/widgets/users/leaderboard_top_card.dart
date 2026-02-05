@@ -6,12 +6,30 @@ import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_mo
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/gradient_text_header.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/rhombus_painter.dart';
-
+import 'package:reforge/features/leaderboard/ui/widgets/users/gradient_text_header.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+
+const double designWidth = 358;
+const double designHeight = 226;
+
+class ImmortalForcesCardShimmer extends StatelessWidget {
+  const ImmortalForcesCardShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipPath(
+      clipper: LeaderBoxClipper(),
+      child: const Bone(
+        width: designWidth,
+        height: designHeight,
+      ),
+    );
+  }
+}
 
 class ImmortalForcesCard extends StatelessWidget {
   const ImmortalForcesCard({
@@ -27,9 +45,6 @@ class ImmortalForcesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double designWidth = 358;
-    const double designHeight = 226;
-
     final ranks = Iterable.generate(5, (i) => _getUserByRank(i + 1)).toList();
     final userRank1 = ranks[0];
 

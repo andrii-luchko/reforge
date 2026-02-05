@@ -9,10 +9,12 @@ import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart'
 import 'package:reforge/features/leaderboard/ui/widgets/painters/rhombus_painter.dart';
 
 class VictoryCard extends StatelessWidget {
-  const VictoryCard({required this.faction, required this.mode, super.key});
+  const VictoryCard({required this.faction, required this.mode, required this.rank, super.key});
 
   final LeaderboardFactionModel faction;
+  final int rank;
   final FactionMode mode;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,9 +22,9 @@ class VictoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: context.appTheme.styleCard,
         borderRadius: .circular(20),
-        border: faction.rank == 1
+        border: rank == 1
             ? GradientBoxBorder(
-                gradient: getGradientByRank(faction.rank, context),
+                gradient: getGradientByRank(rank, context),
               )
             : Border.all(color: context.appTheme.strokeCard),
       ),
@@ -30,7 +32,7 @@ class VictoryCard extends StatelessWidget {
         spacing: 10,
         children: [
           LeaderBoardAvatar.asset(
-            borderGradientColors: getGradientByRank(faction.rank, context),
+            borderGradientColors: getGradientByRank(rank, context),
             assetPath: faction.avatarAsset,
             size: const Size(56, 56),
           ),

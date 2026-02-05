@@ -7,7 +7,7 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:reforge/shared/uikit/binary_option_switcher.dart';
+import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 
 class MeasurementPage extends StatelessWidget {
@@ -49,10 +49,9 @@ class MeasurementContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                BinaryOptionSwitcher<MeasurementSystem>(
+                MultiOptionSwitcher<MeasurementSystem>(
                   selectedValue: state.value,
-                  firstValue: MeasurementSystem.metric,
-                  secondValue: MeasurementSystem.imperial,
+                  values: MeasurementSystem.values,
                   labelBuilder: (v) => v.weightSymbol(t),
                   onSelected: cubit.onChanged,
                 ),

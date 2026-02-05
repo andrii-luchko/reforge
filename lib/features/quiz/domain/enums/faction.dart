@@ -5,10 +5,23 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 @JsonEnum()
 enum Faction {
   gakki,
-
   gyohyo,
+  serien
+  ;
 
-  serien,
+  static Faction? getById(int factionId) {
+    switch (factionId) {
+      case 1:
+        return Faction.gakki;
+      case 2:
+        return Faction.serien;
+      case 3:
+        return Faction.gyohyo;
+
+      default:
+        return null;
+    }
+  }
 }
 
 extension FactionExtension on Faction {

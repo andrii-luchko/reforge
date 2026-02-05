@@ -15,7 +15,6 @@ List<LeaderboardFactionModel> generateMockFactions() {
   var currentLocalScore = 4;
 
   return Faction.values.mapIndexed((i, e) {
-    final rank = i + 1;
     final drop = random.nextInt(1900) + 100;
     currentXp = (currentXp - drop).clamp(0, 9999999);
 
@@ -29,7 +28,6 @@ List<LeaderboardFactionModel> generateMockFactions() {
     currentLocalScore = (currentGlobalScore - localDrop).clamp(0, 9999999);
 
     return LeaderboardFactionModel(
-      rank: rank,
       faction: e,
       xp: currentXp,
       activeUsers: currentUsers,
