@@ -6,25 +6,32 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 
-class AppBottomBar extends StatelessWidget {
+class AppBottomBar extends StatefulWidget {
   const AppBottomBar({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
-  Future<void> _switchTab(int index) async {
-    if (index != navigationShell.currentIndex) {
-      await HapticFeedback.selectionClick();
-      navigationShell.goBranch(
-        index,
-        initialLocation: index == navigationShell.currentIndex,
-      );
-    }
+  @override
+  State<AppBottomBar> createState() => _AppBottomBarState();
+}
+
+class _AppBottomBarState extends State<AppBottomBar> {
+  int? _draggedIndex;
+
+  void _onTabSelect(int index) {
+    widget.navigationShell.goBranch(
+      index,
+      initialLocation: index == widget.navigationShell.currentIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final currentIndex = navigationShell.currentIndex;
+
+    final currentIndex = widget.navigationShell.currentIndex;
+
+    final visualIndex = _draggedIndex ?? currentIndex;
 
     const itemSize = 56.0;
     const itemCount = 5;
@@ -61,23 +68,51 @@ class AppBottomBar extends StatelessWidget {
           final tabWidth = totalWidth / itemCount;
           final centerOffset = (tabWidth - itemSize) / 2;
 
-          void handleDrag(DragUpdateDetails details) {
-            final dx = details.localPosition.dx;
-            var newIndex = (dx / tabWidth).floor();
-            newIndex = newIndex.clamp(0, itemCount - 1);
-            _switchTab(newIndex);
-          }
-
-          void handleTap(TapUpDetails details) {
-            final dx = details.localPosition.dx;
-            final newIndex = (dx / tabWidth).floor().clamp(0, itemCount - 1);
-            _switchTab(newIndex);
+          int calculateIndex(double dx) {
+            return (dx / tabWidth).floor().clamp(0, itemCount - 1);
           }
 
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onHorizontalDragUpdate: handleDrag,
-            onTapUp: handleTap,
+
+            onHorizontalDragStart: (details) {
+              final index = calculateIndex(details.localPosition.dx);
+              setState(() {
+                _draggedIndex = index;
+              });
+              HapticFeedback.selectionClick();
+            },
+
+            onHorizontalDragUpdate: (details) async {
+              final newIndex = calculateIndex(details.localPosition.dx);
+
+              if (newIndex != _draggedIndex) {
+                setState(() {
+                  _draggedIndex = newIndex;
+                });
+                await HapticFeedback.selectionClick();
+              }
+            },
+
+            onHorizontalDragEnd: (details) {
+              if (_draggedIndex != null) {
+                _onTabSelect(_draggedIndex!);
+                setState(() {
+                  _draggedIndex = null;
+                });
+              }
+            },
+
+            onHorizontalDragCancel: () {
+              setState(() {
+                _draggedIndex = null;
+              });
+            },
+
+            onTapUp: (details) {
+              final index = calculateIndex(details.localPosition.dx);
+              _onTabSelect(index);
+            },
 
             child: Stack(
               children: [
@@ -88,7 +123,8 @@ class AppBottomBar extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   width: itemSize,
-                  left: (currentIndex * tabWidth) + centerOffset,
+
+                  left: (visualIndex * tabWidth) + centerOffset,
 
                   child: Container(
                     decoration: BoxDecoration(
@@ -105,7 +141,7 @@ class AppBottomBar extends StatelessWidget {
                   children: List.generate(items.length, (index) {
                     return Expanded(
                       child: AppBottomBarItem(
-                        isActive: currentIndex == index,
+                        isActive: visualIndex == index,
                         activeIcon: items[index].active,
                         inactiveIcon: items[index].inactive,
                         size: const Size(itemSize, itemSize),
