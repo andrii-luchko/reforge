@@ -27,7 +27,7 @@ class ForgeSystemGuideSheet extends StatelessWidget {
       minChildSize: 1,
 
       builder: (_, scrollController) {
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             color: theme.beige900,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),

@@ -27,6 +27,7 @@ class WorkoutExerciseRow extends StatelessWidget {
   final MeasurementSystem system;
 
   @override
+  // ignore: cyclomatic_complexity
   Widget build(BuildContext context) {
     final isDone = set.isDone;
 
@@ -35,6 +36,7 @@ class WorkoutExerciseRow extends StatelessWidget {
         text: setNumber.toString(),
       ),
 
+      // ignore: cyclomatic_complexity
       metricCells: metrics.map((metric) {
         final value = set.getValue(metric);
         if (metric == WorkoutMetric.reps) {

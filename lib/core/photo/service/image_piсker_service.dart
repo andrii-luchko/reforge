@@ -71,6 +71,7 @@ class ImagePickerService {
     return null;
   }
 
+  // ignore: avoid_returning_widgets
   static Widget _buildPickerItem(
     BuildContext context, {
     required String title,

@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_match_file_name
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,7 @@ import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
@@ -246,6 +248,9 @@ class LeaderboardPageRoute extends GoRouteData with $LeaderboardPageRoute {
       providers: [
         BlocProvider(
           create: (context) => di.getIt<UsersLeaderboardCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<ImmortalForgesCubit>(),
         ),
         BlocProvider(
           create: (context) => di.getIt<FactionsLeaderboardCubit>(),

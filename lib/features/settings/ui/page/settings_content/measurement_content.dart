@@ -10,6 +10,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 
+// ignore: prefer_match_file_name
 class MeasurementPage extends StatelessWidget {
   const MeasurementPage({super.key});
 

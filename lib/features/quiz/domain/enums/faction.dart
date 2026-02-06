@@ -6,7 +6,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 enum Faction {
   gakki,
   gyohyo,
-  serien
+  seiren
   ;
 
   static Faction? getById(int factionId) {
@@ -14,7 +14,7 @@ enum Faction {
       case 1:
         return Faction.gakki;
       case 2:
-        return Faction.serien;
+        return Faction.seiren;
       case 3:
         return Faction.gyohyo;
 
@@ -31,7 +31,7 @@ extension FactionExtension on Faction {
         return t.common.factions.gakki;
       case Faction.gyohyo:
         return t.common.factions.gyohyo;
-      case Faction.serien:
+      case Faction.seiren:
         return t.common.factions.serien;
     }
   }
@@ -42,7 +42,7 @@ extension FactionExtension on Faction {
         return t.common.factions.gakki_description;
       case Faction.gyohyo:
         return t.common.factions.gyohyo_description;
-      case Faction.serien:
+      case Faction.seiren:
         return t.common.factions.serien_description;
     }
   }
@@ -53,7 +53,7 @@ extension FactionExtension on Faction {
         return Assets.images.png.factionGakki.path;
       case Faction.gyohyo:
         return Assets.images.png.factionGyohyo.path;
-      case Faction.serien:
+      case Faction.seiren:
         return Assets.images.png.factionSerien.path;
     }
   }
@@ -64,7 +64,7 @@ extension FactionExtension on Faction {
         return Assets.images.png.factionGakki.path;
       case Faction.gyohyo:
         return Assets.images.png.factionGyohyo.path;
-      case Faction.serien:
+      case Faction.seiren:
         return Assets.images.png.factionSerien.path;
     }
   }

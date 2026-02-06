@@ -56,18 +56,32 @@ class LeaderBoardAvatar extends StatelessWidget {
           ),
         ),
         clipBehavior: Clip.hardEdge,
-        child: _buildImage(),
+        child: _ImageSelector(
+          imageType: _imageType,
+          imageUrl: _imageUrl,
+        ),
       ),
     );
   }
+}
 
-  Widget _buildImage() {
-    switch (_imageType) {
+class _ImageSelector extends StatelessWidget {
+  const _ImageSelector({
+    required this.imageType,
+    this.imageUrl,
+  });
+
+  final String? imageUrl;
+  final _ImageType imageType;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (imageType) {
       case _ImageType.network:
-        return AppCachedNetImage(imageUrl: _imageUrl!);
+        return AppCachedNetImage(imageUrl: imageUrl!);
       case _ImageType.asset:
         return Image.asset(
-          _imageUrl!,
+          imageUrl!,
           fit: BoxFit.cover,
         );
       case _ImageType.empty:

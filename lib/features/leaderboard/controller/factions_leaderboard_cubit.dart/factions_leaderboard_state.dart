@@ -28,9 +28,9 @@ sealed class FactionsLeaderboardState with _$FactionsLeaderboardState {
     LeaderboardFactionModel opponentModel;
 
     if (userRankIndex == 0) {
-      opponentModel = sorted.length > 1 ? sorted[1] : sorted[0];
+      opponentModel = sorted.length > 1 ? sorted[1] : sorted.first;
     } else {
-      opponentModel = sorted[0];
+      opponentModel = sorted.first;
     }
 
     return (myFaction: myFactionModel, opponent: opponentModel);

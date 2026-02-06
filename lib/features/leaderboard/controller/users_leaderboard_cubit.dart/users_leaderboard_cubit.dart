@@ -7,9 +7,6 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
-
-import 'package:reforge/features/quiz/domain/enums/faction.dart';
-
 part 'users_leaderboard_state.dart';
 part 'users_leaderboard_cubit.freezed.dart';
 
@@ -26,7 +23,6 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
         isLoading: true,
         error: null,
         currentUsersList: generateMockUsers(),
-
         currentPage: 1,
         hasReachedMax: false,
       ),
@@ -100,14 +96,4 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
       ),
     );
   }
-
-  Future<void> changeFaction(Faction faction) async {
-    emit(
-      state.copyWith(
-        selectedFaction: faction,
-      ),
-    );
-  }
-
-  Future<void> loadImmortalForges() async {}
 }

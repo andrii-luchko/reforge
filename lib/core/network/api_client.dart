@@ -10,6 +10,7 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
+import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
@@ -115,12 +116,14 @@ abstract class ApiClient {
   //Leaderboard
 
   @GET('/leaderboards/global')
-  Future<LeaderboardResponse> getGlobalUserList(@Query('page') int page, @Query('limit ') int limit);
+  Future<LeaderboardResponse> getGlobalUserList(@Query('page') int page, @Query('limit') int limit);
 
   @GET('/leaderboards/factions/local')
   Future<BaseResponse<List<FactionLeaderboardDto>>> getLocalFactionsLeaderboard();
 
   @GET('/leaderboards/factions/global')
   Future<BaseResponse<List<FactionLeaderboardDto>>> getGlobalFactionsLeaderboard();
-  // Future<BaseResponse<bool>> getImmortalForges(@Path('id') int userId);
+
+  @GET('/leaderboards/forges/factions/{factionName}')
+  Future<ImmortalForgesResponse> getImmortalForges(@Path('factionName') String factionName);
 }

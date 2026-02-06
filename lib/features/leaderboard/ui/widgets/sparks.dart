@@ -1,3 +1,4 @@
+// ignore_for_file: no_empty_block
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';

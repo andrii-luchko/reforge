@@ -39,7 +39,7 @@ extension FitnessGoalExtension on MainGoal {
       case MainGoal.improveEndurance:
         return Faction.gyohyo;
       case MainGoal.enhanceFlexibility:
-        return Faction.serien;
+        return Faction.seiren;
     }
   }
 }

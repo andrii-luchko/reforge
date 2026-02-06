@@ -190,7 +190,7 @@ class _PortalContentWrapper extends StatelessWidget {
             borderRadius: BorderRadius.circular(_borderRadius),
             elevation: 8,
             color: Colors.transparent,
-            child: Container(
+            child: DecoratedBox(
               decoration: BoxDecoration(
                 color: context.appTheme.beige900,
                 borderRadius: BorderRadius.circular(_borderRadius),

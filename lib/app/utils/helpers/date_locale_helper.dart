@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 class DateLocaleHelper {
   static String getSeparator(String locale) {
     final dateFormat = DateFormat.yMd(locale);
+
     final pattern = dateFormat.pattern!;
 
     return pattern

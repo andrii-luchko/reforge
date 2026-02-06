@@ -1,37 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
-
+import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/users/leaderboard_top_card.dart';
-
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:toastification/toastification.dart';
 
 class UsersLeaderboardSlivers extends StatelessWidget {
   const UsersLeaderboardSlivers({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UsersLeaderboardCubit, UsersLeaderboardState>(
+    return const SliverMainAxisGroup(
+      slivers: [ImmortalForgesSection(), LeaderBoardListSection()],
+    );
+  }
+}
+
+class ImmortalForgesSection extends StatelessWidget {
+  const ImmortalForgesSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ImmortalForgesCubit, ImmortalForgesState>(
+      listener: (context, state) {
+        final error = state.error;
+        if (error == null) return;
+        toastification.showErrorToast(error, context);
+      },
       builder: (context, state) {
-        final cubit = context.read<UsersLeaderboardCubit>();
-        final currentUsers = state.currentUsersList;
+        final cubit = context.read<ImmortalForgesCubit>();
+        final selectedFaction = state.selectedFaction;
         final isLoading = state.isLoading;
-        final isPaginationLoading = state.isPaginationLoading;
+
+        final isEmpty = state.currentList.isEmpty;
 
         return SliverSkeletonizer(
           enabled: isLoading,
           child: SliverMainAxisGroup(
             slivers: [
-              // 1. Faction Filter
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverToBoxAdapter(
@@ -39,7 +55,7 @@ class UsersLeaderboardSlivers extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 32),
                     child: Skeleton.leaf(
                       child: MultiOptionSwitcher<Faction>(
-                        selectedValue: state.selectedFaction,
+                        selectedValue: selectedFaction,
                         values: Faction.values,
                         labelBuilder: (value) => value.title(t),
                         onSelected: cubit.changeFaction,
@@ -51,7 +67,6 @@ class UsersLeaderboardSlivers extends StatelessWidget {
                   ),
                 ),
               ),
-
               // 2. Top 3 Card (Immortal Forces)
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -60,15 +75,43 @@ class UsersLeaderboardSlivers extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Skeleton.replace(
                       replacement: const ImmortalForcesCardShimmer(),
-                      child: ImmortalForcesCard(
-                        users: currentUsers,
-                      ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.2, end: 0, curve: Curves.easeOut),
-                    ),
+                      child: isEmpty
+                          ? ImmortalForcesCardEmpty(faction: selectedFaction)
+                          : ImmortalForcesCard(
+                              users: state.currentList,
+                            ),
+                    ).animateEntrance(),
                   ),
                 ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
-              // 3. Header "Leaderboard List"
+class LeaderBoardListSection extends StatelessWidget {
+  const LeaderBoardListSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<UsersLeaderboardCubit, UsersLeaderboardState>(
+      listener: (context, state) {
+        final error = state.error;
+        if (error == null) return;
+        toastification.showErrorToast(error, context);
+      },
+      builder: (context, state) {
+        final currentUsers = state.currentUsersList;
+        final isLoading = state.isLoading;
+        final isPaginationLoading = state.isPaginationLoading;
+
+        return SliverSkeletonizer(
+          enabled: isLoading,
+          child: SliverMainAxisGroup(
+            slivers: [
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverToBoxAdapter(
@@ -81,8 +124,6 @@ class UsersLeaderboardSlivers extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // 4. The List
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: LeaderBoardUsersList(

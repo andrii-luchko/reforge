@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_first
 import 'package:reforge/features/workout_common/models/exercise_details.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day.dart';
 import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';

@@ -20,8 +20,6 @@ class WorkoutCongratulationsCubit extends Cubit<WorkoutCongratulationsState> {
 
   void init() {
     if (state.workoutResult == null) return;
-
-    if (state.workoutResult!.earnedMilestones.isNotEmpty) {}
   }
 
   void onNextPressed({int? currentMilestoneIndex}) {

@@ -31,11 +31,10 @@ class _CreateNewPasswordFormState extends State<CreateNewPasswordForm> {
     final cubit = context.read<ResetPasswordCubit>();
 
     return BlocListener<ResetPasswordCubit, ResetPasswordState>(
-      listener: (context, state) async {
-        if (state.isSuccess) {
-          // ignore: inference_failure_on_function_invocation
-          await const SuccessPasswordChangePageRoute().push(context);
-        }
+      listener: (context, state) {
+        if (!state.isSuccess) return;
+        // ignore: inference_failure_on_function_invocation, discarded_futures
+        const SuccessPasswordChangePageRoute().push(context);
       },
       child: Column(
         children: [

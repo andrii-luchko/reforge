@@ -18,7 +18,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
     await const CalendarPageRoute().push(context);
   }
 
-  void navigateToNotifications() {}
+  void navigateToNotifications(BuildContext context) {
+    // ignore: discarded_futures
+    const CalendarPageRoute().push<void>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +64,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
 
             AppIconButton(
               iconAsset: Assets.images.icons.bell,
-              onPressed: navigateToNotifications,
+              onPressed: () => navigateToNotifications(context),
             ),
           ],
         ),

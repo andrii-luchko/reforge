@@ -28,6 +28,7 @@ final router = GoRouter(
   ],
 );
 
+// ignore: prefer_match_file_name
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(List<Stream<dynamic>> streams) {
     _subscriptions = streams.map((stream) {
@@ -35,6 +36,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
     }).toList();
   }
 
+  // ignore: avoid_late_keyword
   late final List<StreamSubscription<dynamic>> _subscriptions;
 
   @override

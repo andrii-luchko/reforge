@@ -71,9 +71,9 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 listenWhen: (previous, current) =>
                                     previous.setValidationError != current.setValidationError,
                                 listener: (context, state) {
-                                  if (state.setValidationError != null) {
-                                    toastification.showErrorToast(state.setValidationError!, context);
-                                  }
+                                  if (state.setValidationError == null) return;
+
+                                  toastification.showErrorToast(state.setValidationError!, context);
                                 },
                                 builder: (context, state) {
                                   final cubit = context.read<ActiveExerciseCubit>();
@@ -105,9 +105,8 @@ class ActiveWorkoutPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         SecondaryButton(
                           text: 'Start Running',
-                          onPressed: () async {
-                            // ignore: inference_failure_on_function_invocation
-                            await const StartRunningPageRoute().push(context).then((_) {});
+                          onPressed: () {
+                            const StartRunningPageRoute().push(context);
                           },
                         ),
                         const SizedBox(height: 8),

@@ -4,12 +4,15 @@ class XpFormatter {
       return number.toString();
     } else if (number < 1000000) {
       final result = number / 1000;
+
       return '${_removeTrailingZeros(result)}K';
     } else if (number < 1000000000) {
       final result = number / 1000000;
+
       return '${_removeTrailingZeros(result)}M';
     } else {
       final result = number / 1000000000;
+
       return '${_removeTrailingZeros(result)}B';
     }
   }

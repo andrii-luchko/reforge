@@ -34,11 +34,7 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
   }) {
     double? finalWeightKg;
     if (set.weight != null) {
-      if (system == MeasurementSystem.imperial) {
-        finalWeightKg = MeasureSystemValues.toKg(set.weight!);
-      } else {
-        finalWeightKg = set.weight;
-      }
+      finalWeightKg = system == MeasurementSystem.imperial ? MeasureSystemValues.toKg(set.weight!) : set.weight;
     }
 
     double? finalDistanceM;

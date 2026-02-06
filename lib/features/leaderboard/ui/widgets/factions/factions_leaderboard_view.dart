@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
@@ -12,15 +13,21 @@ import 'package:reforge/features/leaderboard/ui/widgets/factions/victory_point_s
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:toastification/toastification.dart';
 
-class FactionsLeaderboardSlivers extends StatelessWidget {
-  const FactionsLeaderboardSlivers({super.key});
+class FactionsLeaderboardView extends StatelessWidget {
+  const FactionsLeaderboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<FactionsLeaderboardCubit>();
 
-    return BlocBuilder<FactionsLeaderboardCubit, FactionsLeaderboardState>(
+    return BlocConsumer<FactionsLeaderboardCubit, FactionsLeaderboardState>(
+      listener: (context, state) {
+        final error = state.error;
+        if (error == null) return;
+        toastification.showErrorToast(error, context);
+      },
       builder: (context, state) {
         final isLoading = state.isLoading;
         final versusList = state.versusMatchup;
@@ -65,7 +72,7 @@ class FactionsLeaderboardSlivers extends StatelessWidget {
                 sliver: SliverList.list(
                   children: [
                     Text(
-                      'War Standings', // TODO: context.t.leaderboard.warStandings
+                      'War Standings', // TODO(Masayoshi): context.t.leaderboard.warStandings
                       style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
                     ),
                     const SizedBox(height: 16),
@@ -86,37 +93,42 @@ class FactionsLeaderboardSlivers extends StatelessWidget {
                 ),
               ),
 
-              _buildContentSlivers(state),
+              _LeaderboardContent(state: state),
             ],
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildContentSlivers(FactionsLeaderboardState state) {
-    if (state.selectedType == FactionShowType.list) {
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: LeaderboardFactionList(
-          factions: state.factionsSortByMode,
-          mode: state.selectedMode,
-        ),
-      );
-    }
+class _LeaderboardContent extends StatelessWidget {
+  const _LeaderboardContent({required this.state});
 
-    if (state.selectedType == FactionShowType.victoryPoints) {
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: SliverToBoxAdapter(
-          child: VictoryPointSection(
-            mode: state.selectedMode,
+  final FactionsLeaderboardState state;
+
+  @override
+  Widget build(BuildContext context) {
+    switch (state.selectedType) {
+      case FactionShowType.list:
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: LeaderboardFactionList(
             factions: state.factionsSortByMode,
-          ).animateEntrance(),
-        ),
-      );
-    }
+            mode: state.selectedMode,
+          ),
+        );
 
-    return const SliverToBoxAdapter(child: SizedBox.shrink());
+      case FactionShowType.victoryPoints:
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverToBoxAdapter(
+            child: VictoryPointSection(
+              mode: state.selectedMode,
+              factions: state.factionsSortByMode,
+            ).animateEntrance(),
+          ),
+        );
+    }
   }
 }

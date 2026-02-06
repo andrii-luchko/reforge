@@ -42,7 +42,7 @@ class AttributeSystemSection extends StatelessWidget {
     ];
 
     final appTheme = context.appTheme;
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: appTheme.beige900),
       child: Container(
         padding: const .all(16),

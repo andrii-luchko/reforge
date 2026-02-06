@@ -99,11 +99,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     ValueListenableBuilder(
                       valueListenable: _leaderboardModeNotifier,
                       builder: (context, mode, child) {
-                        if (mode == LeaderboardMode.users) {
-                          return const UsersLeaderboardSlivers();
-                        } else {
-                          return const FactionsLeaderboardSlivers();
-                        }
+                        return mode == LeaderboardMode.users
+                            ? const UsersLeaderboardSlivers()
+                            : const FactionsLeaderboardView();
                       },
                     ),
 
@@ -128,7 +126,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                         left: 16,
                         right: 16,
                         bottom: visible ? 100 : -150,
-                        child: Container(
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [

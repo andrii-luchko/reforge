@@ -1,8 +1,9 @@
+// ignore_for_file: prefer_match_file_name
 import 'package:flutter/material.dart';
 // Ensure these imports are correct in your project structure
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
@@ -10,6 +11,8 @@ import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart'
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/rhombus_painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/gradient_text_header.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -31,22 +34,60 @@ class ImmortalForcesCardShimmer extends StatelessWidget {
   }
 }
 
+class ImmortalForcesCardEmpty extends StatelessWidget {
+  const ImmortalForcesCardEmpty({
+    required this.faction,
+    super.key,
+  });
+  final Faction faction;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: designWidth / designHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.appTheme.beige900,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.appTheme.strokeCard),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.shield_moon_outlined, size: 48, color: context.appTheme.beige100),
+            const SizedBox(height: 12),
+            Text(
+              'No leaders in ${faction.title(t)} yet',
+              style: subheadH5Medium.copyWith(color: context.appTheme.beige100),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Be the first to claim the title!',
+              style: subheadH8Semibold.copyWith(color: context.appTheme.beige700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ImmortalForcesCard extends StatelessWidget {
   const ImmortalForcesCard({
     required this.users,
     super.key,
   });
 
-  final List<LeaderboardUserModel> users;
+  final List<ImmortalForgeEntity> users;
 
-  LeaderboardUserModel? _getUserByRank(int rank) {
+  ImmortalForgeEntity? _getUserByRank(int rank) {
     return users.where((u) => u.rank == rank).firstOrNull;
   }
 
   @override
   Widget build(BuildContext context) {
     final ranks = Iterable.generate(5, (i) => _getUserByRank(i + 1)).toList();
-    final userRank1 = ranks[0];
+    final userRank1 = ranks.first;
 
     return AspectRatio(
       aspectRatio: designWidth / designHeight,
@@ -77,9 +118,10 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[4] != null) const _RankLabel(rank: 5, alignment: Alignment(0.9, 0.2)),
                     if (ranks[3] != null) const _RankLabel(rank: 4, alignment: Alignment(-0.9, 0.2)),
 
-                    const Center(
-                      child: GradientLine(),
-                    ),
+                    if (ranks.isEmpty)
+                      const Center(
+                        child: GradientLine(),
+                      ),
 
                     if (userRank1 != null) ...[
                       Center(
@@ -154,7 +196,7 @@ class _RankAvatar extends StatelessWidget {
     required this.alignment,
   });
 
-  final LeaderboardUserModel user;
+  final ImmortalForgeEntity user;
   final Alignment alignment;
 
   @override

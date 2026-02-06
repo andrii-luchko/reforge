@@ -1,3 +1,4 @@
+// ignore_for_file: no_empty_block
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,7 +1,8 @@
+// ignore_for_file: avoid_returning_widgets
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-extension AppAnimations on Widget {
+extension AnimationsExtension on Widget {
   /// Standard appearance animation for lists and cards.
   ///
   /// [index] - if passed, adds a delay to create a stagger effect.

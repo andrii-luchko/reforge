@@ -254,11 +254,9 @@ class FireParticlesController extends ChangeNotifier {
         ..x += particle.dx + turbulenceX
         ..y += particle.dy + turbulenceY;
 
-      if (particle.isStreak) {
-        particle.rotation += particle.rotationSpeed;
-      } else {
-        particle.rotation += particle.rotationSpeed * 0.5;
-      }
+      particle.isStreak
+          ? particle.rotation += particle.rotationSpeed
+          : particle.rotation += particle.rotationSpeed * 0.5;
 
       final flicker = math.sin(particle.time * 10.0 * particle.flickerSpeed + particle.flickerPhase);
       const flickerAmount = 0.15;

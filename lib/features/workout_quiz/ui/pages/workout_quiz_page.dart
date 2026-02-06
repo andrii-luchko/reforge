@@ -64,7 +64,9 @@ class WorkoutQuizBody extends StatelessWidget {
 
     return BlocConsumer<WorkoutQuizCubit, WorkoutQuizState>(
       listener: (context, state) {
-        if (state.isSubmitted) const WorkoutQuizSummaryPageRoute().go(context);
+        if (!state.isSubmitted) return;
+
+        const WorkoutQuizSummaryPageRoute().go(context);
       },
       builder: (context, state) {
         final cubit = context.read<WorkoutQuizCubit>();

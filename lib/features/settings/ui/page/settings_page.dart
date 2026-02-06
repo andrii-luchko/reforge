@@ -4,7 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
-import 'package:reforge/core/photo/service/image_piker_service.dart';
+import 'package:reforge/core/photo/service/image_pi%D1%81ker_service.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
@@ -38,6 +38,7 @@ class SettingsPage extends StatelessWidget {
           error: (message) {
             toastification.showErrorToast(message, context);
           },
+          // ignore: no_empty_block
           orElse: () {},
         );
       },

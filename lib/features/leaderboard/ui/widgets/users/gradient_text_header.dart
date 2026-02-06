@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
 import 'package:reforge/generated/flutter_gen/fonts.gen.dart';
 
 class GradientTextHeader extends StatelessWidget {
@@ -6,17 +8,30 @@ class GradientTextHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
 
       children: [
-        _buildGradientText('IMMORTAL', context),
-        _buildGradientText('FORGES', context),
+        GradientText(
+          text: 'IMMORTAL',
+        ),
+        GradientText(
+          text: 'FORGES',
+        ),
       ],
     );
   }
+}
 
-  Widget _buildGradientText(String text, BuildContext context) {
+class GradientText extends StatelessWidget {
+  const GradientText({
+    required this.text,
+    super.key,
+  });
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
         colors: [Color(0xFFECE7DC), Color(0x00ECE7DC)],

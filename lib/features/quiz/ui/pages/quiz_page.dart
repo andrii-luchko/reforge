@@ -80,7 +80,8 @@ class QuizForm extends StatelessWidget {
 
     return BlocConsumer<QuizCubit, QuizState>(
       listener: (context, state) {
-        if (state.isSubmitted) const HomePageRoute().go(context);
+        if (!state.isSubmitted) return;
+        const HomePageRoute().go(context);
       },
       builder: (context, state) {
         final cubit = context.read<QuizCubit>();

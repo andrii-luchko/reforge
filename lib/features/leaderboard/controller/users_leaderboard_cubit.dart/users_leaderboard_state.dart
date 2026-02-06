@@ -5,7 +5,6 @@ sealed class UsersLeaderboardState with _$UsersLeaderboardState {
   const UsersLeaderboardState._();
 
   const factory UsersLeaderboardState({
-    @Default(Faction.gakki) Faction selectedFaction,
     @Default([]) List<LeaderboardUserModel> currentUsersList,
 
     LeaderboardUserModel? currentUser,

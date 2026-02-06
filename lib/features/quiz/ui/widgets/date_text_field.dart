@@ -1,9 +1,11 @@
+// ignore_for_file: prefer_first
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:reforge/app/utils/helpers/date_locale_helper.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 
+// ignore: prefer_match_file_name
 class DateInputField extends StatefulWidget {
   const DateInputField({
     required this.onDateSelected,

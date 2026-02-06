@@ -63,7 +63,7 @@ class _AppBottomBarState extends State<AppBottomBar> {
         ],
       ),
       child: LayoutBuilder(
-        builder: (context, constraints) {
+        builder: (_, constraints) {
           final totalWidth = constraints.maxWidth;
           final tabWidth = totalWidth / itemCount;
           final centerOffset = (tabWidth - itemSize) / 2;

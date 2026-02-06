@@ -101,8 +101,10 @@ class CalendarBody extends StatelessWidget {
                   firstDay: DateTime(2020),
                   lastDay: DateTime(2030),
                   onDateSelected: (date) {
-                    final map = getMockEventsMap();
-                    if (map.containsKey(DateUtils.dateOnly(date))) {}
+                    getMockEventsMap();
+                    // if (map.containsKey(DateUtils.dateOnly(date))) {
+
+                    // }
                   },
                   events: getMockEventsMap(),
                 ),

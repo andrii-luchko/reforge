@@ -33,6 +33,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final response = await _apiClient.signin(
       SignInRequest(email: email, password: password),
     );
+
     return response.data;
   }
 

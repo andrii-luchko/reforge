@@ -38,9 +38,8 @@ class ActiveWorkoutShell extends StatelessWidget {
       listeners: [
         BlocListener<WorkoutFlowCubit, WorkoutFlowState>(
           listener: (context, state) {
-            if (state.error != null) {
-              toastification.showErrorToast(state.error!, context);
-            }
+            if (state.error == null) return;
+            toastification.showErrorToast(state.error!, context);
           },
         ),
 
@@ -73,11 +72,11 @@ class ActiveWorkoutShell extends StatelessWidget {
               return;
             }
 
-            if (flowState.currentExercise != null) {
-              ActiveWorkoutPageRoute(
-                exerciseId: flowState.currentExercise!.exerciseDetails.id,
-              ).go(context);
-            }
+            if (flowState.currentExercise == null) return;
+
+            ActiveWorkoutPageRoute(
+              exerciseId: flowState.currentExercise!.exerciseDetails.id,
+            ).go(context);
           },
         ),
       ],

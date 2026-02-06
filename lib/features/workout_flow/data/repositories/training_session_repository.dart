@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_match_file_name
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -30,11 +31,7 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
     try {
       final response = await _apiClient.getWorkoutByDay(day);
-      if (response.data.isEmpty) {
-        return const Result.success(null);
-      } else {
-        return Result.success(response.data.first.toEntity());
-      }
+      return response.data.isEmpty ? const Result.success(null) : Result.success(response.data.first.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
     }
