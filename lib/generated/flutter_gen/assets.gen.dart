@@ -193,6 +193,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/icon-1024x1024.png
   AssetGenImage get icon1024x1024 => const AssetGenImage('assets/images/png/icon-1024x1024.png');
 
+  /// File path: assets/images/png/lock.png
+  AssetGenImage get lock => const AssetGenImage('assets/images/png/lock.png');
+
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
 
@@ -217,6 +220,7 @@ class $AssetsImagesPngGen {
     goldEnvelope,
     goldEnvelopePlus,
     icon1024x1024,
+    lock,
     noiseAndTexture,
     shaderNoise,
     smoke,

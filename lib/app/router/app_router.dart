@@ -9,8 +9,11 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 
 final AuthCubit authCubit = di.getIt<AuthCubit>();
 final UserCubit userCubit = di.getIt<UserCubit>();
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final router = GoRouter(
   routes: $appRoutes,
+  navigatorKey: rootNavigatorKey,
   initialLocation: const SplashPageRoute().location,
   debugLogDiagnostics: true,
   refreshListenable: GoRouterRefreshStream([

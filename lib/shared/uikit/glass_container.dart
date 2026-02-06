@@ -6,14 +6,14 @@ class GlassContainer extends StatelessWidget {
   const GlassContainer({
     super.key,
     this.child,
-    this.borderRadius = 20,
+    this.borderRadius,
     this.padding,
     this.glassEffectGradientAlignmentBegin = Alignment.centerLeft,
     this.glassEffectGradientAlignmentEnd = Alignment.centerRight,
   });
 
   final Widget? child;
-  final double borderRadius;
+  final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? padding;
   final AlignmentGeometry glassEffectGradientAlignmentBegin;
   final AlignmentGeometry glassEffectGradientAlignmentEnd;
@@ -21,9 +21,9 @@ class GlassContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-
+    final borderRadius = this.borderRadius ?? BorderRadius.circular(20);
     return BaseGlassContainer(
-      borderRadius: BorderRadius.circular(borderRadius),
+      borderRadius: borderRadius,
       padding: padding,
 
       borderColor: appTheme.beige100.withValues(alpha: 0.1),

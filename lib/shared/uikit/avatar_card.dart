@@ -24,70 +24,75 @@ class AvatarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    return Container(
-      width: 358,
-      height: 484,
-      decoration: BoxDecoration(
-        color: appTheme.beige900,
-        borderRadius: .circular(5),
-        border: Border.all(color: appTheme.beige100.withValues(alpha: 0.4)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final w = constraints.maxWidth;
-          final h = constraints.maxHeight;
+    return AspectRatio(
+      aspectRatio: 358 / 484,
+      child: FittedBox(
+        child: Container(
+          width: 358,
+          height: 484,
+          decoration: BoxDecoration(
+            color: appTheme.beige900,
+            borderRadius: .circular(10),
+            border: Border.all(color: appTheme.beige100.withValues(alpha: 0.4)),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final w = constraints.maxWidth;
+              final h = constraints.maxHeight;
 
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: AvatarBorderPainter(color: appTheme.beige100),
-                  child: ClipPath(
-                    clipper: AvatarClipper(),
-                    child: Image.asset(
-                      Assets.images.png.avatar.path,
-                      fit: BoxFit.cover,
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: AvatarBorderPainter(color: appTheme.beige100),
+                      child: ClipPath(
+                        clipper: AvatarClipper(),
+                        child: Image.asset(
+                          Assets.images.png.avatar.path,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
 
-              Positioned(
-                top: h * 0.04,
-                right: w * 0.02,
-                child: XpIndicatorWidget(
-                  height: h * 0.4,
-                  xp: 3800,
-                  xpProgress: 0.8,
-                ),
-              ),
+                  Positioned(
+                    top: h * 0.04,
+                    right: w * 0.02,
+                    child: XpIndicatorWidget(
+                      height: h * 0.4,
+                      xp: 3800,
+                      xpProgress: 0.8,
+                    ),
+                  ),
 
-              Positioned(
-                top: 0,
-                left: w * 0.08,
-                child: LvlWidget(lvl: lvl),
-              ),
+                  Positioned(
+                    top: 0,
+                    left: w * 0.08,
+                    child: LvlWidget(lvl: lvl),
+                  ),
 
-              Positioned(
-                bottom: h * 0.25,
-                left: w * 0.03,
-                child: FactionWidget(faction: faction),
-              ),
+                  Positioned(
+                    bottom: h * 0.25,
+                    left: w * 0.03,
+                    child: FactionWidget(faction: faction),
+                  ),
 
-              Positioned(
-                bottom: h * 0.02,
-                left: w * 0.01,
-                width: w * 0.93,
+                  Positioned(
+                    bottom: h * 0.02,
+                    left: w * 0.01,
+                    width: w * 0.93,
 
-                child: RankCard(
-                  rank: 'Rank',
-                  name: rankName,
-                ),
-              ),
-            ],
-          );
-        },
+                    child: RankCard(
+                      rank: 'Rank',
+                      name: rankName,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }

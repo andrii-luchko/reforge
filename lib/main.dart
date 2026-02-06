@@ -24,14 +24,12 @@ void main() async {
       await di.configureDependencies();
 
       runApp(
-        Portal(
-          child: ToastificationWrapper(
-            config: const ToastificationConfig(
-              maxToastLimit: 3,
-            ),
-            child: TranslationProvider(
-              child: const App(),
-            ),
+        ToastificationWrapper(
+          config: const ToastificationConfig(
+            maxToastLimit: 3,
+          ),
+          child: TranslationProvider(
+            child: const App(),
           ),
         ),
       );
@@ -74,7 +72,7 @@ class App extends StatelessWidget {
         theme: ThemeDataValues.lightThemeData,
         darkTheme: ThemeDataValues.darkThemeData,
         themeMode: ThemeMode.dark,
-        builder: (_, child) => child ?? ErrorWidget('MaterialApp.router child is null'),
+        builder: (_, child) => Portal(child: child ?? ErrorWidget('MaterialApp.router child is null')),
       ),
     );
   }

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/root/ui/page/root_page.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
+import 'package:reforge/features/achievements/ui/page/badges_page.dart';
+import 'package:reforge/features/achievements/ui/page/ranks_page.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/pages/active_workout_page.dart';
 import 'package:reforge/features/active_workout/ui/pages/active_workout_shell.dart';
@@ -176,7 +179,15 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
     ),
     // 4. Medal
     TypedStatefulShellBranch<AchievementsBranch>(
-      routes: [TypedGoRoute<AchievementsPageRoute>(path: '/achievements')],
+      routes: [
+        TypedGoRoute<AchievementsPageRoute>(
+          path: '/achievements',
+          routes: [
+            TypedGoRoute<BadgesPageRoute>(path: 'badges'),
+            TypedGoRoute<RanksPageRoute>(path: 'ranks'),
+          ],
+        ),
+      ],
     ),
     // 5. Settings
     TypedStatefulShellBranch<SettingsBranch>(
@@ -263,6 +274,28 @@ class AchievementsPageRoute extends GoRouteData with $AchievementsPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const AchievementsPage();
+  }
+}
+
+class BadgesPageRoute extends GoRouteData with $BadgesPageRoute {
+  const BadgesPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const BadgesPage();
+  }
+}
+
+class RanksPageRoute extends GoRouteData with $RanksPageRoute {
+  const RanksPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const RanksPage();
   }
 }
 

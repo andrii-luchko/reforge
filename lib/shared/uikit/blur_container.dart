@@ -6,8 +6,8 @@ class BlurContainer extends StatelessWidget {
   const BlurContainer({
     super.key,
     this.child,
-    this.sigmaX = 10.0,
-    this.sigmaY = 10.0,
+    this.sigmaX = 5.0,
+    this.sigmaY = 5.0,
     this.borderRadius,
   });
 
@@ -21,6 +21,7 @@ class BlurContainer extends StatelessWidget {
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: BackdropFilter(
+        backdropGroupKey: BackdropKey(),
         filter: ImageFilter.blur(sigmaX: sigmaX, sigmaY: sigmaY),
         child: child,
       ),
