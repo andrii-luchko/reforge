@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // Ensure these imports are correct in your project structure
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/text_style_extension.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
@@ -58,7 +59,10 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'No leaders in ${faction.title(t)} yet',
-              style: subheadH5Medium.copyWith(color: context.appTheme.beige100),
+              style: subheadH5Medium.copyWith(
+                color: context.appTheme.beige100,
+              ),
+              strutStyle: subheadH5Medium.strut,
             ),
             const SizedBox(height: 4),
             Text(
@@ -118,7 +122,7 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[4] != null) const _RankLabel(rank: 5, alignment: Alignment(0.9, 0.2)),
                     if (ranks[3] != null) const _RankLabel(rank: 4, alignment: Alignment(-0.9, 0.2)),
 
-                    if (ranks.isEmpty)
+                    if (ranks.isNotEmpty)
                       const Center(
                         child: GradientLine(),
                       ),
@@ -169,18 +173,25 @@ class _RankLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: alignment,
-      child: SizedBox.fromSize(
-        size: const Size(108, 32),
-        child: CustomPaint(
-          painter: RhombusPainter(
-            strokeGradientColors: isMainLeader ? [const Color(0xFFD4AD38), const Color(0xFF5D4B17)] : null,
-          ),
-          child: Center(
-            child: Text(
-              topFiveTitlesByRank(rank),
-              style: subheadH5Medium.copyWith(
-                color: context.appTheme.beige100,
-                height: 1,
+      child: IntrinsicWidth(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 107, minHeight: 33, maxHeight: 33),
+          child: CustomPaint(
+            painter: RhombusPainter(
+              strokeGradientColors: isMainLeader ? [const Color(0xFFD4AD38), const Color(0xFF5D4B17)] : null,
+            ),
+            child: Padding(
+              padding: const .symmetric(horizontal: 12),
+              child: Center(
+                child: Text(
+                  topFiveTitlesByRank(rank),
+                  style: subheadH5Medium.copyWith(
+                    color: context.appTheme.beige100,
+                    height: 1,
+                  ),
+                  strutStyle: subheadH5Medium.strut,
+                  textAlign: .center,
+                ),
               ),
             ),
           ),
@@ -204,7 +215,7 @@ class _RankAvatar extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: LeaderBoardAvatar.network(
-        size: const Size(64, 64),
+        size: const Size(62, 62),
         imageUrl: user.avatarUrl,
         borderGradientColors: getGradientByRank(user.rank, context),
       ),

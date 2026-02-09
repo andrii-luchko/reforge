@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
-import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
-import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 
+import 'package:reforge/features/achievements/domain/mock/generate_ranks.dart';
+import 'package:reforge/features/achievements/ui/widgets/deep_stack_scroll.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/switchers/multi_options_switcher.dart';
+import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -16,6 +21,7 @@ class RanksPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<AchievementsCubit>();
     final appTheme = context.appTheme;
 
     const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
@@ -26,78 +32,97 @@ class RanksPage extends StatelessWidget {
         body: SafeArea(
           top: false,
           bottom: false,
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: horizontalPadding,
-                sliver: SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
-                  automaticallyImplyLeading: false,
+          child: BlocBuilder<AchievementsCubit, AchievementsState>(
+            builder: (context, state) {
+              final displayRanks = (state.selectedRanks.isEmpty && state.isLoading)
+                  ? RanksGenerator.generateRanks(state.selectedFaction)
+                  : state.selectedRanks;
 
-                  centerTitle: false,
-                  leadingWidth: 56,
-                  leading: AppIconButton.icon(
-                    iconData: Icons.chevron_left_rounded,
-                    iconSize: 32,
-                    onPressed: Navigator.of(context).pop,
-                  ),
+              return Skeletonizer(
+                enabled: state.isLoading,
+                child: RefreshIndicator(
+                  onRefresh: () => cubit.loadRanks(forceRefresh: true),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: horizontalPadding,
+                        sliver: SliverAppBar(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          scrolledUnderElevation: 0,
+                          automaticallyImplyLeading: false,
 
-                  actions: [
-                    Skeleton.keep(
-                      child: Text(
-                        'Ranks',
-                        style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                          centerTitle: false,
+                          leadingWidth: 56,
+                          leading: AppIconButton.icon(
+                            iconData: Icons.chevron_left_rounded,
+                            iconSize: 32,
+                            onPressed: Navigator.of(context).pop,
+                          ),
+
+                          actions: [
+                            Skeleton.keep(
+                              child: Text(
+                                'Ranks',
+                                style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 32)),
 
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: CommonHeaderDelegate(
-                  height: 30,
-                  child: Container(
-                    height: 30,
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Skeleton.keep(
-                          child: Text(
-                            'Badges list',
-                            style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                      SliverPadding(
+                        padding: horizontalPadding.copyWith(bottom: 16),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: .start,
+                            spacing: 16,
+                            children: [
+                              Text('Rank faction', style: subheadH2Medium.copyWith(color: appTheme.beige100)),
+
+                              Skeleton.leaf(
+                                child: MultiOptionSwitcher<Faction>(
+                                  selectedValue: state.selectedFaction,
+                                  values: Faction.values,
+                                  labelBuilder: (d) => d.title(t),
+                                  onSelected: cubit.changeFaction,
+                                  borderRadius: BorderRadius.circular(50),
+                                  padding: const EdgeInsets.all(3),
+                                  itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
 
-                        Text(
-                          '6/10 items',
-                          style: subheadH5Medium.copyWith(color: appTheme.beige600),
+                      SliverPadding(
+                        padding: horizontalPadding.copyWith(top: 32, bottom: 32),
+                        sliver: SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: displayRanks.isEmpty && !state.isLoading
+                              ? const Center(child: Text("No ranks found"))
+                              : DeepStackScroll(
+                                  children: displayRanks
+                                      .map(
+                                        (rank) => Skeleton.replace(
+                                          width: 358,
+                                          height: 484,
+                                          replacement: const AvatarCardShimmer(),
+                                          child: AvatarCard(rank: rank),
+                                        ).animateEntrance(),
+                                      )
+                                      .toList(),
+                                ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-
-              SliverPadding(
-                padding: horizontalPadding.copyWith(top: 16, bottom: 32),
-                sliver: SliverBadgesGrid(
-                  badges: List.generate(10, (i) {
-                    return BadgeEntity(
-                      imageUrl: Assets.images.png.badge.path,
-                      title: 'Peak\nof Might',
-                      isLocked: i <= 5,
-                    );
-                  }),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
         additionalAnimationsBehind: const [ParticlesWidget()],

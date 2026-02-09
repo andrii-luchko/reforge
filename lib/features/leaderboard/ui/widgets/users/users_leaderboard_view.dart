@@ -28,7 +28,7 @@ class UsersLeaderboardSlivers extends StatelessWidget {
 
 class ImmortalForgesSection extends StatelessWidget {
   const ImmortalForgesSection({super.key});
-
+  static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ImmortalForgesCubit, ImmortalForgesState>(
@@ -49,27 +49,24 @@ class ImmortalForgesSection extends StatelessWidget {
           child: SliverMainAxisGroup(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: horizontalPadding.copyWith(bottom: 32),
                 sliver: SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 32),
-                    child: Skeleton.leaf(
-                      child: MultiOptionSwitcher<Faction>(
-                        selectedValue: selectedFaction,
-                        values: Faction.values,
-                        labelBuilder: (value) => value.title(t),
-                        onSelected: cubit.changeFaction,
-                        borderRadius: BorderRadius.circular(50),
-                        padding: const EdgeInsets.all(3),
-                        itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
-                      ),
+                  child: Skeleton.leaf(
+                    child: MultiOptionSwitcher<Faction>(
+                      selectedValue: selectedFaction,
+                      values: Faction.values,
+                      labelBuilder: (value) => value.title(t),
+                      onSelected: cubit.changeFaction,
+                      borderRadius: BorderRadius.circular(50),
+                      padding: const EdgeInsets.all(3),
+                      itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
                     ),
                   ),
                 ),
               ),
               // 2. Top 3 Card (Immortal Forces)
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: horizontalPadding.copyWith(bottom: 32),
                 sliver: SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 16),

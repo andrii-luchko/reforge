@@ -10,4 +10,9 @@ class LeaderboardUserModel {
   final String username;
   final String? avatarUrl;
   final int xp;
+
+  @override
+  String toString() {
+    return 'LeaderboardUserModel(rank: $rank, username: $username, avatarUrl: $avatarUrl, xp: $xp)';
+  }
 }

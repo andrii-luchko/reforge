@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/ui/widgets/faction_widget.dart';
 import 'package:reforge/features/home/ui/widgets/lvl_widget.dart';
 import 'package:reforge/features/home/ui/widgets/rank_card.dart';
 import 'package:reforge/features/home/ui/widgets/xp_indicator.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-class AvatarCard extends StatelessWidget {
-  const AvatarCard({
-    required this.faction,
-    required this.lvl,
-    required this.rankName,
-    required this.xpValue,
+class AvatarCardShimmer extends StatelessWidget {
+  const AvatarCardShimmer({super.key});
 
-    super.key,
+  @override
+  Widget build(BuildContext context) {
+    return _AvatarCardBase(
+      child: ClipPath(clipper: AvatarClipper(), child: const Bone()),
+    );
+  }
+}
+
+class _AvatarCardBase extends StatelessWidget {
+  const _AvatarCardBase({
+    required this.child,
   });
 
-  final String faction;
-  final String rankName;
-  final int lvl;
-  final double xpValue;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -28,71 +35,96 @@ class AvatarCard extends StatelessWidget {
       aspectRatio: 358 / 484,
       child: FittedBox(
         child: Container(
-          width: 358,
-          height: 484,
+          width: 350,
+          height: 480,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: appTheme.beige900,
             borderRadius: .circular(10),
-            border: Border.all(color: appTheme.beige100.withValues(alpha: 0.4)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final w = constraints.maxWidth;
-              final h = constraints.maxHeight;
-
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: AvatarBorderPainter(color: appTheme.beige100),
-                      child: ClipPath(
-                        clipper: AvatarClipper(),
-                        child: Image.asset(
-                          Assets.images.png.avatar.path,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Positioned(
-                    top: h * 0.04,
-                    right: w * 0.02,
-                    child: XpIndicatorWidget(
-                      height: h * 0.4,
-                      xp: 3800,
-                      xpProgress: 0.8,
-                    ),
-                  ),
-
-                  Positioned(
-                    top: 0,
-                    left: w * 0.08,
-                    child: LvlWidget(lvl: lvl),
-                  ),
-
-                  Positioned(
-                    bottom: h * 0.25,
-                    left: w * 0.03,
-                    child: FactionWidget(faction: faction),
-                  ),
-
-                  Positioned(
-                    bottom: h * 0.02,
-                    left: w * 0.01,
-                    width: w * 0.93,
-
-                    child: RankCard(
-                      rank: 'Rank',
-                      name: rankName,
-                    ),
-                  ),
+            border: GradientBoxBorder(
+              gradient: LinearGradient(
+                colors: [
+                  appTheme.beige100.withValues(alpha: 0.6),
+                  appTheme.beige100.withValues(alpha: 0),
                 ],
-              );
-            },
+              ),
+            ),
           ),
+
+          child: child,
         ),
+      ),
+    );
+  }
+}
+
+class AvatarCard extends StatelessWidget {
+  const AvatarCard({
+    required this.rank,
+    super.key,
+  });
+
+  final RankEntity rank;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+    return _AvatarCardBase(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final w = constraints.maxWidth;
+          final h = constraints.maxHeight;
+
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: AvatarBorderPainter(color: appTheme.beige100),
+                  child: ClipPath(
+                    clipper: AvatarClipper(),
+                    child: Image.asset(
+                      rank.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+
+              Positioned(
+                top: h * 0.04,
+                right: w * 0.02,
+                child: XpIndicatorWidget(
+                  height: h * 0.4,
+                  xp: rank.xp,
+                  xpProgress: rank.progress,
+                ),
+              ),
+
+              Positioned(
+                top: 0,
+                left: w * 0.08,
+                child: LvlWidget(lvl: rank.lvl),
+              ),
+
+              Positioned(
+                bottom: h * 0.25,
+                left: w * 0.03,
+                child: FactionWidget(faction: rank.faction.title(t)),
+              ),
+
+              Positioned(
+                bottom: h * 0.02,
+                left: w * 0.01,
+                width: w * 0.93,
+
+                child: RankCard(
+                  rank: 'Rank',
+                  name: rank.rankName,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/badge_image.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class BadgeCard extends StatelessWidget {
   const BadgeCard({required this.badge, super.key});
@@ -21,7 +22,7 @@ class BadgeCard extends StatelessWidget {
       spacing: 5,
       mainAxisSize: .min,
       children: [
-        image,
+        Skeleton.leaf(child: image),
         Text(
           badge.title,
           maxLines: 2,

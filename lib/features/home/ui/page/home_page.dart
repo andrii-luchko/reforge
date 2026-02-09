@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/ui/widgets/activity_section.dart';
 import 'package:reforge/features/home/ui/widgets/home_app_bar.dart';
 import 'package:reforge/features/home/ui/widgets/portal_dropdown.dart';
@@ -52,13 +53,10 @@ class HomeBody extends StatelessWidget {
           padding: const .all(16),
           child: Column(
             children: [
-              const Padding(
-                padding: .only(bottom: 16),
+              Padding(
+                padding: const .only(bottom: 16),
                 child: AvatarCard(
-                  faction: 'YAMAKATA',
-                  lvl: 78,
-                  rankName: 'Foundryman',
-                  xpValue: 0.7,
+                  rank: RankEntity.mock(),
                 ),
               ),
 

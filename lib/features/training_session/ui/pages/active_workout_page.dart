@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
@@ -106,7 +108,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                         SecondaryButton(
                           text: 'Start Running',
                           onPressed: () {
-                            const StartRunningPageRoute().push(context);
+                            unawaited(const StartRunningPageRoute().push<void>(context));
                           },
                         ),
                         const SizedBox(height: 8),

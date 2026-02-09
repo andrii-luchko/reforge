@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/badge_card.dart';
 
@@ -21,7 +22,7 @@ class SliverBadgesGrid extends StatelessWidget {
 
           return BadgeCard(
             badge: badge,
-          );
+          ).animateEntrance();
         },
         childCount: badges.length,
       ),

@@ -11,6 +11,7 @@ import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
@@ -61,6 +62,9 @@ class App extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => di.getIt<ForgotPasswordCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<AchievementsCubit>(),
         ),
       ],
       child: MaterialApp.router(
