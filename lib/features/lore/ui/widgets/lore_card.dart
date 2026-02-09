@@ -160,8 +160,10 @@ class LoreCardShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipPath(
       clipper: _LoreCardClipper(),
-      child: const Bone(
+      child: Container(
         height: 78,
+        width: double.infinity,
+        color: Colors.white,
       ),
     );
   }

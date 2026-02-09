@@ -68,17 +68,14 @@ class ImmortalForgesSection extends StatelessWidget {
               SliverPadding(
                 padding: horizontalPadding.copyWith(bottom: 32),
                 sliver: SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Skeleton.replace(
-                      replacement: const ImmortalForcesCardShimmer(),
-                      child: isEmpty
-                          ? ImmortalForcesCardEmpty(faction: selectedFaction)
-                          : ImmortalForcesCard(
-                              users: state.currentList,
-                            ),
-                    ).animateEntrance(),
-                  ),
+                  child: Skeleton.replace(
+                    replacement: const ImmortalForcesCardShimmer(),
+                    child: isEmpty
+                        ? ImmortalForcesCardEmpty(faction: selectedFaction)
+                        : ImmortalForcesCard(
+                            users: state.currentList,
+                          ),
+                  ).animateEntrance(),
                 ),
               ),
             ],

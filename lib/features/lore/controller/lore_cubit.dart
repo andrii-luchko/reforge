@@ -5,7 +5,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
-import 'package:reforge/features/lore/domain/mock/lore_mock_generator.dart';
 import 'package:reforge/features/lore/domain/repositories/lore_repository.dart';
 
 part 'lore_state.dart';
@@ -21,9 +20,8 @@ class LoreCubit extends Cubit<LoreState> {
 
   Future<void> loadLore() async {
     final realItems = state.items;
-    final mockedItems = LoreMockGenerator.generate(10);
 
-    emit(state.copyWith(isLoading: true, items: mockedItems));
+    emit(state.copyWith(isLoading: true));
 
     final result = await _repository.getPlates();
 

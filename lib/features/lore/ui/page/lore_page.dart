@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
+import 'package:reforge/features/lore/domain/mock/lore_mock_generator.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/plate_list_tile.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
@@ -31,6 +32,7 @@ class LoreBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+    final mockedItems = LoreMockGenerator.generate(10);
 
     return SafeArea(
       top: false,
@@ -38,6 +40,7 @@ class LoreBody extends StatelessWidget {
         onRefresh: () => context.read<LoreCubit>().loadLore(),
         child: BlocBuilder<LoreCubit, LoreState>(
           builder: (context, state) {
+            final displayedItems = state.isLoading ? mockedItems : state.items;
             return Skeletonizer(
               enabled: state.isLoading,
               child: CustomScrollView(
@@ -71,9 +74,9 @@ class LoreBody extends StatelessWidget {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverList.separated(
-                      itemCount: state.items.length,
+                      itemCount: displayedItems.length,
                       itemBuilder: (context, index) {
-                        final item = state.items[index];
+                        final item = displayedItems[index];
                         return Skeleton.replace(
                           replacement: const LoreCardShimmer(),
                           child: PlateListTile(model: item),
