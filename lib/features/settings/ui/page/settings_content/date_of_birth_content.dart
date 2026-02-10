@@ -62,7 +62,11 @@ class DateOfBirthContent extends StatelessWidget {
           GenericValidationState<DateTime?>,
           ({DateTime? dateTime, String? error})
         >(
-          selector: (state) => (dateTime: state.value, error: state.error),
+          selector: (state) {
+            final error = state is GenericValidationError ? state.error : null;
+
+            return (dateTime: state.value, error: error);
+          },
           builder: (context, dateData) {
             return LabeledAppTextField(
               label: t.quiz.steps.date_of_birth.select_date_label,

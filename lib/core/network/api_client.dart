@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:reforge/app/utils/helpers/base_response.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
@@ -136,4 +138,11 @@ abstract class ApiClient {
 
   @GET('/user-forge-experience/progress')
   Future<BaseResponse<List<AttributesDto>>> getUserAttributes();
+
+  @POST('/supabase/upload')
+  @MultiPart()
+  Future<String> uploadFile({
+    @Query('bucket') required String bucket,
+    @Part(name: 'file') required File file,
+  });
 }

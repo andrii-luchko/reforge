@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:injectable/injectable.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
@@ -10,6 +12,7 @@ abstract interface class UserRemoteDataSource {
   Future<User> patchUser(PatchProfileRequest request);
   Future<void> deleteUser();
   Future<void> deleteUserById(int id);
+  Future<String> uploadUserAvatar(File file);
 }
 
 @Injectable(as: UserRemoteDataSource)
@@ -46,5 +49,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   @override
   Future<void> deleteUserById(int id) async {
     await _apiClient.deleteUserById(id);
+  }
+
+  @override
+  Future<String> uploadUserAvatar(File file) async {
+    const bucketName = 'user_avatar_bucket';
+    return _apiClient.uploadFile(bucket: bucketName, file: file);
   }
 }

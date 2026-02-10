@@ -1,6 +1,9 @@
 // ignore_for_file: no_empty_block
 import 'dart:async';
+import 'dart:io';
 
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -116,6 +119,9 @@ class UserCubit extends Cubit<UserState> {
     if (state case final Loaded currentState) {
       final oldUser = currentState.user;
 
+      if (_isSameData(oldUser, request)) {
+        return Result.success(oldUser);
+      }
       emit(UserState.updating(oldUser));
 
       final result = await _userRepository.updateUser(request);
@@ -134,6 +140,41 @@ class UserCubit extends Cubit<UserState> {
       }
     }
     return Result.error(Exception('User not loaded'));
+  }
+
+  bool _isSameData(User user, PatchProfileRequest request) {
+    if (user is! OnboardedUser) return false;
+
+    if (request.username != null && user.userName != request.username) return false;
+    if (request.avatarUrl != null && user.avatarUrl != request.avatarUrl) return false;
+    if (request.mainFaction != null && user.factionId != request.mainFaction) return false;
+    if (request.secondFaction != null && user.secondaryFactionId != request.secondFaction) return false;
+    if (request.dateOfBirth != null && !DateUtils.isSameDay(user.birthDate, request.dateOfBirth)) return false;
+    if (request.measurementSystem != null && user.measurementSystem != request.measurementSystem) return false;
+    if (request.workoutDaysPerWeek != null && user.workoutsPerWeek != request.workoutDaysPerWeek) return false;
+
+    if (request.specificWorkoutDays != null) {
+      const listEquals = ListEquality();
+      if (!listEquals.equals(user.specificDays, request.specificWorkoutDays)) return false;
+    }
+
+    if (request.bodyWeight != null && user.bodyWeight?.round() != request.bodyWeight) return false;
+
+    return true;
+  }
+
+  Future<void> uploadUserAvatar(File file) async {
+    final currentState = state;
+
+    final result = await _userRepository.uploadUserAvatar(file);
+
+    switch (result) {
+      case Success(value: final url):
+        await updateProfile(PatchProfileRequest(avatarUrl: url));
+      case ErrorR(error: final error):
+        emit(UserState.error(error.toString()));
+        emit(currentState);
+    }
   }
 
   @override

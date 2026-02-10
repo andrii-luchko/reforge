@@ -73,7 +73,7 @@ class WorkoutDaysContent extends StatelessWidget {
     return BlocBuilder<GenericValidationCubit<WorkoutFrequencyValue>, GenericValidationState<WorkoutFrequencyValue>>(
       builder: (context, state) {
         final cubit = context.read<GenericValidationCubit<WorkoutFrequencyValue>>();
-
+        final error = state is GenericValidationError ? state.error : null;
         return Column(
           mainAxisAlignment: .spaceBetween,
           children: [
@@ -93,7 +93,7 @@ class WorkoutDaysContent extends StatelessWidget {
                 const SizedBox(height: 8),
                 ErrorShakeWidget(
                   shake: state is GenericValidationError,
-                  error: state.error,
+                  error: error,
                 ),
               ],
             ),

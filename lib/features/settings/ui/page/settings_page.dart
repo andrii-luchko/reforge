@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -78,7 +79,7 @@ class SettingsPage extends StatelessWidget {
                         final user = value.user;
 
                         return user.map(
-                          newUser: (user) => const SettingsNewUserSection(),
+                          newUser: (user) => const SettingsNewUserWidget(),
                           onboarded: (onboarded) => SettingsGroup(user: onboarded),
                         );
                       },
@@ -86,13 +87,13 @@ class SettingsPage extends StatelessWidget {
                         final user = value.user;
 
                         return user.map(
-                          newUser: (user) => const SettingsNewUserSection(),
+                          newUser: (user) => const SettingsNewUserWidget(),
                           onboarded: (onboarded) => SettingsGroup(user: onboarded),
                         );
                       },
 
                       orElse: () {
-                        return const SettingsNewUserSection();
+                        return const SettingsNewUserWidget();
                       },
                     );
                   },
@@ -190,7 +191,7 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-
+    final userCubit = context.read<UserCubit>();
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
@@ -204,8 +205,13 @@ class SettingsGroup extends StatelessWidget {
                 return Align(
                   child: SettingsImagePicker(
                     onPressed: () async {
-                      // ignore: unused_local_variable
                       final file = await ImagePickerService.pickAndCrop(context);
+
+                      logger.d('file  ${file != null}');
+
+                      if (file != null) {
+                        return userCubit.uploadUserAvatar(file);
+                      }
                     },
                   ),
                 );
@@ -261,8 +267,8 @@ class SettingsGroup extends StatelessWidget {
   }
 }
 
-class SettingsNewUserSection extends StatelessWidget {
-  const SettingsNewUserSection({super.key});
+class SettingsNewUserWidget extends StatelessWidget {
+  const SettingsNewUserWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

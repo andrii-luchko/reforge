@@ -26,6 +26,7 @@ extension CustomToast on Toastification {
       autoCloseDuration: duration,
       alignment: alignment,
       dismissDirection: DismissDirection.none,
+
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
       },
@@ -35,7 +36,10 @@ extension CustomToast on Toastification {
           alignment: item.alignment,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: AppSimpleToast(text: text),
+            child: GestureDetector(
+              onTap: () => toastification.dismiss(item),
+              child: AppSimpleToast(text: text),
+            ),
           ),
         );
       },

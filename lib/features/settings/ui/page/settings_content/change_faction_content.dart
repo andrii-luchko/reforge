@@ -88,7 +88,8 @@ class ChangeFactionContent extends StatelessWidget {
         final cubit = context.read<GenericValidationCubit<List<Faction>>>();
 
         final currentFactions = state.value;
-        final error = state.error;
+
+        final error = state is GenericValidationError ? state.error : null;
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -90,6 +92,17 @@ class UserRepositoryImpl implements UserRepository {
       final user = await _remoteDataSource.getCurrentUser();
       await _localDataSource.saveUser(user);
       return Result.success(user);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<String>> uploadUserAvatar(File file) async {
+    try {
+      final result = await _remoteDataSource.uploadUserAvatar(file);
+
+      return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
     }

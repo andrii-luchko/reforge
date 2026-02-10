@@ -28,7 +28,7 @@ class GenericSaveListener<T> extends StatelessWidget {
             if (onSuccess != null) {
               onSuccess!();
             } else {
-              toastification.showSimpleToast(t.common.saved_successfully);
+              toastification.showSimpleToast(t.common.saved_successfully, alignment: .center);
             }
 
           case GenericExternalError(error: final msg):

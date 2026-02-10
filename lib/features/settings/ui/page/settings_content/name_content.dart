@@ -58,7 +58,8 @@ class NameContent extends StatelessWidget {
       children: [
         BlocSelector<GenericValidationCubit<String?>, GenericValidationState<String?>, ({String? name, String? error})>(
           selector: (state) {
-            return (name: state.value, error: state.error);
+            final error = state is GenericValidationError ? state.error : null;
+            return (name: state.value, error: error);
           },
           builder: (context, value) {
             return LabeledAppTextField(

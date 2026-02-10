@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
@@ -24,4 +26,6 @@ abstract interface class UserRepository {
 
   /// Refresh user data from server
   Future<Result<User>> refreshUser();
+
+  Future<Result<String>> uploadUserAvatar(File file);
 }

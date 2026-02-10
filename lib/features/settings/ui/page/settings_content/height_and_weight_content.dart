@@ -82,7 +82,11 @@ class HeightAndWeightContent extends StatelessWidget {
           GenericValidationState<double?>,
           ({double? weight, String? error})
         >(
-          selector: (state) => (weight: state.value, error: state.error),
+          selector: (state) {
+            final error = state is GenericValidationError ? state.error : null;
+
+            return (weight: state.value, error: error);
+          },
           builder: (context, value) {
             return WeightSelectField(
               measurementSystem: system,

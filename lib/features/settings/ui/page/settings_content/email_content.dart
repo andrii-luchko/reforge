@@ -43,7 +43,8 @@ class EmailContent extends StatelessWidget {
           ({String? email, String? error})
         >(
           selector: (state) {
-            return (email: state.value, error: state.error);
+            final error = state is GenericValidationError ? state.error : null;
+            return (email: state.value, error: error);
           },
           builder: (context, value) {
             return LabeledAppTextField(
