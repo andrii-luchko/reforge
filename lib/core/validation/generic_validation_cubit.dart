@@ -32,7 +32,7 @@ class GenericValidationCubit<T> extends Cubit<GenericValidationState<T>> {
       emit(GenericValidationSuccess(state.value));
       // ignore: avoid_catches_without_on_clauses
     } catch (e) {
-      emit(GenericValidationError(state.value, e.toString()));
+      emit(GenericExternalError(state.value, e.toString()));
     }
   }
 }
@@ -59,4 +59,8 @@ class GenericValidationSuccess<T> extends GenericValidationState<T> {
 
 class GenericValidationError<T> extends GenericValidationState<T> {
   const GenericValidationError(T value, String message) : super(value: value, error: message);
+}
+
+class GenericExternalError<T> extends GenericValidationState<T> {
+  const GenericExternalError(T value, String message) : super(value: value, error: message);
 }

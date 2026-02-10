@@ -29,7 +29,7 @@ class AchievementsRepositoryImpl implements AchievementsRepository {
   Faction? getUserFaction() {
     return _userSessionService.currentUser?.map(
       newUser: (_) => null,
-      onboarded: (u) => Faction.getById(u.factionId),
+      onboarded: (u) => Faction.fromId(u.factionId),
     );
   }
 

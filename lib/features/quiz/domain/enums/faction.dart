@@ -9,7 +9,9 @@ enum Faction {
   seiren
   ;
 
-  static Faction? getById(int factionId) {
+  static Faction? fromId(int? factionId) {
+    if (factionId == null) return null;
+
     switch (factionId) {
       case 1:
         return Faction.gakki;
@@ -20,6 +22,18 @@ enum Faction {
 
       default:
         return null;
+    }
+  }
+
+  int get id {
+    switch (this) {
+      case Faction.gakki:
+        return 1;
+
+      case Faction.seiren:
+        return 2;
+      case Faction.gyohyo:
+        return 3;
     }
   }
 }

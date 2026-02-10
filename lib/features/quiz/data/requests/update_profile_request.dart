@@ -12,18 +12,25 @@ part 'update_profile_request.g.dart';
 
 @freezed
 sealed class UpdateProfileRequest with _$UpdateProfileRequest {
-  @JsonSerializable(explicitToJson: true)
+  @JsonSerializable(
+    explicitToJson: true,
+    includeIfNull: false,
+  )
   const factory UpdateProfileRequest({
-    @JsonKey(name: 'primaryFaction') required Faction mainFaction,
-    @JsonKey(name: 'secondaryFaction') required Faction? secondFaction,
-    @JsonKey(name: 'birthDate') required DateTime dateOfBirth,
-    @JsonKey(name: 'measurementSystem') required MeasurementSystem measurementSystem,
-    @JsonKey(name: 'trainingGoal') required MainGoal mainGoal,
-    @JsonKey(name: 'experiencedLevel') required TrainingLevel trainingLevel,
-    @JsonKey(name: 'workoutsPerWeek') required int workoutDaysPerWeek,
-    @JsonKey(name: 'specificDays') required List<int> specificWorkoutDays,
-    @JsonKey(name: 'bodyweight') required int bodyWeight,
-    @Default(Gender.other) Gender gender,
+    @JsonKey(name: 'username') String? username,
+    @JsonKey(name: 'avatarUrl') String? avatarUrl,
+    @JsonKey(name: 'primaryFaction') Faction? mainFaction,
+    @JsonKey(name: 'secondaryFaction') Faction? secondFaction,
+
+    @JsonKey(name: 'birthDate') DateTime? dateOfBirth,
+
+    @JsonKey(name: 'measurementSystem') MeasurementSystem? measurementSystem,
+    @JsonKey(name: 'trainingGoal') MainGoal? mainGoal,
+    @JsonKey(name: 'experiencedLevel') TrainingLevel? trainingLevel,
+    @JsonKey(name: 'workoutsPerWeek') int? workoutDaysPerWeek,
+    @JsonKey(name: 'specificDays') List<int>? specificWorkoutDays,
+    @JsonKey(name: 'bodyweight') int? bodyWeight,
+    Gender? gender,
   }) = _UpdateProfileRequest;
 
   factory UpdateProfileRequest.fromJson(Map<String, dynamic> json) => _$UpdateProfileRequestFromJson(json);
@@ -41,6 +48,7 @@ sealed class UpdateProfileRequest with _$UpdateProfileRequest {
       trainingLevel: answers.trainingLevel,
       workoutDaysPerWeek: answers.workoutDaysPerWeek,
       specificWorkoutDays: answers.specificWorkoutDays,
+      gender: Gender.other,
     );
   }
 }

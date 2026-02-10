@@ -41,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
         switch (refreshedTokens) {
           case Success(value: final value):
             return Result.success(value);
-          case Error(error: final error):
+          case ErrorR(error: final error):
             if (error is DioException) {
               if (error.type == DioExceptionType.connectionTimeout ||
                   error.type == DioExceptionType.receiveTimeout ||

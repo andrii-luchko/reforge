@@ -35,7 +35,7 @@ class LoreCubit extends Cubit<LoreState> {
           ),
         );
 
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             isLoading: false,

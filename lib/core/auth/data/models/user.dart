@@ -1,6 +1,9 @@
 // ignore_for_file: always_put_required_named_parameters_first
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/app/constants/measure_system.dart';
+import 'package:reforge/app/constants/week_day.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
 part 'user.freezed.dart';
@@ -10,7 +13,7 @@ part 'user.g.dart';
 sealed class User with _$User {
   const factory User.newUser({
     required int id,
-  }) = _NewUser;
+  }) = NewUser;
 
   const factory User.onboarded({
     required int id,
@@ -28,7 +31,10 @@ sealed class User with _$User {
 
     int? activeProgramId,
     int? currentProgramDayId,
-  }) = _OnboardedUser;
+    String? avatarUrl,
+    @JsonKey(name: 'username') String? userName,
+    String? email,
+  }) = OnboardedUser;
 
   factory User.fromJson(Map<String, dynamic> json) {
     final data = Map<String, dynamic>.from(json);
@@ -40,5 +46,28 @@ sealed class User with _$User {
     }
 
     return _$UserFromJson(data);
+  }
+}
+
+extension OnboardedUserX on OnboardedUser {
+  double? get displayedWeight {
+    if (bodyWeight == null) return null;
+    return bodyWeight!.toDisplayWeight(measurementSystem).truncateToDouble();
+  }
+
+  Faction? get mainFaction {
+    return Faction.fromId(factionId);
+  }
+
+  Faction? get secondaryFaction {
+    return Faction.fromId(secondaryFactionId);
+  }
+
+  List<WeekDay> get specificWeekDays {
+    return specificDays.map(WeekDay.fromValue).nonNulls.toList();
+  }
+
+  List<Faction> get factionsList {
+    return [mainFaction, secondaryFaction].nonNulls.toList();
   }
 }

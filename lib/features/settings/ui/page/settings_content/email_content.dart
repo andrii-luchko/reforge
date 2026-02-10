@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/validators/email.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
+import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -20,7 +21,9 @@ class EmailPage extends StatelessWidget {
         validator: validateEmail,
         onSave: (_) async {},
       ),
-      child: BaseSettingsEditPage(title: ProfileSettings.email.title(t), body: const EmailContent()),
+      child: GenericSaveListener<String?>(
+        child: BaseSettingsEditPage(title: ProfileSettings.email.title(t), body: const EmailContent()),
+      ),
     );
   }
 }
@@ -30,6 +33,7 @@ class EmailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<GenericValidationCubit<String?>>();
     return Column(
       mainAxisAlignment: .spaceBetween,
       children: [
@@ -42,7 +46,6 @@ class EmailContent extends StatelessWidget {
             return (email: state.value, error: state.error);
           },
           builder: (context, value) {
-            final cubit = context.read<GenericValidationCubit<String?>>();
             return LabeledAppTextField(
               label: t.common.email_label,
               field: AppTextField(
@@ -56,7 +59,10 @@ class EmailContent extends StatelessWidget {
           },
         ),
 
-        SecondaryButton(text: t.common.save_changes_button),
+        SecondaryButton(
+          text: t.common.save_changes_button,
+          onPressed: cubit.save,
+        ),
       ],
     );
   }

@@ -66,7 +66,7 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
       final finalModels = <LeaderboardFactionModel>[];
 
       for (final localDto in local) {
-        final faction = Faction.getById(localDto.factionId);
+        final faction = Faction.fromId(localDto.factionId);
 
         if (faction == null) continue;
 
@@ -91,7 +91,7 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
   Faction? getUserFaction() {
     return _userSessionService.currentUser?.map(
       newUser: (_) => null,
-      onboarded: (u) => Faction.getById(u.factionId),
+      onboarded: (u) => Faction.fromId(u.factionId),
     );
   }
 }

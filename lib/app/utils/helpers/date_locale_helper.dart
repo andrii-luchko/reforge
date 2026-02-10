@@ -27,4 +27,12 @@ class DateLocaleHelper {
 
     return dayFirst ? 'DD${separator}MM${separator}YYYY' : 'MM${separator}DD${separator}YYYY';
   }
+
+  static String formatDate(DateTime date, {required bool isDayFirst, required String separator}) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+
+    return isDayFirst ? '$day$separator$month$separator$year' : '$month$separator$day$separator$year';
+  }
 }

@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/photo/service/image_pi%D1%81ker_service.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
@@ -29,15 +30,18 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+
     return BlocListener<UserCubit, UserState>(
       listener: (context, state) async {
         await state.maybeWhen(
           initial: () async {
             await context.read<AuthCubit>().signOut();
           },
+
           error: (message) {
             toastification.showErrorToast(message, context);
           },
+
           // ignore: no_empty_block
           orElse: () {},
         );
@@ -66,69 +70,33 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList.separated(
-                    itemCount: ProfileSettings.values.length,
-                    itemBuilder: (context, index) {
-                      final setting = ProfileSettings.values[index];
 
-                      if (setting == .image) {
-                        return Align(
-                          child: SettingsImagePicker(
-                            onPressed: () async {
-                              // ignore: unused_local_variable
-                              final file = await ImagePickerService.pickAndCrop(context);
-                            },
-                          ),
+                BlocBuilder<UserCubit, UserState>(
+                  builder: (context, state) {
+                    return state.maybeMap(
+                      loaded: (value) {
+                        final user = value.user;
+
+                        return user.map(
+                          newUser: (user) => const SettingsNewUserSection(),
+                          onboarded: (onboarded) => SettingsGroup(user: onboarded),
                         );
-                      }
+                      },
+                      updating: (value) {
+                        final user = value.user;
 
-                      return SettingTile(
-                        assetPath: setting.icon,
-                        title: setting.title(t),
-                        text: 'Some value',
-                        onPressed: () async {
-                          SettingsNavigation.open(context, setting);
-                        },
-                      );
-                    },
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  ),
+                        return user.map(
+                          newUser: (user) => const SettingsNewUserSection(),
+                          onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                        );
+                      },
+
+                      orElse: () {
+                        return const SettingsNewUserSection();
+                      },
+                    );
+                  },
                 ),
-                const SliverPadding(padding: .only(bottom: 32)),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      'Settings',
-                      style: subheadH2Medium.copyWith(color: appTheme.beige100),
-                    ),
-                  ),
-                ),
-                const SliverPadding(padding: .only(bottom: 16)),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList.separated(
-                    itemCount: WorkoutSettings.values.length,
-                    itemBuilder: (context, index) {
-                      final setting = WorkoutSettings.values[index];
-
-                      return SettingTile(
-                        assetPath: setting.icon,
-                        title: setting.title(t),
-                        text: 'Some value',
-                        onPressed: () async {
-                          SettingsNavigation.open(context, setting);
-                        },
-                      );
-                    },
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  ),
-                ),
-                const SliverPadding(padding: .only(bottom: 32)),
                 SliverPadding(
                   padding: const .symmetric(horizontal: 16),
                   sliver: SliverToBoxAdapter(
@@ -173,7 +141,6 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
               ],
             ),
@@ -205,6 +172,121 @@ class SettingsPage extends StatelessWidget {
             message,
             textAlign: TextAlign.center,
             style: bodyLRegular.copyWith(color: context.appTheme.beige600),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsGroup extends StatelessWidget {
+  const SettingsGroup({
+    required this.user,
+    super.key,
+  });
+
+  final OnboardedUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.separated(
+            itemCount: ProfileSettings.values.length,
+            itemBuilder: (context, index) {
+              final setting = ProfileSettings.values[index];
+
+              if (setting == .image) {
+                return Align(
+                  child: SettingsImagePicker(
+                    onPressed: () async {
+                      // ignore: unused_local_variable
+                      final file = await ImagePickerService.pickAndCrop(context);
+                    },
+                  ),
+                );
+              }
+
+              return SettingTile(
+                assetPath: setting.icon,
+                title: setting.title(t),
+                text: setting.getDisplayValue(user, t),
+                onPressed: () async {
+                  SettingsNavigation.open(context, setting, user);
+                },
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+          ),
+        ),
+        const SliverPadding(padding: .only(bottom: 32)),
+
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverToBoxAdapter(
+            child: Text(
+              'Settings',
+              style: subheadH2Medium.copyWith(color: appTheme.beige100),
+            ),
+          ),
+        ),
+        const SliverPadding(padding: .only(bottom: 16)),
+
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.separated(
+            itemCount: WorkoutSettings.values.length,
+            itemBuilder: (context, index) {
+              final setting = WorkoutSettings.values[index];
+
+              return SettingTile(
+                assetPath: setting.icon,
+                title: setting.title(t),
+                text: setting.getDisplayValue(user, t),
+                onPressed: () async {
+                  SettingsNavigation.open(context, setting, user);
+                },
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+          ),
+        ),
+        const SliverPadding(padding: .only(bottom: 32)),
+      ],
+    );
+  }
+}
+
+class SettingsNewUserSection extends StatelessWidget {
+  const SettingsNewUserSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 16),
+      sliver: SliverToBoxAdapter(
+        child: AspectRatio(
+          aspectRatio: 1.5,
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.appTheme.beige900,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: context.appTheme.strokeCard),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: appTheme.red400),
+                const SizedBox(height: 16),
+                Text('User is empty', style: bodyLRegular),
+              ],
+            ),
           ),
         ),
       ),

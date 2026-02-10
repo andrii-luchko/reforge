@@ -3,8 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
+import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 import 'package:reforge/features/quiz/ui/widgets/horizontal_day_piker.dart';
+import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -14,31 +18,50 @@ import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
 import 'package:reforge/shared/uikit/value_scroll_picker.dart';
 
-WeekDay fromValue(int value) {
-  return WeekDay.values.firstWhere((day) => day.value == value);
-}
-
 typedef WorkoutFrequencyValue = ({int? daysPerWeek, List<WeekDay> specificDays});
 
 class WorkoutDaysPage extends StatelessWidget {
-  const WorkoutDaysPage({super.key});
+  const WorkoutDaysPage({
+    required this.specificWeekDays,
+    required this.workoutsPerWeek,
+
+    super.key,
+  });
+
+  final int? workoutsPerWeek;
+  final List<WeekDay> specificWeekDays;
 
   @override
   Widget build(BuildContext context) {
+    final userCubit = context.read<UserCubit>();
     return BlocProvider(
       create: (context) => GenericValidationCubit<WorkoutFrequencyValue>(
         initialValue: (
-          daysPerWeek: 3,
-          specificDays: [1, 3, 5].map(fromValue).toList(),
+          daysPerWeek: workoutsPerWeek,
+          specificDays: specificWeekDays,
         ),
         validator: workoutFrequencyValidator,
-        onSave: (_) async {},
+        onSave: (value) => onSave(value, userCubit),
       ),
-      child: BaseSettingsEditPage(
-        title: WorkoutSettings.workoutDays.title(t),
-        body: const WorkoutDaysContent(),
+      child: GenericSaveListener<WorkoutFrequencyValue>(
+        child: BaseSettingsEditPage(
+          title: WorkoutSettings.workoutDays.title(t),
+          body: const WorkoutDaysContent(),
+        ),
       ),
     );
+  }
+
+  Future<void> onSave(WorkoutFrequencyValue value, UserCubit cubit) async {
+    final result = await cubit.updateProfile(
+      PatchProfileRequest(
+        workoutDaysPerWeek: value.daysPerWeek,
+        specificWorkoutDays: value.specificDays.toIntList(),
+      ),
+    );
+    if (result case ErrorR(error: final e)) {
+      throw e;
+    }
   }
 }
 
@@ -77,7 +100,6 @@ class WorkoutDaysContent extends StatelessWidget {
 
             SecondaryButton(
               text: t.common.save_changes_button,
-
               onPressed: cubit.save,
             ),
           ],
@@ -112,7 +134,6 @@ String? workoutFrequencyValidator(WorkoutFrequencyValue value) {
     );
   }
 
-  // 4. Если всё ок
   return null;
 }
 

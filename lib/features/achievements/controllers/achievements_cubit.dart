@@ -38,7 +38,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
             isLoading: false,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             error: error.toString(),
@@ -62,7 +62,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
             isLoading: false,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             error: error.toString(),
@@ -101,7 +101,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
             isLoading: false,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             error: error.toString(),

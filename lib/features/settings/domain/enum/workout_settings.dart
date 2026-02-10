@@ -1,3 +1,6 @@
+import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
@@ -27,6 +30,16 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.notification => 'Notifications',
       WorkoutSettings.measureSystem => 'Measurement',
       WorkoutSettings.workoutDays => 'Workout days',
+    };
+  }
+
+  String? getDisplayValue(OnboardedUser user, Translations t) {
+    return switch (this) {
+      WorkoutSettings.subscription => null,
+      WorkoutSettings.faction => '${user.mainFaction?.title(t)}, ${user.secondaryFaction?.title(t)}',
+      WorkoutSettings.notification => null,
+      WorkoutSettings.measureSystem => user.measurementSystem.weightSymbol(t),
+      WorkoutSettings.workoutDays => '${user.workoutsPerWeek} days per week',
     };
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
+import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
 class BaseSettingsEditPage extends StatelessWidget {
   const BaseSettingsEditPage({
@@ -18,6 +21,9 @@ class BaseSettingsEditPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppAppBar(
         actions: [
           Padding(
@@ -39,7 +45,22 @@ class BaseSettingsEditPage extends StatelessWidget {
             ),
           ),
         ),
+        loader: const Positioned.fill(child: UserUpdatingLoader()),
       ),
+    );
+  }
+}
+
+class UserUpdatingLoader extends StatelessWidget {
+  const UserUpdatingLoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<UserCubit, UserState, bool>(
+      selector: (state) => state is Updating,
+      builder: (context, isLoading) {
+        return isLoading ? const ScreenLoadingIndicator() : const SizedBox.shrink();
+      },
     );
   }
 }

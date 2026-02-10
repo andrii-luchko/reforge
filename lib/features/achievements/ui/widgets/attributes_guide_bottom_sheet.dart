@@ -3,6 +3,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 
 class ForgeSystemGuideSheet extends StatelessWidget {
   const ForgeSystemGuideSheet._();
@@ -12,7 +13,7 @@ class ForgeSystemGuideSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
       useRootNavigator: true,
       builder: (context) => const ForgeSystemGuideSheet._(),
     );
@@ -37,25 +38,28 @@ class ForgeSystemGuideSheet extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.beige600,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+              // const SizedBox(height: 12),
+              // Container(
+              //   width: 40,
+              //   height: 4,
+              //   decoration: BoxDecoration(
+              //     color: theme.beige600,
+              //     borderRadius: BorderRadius.circular(2),
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: DefaultDialogHeader(title: 'Attribute Mastery Guide'),
               ),
-              const SizedBox(height: 20),
-              Text('THE FIVE-FORGE SYSTEM', style: subheadH1Medium.copyWith(color: theme.beige100)),
-              const SizedBox(height: 4),
-              Text(
-                'Attribute Mastery Guide',
-                style: subheadH3Medium.copyWith(
-                  color: theme.beige700,
-                ),
-              ),
-
+              // Text('THE FIVE-FORGE SYSTEM', style: subheadH1Medium.copyWith(color: theme.beige100)),
+              // const SizedBox(height: 4),
+              // Text(
+              //   'Attribute Mastery Guide',
+              //   style: subheadH3Medium.copyWith(
+              //     color: theme.beige700,
+              //   ),
+              // ),
               const SizedBox(height: 24),
 
               Expanded(

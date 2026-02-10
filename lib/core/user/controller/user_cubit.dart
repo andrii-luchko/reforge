@@ -9,6 +9,7 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
+import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 
 part 'user_cubit.freezed.dart';
 part 'user_state.dart';
@@ -63,7 +64,7 @@ class UserCubit extends Cubit<UserState> {
           await _userSessionService.clearUser();
           emit(const UserState.initial());
         }
-      case Error(error: final error):
+      case ErrorR(error: final error):
         await _userSessionService.clearUser();
         emit(UserState.error(error.toString()));
     }
@@ -76,7 +77,7 @@ class UserCubit extends Cubit<UserState> {
     switch (result) {
       case Success(value: final user):
         emit(UserState.loaded(user));
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
     }
   }
@@ -90,7 +91,7 @@ class UserCubit extends Cubit<UserState> {
     switch (result) {
       case Success():
         emit(const UserState.deleted());
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
     }
@@ -105,10 +106,34 @@ class UserCubit extends Cubit<UserState> {
     switch (result) {
       case Success():
         emit(const UserState.deleted());
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
     }
+  }
+
+  Future<Result<User>> updateProfile(PatchProfileRequest request) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+
+      emit(UserState.updating(oldUser));
+
+      final result = await _userRepository.updateUser(request);
+
+      switch (result) {
+        case Success(value: final updatedUser):
+          await _userSessionService.saveUser(updatedUser);
+          emit(UserState.loaded(updatedUser));
+          return result;
+
+        case ErrorR(error: final error):
+          emit(UserState.error(error.toString()));
+
+          emit(UserState.loaded(oldUser));
+          return result;
+      }
+    }
+    return Result.error(Exception('User not loaded'));
   }
 
   @override

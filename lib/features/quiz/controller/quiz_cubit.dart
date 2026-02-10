@@ -140,7 +140,7 @@ class QuizCubit extends Cubit<QuizState> {
       case Success(value: _):
         emit(state.copyWith(isSubmitted: true, isLoading: false));
 
-      case Error(error: _):
+      case ErrorR(error: _):
         emit(
           state.copyWith(
             isSubmitted: false,

@@ -64,6 +64,7 @@
         "confirm_password_label": "Confirm your password",
         "confirm_password_hint": "Enter your password",
         "step_count": "Step $active/$total",
+        "saved_successfully": "Saved successfully",
         "factions": {
             "gakki": "Gakki",
             "gyohyo": "Gyōhyō",

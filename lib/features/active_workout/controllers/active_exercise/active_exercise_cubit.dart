@@ -69,7 +69,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           notes: value.notes,
         );
 
-      case Error():
+      case ErrorR():
         return null;
     }
   }
@@ -134,7 +134,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
         emit(state.copyWith(isSendingSet: false));
 
-      case Error(error: final error):
+      case ErrorR(error: final error):
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
@@ -180,7 +180,7 @@ submitted: ${state.isSubmitted}
         case Success():
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
-        case Error(error: final error):
+        case ErrorR(error: final error):
           emit(
             state.copyWith(
               isLoading: false,
