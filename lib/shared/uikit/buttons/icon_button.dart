@@ -90,7 +90,7 @@ class AppIconButton extends StatelessWidget {
         width: iconSize,
         height: iconSize,
         colorFilter: ColorFilter.mode(
-          appTheme.beige100,
+          appTheme.beige400,
           BlendMode.srcIn,
         ),
       );
@@ -98,7 +98,7 @@ class AppIconButton extends StatelessWidget {
       return Icon(
         iconData,
         size: iconSize,
-        color: appTheme.beige100,
+        color: appTheme.beige400,
       );
     }
   }

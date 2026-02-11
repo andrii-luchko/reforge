@@ -66,7 +66,7 @@ class LeaderboardUserListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            LeaderBoardAvatar.network(
+            LeaderBoardAvatar(
               borderGradientColors: getGradientByRank(user.rank, context),
               imageUrl: user.avatarUrl,
               gradientWidth: 1.5,

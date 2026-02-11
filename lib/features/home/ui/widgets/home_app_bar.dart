@@ -10,68 +10,98 @@ import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
-class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const HomeAppBar({super.key});
-
-  Future<void> navigateToCalendar(BuildContext context) async {
-    // ignore: inference_failure_on_function_invocation
-    await const CalendarPageRoute().push(context);
-  }
-
-  void navigateToNotifications(BuildContext context) {
-    // ignore: discarded_futures
-    const CalendarPageRoute().push<void>(context);
-  }
+class HomeSliverAppBar extends StatelessWidget {
+  const HomeSliverAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    return Padding(
-      padding: const .symmetric(horizontal: 16),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: appTheme.beige100,
-                shape: BoxShape.circle,
-                border: GradientBoxBorder(gradient: appTheme.avatarGradient, width: 2),
-              ),
-              child: Center(child: SvgPicture.asset(Assets.images.icons.user)),
-            ),
+    final topPadding = MediaQuery.paddingOf(context).top;
+    const headerHeight = 72.0;
 
-            Padding(
-              padding: const .only(left: 10),
-              child: Column(
-                mainAxisAlignment: .center,
-                crossAxisAlignment: .start,
-                children: [
-                  Text('Welcome back', style: subheadH5Medium.copyWith(color: appTheme.beige500)),
-                  Text('Hey, Jacob!', style: subheadH1Medium.copyWith(color: appTheme.beige100)),
-                ],
+    return SliverPersistentHeader(
+      delegate: _HomeHeaderDelegate(
+        topPadding: topPadding,
+        height: headerHeight,
+        appTheme: appTheme,
+      ),
+    );
+  }
+}
+
+class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _HomeHeaderDelegate({
+    required this.topPadding,
+    required this.height,
+    required this.appTheme,
+  });
+
+  final double topPadding;
+  final double height;
+  final AppTheme appTheme;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Material(
+      color: Colors.transparent,
+      elevation: overlapsContent ? 2 : 0,
+      child: Padding(
+        padding: EdgeInsets.only(top: topPadding, left: 16, right: 16),
+        child: SizedBox(
+          height: height,
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: appTheme.beige100,
+                  shape: BoxShape.circle,
+                  border: GradientBoxBorder(gradient: appTheme.avatarGradient, width: 2),
+                ),
+                child: Center(child: SvgPicture.asset(Assets.images.icons.user)),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const .only(right: 8),
-              child: AppIconButton(
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back',
+                      style: subheadH5Medium.copyWith(color: appTheme.beige500),
+                    ),
+                    Text(
+                      'Hey, Jacob!',
+                      style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                    ),
+                  ],
+                ),
+              ),
+              AppIconButton(
                 iconAsset: Assets.images.icons.calendar,
-                onPressed: () => navigateToCalendar(context),
+                onPressed: () => const CalendarPageRoute().push<void>(context),
               ),
-            ),
-
-            AppIconButton(
-              iconAsset: Assets.images.icons.bell,
-              onPressed: () => navigateToNotifications(context),
-            ),
-          ],
+              const SizedBox(width: 8),
+              AppIconButton(
+                iconAsset: Assets.images.icons.bell,
+                onPressed: () => const NotificationsPageRoute().push<void>(context),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   @override
-  Size get preferredSize => const .fromHeight(kToolbarHeight + 16);
+  double get maxExtent => height + topPadding;
+
+  @override
+  double get minExtent => height + topPadding;
+
+  @override
+  bool shouldRebuild(covariant _HomeHeaderDelegate oldDelegate) {
+    return oldDelegate.appTheme != appTheme;
+  }
 }

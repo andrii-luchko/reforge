@@ -31,6 +31,7 @@ import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/ui/page/lore_page.dart';
+import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
@@ -320,6 +321,16 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const CalendarPage();
+  }
+}
+
+@TypedGoRoute<NotificationsPageRoute>(path: '/notifications')
+class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
+  const NotificationsPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const NotificationsPage();
   }
 }
 

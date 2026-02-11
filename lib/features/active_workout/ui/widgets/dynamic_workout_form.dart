@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
@@ -11,6 +9,7 @@ import 'package:reforge/features/workout_common/ui/widgets/uikit/workout_exercis
 import 'package:reforge/features/workout_common/ui/widgets/uikit/workout_hearer_row.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/delete_wrapper.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 
 class DynamicWorkoutForm extends StatefulWidget {
@@ -162,36 +161,25 @@ class _WorkoutSetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canDelete = !set.isDone && !set.isBusy;
-    final theme = context.appTheme;
 
-    return Slidable(
+    return DeleteWrapper(
       enabled: canDelete,
-      key: ValueKey(set.id),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: canDelete
-                ? (context) async {
-                    if (set.isEmpty) {
-                      onRemoveSet(set.id);
-                      return;
-                    }
+      onPressed: canDelete
+          ? (context) async {
+              if (set.isEmpty) {
+                onRemoveSet(set.id);
+                return;
+              }
 
-                    final delete = await WorkoutDialogs.confirmSetDeletion(context);
-                    if (delete ?? false) {
-                      onRemoveSet(set.id);
-                    }
-                  }
-                : null,
-            backgroundColor: theme.beige900,
-            foregroundColor: theme.beige100,
-            icon: Icons.delete,
-            label: t.common.delete_button,
-            borderRadius: theme.workoutContainerBorderRadius,
-          ),
-        ],
-      ),
+              final delete = await WorkoutDialogs.confirmSetDeletion(context);
+              if (delete ?? false) {
+                onRemoveSet(set.id);
+              }
+            }
+          : null,
+
+      key: ValueKey(set.id),
+      label: t.common.delete_button,
       child: Padding(
         padding: const EdgeInsetsGeometry.only(bottom: 16),
         child: AbsorbPointer(

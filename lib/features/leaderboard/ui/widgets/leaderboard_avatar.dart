@@ -1,38 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/shared/app_cached_net_image.dart';
-
-enum _ImageType { network, asset, empty }
+import 'package:reforge/shared/app_image_wrapper.dart';
 
 class LeaderBoardAvatar extends StatelessWidget {
-  const LeaderBoardAvatar.network({
-    required this.borderGradientColors,
-    required String? imageUrl,
+  const LeaderBoardAvatar({
     required this.size,
+    required this.borderGradientColors,
+    this.imageUrl,
     this.gradientWidth = 3,
     this.secondBorderWidth = 3,
     super.key,
-  }) : _imageUrl = imageUrl,
-       _imageType = imageUrl == null ? _ImageType.empty : _ImageType.network;
-
-  const LeaderBoardAvatar.asset({
-    required this.borderGradientColors,
-    required String assetPath,
-    required this.size,
-    this.gradientWidth = 3,
-    this.secondBorderWidth = 3,
-    super.key,
-  }) : _imageUrl = assetPath,
-       _imageType = _ImageType.asset;
+  });
 
   final Size size;
   final Gradient borderGradientColors;
   final double gradientWidth;
   final double secondBorderWidth;
-
-  final String? _imageUrl;
-  final _ImageType _imageType;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -55,37 +40,9 @@ class LeaderBoardAvatar extends StatelessWidget {
             width: secondBorderWidth,
           ),
         ),
-        clipBehavior: Clip.hardEdge,
-        child: _ImageSelector(
-          imageType: _imageType,
-          imageUrl: _imageUrl,
-        ),
+
+        child: ClipOval(child: AppImageWrapper(imageUrl: imageUrl)),
       ),
     );
-  }
-}
-
-class _ImageSelector extends StatelessWidget {
-  const _ImageSelector({
-    required this.imageType,
-    this.imageUrl,
-  });
-
-  final String? imageUrl;
-  final _ImageType imageType;
-
-  @override
-  Widget build(BuildContext context) {
-    switch (imageType) {
-      case _ImageType.network:
-        return AppCachedNetImage(imageUrl: imageUrl!);
-      case _ImageType.asset:
-        return Image.asset(
-          imageUrl!,
-          fit: BoxFit.cover,
-        );
-      case _ImageType.empty:
-        return const AppUserImageEmptyWidget();
-    }
   }
 }

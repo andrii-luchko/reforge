@@ -31,9 +31,9 @@ class VictoryCard extends StatelessWidget {
       child: Column(
         spacing: 10,
         children: [
-          LeaderBoardAvatar.asset(
+          LeaderBoardAvatar(
             borderGradientColors: getGradientByRank(rank, context),
-            assetPath: faction.avatarAsset,
+            imageUrl: faction.avatarAsset,
             size: const Size(56, 56),
           ),
 

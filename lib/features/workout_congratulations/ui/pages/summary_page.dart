@@ -24,7 +24,7 @@ class WorkoutSummaryPage extends StatelessWidget {
             const Spacer(),
             SummaryContentWidget(
               xpProgress: null,
-              newLevel: result.currentLevel,
+              newLevel: result.isLevelUp ? result.currentLevel : null,
               xpEarned: result.totalXpEarned,
               timeSpentSec: result.duration,
             ),
@@ -32,7 +32,7 @@ class WorkoutSummaryPage extends StatelessWidget {
             CongratulationsActionButtons(
               shareContent: SummaryShareContent(
                 xpProgress: null,
-                newLevel: result.currentLevel,
+                newLevel: result.isLevelUp ? result.currentLevel : null,
                 xpEarned: result.totalXpEarned,
                 timeSpentSec: result.duration,
               ),

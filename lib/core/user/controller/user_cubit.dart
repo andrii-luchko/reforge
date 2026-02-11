@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
@@ -170,6 +171,7 @@ class UserCubit extends Cubit<UserState> {
 
     switch (result) {
       case Success(value: final url):
+        logger.d(result);
         await updateProfile(PatchProfileRequest(avatarUrl: url));
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));

@@ -62,7 +62,11 @@ class ImagePickerService {
     );
 
     if (result is ImageSource) {
-      final file = await picker.pickImage(source: result);
+      final file = await picker.pickImage(
+        source: result,
+        requestFullMetadata: false,
+        imageQuality: 90,
+      );
       return file != null ? File(file.path) : null;
     } else if (result == 'delete') {
       return null;
@@ -83,6 +87,7 @@ class ImagePickerService {
 
     return ListTile(
       onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: .circular(20)),
       title: Text(
         title,
         style: subheadH5Medium.copyWith(color: color),

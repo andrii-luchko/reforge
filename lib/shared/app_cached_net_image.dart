@@ -55,7 +55,7 @@ class AppUserImageEmptyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     return ColoredBox(
-      color: appTheme.beige200,
+      color: appTheme.beige100,
       child: Center(child: SvgPicture.asset(Assets.images.icons.user)),
     );
   }

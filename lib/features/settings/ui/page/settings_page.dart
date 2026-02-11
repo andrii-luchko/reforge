@@ -204,6 +204,7 @@ class SettingsGroup extends StatelessWidget {
               if (setting == .image) {
                 return Align(
                   child: SettingsImagePicker(
+                    imageUrl: user.avatarUrl,
                     onPressed: () async {
                       final file = await ImagePickerService.pickAndCrop(context);
 

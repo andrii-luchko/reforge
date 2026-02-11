@@ -45,6 +45,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/camera.svg
   String get camera => 'assets/images/icons/camera.svg';
 
+  /// File path: assets/images/icons/card_remove.svg
+  String get cardRemove => 'assets/images/icons/card_remove.svg';
+
   /// File path: assets/images/icons/chart_active.svg
   String get chartActive => 'assets/images/icons/chart_active.svg';
 
@@ -56,6 +59,9 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/computing.svg
   String get computing => 'assets/images/icons/computing.svg';
+
+  /// File path: assets/images/icons/cup.svg
+  String get cup => 'assets/images/icons/cup.svg';
 
   /// File path: assets/images/icons/dumbbell.svg
   String get dumbbell => 'assets/images/icons/dumbbell.svg';
@@ -77,6 +83,9 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/home_inactive.svg
   String get homeInactive => 'assets/images/icons/home_inactive.svg';
+
+  /// File path: assets/images/icons/medal.svg
+  String get medal => 'assets/images/icons/medal.svg';
 
   /// File path: assets/images/icons/medal_active.svg
   String get medalActive => 'assets/images/icons/medal_active.svg';
@@ -131,10 +140,12 @@ class $AssetsImagesIconsGen {
     calendar2,
     calendarAlt,
     camera,
+    cardRemove,
     chartActive,
     chartInactive,
     check,
     computing,
+    cup,
     dumbbell,
     eye,
     eyeSlash,
@@ -142,6 +153,7 @@ class $AssetsImagesIconsGen {
     google,
     homeActive,
     homeInactive,
+    medal,
     medalActive,
     medalInactive,
     pause,

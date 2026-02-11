@@ -36,6 +36,9 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
   }
 
   Future<bool> isTodaySubmitted() async {
+    //if we already submitted return true
+    if (isFormComplete && state.isSubmitted) return true;
+
     emit(state.copyWith(isLoading: true, apiError: null));
 
     final result = await _workoutQuizRepository.isQuizTodaySubmitted();

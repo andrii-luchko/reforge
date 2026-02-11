@@ -18,17 +18,26 @@ class SettingsImagePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+    final hasImage = imageUrl != null;
     return Column(
       children: [
         CustomPaint(
-          painter: DashedBorderPainter(color: appTheme.beige700, strokeWidth: 1, radius: 20),
+          painter: hasImage ? null : DashedBorderPainter(color: appTheme.beige700, strokeWidth: 1, radius: 20),
           child: SizedBox(
             width: 180,
             height: 180,
             child: Stack(
               alignment: .center,
               children: [
-                if (imageUrl != null) AppCachedNetImage(imageUrl: imageUrl!),
+                if (hasImage)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: .circular(20),
+                      child: AppCachedNetImage(
+                        imageUrl: imageUrl!,
+                      ),
+                    ),
+                  ),
                 Center(
                   child: AppIconButton(
                     iconAsset: ProfileSettings.image.icon,

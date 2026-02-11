@@ -76,9 +76,9 @@ class LeaderboardFactionListTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              LeaderBoardAvatar.asset(
+              LeaderBoardAvatar(
                 borderGradientColors: getGradientByRank(rank, context),
-                assetPath: faction.avatarAsset,
+                imageUrl: faction.avatarAsset,
                 gradientWidth: 1.5,
                 secondBorderWidth: 0,
                 size: const Size(52, 52),

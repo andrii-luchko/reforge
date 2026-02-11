@@ -327,7 +327,6 @@ class _WorkoutImage extends StatelessWidget {
       child: Container(
         width: size.width,
         height: size.height,
-        clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           color: appTheme.beige1000.withValues(alpha: 0.2),

@@ -13,6 +13,7 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
 
@@ -53,19 +54,20 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => di.getIt<AuthCubit>(),
+          create: (_) => di.getIt<AuthCubit>(),
           lazy: false,
         ),
         BlocProvider(
-          create: (context) => di.getIt<UserCubit>(),
+          create: (_) => di.getIt<UserCubit>(),
           lazy: false,
         ),
         BlocProvider(
-          create: (context) => di.getIt<ForgotPasswordCubit>(),
+          create: (_) => di.getIt<ForgotPasswordCubit>(),
         ),
         BlocProvider(
-          create: (context) => di.getIt<AchievementsCubit>(),
+          create: (_) => di.getIt<AchievementsCubit>(),
         ),
+        BlocProvider(create: (_) => di.getIt<NotificationCubit>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

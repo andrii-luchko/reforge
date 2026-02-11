@@ -80,6 +80,7 @@
         "confirm_button": "Confirm",
         "complete_button": "Complete",
         "cancel_button": "Cancel",
+        "clear_button": "Clear",
         "delete_button": "Delete",
         "skip_button": "Skip",
         "continue_button": "Continue",

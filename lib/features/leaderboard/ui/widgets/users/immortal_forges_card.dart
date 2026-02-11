@@ -129,7 +129,7 @@ class ImmortalForcesCard extends StatelessWidget {
 
                     if (userRank1 != null) ...[
                       Center(
-                        child: LeaderBoardAvatar.network(
+                        child: LeaderBoardAvatar(
                           size: const Size(88, 88),
                           borderGradientColors: getGradientByRank(1, context),
                           imageUrl: userRank1.avatarUrl,
@@ -214,7 +214,7 @@ class _RankAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: alignment,
-      child: LeaderBoardAvatar.network(
+      child: LeaderBoardAvatar(
         size: const Size(62, 62),
         imageUrl: user.avatarUrl,
         borderGradientColors: getGradientByRank(user.rank, context),

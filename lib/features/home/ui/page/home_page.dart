@@ -28,7 +28,6 @@ class HomePage extends StatelessWidget {
       extendBodyBehindAppBar: true,
       extendBody: true,
       backgroundColor: Colors.transparent,
-      appBar: const HomeAppBar(),
       body: DefaultBackground(
         body: const HomeBody(),
 
@@ -44,6 +43,86 @@ class HomePage extends StatelessWidget {
 
 class HomeBody extends StatelessWidget {
   const HomeBody({super.key});
+  static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: CustomScrollView(
+        slivers: [
+          const HomeSliverAppBar(),
+
+          SliverPadding(
+            padding: horizontalPadding.copyWith(top: 16, bottom: 16),
+            sliver: SliverToBoxAdapter(
+              child: AvatarCard(
+                rank: RankEntity.mock(),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: horizontalPadding.copyWith(bottom: 16),
+            sliver: SliverToBoxAdapter(
+              child: AppListTile(
+                leadingIcon: AppIconButton(
+                  iconAsset: Assets.images.icons.dumbbell,
+                ),
+                title: 'Forge Today’s Workout',
+                subtitle: 'Start workout',
+                onTap: () async {
+                  await const WorkoutDetailsPageRoute().push<void>(context);
+                },
+              ),
+            ),
+          ),
+
+          SliverPadding(
+            padding: horizontalPadding.copyWith(bottom: 16),
+            sliver: const SliverToBoxAdapter(
+              child: HomeSortRow(),
+            ),
+          ),
+          SliverPadding(
+            padding: horizontalPadding.copyWith(bottom: 16),
+            sliver: SliverToBoxAdapter(
+              child: BadgeListTile(
+                leadingIcon: AppIconButton(iconAsset: Assets.images.icons.bell),
+                title: 'Foundryman',
+                subtitle: 'Badge earned',
+                xp: 2738,
+              ),
+            ),
+          ),
+
+          SliverPadding(
+            padding: horizontalPadding.copyWith(bottom: 16),
+            sliver: const SliverToBoxAdapter(
+              child: XpTile(
+                currentXp: 3190,
+                totalXp: 8215,
+              ),
+            ),
+          ),
+
+          SliverPadding(
+            padding: horizontalPadding.copyWith(bottom: 16),
+            sliver: const SliverToBoxAdapter(
+              child: ActivitySection(),
+            ),
+          ),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeBodyExp extends StatelessWidget {
+  const HomeBodyExp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,87 +153,74 @@ class HomeBody extends StatelessWidget {
                 ),
               ),
 
-              Padding(
-                padding: const .only(bottom: 16),
-                child: Row(
-                  mainAxisAlignment: .spaceBetween,
-                  children: [
-                    const Text(
-                      'Workout results',
-                      style: subheadH2Medium,
-                    ),
-
-                    PortalDropdown(
-                      targetAnchor: .centerRight,
-                      // portalAnchor: .,
-                      contentPadding: const EdgeInsets.only(top: 24, left: 18, right: 18),
-                      triggerBuilder: (context, isOpened) {
-                        final appTheme = context.appTheme;
-                        return BlurContainer(
-                          child: BaseGlassContainer(
-                            glassEffectGradientAlignmentBegin: Alignment.topLeft,
-                            glassEffectGradientAlignmentEnd: Alignment.bottomRight,
-                            borderGradientStops: const [0.0, 0.1, 0.3, 0.9, 1.0],
-                            borderGradientColors: [
-                              Colors.transparent,
-                              appTheme.beige100,
-                              Colors.transparent,
-
-                              Colors.transparent,
-                              appTheme.beige100,
-                            ],
-                            borderColor: appTheme.beige100.withValues(alpha: 0.1),
-
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Row(
-                                children: [
-                                  const Text('Last week'),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
-                                  SelectorSuffixIcon(
-                                    isOpen: isOpened,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      contentBuilder: (context, onClose) {
-                        return Container(
-                          height: 200,
-                          //width: 100,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const .only(bottom: 16),
-                child: BadgeListTile(
-                  leadingIcon: AppIconButton(iconAsset: Assets.images.icons.bell),
-                  title: 'Foundryman',
-                  subtitle: 'Badge earned',
-                  xp: 2738,
-                ),
-              ),
-              const Padding(
-                padding: .only(bottom: 16),
-                child: XpTile(
-                  currentXp: 3190,
-                  totalXp: 8215,
-                ),
-              ),
-              const ActivitySection(),
               const SizedBox(height: 32),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class HomeSortRow extends StatelessWidget {
+  const HomeSortRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        const Text(
+          'Workout results',
+          style: subheadH2Medium,
+        ),
+
+        PortalDropdown(
+          targetAnchor: .centerRight,
+          // portalAnchor: .,
+          contentPadding: const EdgeInsets.only(top: 24, left: 18, right: 18),
+          triggerBuilder: (context, isOpened) {
+            final appTheme = context.appTheme;
+            return BlurContainer(
+              child: BaseGlassContainer(
+                glassEffectGradientAlignmentBegin: Alignment.topLeft,
+                glassEffectGradientAlignmentEnd: Alignment.bottomRight,
+                borderGradientStops: const [0.0, 0.1, 0.3, 0.9, 1.0],
+                borderGradientColors: [
+                  Colors.transparent,
+                  appTheme.beige100,
+                  Colors.transparent,
+
+                  Colors.transparent,
+                  appTheme.beige100,
+                ],
+                borderColor: appTheme.beige100.withValues(alpha: 0.1),
+
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      const Text('Last week'),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      SelectorSuffixIcon(
+                        isOpen: isOpened,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          contentBuilder: (context, onClose) {
+            return Container(
+              height: 200,
+              //width: 100,
+            );
+          },
+        ),
+      ],
     );
   }
 }

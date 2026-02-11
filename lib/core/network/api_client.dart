@@ -141,8 +141,9 @@ abstract class ApiClient {
 
   @POST('/supabase/upload')
   @MultiPart()
-  Future<String> uploadFile({
+  Future<BaseResponse<String>> uploadFile({
     @Query('bucket') required String bucket,
+
     @Part(name: 'file') required File file,
   });
 }

@@ -54,6 +54,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   @override
   Future<String> uploadUserAvatar(File file) async {
     const bucketName = 'user_avatar_bucket';
-    return _apiClient.uploadFile(bucket: bucketName, file: file);
+    final response = await _apiClient.uploadFile(bucket: bucketName, file: file);
+    return response.data;
   }
 }
