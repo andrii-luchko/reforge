@@ -46,18 +46,21 @@ class StatsPeriodSelector extends StatelessWidget {
           appTheme.beige100,
         ],
         borderColor: appTheme.beige100.withValues(alpha: 0.1),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                selectedPeriod.label(context.t),
-                style: subheadH5Medium.copyWith(color: appTheme.beige700),
-              ),
-              const SizedBox(width: 8),
-              SelectorSuffixIcon(isOpen: isOpened),
-            ],
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 180),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 4, top: 8, bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedPeriod.label(context.t),
+                  style: subheadH5Medium.copyWith(color: appTheme.beige700),
+                ),
+
+                SelectorSuffixIcon(isOpen: isOpened),
+              ],
+            ),
           ),
         ),
       ),

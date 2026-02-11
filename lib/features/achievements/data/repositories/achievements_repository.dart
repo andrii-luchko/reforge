@@ -41,7 +41,7 @@ class AchievementsRepositoryImpl implements AchievementsRepository {
       final mappedList = result.data.map((attribute) => attribute.toDomain()).toList();
       return Result.success(mappedList);
     } on DioException catch (e) {
-      //TODO (Masayoshi) remove that staff when endpoint is ready
+      // TODO (Masayoshi): remove that staff when endpoint is ready
 
       if (e.response?.statusCode == 404) {
         final mockedList = [

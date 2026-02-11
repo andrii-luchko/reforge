@@ -311,7 +311,8 @@
         },
         "workout_results": {
             "title": "Workout results",
-            "empty_data": "empty data"
+            "empty_data": "Empty data",
+            "empty_data_message": "Something went wrong on our side. Please try again later."
         },
         "badge": {
             "no_badge_yet": "No badge yet",

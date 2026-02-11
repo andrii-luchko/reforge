@@ -15,7 +15,7 @@ class SelectorSuffixIcon extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: Icon(
         isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-        color: context.appTheme.beige100,
+        color: context.appTheme.beige400,
       ),
     );
   }
