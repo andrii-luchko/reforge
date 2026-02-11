@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 class DashedBorderPainter extends CustomPainter {
-  DashedBorderPainter({required this.color, this.strokeWidth = 3});
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 3,
+    this.radius = 50,
+  });
 
   final Color color;
   final double strokeWidth;
+  final double radius;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -19,7 +24,7 @@ class DashedBorderPainter extends CustomPainter {
       ..addRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(0, 0, size.width, size.height),
-          const Radius.circular(50),
+          Radius.circular(radius),
         ),
       );
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
+
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -10,11 +10,18 @@ import 'package:reforge/shared/uikit/staggered_summary_card.dart';
 
 class SummaryContentWidget extends StatelessWidget {
   const SummaryContentWidget({
-    required this.content,
+    required this.newLevel,
+    required this.xpEarned,
+    required this.timeSpentSec,
+    required this.xpProgress,
     super.key,
   });
 
-  final WorkoutSummaryContent content;
+  final int? newLevel;
+  final double? xpProgress;
+  final int xpEarned;
+
+  final int timeSpentSec;
 
   String _formatDuration(Duration duration) {
     final hours = duration.inHours;
@@ -37,12 +44,12 @@ class SummaryContentWidget extends StatelessWidget {
 
     var itemNumber = 1;
 
-    if (content.newLevel != null) {
+    if (newLevel != null) {
       items.add(
         SummaryRowWidget(
           number: itemNumber++,
           title: t.workout_congratulations.new_level,
-          tag: AppTag(text: '${content.newLevel} ${t.common.lv}'),
+          tag: AppTag(text: '$newLevel ${t.common.lv}'),
         ),
       );
     }
@@ -59,11 +66,11 @@ class SummaryContentWidget extends StatelessWidget {
               children: [
                 Flexible(
                   child: HorizontalXPBar(
-                    progress: content.xpProgress ?? 0.2,
+                    progress: xpProgress ?? 0.2,
                   ),
                 ),
                 Text(
-                  '+${content.xpEarned.toString().replaceAllMapped(
+                  '+${xpEarned.toString().replaceAllMapped(
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
                     (Match m) => '${m[1]},',
                   )} XP',
@@ -78,7 +85,7 @@ class SummaryContentWidget extends StatelessWidget {
         SummaryRowWidget(
           number: itemNumber++,
           title: t.workout_congratulations.duration,
-          tag: AppTag(text: _formatDuration(content.timeSpent)),
+          tag: AppTag(text: _formatDuration(Duration(seconds: timeSpentSec))),
         ),
       );
 

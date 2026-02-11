@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day.dart';
-import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 part 'workout_flow_state.dart';
@@ -40,7 +40,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
             currentExerciseIndex: 0,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             isLoading: false,
@@ -68,7 +68,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
             sessionStatus: WorkoutSessionStatus.active,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             isStartingWorkout: false,
@@ -90,7 +90,6 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
   }
 
   Future<void> cancelWorkout(int workoutSessionDuration) async {
-    // Если уже отменено или закончено - ничего не делаем, чтобы не спамить в UI
     if (state.isFinished) return;
 
     await _finishWorkout(WorkoutSessionStatus.canceled, workoutSessionDuration);
@@ -118,7 +117,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
         emit(
           state.copyWith(sessionStatus: status, summary: summary, isLoading: false),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             sessionStatus: status,

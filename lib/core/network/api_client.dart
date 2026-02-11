@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:reforge/app/utils/helpers/base_response.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
@@ -9,7 +11,13 @@ import 'package:reforge/core/auth/data/requests/refresh_token_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
+import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
+import 'package:reforge/features/home/data/models/user_stats_dto.dart';
+import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
+import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
+import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
+import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day.dart';
@@ -55,6 +63,9 @@ abstract class ApiClient {
   //User
   @GET('/users/me')
   Future<BaseResponse<User>> getCurrentUser();
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateCurrentUser(@Body() PatchProfileRequest request);
 
   @DELETE('/users/me')
   Future<BaseResponse<void>> deleteUser();
@@ -109,4 +120,39 @@ abstract class ApiClient {
 
   @POST('/user-workout-readiness')
   Future<BaseResponse<void>> submitWorkoutQuiz(@Body() WorkoutQuizRequest request);
+
+  //Leaderboard
+
+  @GET('/leaderboards/global')
+  Future<LeaderboardResponse> getGlobalUserList(@Query('page') int page, @Query('limit') int limit);
+
+  @GET('/leaderboards/factions/local')
+  Future<BaseResponse<List<FactionLeaderboardDto>>> getLocalFactionsLeaderboard();
+
+  @GET('/leaderboards/factions/global')
+  Future<BaseResponse<List<FactionLeaderboardDto>>> getGlobalFactionsLeaderboard();
+
+  @GET('/leaderboards/forges/factions/{factionName}')
+  Future<ImmortalForgesResponse> getImmortalForges(@Path('factionName') String factionName);
+
+  //Achievements
+
+  @GET('/user-forge-experience/progress')
+  Future<BaseResponse<List<AttributesDto>>> getUserAttributes();
+
+  @POST('/supabase/upload')
+  @MultiPart()
+  Future<BaseResponse<String>> uploadFile({
+    @Query('bucket') required String bucket,
+
+    @Part(name: 'file') required File file,
+  });
+
+  //Home
+
+  @GET('/workout-sessions/results')
+  Future<BaseResponse<UserStatsDataDto>> getUserStats({
+    @Query('startDate') required String startDate,
+    @Query('endDate') required String endDate,
+  });
 }

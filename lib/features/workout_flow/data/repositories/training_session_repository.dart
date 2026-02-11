@@ -1,9 +1,11 @@
+// ignore_for_file: prefer_match_file_name
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
@@ -12,6 +14,7 @@ import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 @Injectable(as: TrainingSessionRepository)
@@ -25,10 +28,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   final UserSessionService _userSessionService;
 
   @override
-  Future<Result<ProgramDay>> getWorkoutByDay(int day) async {
+  Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
     try {
       final response = await _apiClient.getWorkoutByDay(day);
-      return Result.success(response.data.first);
+      return response.data.isEmpty ? const Result.success(null) : Result.success(response.data.first.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -88,7 +91,7 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   }
 
   @override
-  Future<Result<WorkoutSessionSummary>> endWorkoutSession({
+  Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,
     required int workoutSessionDuration,
@@ -97,7 +100,7 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
       final request = CompleteWorkoutSessionRequest(status: status, durationInSeconds: workoutSessionDuration);
       final response = await _apiClient.completeWorkoutSession(workoutSessionId, request);
 
-      return Result.success(response.data);
+      return Result.success(response.data.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
     }

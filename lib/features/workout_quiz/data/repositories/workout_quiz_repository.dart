@@ -31,14 +31,8 @@ class WorkoutQuizRepositoryImpl implements WorkoutQuizRepository {
 
   @override
   Future<Result<void>> submitQuiz(WorkoutQuizAnswers answers) async {
-    final userId = _userSessionService.currentUserId;
-
-    if (userId == null) {
-      return Result.error(Exception('User not found'));
-    }
-
     try {
-      final request = WorkoutQuizRequest.fromWorkoutQuizAnswers(userId: userId, answers: answers);
+      final request = WorkoutQuizRequest.fromWorkoutQuizAnswers(answers: answers);
 
       await _apiClient.submitWorkoutQuiz(request);
 

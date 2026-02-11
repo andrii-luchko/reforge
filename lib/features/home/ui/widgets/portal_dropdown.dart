@@ -73,7 +73,9 @@ class _PortalDropdownState extends State<PortalDropdown> with SingleTickerProvid
       anchor: Aligned(
         follower: widget.portalAnchor,
         target: widget.targetAnchor,
-        widthFactor: widget.portalFollowerWidth,
+
+        widthFactor: widget.portalFollowerWidth ?? 1.0,
+        portal: Alignment.bottomCenter,
       ),
       portalFollower: _PortalContentWrapper(
         animation: _expandAnimation,

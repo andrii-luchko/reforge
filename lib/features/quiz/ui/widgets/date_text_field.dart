@@ -4,6 +4,7 @@ import 'package:reforge/app/utils/helpers/date_locale_helper.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 
+// ignore: prefer_match_file_name
 class DateInputField extends StatefulWidget {
   const DateInputField({
     required this.onDateSelected,
@@ -126,8 +127,6 @@ class _DateInputFieldState extends State<DateInputField> {
       keyboardType: TextInputType.number,
       onChanged: _parseAndEmitDate,
       inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-
         _DateTextFormatter(separator: _separator),
       ],
     );
@@ -136,28 +135,39 @@ class _DateInputFieldState extends State<DateInputField> {
 
 class _DateTextFormatter extends TextInputFormatter {
   const _DateTextFormatter({required this.separator});
+
   final String separator;
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final text = newValue.text;
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
 
-    if (text.length > 10) return oldValue;
-
-    final buffer = StringBuffer();
-    for (var i = 0; i < text.length; i++) {
-      buffer.write(text[i]);
-      final nonZeroIndex = i + 1;
-
-      if ((nonZeroIndex == 2 || nonZeroIndex == 4) && nonZeroIndex != text.length) {
-        buffer.write(separator);
-      }
+    if (digitsOnly.length > 8) {
+      return oldValue;
     }
 
-    final string = buffer.toString();
-    return newValue.copyWith(
-      text: string,
-      selection: TextSelection.collapsed(offset: string.length),
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < digitsOnly.length; i++) {
+      if (i == 2 || i == 4) {
+        buffer.write(separator);
+      }
+      buffer.write(digitsOnly[i]);
+    }
+
+    final formatted = buffer.toString();
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

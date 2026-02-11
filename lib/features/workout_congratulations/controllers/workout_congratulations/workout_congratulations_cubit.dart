@@ -1,41 +1,51 @@
+// workout_congratulations_cubit.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 
 part 'workout_congratulations_state.dart';
 part 'workout_congratulations_cubit.freezed.dart';
 
 @injectable
 class WorkoutCongratulationsCubit extends Cubit<WorkoutCongratulationsState> {
-  WorkoutCongratulationsCubit() : super(const WorkoutCongratulationsState());
+  WorkoutCongratulationsCubit(@factoryParam WorkoutSessionSummaryEntity? result)
+    : super(
+        WorkoutCongratulationsState(
+          workoutResult: result,
 
-  /// Initialize with a list of content items and optional default summary
-  void initialize({
-    required List<WorkoutCongratulationsContent> contentItems,
-    WorkoutSummaryContent? defaultSummary,
-  }) {
-    emit(
-      WorkoutCongratulationsState(
-        contentItems: contentItems,
-        defaultSummary: defaultSummary,
-      ),
-    );
+          navigationTarget: result == null ? const WorkoutNavigationTarget.home() : null,
+        ),
+      );
+
+  void init() {
+    if (state.workoutResult == null) return;
   }
 
-  /// Move to the next content item
-  void next() {
-    if (state.hasNext) {
-      emit(state.copyWith(currentIndex: state.currentIndex + 1));
-    } else if (state.shouldShowSummary) {
-      // Move to summary
-      emit(state.copyWith(currentIndex: state.currentIndex + 1));
+  void onNextPressed({int? currentMilestoneIndex}) {
+    final result = state.workoutResult;
+    if (result == null) {
+      emit(state.copyWith(navigationTarget: const WorkoutNavigationTarget.home()));
+      return;
+    }
+
+    final milestones = result.earnedMilestones;
+
+    if (currentMilestoneIndex == null) {
+      emit(state.copyWith(navigationTarget: const WorkoutNavigationTarget.home()));
+      return;
+    }
+
+    final nextIndex = currentMilestoneIndex + 1;
+
+    if (nextIndex < milestones.length) {
+      emit(state.copyWith(navigationTarget: WorkoutNavigationTarget.achievement(nextIndex)));
+    } else {
+      emit(state.copyWith(navigationTarget: const WorkoutNavigationTarget.summary()));
     }
   }
 
-  /// Get the current content item (null if showing summary or complete)
-  WorkoutCongratulationsContent? get currentContent => state.currentContent;
-
-  /// Check if there's more content to show
-  bool get hasMore => state.hasNext || state.shouldShowSummary;
+  void onNavigationConsumed() {
+    emit(state.copyWith(navigationTarget: null));
+  }
 }

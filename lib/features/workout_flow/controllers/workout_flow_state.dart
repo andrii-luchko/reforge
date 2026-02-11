@@ -5,7 +5,7 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
   const WorkoutFlowState._();
 
   const factory WorkoutFlowState({
-    ProgramDay? programDay,
+    ProgramDayEntity? programDay,
 
     @Default(false) bool isLoading,
 
@@ -17,10 +17,12 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
 
     WorkoutSessionStatus? sessionStatus,
 
-    WorkoutSessionSummary? summary,
+    WorkoutSessionSummaryEntity? summary,
 
     String? error,
   }) = _WorkoutFlowState;
+
+  bool get isEmptyData => programDay == null;
 
   bool get isFinished =>
       sessionStatus == WorkoutSessionStatus.completed || sessionStatus == WorkoutSessionStatus.canceled;
@@ -31,7 +33,7 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
 
   bool get isCompleted => sessionStatus == WorkoutSessionStatus.completed;
 
-  ProgramExercise? get currentExercise {
+  ProgramExerciseEntity? get currentExercise {
     if (programDay == null || programDay!.sortedExercises.isEmpty) return null;
     if (currentExerciseIndex >= programDay!.sortedExercises.length) return null;
     return programDay!.sortedExercises[currentExerciseIndex];

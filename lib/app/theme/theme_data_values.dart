@@ -5,10 +5,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 class ThemeDataValues {
   static final skeletonizerConfig = SkeletonizerConfigData(
-    effect: ShimmerEffect(
-      baseColor: AppThemeValues.light.beige800,
-      highlightColor: AppThemeValues.light.beige700,
-      duration: const Duration(seconds: 3),
+    effect: SolidColorEffect(
+      color: AppThemeValues.light.beige800,
     ),
   );
 

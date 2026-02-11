@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/shared/uikit/toasts/app_simple_toast.dart';
 import 'package:toastification/toastification.dart';
 
 extension CustomToast on Toastification {
@@ -13,6 +14,35 @@ extension CustomToast on Toastification {
       },
 
       builder: builder,
+    );
+  }
+
+  ToastificationItem showSimpleToast(
+    String text, {
+    Alignment alignment = Alignment.topCenter,
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    return toastification.showCustom(
+      autoCloseDuration: duration,
+      alignment: alignment,
+      dismissDirection: DismissDirection.none,
+
+      animationBuilder: (context, animation, alignment, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+
+      builder: (context, item) {
+        return Align(
+          alignment: item.alignment,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: GestureDetector(
+              onTap: () => toastification.dismiss(item),
+              child: AppSimpleToast(text: text),
+            ),
+          ),
+        );
+      },
     );
   }
 

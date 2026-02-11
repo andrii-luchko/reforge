@@ -5,7 +5,7 @@ sealed class Result<T> {
   const factory Result.success(T value) = Success._;
 
   /// Creates an error [Result], completed with the specified [error].
-  const factory Result.error(Exception error, [StackTrace stackTrace]) = Error._;
+  const factory Result.error(Exception error, [StackTrace stackTrace]) = ErrorR._;
 }
 
 /// A successful [Result] with a returned [value].
@@ -20,8 +20,8 @@ final class Success<T> extends Result<T> {
 }
 
 /// An error [Result] with a resulting [error].
-final class Error<T> extends Result<T> {
-  const Error._(this.error, [this.stackTrace]);
+final class ErrorR<T> extends Result<T> {
+  const ErrorR._(this.error, [this.stackTrace]);
 
   /// The resulting error of this result.
   final Exception error;

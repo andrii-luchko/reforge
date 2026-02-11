@@ -34,7 +34,7 @@ class _ResetSendPageState extends State<ResetSendPage> {
   @override
   void initState() {
     super.initState();
-    _startTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startTimer());
   }
 
   @override
@@ -49,11 +49,10 @@ class _ResetSendPageState extends State<ResetSendPage> {
     });
 
     _timer = Timer(const Duration(seconds: _timeoutSeconds), () {
-      if (mounted) {
-        setState(() {
-          _canResend = true;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _canResend = true;
+      });
     });
   }
 

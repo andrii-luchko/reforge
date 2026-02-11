@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId = "com.reforgestudios.reforge"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

@@ -32,7 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
         } else {
           emit(const AuthState.unauthenticated());
         }
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(AuthState.error('get tokens failed: $error'));
     }
   }
@@ -45,7 +45,7 @@ class AuthCubit extends Cubit<AuthState> {
     switch (result) {
       case Success(value: final tokens):
         emit(AuthState.authenticated(tokens: tokens));
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(AuthState.error('Sign in failed: $error'));
     }
   }
@@ -58,7 +58,7 @@ class AuthCubit extends Cubit<AuthState> {
     switch (result) {
       case Success(value: final tokens):
         emit(AuthState.authenticated(tokens: tokens));
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(AuthState.error('Sign up failed: $error'));
     }
   }
@@ -71,7 +71,7 @@ class AuthCubit extends Cubit<AuthState> {
     switch (result) {
       case Success(value: final tokens):
         emit(AuthState.authenticated(tokens: tokens));
-      case Error(error: final error):
+      case ErrorR(error: final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
@@ -89,7 +89,7 @@ class AuthCubit extends Cubit<AuthState> {
     switch (result) {
       case Success(value: final tokens):
         emit(AuthState.authenticated(tokens: tokens));
-      case Error(error: final error):
+      case ErrorR(error: final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
@@ -109,7 +109,7 @@ class AuthCubit extends Cubit<AuthState> {
     switch (result) {
       case Success():
         emit(const AuthState.unauthenticated());
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(AuthState.error('Sign up failed: $error'));
         emit(currentState);
     }

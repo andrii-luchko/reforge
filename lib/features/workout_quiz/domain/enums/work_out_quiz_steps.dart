@@ -17,6 +17,7 @@ enum WorkOutQuizSteps {
 }
 
 extension WorkOutQuizStepsX on WorkOutQuizSteps {
+  // ignore: avoid_returning_widgets
   Widget get step {
     return switch (this) {
       WorkOutQuizSteps.sleepQualityStep => const SleepQualityStep(),
@@ -41,6 +42,7 @@ extension WorkOutQuizStepsX on WorkOutQuizSteps {
     };
   }
 
+  // ignore: avoid_returning_widgets
   Widget buildTag(BuildContext context, WorkoutQuizState state) {
     final appTheme = context.appTheme;
     return switch (this) {

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
+// ignore: prefer_match_file_name
 class GlowingArc extends StatefulWidget {
   const GlowingArc({
     required this.animation,
@@ -167,6 +168,7 @@ class _FireGlowPainter extends CustomPainter {
     );
   }
 
+  // ignore: number_of_parameters
   void _drawLayer(
     Canvas canvas,
     Paint paintObj,
@@ -257,6 +259,7 @@ class _FireCorePainter extends CustomPainter {
     );
   }
 
+  // ignore: number_of_parameters
   void _drawLayer(
     Canvas canvas,
     Paint paintObj,

@@ -146,9 +146,9 @@ class StepItem extends StatelessWidget {
 class TimelinePainter extends CustomPainter {
   TimelinePainter({
     required this.isLast,
-    required this.isActive,
     required this.activeColor,
     required this.inactiveColor,
+    this.isActive = true,
     this.dotRadius = 4.0,
   });
 
@@ -187,7 +187,7 @@ class TimelinePainter extends CustomPainter {
     if (isLast) return;
 
     final linePaint = Paint()
-      ..color = isActive ? activeColor.withValues(alpha: 0.4) : inactiveColor.withValues(alpha: 0.8)
+      ..color = isActive ? activeColor.withValues(alpha: 0.9) : inactiveColor.withValues(alpha: 0.8)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

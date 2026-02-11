@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -22,7 +25,10 @@ class RadioButtonOption extends StatelessWidget {
     final appTheme = context.appTheme;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        onTap();
+        unawaited(HapticFeedback.selectionClick());
+      },
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),

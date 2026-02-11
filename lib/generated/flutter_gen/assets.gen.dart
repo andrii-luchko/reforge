@@ -39,6 +39,15 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/calendar_2.svg
   String get calendar2 => 'assets/images/icons/calendar_2.svg';
 
+  /// File path: assets/images/icons/calendar_alt.svg
+  String get calendarAlt => 'assets/images/icons/calendar_alt.svg';
+
+  /// File path: assets/images/icons/camera.svg
+  String get camera => 'assets/images/icons/camera.svg';
+
+  /// File path: assets/images/icons/card_remove.svg
+  String get cardRemove => 'assets/images/icons/card_remove.svg';
+
   /// File path: assets/images/icons/chart_active.svg
   String get chartActive => 'assets/images/icons/chart_active.svg';
 
@@ -47,6 +56,12 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/check.svg
   String get check => 'assets/images/icons/check.svg';
+
+  /// File path: assets/images/icons/computing.svg
+  String get computing => 'assets/images/icons/computing.svg';
+
+  /// File path: assets/images/icons/cup.svg
+  String get cup => 'assets/images/icons/cup.svg';
 
   /// File path: assets/images/icons/dumbbell.svg
   String get dumbbell => 'assets/images/icons/dumbbell.svg';
@@ -57,6 +72,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/eye_slash.svg
   String get eyeSlash => 'assets/images/icons/eye_slash.svg';
 
+  /// File path: assets/images/icons/gallery.svg
+  String get gallery => 'assets/images/icons/gallery.svg';
+
   /// File path: assets/images/icons/google.svg
   String get google => 'assets/images/icons/google.svg';
 
@@ -65,6 +83,12 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/home_inactive.svg
   String get homeInactive => 'assets/images/icons/home_inactive.svg';
+
+  /// File path: assets/images/icons/lock.svg
+  String get lock => 'assets/images/icons/lock.svg';
+
+  /// File path: assets/images/icons/medal.svg
+  String get medal => 'assets/images/icons/medal.svg';
 
   /// File path: assets/images/icons/medal_active.svg
   String get medalActive => 'assets/images/icons/medal_active.svg';
@@ -90,11 +114,26 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/setting_inactive.svg
   String get settingInactive => 'assets/images/icons/setting_inactive.svg';
 
+  /// File path: assets/images/icons/sms.svg
+  String get sms => 'assets/images/icons/sms.svg';
+
   /// File path: assets/images/icons/timer.svg
   String get timer => 'assets/images/icons/timer.svg';
 
+  /// File path: assets/images/icons/trash.svg
+  String get trash => 'assets/images/icons/trash.svg';
+
   /// File path: assets/images/icons/user.svg
   String get user => 'assets/images/icons/user.svg';
+
+  /// File path: assets/images/icons/wallet.svg
+  String get wallet => 'assets/images/icons/wallet.svg';
+
+  /// File path: assets/images/icons/weight.svg
+  String get weight => 'assets/images/icons/weight.svg';
+
+  /// File path: assets/images/icons/weight_alt.svg
+  String get weightAlt => 'assets/images/icons/weight_alt.svg';
 
   /// List of all assets
   List<String> get values => [
@@ -102,15 +141,23 @@ class $AssetsImagesIconsGen {
     bell,
     calendar,
     calendar2,
+    calendarAlt,
+    camera,
+    cardRemove,
     chartActive,
     chartInactive,
     check,
+    computing,
+    cup,
     dumbbell,
     eye,
     eyeSlash,
+    gallery,
     google,
     homeActive,
     homeInactive,
+    lock,
+    medal,
     medalActive,
     medalInactive,
     pause,
@@ -119,8 +166,13 @@ class $AssetsImagesIconsGen {
     play,
     settingActive,
     settingInactive,
+    sms,
     timer,
+    trash,
     user,
+    wallet,
+    weight,
+    weightAlt,
   ];
 }
 
@@ -130,11 +182,20 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/Faction.png
   AssetGenImage get faction => const AssetGenImage('assets/images/png/Faction.png');
 
+  /// File path: assets/images/png/Faction_serien.png
+  AssetGenImage get factionSerien => const AssetGenImage('assets/images/png/Faction_serien.png');
+
   /// File path: assets/images/png/avatar.jpg
   AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
   /// File path: assets/images/png/badge.png
   AssetGenImage get badge => const AssetGenImage('assets/images/png/badge.png');
+
+  /// File path: assets/images/png/faction_gakki.png
+  AssetGenImage get factionGakki => const AssetGenImage('assets/images/png/faction_gakki.png');
+
+  /// File path: assets/images/png/faction_gyohyo.png
+  AssetGenImage get factionGyohyo => const AssetGenImage('assets/images/png/faction_gyohyo.png');
 
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
@@ -147,6 +208,9 @@ class $AssetsImagesPngGen {
 
   /// File path: assets/images/png/icon-1024x1024.png
   AssetGenImage get icon1024x1024 => const AssetGenImage('assets/images/png/icon-1024x1024.png');
+
+  /// File path: assets/images/png/lock.png
+  AssetGenImage get lock => const AssetGenImage('assets/images/png/lock.png');
 
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
@@ -163,12 +227,16 @@ class $AssetsImagesPngGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     faction,
+    factionSerien,
     avatar,
     badge,
+    factionGakki,
+    factionGyohyo,
     foreground512x512,
     goldEnvelope,
     goldEnvelopePlus,
     icon1024x1024,
+    lock,
     noiseAndTexture,
     shaderNoise,
     smoke,
@@ -191,8 +259,11 @@ class $AssetsImagesSvgGen {
   /// File path: assets/images/svg/rank_card.svg
   String get rankCard => 'assets/images/svg/rank_card.svg';
 
+  /// File path: assets/images/svg/trophy.svg
+  String get trophy => 'assets/images/svg/trophy.svg';
+
   /// List of all assets
-  List<String> get values => [logo, logoAndName, logoSplash, rankCard];
+  List<String> get values => [logo, logoAndName, logoSplash, rankCard, trophy];
 }
 
 class Assets {

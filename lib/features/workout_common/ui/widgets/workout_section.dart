@@ -1,14 +1,14 @@
 import 'package:flutter/widgets.dart';
-import 'package:reforge/features/workout_common/models/exercise_details.dart';
 import 'package:reforge/features/workout_common/ui/widgets/app_tags_list_view.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_list_tile.dart';
+import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 
 import 'package:reforge/features/workout_instruction/ui/widgets/instruction_section.dart';
 
 class WorkoutSection extends StatelessWidget {
   const WorkoutSection({required this.exercise, super.key});
 
-  final ExerciseDetails exercise;
+  final ExerciseDetailsEntity exercise;
 
   @override
   Widget build(BuildContext context) {

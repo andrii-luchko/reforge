@@ -36,6 +36,9 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
   }
 
   Future<bool> isTodaySubmitted() async {
+    //if we already submitted return true
+    if (isFormComplete && state.isSubmitted) return true;
+
     emit(state.copyWith(isLoading: true, apiError: null));
 
     final result = await _workoutQuizRepository.isQuizTodaySubmitted();
@@ -46,7 +49,7 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
         emit(state.copyWith(isSubmitted: result.value, isLoading: false));
         return result.value;
 
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(state.copyWith(isSubmitted: false, isLoading: false, apiError: error.toString()));
         return false;
     }
@@ -121,7 +124,7 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
             isSubmitted: true,
           ),
         );
-      case Error(error: final error):
+      case ErrorR(error: final error):
         emit(
           state.copyWith(
             isLoading: false,

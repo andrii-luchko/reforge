@@ -64,10 +64,11 @@
         "confirm_password_label": "Confirm your password",
         "confirm_password_hint": "Enter your password",
         "step_count": "Step $active/$total",
+        "saved_successfully": "Saved successfully",
         "factions": {
             "gakki": "Gakki",
             "gyohyo": "Gyōhyō",
-            "serien": "Serien",
+            "serien": "Seiren",
             "gakki_description": "The path of Power",
             "gyohyo_description": "The path of Stamina",
             "serien_description": "The path of Agility"
@@ -79,9 +80,11 @@
         "confirm_button": "Confirm",
         "complete_button": "Complete",
         "cancel_button": "Cancel",
+        "clear_button": "Clear",
         "delete_button": "Delete",
         "skip_button": "Skip",
         "continue_button": "Continue",
+        "save_changes_button": "Save changes",
         "lv": "lv"
     },
     "validation": {
@@ -94,7 +97,15 @@
         "date_of_birth_required": "Valid date of birth is required",
         "date_of_birth_future": "Date of birth cannot be in the future",
         "date_of_birth_invalid": "Please enter a valid date",
-        "date_of_birth_too_young": "Please enter a valid date $mimAge"
+        "date_of_birth_too_young": "Please enter a valid date $mimAge",
+        "nameRequired": "Name is required",
+        "nameMinLength": "Name must be at least 2 characters",
+        "nameMaxLength": "Name must be less than 100 characters",
+        "nameInvalidCharacters": "Name can only contain letters",
+        "select_days_count": "Please select how many days you want to train",
+        "select_at_least_one_day": "Please select at least one specific day",
+        "too_many_days_selected": "You've selected $selected days, but your goal is $max per week. Deselect some days.",
+        "not_enough_days_selected": "You've only selected $selected days, but you planned $max."
     },
     "quiz": {
         "header": "Onboarding quiz",
@@ -282,6 +293,45 @@
         "duration": "Duration",
         "share_rank_message": "You've just crushed your workout — spread the word and inspire others to carve their path too",
         "share_summary_title": "I just leveled up in Reforge!",
-        "share_summary_subtitle": "I pushed past my limits and leveled up. The forge burns hotter and I'm not stopping here. 🔥"
+        "share_summary_subtitle": "I pushed past my limits and leveled up. The forge burns hotter and I'm not stopping here. 🔥",
+        "milestone_unlocked_title": "New Milestone Unlocked!",
+        "milestone_unlocked_subtitle(rich)": "Tempered in heat and discipline. You have forged the ${Name(name)}, Tier ${Tier(tier)}. A permanent mark of your evolution.",
+        "share_achievement_title": "New Milestone Forged! ⚔️",
+        "share_achievement_message": "I just unlocked a new achievement in Reforge. The grind doesn't stop, and the fire burns hotter."
+    },
+    "home": {
+        "header": {
+            "welcome_back": "Welcome back",
+            "hey_name": "Hey, $name!",
+            "default_username": "Forger"
+        },
+        "start_workout": {
+            "title": "Forge Today's Workout",
+            "subtitle": "Start workout"
+        },
+        "workout_results": {
+            "title": "Workout results",
+            "empty_data": "Empty data",
+            "empty_data_message": "Something went wrong on our side. Please try again later."
+        },
+        "badge": {
+            "no_badge_yet": "No badge yet",
+            "badge_earned": "Badge earned"
+        },
+        "xp_earned": "XP Earned",
+        "activity": {
+            "total_duration": "Total Duration",
+            "workouts": "Workouts",
+            "sessions_suffix": "/ sessions",
+            "active_days": "Active Days"
+        },
+        "stats_period": {
+            "last_week": "Last Week",
+            "last_month": "Last Month",
+            "last_three_months": "Last 3 Months",
+            "year_to_date": "Year to Date",
+            "all_time": "All Time"
+        },
+        "rank_label": "Rank"
     }
 }

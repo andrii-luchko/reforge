@@ -56,6 +56,17 @@ class SunRaysShaderWidget extends StatefulWidget {
     );
   }
 
+  factory SunRaysShaderWidget.leaderBoard({required Color color}) {
+    return SunRaysShaderWidget(
+      color: color,
+
+      intensity: 0.2,
+
+      rayLength: 0.07,
+
+      density: 3,
+    );
+  }
   final Widget? child;
 
   final Color color;
@@ -83,13 +94,13 @@ class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTi
     super.initState();
     unawaited(_loadShader());
 
-    _ticker = createTicker((elapsed) {
-      final now = elapsed.inMilliseconds / 1000.0;
+    // _ticker = createTicker((elapsed) {
+    //   final now = elapsed.inMilliseconds / 1000.0;
 
-      _timeNotifier.value = now % 10000.0;
-    });
+    //   _timeNotifier.value = now % 10000.0;
+    // });
 
-    unawaited(_ticker?.start());
+    // unawaited(_ticker?.start());
   }
 
   Future<void> _loadShader() async {
@@ -100,10 +111,8 @@ class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTi
           _program = program;
         });
       }
-      // ignore: avoid_catches_without_on_clauses
-    } catch (e) {
-      debugPrint('Shader error: $e');
-    }
+      // ignore: avoid_catches_without_on_clauses, empty_catches
+    } catch (e) {}
   }
 
   // @override

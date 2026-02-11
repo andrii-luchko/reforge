@@ -13,6 +13,7 @@ enum QuizSteps {
 }
 
 extension QuizStepsX on QuizSteps {
+  // ignore: avoid_returning_widgets
   Widget get step {
     return switch (this) {
       QuizSteps.dateBirthStep => const DateBirthStep(),

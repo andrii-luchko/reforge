@@ -59,6 +59,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<bool> hasAccessToken() async {
     final token = await _secureStorage.read(key: 'access_token');
+
     return token != null;
   }
 }

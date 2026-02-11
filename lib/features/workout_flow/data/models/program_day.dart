@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 
 part 'program_day.freezed.dart';
 part 'program_day.g.dart';
@@ -25,5 +26,17 @@ sealed class ProgramDay with _$ProgramDay {
   List<ProgramExercise> get sortedExercises {
     final sortedList = [...exercises]..sort((a, b) => a.order.compareTo(b.order));
     return sortedList;
+  }
+}
+
+extension ProgramDayToEntityX on ProgramDay {
+  ProgramDayEntity toEntity() {
+    return ProgramDayEntity(
+      id: id,
+      name: name,
+      dayNumber: dayNumber,
+
+      exercises: exercises.map((e) => e.toEntity()).toList(),
+    );
   }
 }

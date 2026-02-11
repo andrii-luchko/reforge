@@ -4,9 +4,8 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/active_workout_app_bar.dart';
-import 'package:reforge/features/workout_common/models/workout_congratulations_content.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
-import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
+
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:toastification/toastification.dart';
@@ -39,9 +38,8 @@ class ActiveWorkoutShell extends StatelessWidget {
       listeners: [
         BlocListener<WorkoutFlowCubit, WorkoutFlowState>(
           listener: (context, state) {
-            if (state.error != null) {
-              toastification.showErrorToast(state.error!, context);
-            }
+            if (state.error == null) return;
+            toastification.showErrorToast(state.error!, context);
           },
         ),
 
@@ -64,21 +62,21 @@ class ActiveWorkoutShell extends StatelessWidget {
               if (summary == null) {
                 const HomePageRoute().go(context);
               } else {
-                context.read<WorkoutCongratulationsCubit>().initialize(
-                  contentItems: [
-                    WorkoutCongratulationsContent.summary(WorkoutSummaryContent.fromSessionSummary(summary)),
-                  ],
-                );
-                const WorkoutCongratulationsPageRoute().go(context);
+                // Navigate based on whether there are milestones
+                if (summary.earnedMilestones.isNotEmpty) {
+                  const WorkoutAchievementPageRoute(milestoneIndex: 0).go(context);
+                } else {
+                  const WorkoutSummaryPageRoute().go(context);
+                }
               }
               return;
             }
 
-            if (flowState.currentExercise != null) {
-              ActiveWorkoutPageRoute(
-                exerciseId: flowState.currentExercise!.exerciseDetails.id,
-              ).go(context);
-            }
+            if (flowState.currentExercise == null) return;
+
+            ActiveWorkoutPageRoute(
+              exerciseId: flowState.currentExercise!.exerciseDetails.id,
+            ).go(context);
           },
         ),
       ],

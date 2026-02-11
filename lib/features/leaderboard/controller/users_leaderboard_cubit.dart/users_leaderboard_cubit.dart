@@ -1,0 +1,99 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
+part 'users_leaderboard_state.dart';
+part 'users_leaderboard_cubit.freezed.dart';
+
+@injectable
+class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
+  UsersLeaderboardCubit(this._repository) : super(const UsersLeaderboardState()) {
+    unawaited(loadUsers());
+  }
+  final LeaderboardRepositoryI _repository;
+
+  Future<void> loadUsers() async {
+    emit(
+      state.copyWith(
+        isLoading: true,
+        error: null,
+        currentUsersList: generateMockUsers(),
+        currentPage: 1,
+        hasReachedMax: false,
+      ),
+    );
+
+    final result = await _repository.getGlobalUserListPaginated(page: 1);
+
+    switch (result) {
+      case Success(value: final data):
+        emit(
+          state.copyWith(
+            isLoading: false,
+            currentUsersList: data.usersList,
+            currentUser: data.currentUser,
+
+            hasReachedMax: 1 >= data.totalPages,
+          ),
+        );
+      case ErrorR(error: final e):
+        emit(state.copyWith(isLoading: false, error: e.toString()));
+    }
+  }
+
+  Future<void> loadNextPage() async {
+    if (state.isPaginationLoading || state.hasReachedMax) return;
+
+    emit(state.copyWith(isPaginationLoading: true, paginationError: null));
+
+    final nextPage = state.currentPage + 1;
+    final result = await _repository.getGlobalUserListPaginated(page: nextPage);
+
+    switch (result) {
+      case Success(value: final data):
+        emit(
+          state.copyWith(
+            isPaginationLoading: false,
+            currentUsersList: [...state.currentUsersList, ...data.usersList],
+            currentPage: nextPage,
+            hasReachedMax: nextPage >= data.totalPages,
+            currentUser: data.currentUser,
+          ),
+        );
+      case ErrorR(error: final e):
+        emit(state.copyWith(isPaginationLoading: false, paginationError: e.toString()));
+    }
+  }
+
+  // ignore: unused_element
+  Future<void> _mockedPagination() async {
+    if (state.isPaginationLoading) return;
+    emit(state.copyWith(isPaginationLoading: true));
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    final mockMore = List.generate(
+      10,
+      (i) => LeaderboardUserModel(
+        rank: state.currentUsersList.length + i + 1,
+        username: 'Fake Player ${state.currentUsersList.length + i}',
+        xp: 1000,
+        avatarUrl: null,
+      ),
+    );
+
+    emit(
+      state.copyWith(
+        isPaginationLoading: false,
+        currentUsersList: [...state.currentUsersList, ...mockMore],
+        currentPage: state.currentPage + 1,
+        hasReachedMax: state.currentPage > 10,
+      ),
+    );
+  }
+}

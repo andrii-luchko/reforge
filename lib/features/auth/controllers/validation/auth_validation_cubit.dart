@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/validators/password.dart';
 part 'auth_validation_cubit.freezed.dart';
 part 'auth_validation_state.dart';
 
+// ignore: prefer_match_file_name
 enum AuthMode { signIn, signUp }
 
 @injectable
@@ -59,15 +60,12 @@ class AuthValidationCubit extends Cubit<AuthValidationState> {
 
     bool canSubmit;
 
-    if (state.mode == AuthMode.signIn) {
-      canSubmit = baseValidation;
-    } else {
-      canSubmit =
-          baseValidation &&
-          state.confirmPasswordError == null &&
-          state.confirmPassword.isNotEmpty &&
-          state.termsAccepted;
-    }
+    canSubmit = state.mode == AuthMode.signIn
+        ? baseValidation
+        : baseValidation &&
+              state.confirmPasswordError == null &&
+              state.confirmPassword.isNotEmpty &&
+              state.termsAccepted;
 
     emit(state.copyWith(canSubmit: canSubmit));
   }

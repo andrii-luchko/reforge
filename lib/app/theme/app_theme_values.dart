@@ -102,6 +102,77 @@ class AppThemeValues {
     ),
     workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
     workoutContainerConstrains: const BoxConstraints(maxHeight: 60, maxWidth: 60),
+
+    silverGradient: const LinearGradient(
+      colors: [
+        Color(0xFFFFFFFF),
+        Color(0xFF3E3D3A),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    goldGradient: const LinearGradient(
+      colors: [
+        Color(0xFFD4AF37),
+        Color(0xFFF7EF8A),
+        Color(0xFFB8860B),
+        Color(0xFFD4AF37),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    bronzeGradient: const LinearGradient(
+      colors: [
+        Color(0xFFF3986E),
+        Color(0xFF6F2807),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    ironGradient: const LinearGradient(
+      colors: [
+        Color(0xFF595959),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    steelGradient: const LinearGradient(
+      colors: [
+        Color(0xFF484747),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    woodGradient: const LinearGradient(
+      colors: [
+        Color(0xFFC66C32),
+        Color(0xFFC66C32),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    sliverBottomSpacing: 200,
+
+    cardNavigation: const LinearGradient(
+      begin: Alignment(-0.53, -1),
+      end: Alignment(0.96, 1),
+      colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
+      stops: [0.6, 1.0],
+    ),
+
+    factionCardFillGradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: [0.53, 1.0],
+      colors: [
+        Color(0x004A2105),
+        Color(0xFF4A2105),
+      ],
+    ),
   );
 
   static final dark = AppTheme(
@@ -198,5 +269,76 @@ class AppThemeValues {
 
     workoutContainerBorderRadius: const BorderRadius.all(Radius.circular(20)),
     workoutContainerConstrains: const BoxConstraints(maxHeight: 60),
+
+    silverGradient: const LinearGradient(
+      colors: [
+        Color(0xFFFFFFFF),
+        Color(0xFF3E3D3A),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    goldGradient: const LinearGradient(
+      colors: [
+        Color(0xFFD4AF37),
+        Color(0xFFF7EF8A),
+        Color(0xFFB8860B),
+        Color(0xFFD4AF37),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    bronzeGradient: const LinearGradient(
+      colors: [
+        Color(0xFFF3986E),
+        Color(0xFF6F2807),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    ironGradient: const LinearGradient(
+      colors: [
+        Color(0xFF595959),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    steelGradient: const LinearGradient(
+      colors: [
+        Color(0xFF484747),
+        Color(0xFF393838),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    woodGradient: const LinearGradient(
+      colors: [
+        Color(0xFFC66C32),
+        Color(0xFFC66C32),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+
+    sliverBottomSpacing: 200,
+
+    cardNavigation: const LinearGradient(
+      begin: Alignment(-0.53, -1),
+      end: Alignment(0.96, 1),
+      colors: [Color(0x009D3C10), Color(0x4D9D3C10)],
+      stops: [0.6, 1.0],
+    ),
+
+    factionCardFillGradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      stops: [0.53, 1.0],
+      colors: [
+        Color(0x004A2105),
+        Color(0xFF4A2105),
+      ],
+    ),
   );
 }

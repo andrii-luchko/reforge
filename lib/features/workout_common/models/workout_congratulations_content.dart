@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_common/domain/enums/tier.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 
 part 'workout_congratulations_content.freezed.dart';
 
@@ -45,7 +45,7 @@ sealed class WorkoutSummaryContent with _$WorkoutSummaryContent {
     double? xpProgress,
   }) = _WorkoutSummaryContent;
 
-  factory WorkoutSummaryContent.fromSessionSummary(WorkoutSessionSummary summary) {
+  factory WorkoutSummaryContent.fromSessionSummary(WorkoutSessionSummaryEntity summary) {
     return WorkoutSummaryContent(
       xpEarned: summary.totalXpEarned,
       timeSpent: Duration(seconds: summary.duration),

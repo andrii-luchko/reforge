@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/home/ui/widgets/activity_tile.dart';
+import 'package:reforge/features/home/ui/widgets/workout_result/activity_tile.dart';
 import 'package:reforge/shared/calendar/calendar_piker.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_days_view.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
@@ -101,8 +101,10 @@ class CalendarBody extends StatelessWidget {
                   firstDay: DateTime(2020),
                   lastDay: DateTime(2030),
                   onDateSelected: (date) {
-                    final map = getMockEventsMap();
-                    if (map.containsKey(DateUtils.dateOnly(date))) {}
+                    getMockEventsMap();
+                    // if (map.containsKey(DateUtils.dateOnly(date))) {
+
+                    // }
                   },
                   events: getMockEventsMap(),
                 ),
@@ -117,6 +119,8 @@ class CalendarBody extends StatelessWidget {
             const SizedBox(height: 16),
             const ActivityTile(
               showBorder: false,
+              activeDays: 0,
+              totalDays: 0,
             ),
           ],
         ),

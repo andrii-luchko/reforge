@@ -1,11 +1,16 @@
+// ignore_for_file: prefer_match_file_name
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/app_router.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/root/ui/page/root_page.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
+import 'package:reforge/features/achievements/ui/page/badges_page.dart';
+import 'package:reforge/features/achievements/ui/page/ranks_page.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/pages/active_workout_page.dart';
 import 'package:reforge/features/active_workout/ui/pages/active_workout_shell.dart';
@@ -19,14 +24,21 @@ import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
+import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
+
+import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/ui/page/leaderboard_page.dart';
+import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/ui/page/lore_page.dart';
+import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
-import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
+import 'package:reforge/features/workout_congratulations/ui/pages/achievement_page.dart';
+import 'package:reforge/features/workout_congratulations/ui/pages/summary_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_shell.dart';
 import 'package:reforge/features/workout_details/ui/pages/workout_details_page.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
@@ -170,7 +182,15 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
     ),
     // 4. Medal
     TypedStatefulShellBranch<AchievementsBranch>(
-      routes: [TypedGoRoute<AchievementsPageRoute>(path: '/achievements')],
+      routes: [
+        TypedGoRoute<AchievementsPageRoute>(
+          path: '/achievements',
+          routes: [
+            TypedGoRoute<BadgesPageRoute>(path: 'badges'),
+            TypedGoRoute<RanksPageRoute>(path: 'ranks'),
+          ],
+        ),
+      ],
     ),
     // 5. Settings
     TypedStatefulShellBranch<SettingsBranch>(
@@ -225,7 +245,20 @@ class LeaderboardPageRoute extends GoRouteData with $LeaderboardPageRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const LeaderboardPage();
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => di.getIt<UsersLeaderboardCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<ImmortalForgesCubit>(),
+        ),
+        BlocProvider(
+          create: (context) => di.getIt<FactionsLeaderboardCubit>(),
+        ),
+      ],
+      child: const LeaderboardPage(),
+    );
   }
 }
 
@@ -234,7 +267,10 @@ class LorePageRoute extends GoRouteData with $LorePageRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const LorePage();
+    return BlocProvider(
+      create: (context) => di.getIt<LoreCubit>(),
+      child: const LorePage(),
+    );
   }
 }
 
@@ -244,6 +280,28 @@ class AchievementsPageRoute extends GoRouteData with $AchievementsPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const AchievementsPage();
+  }
+}
+
+class BadgesPageRoute extends GoRouteData with $BadgesPageRoute {
+  const BadgesPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const BadgesPage();
+  }
+}
+
+class RanksPageRoute extends GoRouteData with $RanksPageRoute {
+  const RanksPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const RanksPage();
   }
 }
 
@@ -266,6 +324,16 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
   }
 }
 
+@TypedGoRoute<NotificationsPageRoute>(path: '/notifications')
+class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
+  const NotificationsPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const NotificationsPage();
+  }
+}
+
 @TypedShellRoute<WorkoutShellRoute>(
   routes: [
     TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details'),
@@ -273,7 +341,7 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
     TypedShellRoute<WorkoutQuizShellRoute>(
       routes: [
         TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz'),
-        TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-summary'),
+        TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-quiz-summary'),
       ],
     ),
     TypedShellRoute<ActiveWorkoutsShellRoute>(
@@ -285,7 +353,8 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
     TypedGoRoute<StartRunningPageRoute>(path: '/start-running'),
     TypedShellRoute<WorkoutCongratulationsShellRoute>(
       routes: [
-        TypedGoRoute<WorkoutCongratulationsPageRoute>(path: '/workout-congratulations'),
+        TypedGoRoute<WorkoutSummaryPageRoute>(path: '/workout-summary'),
+        TypedGoRoute<WorkoutAchievementPageRoute>(path: '/workout-achievements'),
       ],
     ),
   ],
@@ -300,9 +369,6 @@ class WorkoutShellRoute extends ShellRouteData {
         ),
         BlocProvider(
           create: (context) => di.getIt<WorkoutQuizCubit>(),
-        ),
-        BlocProvider(
-          create: (context) => di.getIt<WorkoutCongratulationsCubit>(),
         ),
       ],
       child: navigator,
@@ -415,15 +481,38 @@ class StartRunningPageRoute extends GoRouteData with $StartRunningPageRoute {
 class WorkoutCongratulationsShellRoute extends ShellRouteData {
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
-    return WorkoutCongratulationsShell(child: navigator);
+    final summary = context.read<WorkoutFlowCubit>().state.summary;
+    logger.d('WorkoutCongratulationsShell - summary: $summary, isNull: ${summary == null}');
+
+    return BlocProvider(
+      create: (context) => di.getIt<WorkoutCongratulationsCubit>(
+        param1: summary,
+      ),
+      child: WorkoutCongratulationsShell(child: navigator),
+    );
   }
 }
 
-class WorkoutCongratulationsPageRoute extends GoRouteData with $WorkoutCongratulationsPageRoute {
-  const WorkoutCongratulationsPageRoute();
+class WorkoutAchievementPageRoute extends GoRouteData with $WorkoutAchievementPageRoute {
+  const WorkoutAchievementPageRoute({
+    required this.milestoneIndex,
+  });
+
+  final int milestoneIndex;
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return WorkoutAchievementPage(
+      key: ValueKey(milestoneIndex),
+      milestoneIndex: milestoneIndex,
+    );
+  }
+}
+
+class WorkoutSummaryPageRoute extends GoRouteData with $WorkoutSummaryPageRoute {
+  const WorkoutSummaryPageRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const WorkoutCongratulationsPage();
+    return const WorkoutSummaryPage();
   }
 }

@@ -77,19 +77,14 @@ class WorkoutDoneButton extends StatelessWidget {
     );
   }
 
+  // ignore: avoid_returning_widgets
   Widget _buildContent(Color color) {
-    if (_text != null) {
-      return Text(
-        _text,
-        style: subheadH3Medium.copyWith(color: color),
-        textAlign: TextAlign.center,
-      );
-    } else {
-      return Icon(
-        _icon,
-        size: 24,
-        color: color,
-      );
-    }
+    return _text != null
+        ? Text(
+            _text,
+            style: subheadH3Medium.copyWith(color: color),
+            textAlign: TextAlign.center,
+          )
+        : Icon(_icon, size: 24, color: color);
   }
 }

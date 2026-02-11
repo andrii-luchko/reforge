@@ -36,10 +36,9 @@ class _ForgotPasswordEmailFormState extends State<ForgotPasswordEmailForm> {
 
     return BlocListener<ForgotPasswordCubit, ForgotPasswordState>(
       listener: (context, state) async {
-        if (state.isSuccess) {
-          // ignore: inference_failure_on_function_invocation
-          await ResetSendPageRoute(email: cubit.state.email).push(context);
-        }
+        if (!state.isSuccess) return;
+        // ignore: inference_failure_on_function_invocation
+        await ResetSendPageRoute(email: cubit.state.email).push(context);
       },
       child: Column(
         children: [

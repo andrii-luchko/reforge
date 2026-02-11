@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+
 class MeasureSystemValues {
   const MeasureSystemValues._();
 
@@ -75,4 +77,29 @@ class MeasureSystemValues {
   // Geometry
   static double toRadians(double degrees) => degrees * degreeToRadianMultiplier;
   static double toDegrees(double radians) => radians * radianToDegreeMultiplier;
+}
+
+extension WeightConverter on double {
+  double toDisplayWeight(MeasurementSystem system) {
+    return switch (system) {
+      MeasurementSystem.metric => this,
+      MeasurementSystem.imperial => MeasureSystemValues.toPounds(this),
+    };
+  }
+
+  double toStorageWeight(MeasurementSystem system) {
+    return switch (system) {
+      MeasurementSystem.metric => this,
+      MeasurementSystem.imperial => MeasureSystemValues.toKg(this),
+    };
+  }
+}
+
+extension DistanceConverter on double {
+  double toDisplayHeight(MeasurementSystem system) {
+    return switch (system) {
+      MeasurementSystem.metric => this,
+      MeasurementSystem.imperial => MeasureSystemValues.toInches(this),
+    };
+  }
 }

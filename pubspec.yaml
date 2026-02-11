@@ -57,8 +57,7 @@ dependencies:
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
   skeletonizer: ^2.1.2
-  cached_network_image: ^3.4.1
-  video_player: ^2.10.1
+
   
   intl: ^0.20.2 
 
@@ -67,10 +66,17 @@ dependencies:
   flutter_animate: ^4.5.2
   flutter_slidable: ^4.0.3
   share_plus: ^12.0.1
-  path_provider: ^2.1.5
-  image_gallery_saver: ^2.0.3
+
 
   toastification: ^3.0.3
+
+  path_provider: ^2.1.5
+  image_gallery_saver: ^2.0.3
+  cached_network_image: ^3.4.1
+  croppy: ^1.4.1
+  video_player: ^2.10.1
+  image_picker: ^1.2.1
+  image_cropper: ^11.0.0
 
 dev_dependencies:
   flutter_test:

@@ -11,7 +11,10 @@ import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
 
@@ -24,11 +27,12 @@ void main() async {
       await di.configureDependencies();
 
       runApp(
-        Portal(
-          child: ToastificationWrapper(
-            child: TranslationProvider(
-              child: const App(),
-            ),
+        ToastificationWrapper(
+          config: const ToastificationConfig(
+            maxToastLimit: 3,
+          ),
+          child: TranslationProvider(
+            child: const App(),
           ),
         ),
       );
@@ -51,16 +55,22 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => di.getIt<AuthCubit>(),
+          create: (_) => di.getIt<AuthCubit>(),
           lazy: false,
         ),
         BlocProvider(
-          create: (context) => di.getIt<UserCubit>(),
+          create: (_) => di.getIt<UserCubit>(),
           lazy: false,
         ),
         BlocProvider(
-          create: (context) => di.getIt<ForgotPasswordCubit>(),
+          create: (_) => di.getIt<ForgotPasswordCubit>(),
         ),
+        BlocProvider(
+          create: (_) => di.getIt<AchievementsCubit>(),
+        ),
+        BlocProvider(create: (_) => di.getIt<NotificationCubit>()),
+
+        BlocProvider(create: (_) => di.getIt<HomeCubit>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
@@ -71,7 +81,7 @@ class App extends StatelessWidget {
         theme: ThemeDataValues.lightThemeData,
         darkTheme: ThemeDataValues.darkThemeData,
         themeMode: ThemeMode.dark,
-        builder: (_, child) => child ?? ErrorWidget('MaterialApp.router child is null'),
+        builder: (_, child) => Portal(child: child ?? ErrorWidget('MaterialApp.router child is null')),
       ),
     );
   }

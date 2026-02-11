@@ -1,7 +1,8 @@
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+// ignore_for_file: prefer_first
 import 'package:reforge/features/workout_common/models/exercise_details.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day.dart';
 import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 
 final List<ExerciseDetails> newMockExercises = [
   // ID 1: Barbell Deadlift
@@ -12,7 +13,7 @@ final List<ExerciseDetails> newMockExercises = [
         'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
     key: 'deadlift',
 
-    metrics: [WorkoutMetric.weight, WorkoutMetric.reps],
+    metrics: ['weightKg', 'reps'],
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
@@ -25,7 +26,7 @@ final List<ExerciseDetails> newMockExercises = [
     description:
         'A full-body exercise used in strength training and as an aerobic exercise. Great for burning calories quickly.',
     key: 'burpees',
-    metrics: [WorkoutMetric.reps],
+    metrics: ['reps'],
     videoInstructionUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
@@ -39,14 +40,14 @@ final List<ExerciseDetails> newMockExercises = [
         'A core exercise that targets the obliques and abdominals. Improves rotational strength and stability.',
     key: 'twists',
 
-    metrics: [WorkoutMetric.weight, WorkoutMetric.reps, WorkoutMetric.degrees],
+    metrics: ['weightKg', 'reps', 'angleDeg'],
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
   ),
 ];
 
-final mockProgramDay = ProgramDay(
+final ProgramDayEntity mockProgramDay = ProgramDay(
   id: 0,
   name: 'Loading Workout Program...',
   dayNumber: 1,
@@ -70,4 +71,4 @@ final mockProgramDay = ProgramDay(
       exerciseDetails: newMockExercises[2],
     ),
   ],
-);
+).toEntity();

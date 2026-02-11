@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/work_out_quiz_steps.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
@@ -12,6 +13,7 @@ import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/multi_step_form.dart';
+import 'package:toastification/toastification.dart';
 
 class WorkoutQuizPage extends StatelessWidget {
   const WorkoutQuizPage({super.key});
@@ -63,8 +65,15 @@ class WorkoutQuizBody extends StatelessWidget {
         .toList();
 
     return BlocConsumer<WorkoutQuizCubit, WorkoutQuizState>(
+      listenWhen: (prev, curr) => prev.apiError != curr.apiError || prev.isSubmitted != curr.isSubmitted,
       listener: (context, state) {
-        if (state.isSubmitted) const WorkoutQuizSummaryPageRoute().go(context);
+        if (state.apiError != null) {
+          toastification.showErrorToast(state.apiError!, context);
+        }
+
+        if (state.isSubmitted) {
+          const WorkoutQuizSummaryPageRoute().go(context);
+        }
       },
       builder: (context, state) {
         final cubit = context.read<WorkoutQuizCubit>();

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/formatters/xp_formatter.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class XpTile extends StatelessWidget {
   const XpTile({required this.currentXp, required this.totalXp, super.key});
@@ -16,6 +19,9 @@ class XpTile extends StatelessWidget {
     final progress = currentXp / totalXp;
     final percentage = (progress * 100).toInt();
     final appTheme = context.appTheme;
+
+    final currentXpFormatted = XpFormatter.compact(currentXp);
+    final totalXpFormatted = XpFormatter.compact(totalXp);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -30,20 +36,23 @@ class XpTile extends StatelessWidget {
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              Text('XP Earned', style: subheadH3Medium.copyWith(color: appTheme.beige100)),
+              Text(
+                context.t.home.xp_earned,
+                style: subheadH3Medium.copyWith(color: appTheme.beige100),
+              ),
               Text('$percentage%', style: subheadH3Medium.copyWith(color: appTheme.beige600)),
             ],
           ),
           const SizedBox(height: 20),
 
-          HorizontalXPBar(progress: progress),
+          Skeleton.leaf(child: HorizontalXPBar(progress: progress)),
 
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              Text('${currentXp}xp', style: subheadH5Medium.copyWith(color: appTheme.beige100)),
-              Text('${totalXp}xp', style: subheadH5Medium.copyWith(color: appTheme.beige100)),
+              Text(currentXpFormatted, style: subheadH5Medium.copyWith(color: appTheme.beige100)),
+              Text(totalXpFormatted, style: subheadH5Medium.copyWith(color: appTheme.beige100)),
             ],
           ),
         ],

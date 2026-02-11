@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -5,6 +7,7 @@ import 'package:reforge/core/user/data/datasources/user_local_datasource.dart';
 import 'package:reforge/core/user/data/datasources/user_remote_datasource.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart' as requests;
+import 'package:reforge/features/settings/data/request/patch_profile_request.dart' as requests;
 
 @Injectable(as: UserRepository)
 class UserRepositoryImpl implements UserRepository {
@@ -47,6 +50,17 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Result<User>> updateUser(requests.PatchProfileRequest request) async {
+    try {
+      final updatedUser = await _remoteDataSource.patchUser(request);
+      await _localDataSource.saveUser(updatedUser);
+      return Result.success(updatedUser);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
   Future<Result<void>> deleteUser() async {
     try {
       await _remoteDataSource.deleteUser();
@@ -78,6 +92,17 @@ class UserRepositoryImpl implements UserRepository {
       final user = await _remoteDataSource.getCurrentUser();
       await _localDataSource.saveUser(user);
       return Result.success(user);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<String>> uploadUserAvatar(File file) async {
+    try {
+      final result = await _remoteDataSource.uploadUserAvatar(file);
+
+      return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
     }

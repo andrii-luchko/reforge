@@ -14,12 +14,18 @@ class ThirtyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isActive = onPressed != null;
+    final color = isActive ? context.appTheme.beige100 : context.appTheme.beige700;
     return TextButton(
       style: TextButton.styleFrom(overlayColor: context.appTheme.beige50),
       onPressed: onPressed,
       child: Text(
         text,
-        style: subheadH5Medium.copyWith(decoration: TextDecoration.underline, color: context.appTheme.beige100),
+        style: subheadH5Medium.copyWith(
+          decoration: TextDecoration.underline,
+          decorationColor: color,
+          color: color,
+        ),
       ),
     );
   }

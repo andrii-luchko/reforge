@@ -11,7 +11,8 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
-import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+
+import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 part 'active_exercise_cubit.freezed.dart';
@@ -29,7 +30,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
   final TrainingSessionRepository repository;
   final int workoutSessionId;
-  final ProgramExercise programExercise;
+  final ProgramExerciseEntity programExercise;
 
   Future<void> _init() async {
     emit(state.copyWith(isLoading: true));
@@ -68,7 +69,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           notes: value.notes,
         );
 
-      case Error():
+      case ErrorR():
         return null;
     }
   }
@@ -104,9 +105,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     if (state.isLoading) return;
 
     final currentSet = state.sets.firstWhereOrNull((s) => s.id == setId);
+
     if (currentSet == null || currentSet.isDone) return;
 
     final metrics = programExercise.exerciseDetails.metrics;
+
     if (!currentSet.isValid(metrics)) {
       emit(state.copyWith(setValidationError: 'Please fill all fields'));
       return;
@@ -131,7 +134,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
         emit(state.copyWith(isSendingSet: false));
 
-      case Error(error: final error):
+      case ErrorR(error: final error):
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
@@ -177,7 +180,7 @@ submitted: ${state.isSubmitted}
         case Success():
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
-        case Error(error: final error):
+        case ErrorR(error: final error):
           emit(
             state.copyWith(
               isLoading: false,

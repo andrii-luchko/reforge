@@ -41,6 +41,7 @@ class _SignInFormState extends State<SignInForm> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         state.maybeMap(
+          // ignore: no_empty_block
           orElse: () {},
 
           error: (value) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value.toString()))),

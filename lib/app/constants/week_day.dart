@@ -1,39 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-enum WeekDay { monday, tuesday, wednesday, thursday, friday, saturday, sunday }
+enum WeekDay {
+  monday(1),
+  tuesday(2),
+  wednesday(3),
+  thursday(4),
+  friday(5),
+  saturday(6),
+  sunday(7)
+  ;
+
+  const WeekDay(this.value);
+
+  final int value;
+
+  static WeekDay? fromValue(int value) {
+    if (value < 1 || value > 7) return null;
+
+    return WeekDay.values[value - 1];
+  }
+
+  static String? getTodayLabel(BuildContext context, {String pattern = 'EEEE'}) {
+    final weekday = WeekDay.fromValue(DateTime.now().weekday);
+    return weekday?.label(context, pattern: pattern);
+  }
+}
 
 extension WeekDayLocalization on WeekDay {
-  int get value {
-    switch (this) {
-      case WeekDay.monday:
-        return 1;
-      case WeekDay.tuesday:
-        return 2;
-      case WeekDay.wednesday:
-        return 3;
-      case WeekDay.thursday:
-        return 4;
-      case WeekDay.friday:
-        return 5;
-      case WeekDay.saturday:
-        return 6;
-      case WeekDay.sunday:
-        return 7;
-    }
-  }
-
-  static WeekDay fromValue(int value) {
-    return WeekDay.values.firstWhere((day) => day.value == value);
-  }
-
   String label(BuildContext context, {String pattern = 'E'}) {
     final locale = Localizations.localeOf(context).toString();
 
-    final dummyDate = DateTime(
-      2024,
-    ).add(Duration(days: index));
+    final dummyDate = DateTime(2024).add(Duration(days: index));
 
     return DateFormat(pattern, locale).format(dummyDate);
+  }
+}
+
+extension WeekDayMapper on List<WeekDay> {
+  List<int> toIntList() {
+    return map((w) => w.value).toList();
   }
 }
