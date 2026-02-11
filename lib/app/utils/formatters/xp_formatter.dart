@@ -1,20 +1,37 @@
 class XpFormatter {
-  static String compact(int number) {
-    if (number < 1000) {
-      return number.toString();
-    } else if (number < 1000000) {
-      final result = number / 1000;
+  static String compact(int number, {String extSuffix = 'XP'}) {
+    final absNumber = number.abs();
+    String formattedNumber;
 
-      return '${_removeTrailingZeros(result)}K';
-    } else if (number < 1000000000) {
-      final result = number / 1000000;
-
-      return '${_removeTrailingZeros(result)}M';
+    if (absNumber < 1000) {
+      formattedNumber = number.toString();
     } else {
-      final result = number / 1000000000;
+      final double result;
+      final String scaleSuffix;
 
-      return '${_removeTrailingZeros(result)}B';
+      if (absNumber < 1000000) {
+        result = number / 1000;
+        scaleSuffix = 'K';
+      } else if (absNumber < 1000000000) {
+        result = number / 1000000;
+        scaleSuffix = 'M';
+      } else {
+        result = number / 1000000000;
+        scaleSuffix = 'B';
+      }
+      formattedNumber = '${_formatDouble(result)} $scaleSuffix';
     }
+
+    if (extSuffix.isEmpty) return formattedNumber;
+
+    final hasLetterOrDigit = RegExp('^[a-zA-Zа-яА-Я0-9]').hasMatch(extSuffix);
+    final separator = hasLetterOrDigit ? ' ' : '';
+
+    return '$formattedNumber$separator$extSuffix';
+  }
+
+  static String _formatDouble(double n) {
+    return n.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
   }
 
   static String precise(int number) {
@@ -22,9 +39,5 @@ class XpFormatter {
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (Match m) => '${m[1]} ',
     );
-  }
-
-  static String _removeTrailingZeros(double n) {
-    return n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 1);
   }
 }

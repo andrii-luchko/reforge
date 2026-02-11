@@ -111,7 +111,7 @@ class RanksPage extends StatelessWidget {
                                           width: 358,
                                           height: 484,
                                           replacement: const AvatarCardShimmer(),
-                                          child: AvatarCard(rank: rank),
+                                          child: AvatarRankCard(rank: rank),
                                         ).animateEntrance(),
                                       )
                                       .toList(),

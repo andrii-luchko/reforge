@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 
 class XpIndicatorWidget extends StatefulWidget {
   const XpIndicatorWidget({required this.xp, required this.xpProgress, required this.height, super.key});
@@ -45,6 +46,7 @@ class _XpIndicatorWidgetState extends State<XpIndicatorWidget> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final xp = XpFormatter.compact(widget.xp);
     return FadeTransition(
       opacity: _animation,
       child: Column(
@@ -53,7 +55,7 @@ class _XpIndicatorWidgetState extends State<XpIndicatorWidget> with SingleTicker
           RotatedBox(
             quarterTurns: 3,
             child: Text(
-              '${widget.xp}xp',
+              xp,
               style: subheadH5Medium.copyWith(
                 color: context.appTheme.beige100,
                 fontSize: 13.2,

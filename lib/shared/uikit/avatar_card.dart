@@ -58,8 +58,8 @@ class _AvatarCardBase extends StatelessWidget {
   }
 }
 
-class AvatarCard extends StatelessWidget {
-  const AvatarCard({
+class AvatarRankCard extends StatelessWidget {
+  const AvatarRankCard({
     required this.rank,
     super.key,
   });

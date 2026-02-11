@@ -12,6 +12,7 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
+import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
@@ -145,5 +146,13 @@ abstract class ApiClient {
     @Query('bucket') required String bucket,
 
     @Part(name: 'file') required File file,
+  });
+
+  //Home
+
+  @GET('/workout-sessions/results')
+  Future<BaseResponse<UserStatsDataDto>> getUserStats({
+    @Query('startDate') required String startDate,
+    @Query('endDate') required String endDate,
   });
 }

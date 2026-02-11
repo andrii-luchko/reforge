@@ -1,24 +1,40 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:reforge/app/router/routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
-import 'package:reforge/features/home/ui/widgets/activity_section.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
+import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/home/ui/widgets/home_app_bar.dart';
-import 'package:reforge/features/home/ui/widgets/portal_dropdown.dart';
+import 'package:reforge/features/home/ui/widgets/start_workout_list_tile.dart';
+import 'package:reforge/features/home/ui/widgets/workout_result/activity_section.dart';
+import 'package:reforge/features/home/ui/widgets/workout_result/badge_list_tile.dart';
+import 'package:reforge/features/home/ui/widgets/workout_result/home_workout_results_header.dart';
 import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
-import 'package:reforge/shared/uikit/app_list_tile.dart';
+import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
-import 'package:reforge/shared/uikit/base_glass_container.dart';
-import 'package:reforge/shared/uikit/blur_container.dart';
-import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
-import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late final HomeCubit cubit = context.read<HomeCubit>();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(cubit.loadInitialData());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,229 +65,126 @@ class HomeBody extends StatelessWidget {
     return SafeArea(
       top: false,
       bottom: false,
-      child: CustomScrollView(
-        slivers: [
-          const HomeSliverAppBar(),
-
-          SliverPadding(
-            padding: horizontalPadding.copyWith(top: 16, bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: AvatarCard(
-                rank: RankEntity.mock(),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: AppListTile(
-                leadingIcon: AppIconButton(
-                  iconAsset: Assets.images.icons.dumbbell,
+      child: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) {
+          return Skeletonizer(
+            enabled: state.isLoading,
+            child: CustomScrollView(
+              slivers: [
+                HomeSliverAppBar(
+                  imageUrl: state.user?.avatarUrl,
+                  username: state.user?.userName,
                 ),
-                title: 'Forge Today’s Workout',
-                subtitle: 'Start workout',
-                onTap: () async {
-                  await const WorkoutDetailsPageRoute().push<void>(context);
-                },
-              ),
-            ),
-          ),
 
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: const SliverToBoxAdapter(
-              child: HomeSortRow(),
+                SliverPadding(
+                  padding: horizontalPadding.copyWith(top: 16, bottom: 16),
+                  sliver: SliverToBoxAdapter(
+                    child: Skeleton.replace(
+                      replacement: const AvatarCardShimmer(),
+                      child: AvatarRankCard(
+                        rank: state.rank ?? RankEntity.mock(),
+                      ),
+                    ),
+                  ),
+                ),
+
+                SliverPadding(
+                  padding: horizontalPadding.copyWith(bottom: 16),
+                  sliver: const SliverToBoxAdapter(
+                    child: StartWorkoutListTile(),
+                  ),
+                ),
+                SliverPadding(padding: horizontalPadding.copyWith(bottom: 16), sliver: const WorkoutResultHeader()),
+
+                BlocSelector<HomeCubit, HomeState, ({bool isStatsLoading, UserStats? currentStats})>(
+                  selector: (state) => (isStatsLoading: state.isStatsLoading, currentStats: state.currentStats),
+                  builder: (context, state) {
+                    final currentStats = state.isStatsLoading ? UserStatsX.mock() : state.currentStats;
+                    if (currentStats == null) {
+                      return const HomeWorkoutResultEmpty();
+                    } else {
+                      return HomeWorkoutResultSection(
+                        isLoading: state.isStatsLoading,
+                        stats: currentStats,
+                      );
+                    }
+                  },
+                ),
+
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 100),
+                ),
+              ],
             ),
-          ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class HomeWorkoutResultEmpty extends StatelessWidget {
+  const HomeWorkoutResultEmpty({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverFillRemaining(
+      child: Column(
+        children: [Text('empty data')],
+      ),
+    );
+  }
+}
+
+class HomeWorkoutResultSection extends StatelessWidget {
+  const HomeWorkoutResultSection({
+    required this.isLoading,
+    required this.stats,
+    super.key,
+  });
+
+  static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
+  final bool isLoading;
+  final UserStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverSkeletonizer(
+      enabled: isLoading,
+      child: SliverMainAxisGroup(
+        slivers: [
           SliverPadding(
             padding: horizontalPadding.copyWith(bottom: 16),
             sliver: SliverToBoxAdapter(
               child: BadgeListTile(
-                leadingIcon: AppIconButton(iconAsset: Assets.images.icons.bell),
-                title: 'Foundryman',
+                leadingIcon: AppSvgListTileIcon(
+                  asset: Assets.images.icons.lock,
+                  color: context.appTheme.beige100,
+                ),
+                title: stats.badgeName ?? 'No badge yet',
                 subtitle: 'Badge earned',
-                xp: 2738,
               ),
             ),
           ),
 
           SliverPadding(
             padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: const SliverToBoxAdapter(
+            sliver: SliverToBoxAdapter(
               child: XpTile(
-                currentXp: 3190,
-                totalXp: 8215,
+                currentXp: stats.currentXp,
+                totalXp: stats.totalXp,
               ),
             ),
           ),
 
           SliverPadding(
             padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: const SliverToBoxAdapter(
-              child: ActivitySection(),
+            sliver: SliverToBoxAdapter(
+              child: ActivitySection(
+                stats: stats,
+              ),
             ),
           ),
-
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeBodyExp extends StatelessWidget {
-  const HomeBodyExp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const .all(16),
-          child: Column(
-            children: [
-              Padding(
-                padding: const .only(bottom: 16),
-                child: AvatarCard(
-                  rank: RankEntity.mock(),
-                ),
-              ),
-
-              Padding(
-                padding: const .only(bottom: 16),
-                child: AppListTile(
-                  leadingIcon: AppIconButton(
-                    iconAsset: Assets.images.icons.dumbbell,
-                  ),
-                  title: 'Forge Today’s Workout',
-                  subtitle: 'Start workout',
-                  onTap: () async {
-                    await const WorkoutDetailsPageRoute().push<void>(context);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeSortRow extends StatelessWidget {
-  const HomeSortRow({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: .spaceBetween,
-      children: [
-        const Text(
-          'Workout results',
-          style: subheadH2Medium,
-        ),
-
-        PortalDropdown(
-          targetAnchor: .centerRight,
-          // portalAnchor: .,
-          contentPadding: const EdgeInsets.only(top: 24, left: 18, right: 18),
-          triggerBuilder: (context, isOpened) {
-            final appTheme = context.appTheme;
-            return BlurContainer(
-              child: BaseGlassContainer(
-                glassEffectGradientAlignmentBegin: Alignment.topLeft,
-                glassEffectGradientAlignmentEnd: Alignment.bottomRight,
-                borderGradientStops: const [0.0, 0.1, 0.3, 0.9, 1.0],
-                borderGradientColors: [
-                  Colors.transparent,
-                  appTheme.beige100,
-                  Colors.transparent,
-
-                  Colors.transparent,
-                  appTheme.beige100,
-                ],
-                borderColor: appTheme.beige100.withValues(alpha: 0.1),
-
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: [
-                      const Text('Last week'),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      SelectorSuffixIcon(
-                        isOpen: isOpened,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-          contentBuilder: (context, onClose) {
-            return Container(
-              height: 200,
-              //width: 100,
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class BadgeListTile extends StatelessWidget {
-  const BadgeListTile({
-    required this.leadingIcon,
-    required this.title,
-    required this.subtitle,
-    required this.xp,
-    super.key,
-  });
-
-  final Widget leadingIcon;
-  final String title;
-  final String subtitle;
-  final int xp;
-
-  @override
-  Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: appTheme.beige900,
-        border: Border.all(
-          color: appTheme.strokeCard,
-        ),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          leadingIcon,
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: .start,
-            spacing: 7,
-            children: [
-              Text(
-                title,
-                style: subheadH3Medium.copyWith(color: appTheme.beige100),
-              ),
-
-              Text(
-                subtitle,
-                style: subheadH6Regular.copyWith(color: appTheme.beige600),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Text('${xp}xp'),
         ],
       ),
     );

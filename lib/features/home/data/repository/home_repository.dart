@@ -1,0 +1,43 @@
+import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
+
+import 'package:reforge/core/network/api_client.dart';
+import 'package:reforge/core/user/domain/services/user_session_service.dart';
+import 'package:reforge/features/home/domain/enum/stats_period.dart';
+import 'package:reforge/features/home/domain/user_stats.dart';
+
+abstract interface class HomeRepository {
+  OnboardedUser? getUserData();
+  Future<Result<UserStats>> getUserStats(StatsPeriod period);
+}
+
+@Injectable(as: HomeRepository)
+class HomeRepositoryImpl implements HomeRepository {
+  HomeRepositoryImpl(this._apiClient, this._userSessionService);
+
+  final ApiClient _apiClient;
+  final UserSessionService _userSessionService;
+
+  @override
+  OnboardedUser? getUserData() {
+    return _userSessionService.currentUser?.map(
+      newUser: (_) => null,
+      onboarded: (u) => u,
+    );
+  }
+
+  @override
+  Future<Result<UserStats>> getUserStats(StatsPeriod period) async {
+    try {
+      final startDate = period.range.start.toIso8601String();
+      final endDate = period.range.end.toIso8601String();
+      final result = await _apiClient.getUserStats(startDate: startDate, endDate: endDate);
+
+      final stats = result.data.toDomain();
+      return Result.success(stats);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+}

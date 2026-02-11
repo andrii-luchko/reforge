@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppListTile extends StatelessWidget {
   const AppListTile({
@@ -35,7 +36,7 @@ class AppListTile extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: borderRadius,
-            gradient: appTheme.radioButtonGradient,
+            gradient: appTheme.cardNavigation,
 
             border: Border.all(
               color: appTheme.strokeCard,
@@ -63,10 +64,12 @@ class AppListTile extends StatelessWidget {
 
               const Spacer(),
 
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 36,
-                color: appTheme.beige100,
+              Skeleton.ignore(
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  size: 36,
+                  color: appTheme.beige100,
+                ),
               ),
             ],
           ),

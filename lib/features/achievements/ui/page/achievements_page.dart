@@ -90,7 +90,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                         sliver: SliverToBoxAdapter(
                           child: Skeleton.replace(
                             replacement: const AvatarCardShimmer(),
-                            child: AvatarCard(
+                            child: AvatarRankCard(
                               rank: RankEntity.mock(),
                             ),
                           ),

@@ -20,6 +20,11 @@ enum WeekDay {
 
     return WeekDay.values[value - 1];
   }
+
+  static String? getTodayLabel(BuildContext context, {String pattern = 'EEEE'}) {
+    final weekday = WeekDay.fromValue(DateTime.now().weekday);
+    return weekday?.label(context, pattern: pattern);
+  }
 }
 
 extension WeekDayLocalization on WeekDay {

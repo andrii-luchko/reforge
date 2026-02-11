@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
 
@@ -81,7 +82,7 @@ class AttributeChartItem extends StatelessWidget {
               Text(entity.attribute.title(t), style: subheadH3Medium.copyWith(color: appTheme.beige100)),
               const SizedBox(height: 4),
               Text(
-                '${entity.currentXp} XP',
+                XpFormatter.compact(entity.currentXp),
                 style: subheadH8Semibold.copyWith(color: appTheme.beige100),
               ),
             ],

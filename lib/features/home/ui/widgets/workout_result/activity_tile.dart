@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
-import 'package:reforge/shared/uikit/buttons/icon_button.dart';
+import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 
 class ActivityTile extends StatelessWidget {
-  const ActivityTile({super.key, this.showBorder = true});
+  const ActivityTile({required this.activeDays, required this.totalDays, super.key, this.showBorder = true});
   final bool showBorder;
+
+  final int activeDays;
+  final int totalDays;
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +18,7 @@ class ActivityTile extends StatelessWidget {
 
     final primaryStyle = subheadH2Medium.copyWith(color: appTheme.beige100);
     final secondaryStyle = subheadH2Medium.copyWith(color: appTheme.beige600);
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -27,7 +32,10 @@ class ActivityTile extends StatelessWidget {
       padding: const .all(16),
       child: Row(
         children: [
-          AppIconButton(iconAsset: Assets.images.icons.calendar2),
+          AppSvgListTileIcon(
+            asset: Assets.images.icons.calendar2,
+            color: appTheme.beige100,
+          ),
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: .start,
@@ -39,7 +47,7 @@ class ActivityTile extends StatelessWidget {
               ),
 
               Text(
-                'Tuesday',
+                WeekDay.getTodayLabel(context) ?? '',
                 style: subheadH6Regular.copyWith(color: appTheme.beige600),
               ),
             ],
@@ -48,8 +56,8 @@ class ActivityTile extends StatelessWidget {
           Text.rich(
             TextSpan(
               children: [
-                TextSpan(text: '1', style: primaryStyle),
-                TextSpan(text: ' / 3', style: secondaryStyle),
+                TextSpan(text: '$activeDays', style: primaryStyle),
+                TextSpan(text: ' / $totalDays', style: secondaryStyle),
               ],
             ),
           ),

@@ -84,6 +84,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/home_inactive.svg
   String get homeInactive => 'assets/images/icons/home_inactive.svg';
 
+  /// File path: assets/images/icons/lock.svg
+  String get lock => 'assets/images/icons/lock.svg';
+
   /// File path: assets/images/icons/medal.svg
   String get medal => 'assets/images/icons/medal.svg';
 
@@ -153,6 +156,7 @@ class $AssetsImagesIconsGen {
     google,
     homeActive,
     homeInactive,
+    lock,
     medal,
     medalActive,
     medalInactive,

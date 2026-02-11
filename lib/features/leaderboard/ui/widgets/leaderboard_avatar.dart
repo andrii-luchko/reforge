@@ -26,6 +26,7 @@ class LeaderBoardAvatar extends StatelessWidget {
       height: size.height,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        color: Colors.white,
         border: GradientBoxBorder(
           width: gradientWidth,
           gradient: borderGradientColors,

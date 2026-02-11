@@ -112,7 +112,7 @@ class _PortalContentWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const .all(8),
+      padding: contentPadding,
       child: FadeTransition(
         opacity: animation,
         child: SizeTransition(

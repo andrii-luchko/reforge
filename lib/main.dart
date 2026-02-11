@@ -13,6 +13,7 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
@@ -68,6 +69,8 @@ class App extends StatelessWidget {
           create: (_) => di.getIt<AchievementsCubit>(),
         ),
         BlocProvider(create: (_) => di.getIt<NotificationCubit>()),
+
+        BlocProvider(create: (_) => di.getIt<HomeCubit>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
