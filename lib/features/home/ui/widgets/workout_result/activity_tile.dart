@@ -3,6 +3,7 @@ import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 
 class ActivityTile extends StatelessWidget {
@@ -29,7 +30,7 @@ class ActivityTile extends StatelessWidget {
               )
             : null,
       ),
-      padding: const .all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           AppSvgListTileIcon(
@@ -38,11 +39,11 @@ class ActivityTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Column(
-            crossAxisAlignment: .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 7,
             children: [
               Text(
-                'Active Days',
+                context.t.home.activity.active_days,
                 style: subheadH3Medium.copyWith(color: appTheme.beige100),
               ),
 

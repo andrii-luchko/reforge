@@ -118,7 +118,7 @@ class AvatarRankCard extends StatelessWidget {
                 width: w * 0.93,
 
                 child: RankCard(
-                  rank: 'Rank',
+                  rank: t.home.rank_label,
                   name: rank.rankName,
                 ),
               ),

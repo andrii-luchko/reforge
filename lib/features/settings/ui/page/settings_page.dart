@@ -6,7 +6,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
-import 'package:reforge/core/photo/service/image_pi%D1%81ker_service.dart';
+import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
@@ -291,7 +291,7 @@ class SettingsNewUserWidget extends StatelessWidget {
               children: [
                 Icon(Icons.error_outline, size: 48, color: appTheme.red400),
                 const SizedBox(height: 16),
-                Text('User is empty', style: bodyLRegular),
+                const Text('User is empty', style: bodyLRegular),
               ],
             ),
           ),

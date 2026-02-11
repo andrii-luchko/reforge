@@ -5,6 +5,7 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/formatters/xp_formatter.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class XpTile extends StatelessWidget {
@@ -35,7 +36,10 @@ class XpTile extends StatelessWidget {
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              Text('XP Earned', style: subheadH3Medium.copyWith(color: appTheme.beige100)),
+              Text(
+                context.t.home.xp_earned,
+                style: subheadH3Medium.copyWith(color: appTheme.beige100),
+              ),
               Text('$percentage%', style: subheadH3Medium.copyWith(color: appTheme.beige600)),
             ],
           ),

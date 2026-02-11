@@ -3,6 +3,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/ui/widgets/portal_dropdown.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/selector_suffix_icon.dart';
@@ -51,7 +52,7 @@ class StatsPeriodSelector extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                selectedPeriod.label,
+                selectedPeriod.label(context.t),
                 style: subheadH5Medium.copyWith(color: appTheme.beige700),
               ),
               const SizedBox(width: 8),
@@ -84,7 +85,7 @@ class StatsPeriodSelector extends StatelessWidget {
               children: [
                 Flexible(
                   child: Text(
-                    period.label,
+                    period.label(context.t),
                     style: subheadH5Medium.copyWith(
                       color: isSelected ? appTheme.beige100 : appTheme.beige600,
                     ),

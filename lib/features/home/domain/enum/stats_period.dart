@@ -1,3 +1,5 @@
+import 'package:reforge/generated/i18n/translations.g.dart';
+
 enum StatsPeriod {
   lastWeek,
   lastMonth,
@@ -5,16 +7,6 @@ enum StatsPeriod {
   yearToDate,
   allTime
   ;
-
-  String get label {
-    return switch (this) {
-      lastWeek => 'Last Week',
-      lastMonth => 'Last Month',
-      lastThreeMonths => 'Last 3 Months',
-      yearToDate => 'Year to Date',
-      allTime => 'All Time',
-    };
-  }
 
   ({DateTime start, DateTime end}) get range {
     final now = DateTime.now().toUtc();
@@ -45,6 +37,18 @@ enum StatsPeriod {
         ).toUtc(),
         end: today,
       ),
+    };
+  }
+}
+
+extension StatsPeriodExtension on StatsPeriod {
+  String label(Translations t) {
+    return switch (this) {
+      StatsPeriod.lastWeek => t.home.stats_period.last_week,
+      StatsPeriod.lastMonth => t.home.stats_period.last_month,
+      StatsPeriod.lastThreeMonths => t.home.stats_period.last_three_months,
+      StatsPeriod.yearToDate => t.home.stats_period.year_to_date,
+      StatsPeriod.allTime => t.home.stats_period.all_time,
     };
   }
 }

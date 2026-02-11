@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 import 'package:reforge/shared/uikit/app_list_tile.dart';
 
@@ -15,8 +16,8 @@ class StartWorkoutListTile extends StatelessWidget {
         asset: Assets.images.icons.dumbbell,
         color: context.appTheme.beige100,
       ),
-      title: 'Forge Today’s Workout',
-      subtitle: 'Start workout',
+      title: context.t.home.start_workout.title,
+      subtitle: context.t.home.start_workout.subtitle,
       onTap: () async {
         await const WorkoutDetailsPageRoute().push<void>(context);
       },

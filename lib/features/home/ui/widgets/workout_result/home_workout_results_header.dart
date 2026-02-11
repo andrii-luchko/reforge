@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/ui/widgets/stats_period_selector.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class WorkoutResultHeader extends StatelessWidget {
   const WorkoutResultHeader({super.key});
@@ -15,8 +16,8 @@ class WorkoutResultHeader extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Workout results',
+            Text(
+              context.t.home.workout_results.title,
               style: subheadH2Medium,
             ),
             BlocBuilder<HomeCubit, HomeState>(

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
-
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
-
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -51,7 +49,7 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final name = username ?? 'Forger';
+    final name = username ?? context.t.home.header.default_username;
     return Material(
       color: Colors.transparent,
       elevation: overlapsContent ? 2 : 0,
@@ -77,12 +75,12 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Welcome back',
+                        context.t.home.header.welcome_back,
                         style: subheadH5Medium.copyWith(color: appTheme.beige500),
                       ),
                       FittedBox(
                         child: Text(
-                          'Hey, $name!',
+                          context.t.home.header.hey_name(name: name),
                           style: subheadH1Medium.copyWith(color: appTheme.beige100),
                           maxLines: 1,
                         ),

@@ -103,7 +103,7 @@ class RanksPage extends StatelessWidget {
                         sliver: SliverFillRemaining(
                           hasScrollBody: false,
                           child: displayRanks.isEmpty && !state.isLoading
-                              ? const Center(child: Text("No ranks found"))
+                              ? const Center(child: Text('No ranks found'))
                               : DeepStackScroll(
                                   children: displayRanks
                                       .map(

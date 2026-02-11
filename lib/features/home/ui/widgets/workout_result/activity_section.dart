@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/activity_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 class ActivitySection extends StatelessWidget {
@@ -29,15 +30,20 @@ class ActivitySection extends StatelessWidget {
           children: [
             _ActivityCard(
               icon: Assets.images.icons.timer,
-              title: 'Total Duration',
+              title: context.t.home.activity.total_duration,
               content: Text.rich(
                 TextSpan(
                   children: [
                     TextSpan(text: '${duration.hours}', style: primaryStyle),
-                    TextSpan(text: ' h ', style: secondaryStyle),
-
+                    TextSpan(
+                      text: ' ${context.t.timer.hours_short} ',
+                      style: secondaryStyle,
+                    ),
                     TextSpan(text: '${duration.minutes}', style: primaryStyle),
-                    TextSpan(text: ' m', style: secondaryStyle),
+                    TextSpan(
+                      text: ' ${context.t.timer.minutes_short}',
+                      style: secondaryStyle,
+                    ),
                   ],
                 ),
               ),
@@ -46,12 +52,15 @@ class ActivitySection extends StatelessWidget {
 
             _ActivityCard(
               icon: Assets.images.icons.dumbbell,
-              title: 'Workouts',
+              title: context.t.home.activity.workouts,
               content: Text.rich(
                 TextSpan(
                   children: [
                     TextSpan(text: '${stats.workoutsCount}', style: primaryStyle),
-                    TextSpan(text: ' / sessions', style: secondaryStyle),
+                    TextSpan(
+                      text: ' ${context.t.home.activity.sessions_suffix}',
+                      style: secondaryStyle,
+                    ),
                   ],
                 ),
               ),
