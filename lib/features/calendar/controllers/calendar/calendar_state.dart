@@ -10,9 +10,12 @@ sealed class CalendarState with _$CalendarState {
     String? error,
   }) = _CalendarState;
 
-  Map<DateTime, DayEntity> get currentMonthDays {
-    if (currentDate == null) return {};
+  CalendarEntity? get currentMonth {
+    if (currentDate == null) return null;
+    return calendar[currentDate!.toYearMonth()];
+  }
 
-    return calendar[currentDate!.toYearMonth()]?.days ?? {};
+  Map<DateTime, DayEntity> get currentMonthDays {
+    return currentMonth?.days ?? {};
   }
 }

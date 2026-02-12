@@ -68,4 +68,8 @@ class CalendarCubit extends Cubit<CalendarState> {
 
     return day;
   }
+
+  Future<void> test() async {
+    await _repository.getWorkoutDetails(55);
+  }
 }

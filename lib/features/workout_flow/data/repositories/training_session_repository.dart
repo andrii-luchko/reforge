@@ -9,7 +9,7 @@ import 'package:reforge/features/workout_common/domain/entities/workout_summary_
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day.dart';
+import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';

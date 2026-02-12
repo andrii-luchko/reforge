@@ -1,0 +1,50 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
+import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
+import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
+
+part 'workout_session_details_dto.freezed.dart';
+part 'workout_session_details_dto.g.dart';
+
+@freezed
+sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
+  const factory WorkoutSessionDetailsDTO({
+    required int id,
+    required int duration,
+    required int totalXpEarned,
+    @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions,
+    @JsonKey(name: 'workoutSessions') List<ExerciseSessionDTO>? workoutSessions,
+  }) = _WorkoutSessionDetailsDTO;
+
+  factory WorkoutSessionDetailsDTO.fromJson(Map<String, dynamic> json) => _$WorkoutSessionDetailsDTOFromJson(json);
+}
+
+extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
+  TrainingDetailsEntity toEntity(MeasurementSystem system) {
+    return TrainingDetailsEntity(
+      id: id,
+      duration: duration,
+      totalXpEarned: totalXpEarned,
+      exercises: toPreviousResults(system),
+    );
+  }
+
+  List<PreviousExerciseResult> toPreviousResults(MeasurementSystem system) {
+    final sessions = exerciseSessions ?? workoutSessions ?? [];
+    return sessions
+        .where((s) => s.exercise != null)
+        .map(
+          (s) => PreviousExerciseResult(
+            name: s.exercise!.name,
+            description: s.exercise!.description,
+            imageUrl: s.exercise!.thumbnailInstructionUrl,
+            metrics: s.exercise!.toEntity().metrics,
+            notes: s.notes,
+            sets: (s.sets ?? []).map((e) => e.toWorkoutSet(system)).toList(),
+          ),
+        )
+        .toList();
+  }
+}

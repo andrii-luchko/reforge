@@ -21,8 +21,9 @@ import 'package:reforge/features/quiz/data/requests/update_profile_request.dart'
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day.dart';
+import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
@@ -79,7 +80,7 @@ abstract class ApiClient {
 
   //Training session
   @GET('/workout-programs/program-days/{programDayId}')
-  Future<BaseResponse<List<ProgramDay>>> getWorkoutByDay(@Path('programDayId') int programDayId);
+  Future<BaseResponse<List<ProgramDayDTO>>> getWorkoutByDay(@Path('programDayId') int programDayId);
 
   //
   @POST('/workout-exercise-set-sessions')
@@ -162,4 +163,7 @@ abstract class ApiClient {
   Future<BaseResponse<CalendarData>> geMonthCalendar({
     @Query('month') required String month,
   });
+
+  @GET('/workout-sessions/{sessionId}')
+  Future<BaseResponse<WorkoutSessionDetailsDTO>> getWorkoutDetails(@Path('sessionId') int sessionId);
 }
