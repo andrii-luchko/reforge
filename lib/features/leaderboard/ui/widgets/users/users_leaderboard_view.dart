@@ -131,15 +131,7 @@ class LeaderBoardListSection extends StatelessWidget {
               if (isPaginationLoading)
                 const SliverPadding(
                   padding: EdgeInsets.symmetric(vertical: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Center(
-                      child: SizedBox(
-                        height: 60,
-                        width: 60,
-                        child: ScreenLoadingIndicator(padding: EdgeInsets.all(16)),
-                      ),
-                    ),
-                  ),
+                  sliver: SliverToBoxAdapter(child: PaginationLoader()),
                 ),
             ],
           ),

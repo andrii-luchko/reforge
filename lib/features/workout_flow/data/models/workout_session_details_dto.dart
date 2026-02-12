@@ -16,6 +16,7 @@ sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
     required int totalXpEarned,
     @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions,
     @JsonKey(name: 'workoutSessions') List<ExerciseSessionDTO>? workoutSessions,
+    @JsonKey(name: '"createdAt"') DateTime? createdAt,
   }) = _WorkoutSessionDetailsDTO;
 
   factory WorkoutSessionDetailsDTO.fromJson(Map<String, dynamic> json) => _$WorkoutSessionDetailsDTOFromJson(json);
@@ -25,6 +26,7 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
   TrainingDetailsEntity toEntity(MeasurementSystem system) {
     return TrainingDetailsEntity(
       id: id,
+      date: createdAt ?? DateTime.now(),
       duration: duration,
       totalXpEarned: totalXpEarned,
       exercises: toPreviousResults(system),

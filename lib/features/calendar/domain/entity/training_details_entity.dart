@@ -4,12 +4,13 @@ import 'package:reforge/features/workout_common/domain/entities/previous_exercis
 class TrainingDetailsEntity {
   TrainingDetailsEntity({
     required this.id,
+    required this.date,
     required this.duration,
     required this.totalXpEarned,
     required this.exercises,
     required this.measurementSystem,
   });
-
+  final DateTime date;
   final int id;
   final int duration;
   final int totalXpEarned;

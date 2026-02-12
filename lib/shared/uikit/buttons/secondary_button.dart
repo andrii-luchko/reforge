@@ -3,6 +3,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 
 class SecondaryButton extends StatelessWidget {
   const SecondaryButton({
@@ -20,7 +21,8 @@ class SecondaryButton extends StatelessWidget {
     final isActive = onPressed != null;
     final borderRadius = BorderRadius.circular(50);
 
-    return GestureDetector(
+    return PressableAnimation(
+      scaleAmount: 0.98,
       onTap: onPressed,
       child: BlurContainer(
         borderRadius: borderRadius,
@@ -39,23 +41,13 @@ class SecondaryButton extends StatelessWidget {
             appTheme.beige100,
           ],
           borderColor: appTheme.beige100.withValues(alpha: 0.1),
-          child: Material(
-            borderRadius: borderRadius,
-            color: Colors.transparent,
-            child: InkWell(
-              splashFactory: InkSparkle.splashFactory,
-              splashColor: appTheme.beige100.withValues(alpha: 0.1),
-              highlightColor: appTheme.beige100.withValues(alpha: 0.01),
-              onTap: onPressed,
-              child: Padding(
-                padding: const .symmetric(vertical: 20),
-                child: Center(
-                  child: Text(
-                    text,
-                    style: subheadH5Medium.copyWith(
-                      color: isActive ? appTheme.beige100 : appTheme.beige700,
-                    ),
-                  ),
+          child: Padding(
+            padding: const .symmetric(vertical: 20),
+            child: Center(
+              child: Text(
+                text,
+                style: subheadH5Medium.copyWith(
+                  color: isActive ? appTheme.beige100 : appTheme.beige700,
                 ),
               ),
             ),

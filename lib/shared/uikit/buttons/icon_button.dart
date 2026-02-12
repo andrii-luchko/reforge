@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIconButton extends StatelessWidget {
@@ -45,7 +46,7 @@ class AppIconButton extends StatelessWidget {
       replacement: Bone.circle(
         size: width,
       ),
-      child: GestureDetector(
+      child: PressableAnimation(
         onTap: onPressed,
         child: BlurContainer(
           borderRadius: borderRadius,
@@ -63,19 +64,8 @@ class AppIconButton extends StatelessWidget {
             ],
             backgroundColor: appTheme.beige50,
             borderColor: appTheme.beige100.withValues(alpha: 0.1),
-            child: Material(
-              borderRadius: borderRadius,
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: borderRadius,
-                splashFactory: InkSparkle.splashFactory,
-                splashColor: appTheme.beige100.withValues(alpha: 0.1),
-                highlightColor: appTheme.beige100.withValues(alpha: 0.01),
-                onTap: onPressed,
-                child: Center(
-                  child: _buildIcon(appTheme),
-                ),
-              ),
+            child: Center(
+              child: _buildIcon(appTheme),
             ),
           ),
         ),

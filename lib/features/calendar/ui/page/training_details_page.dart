@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 import 'package:reforge/app/utils/extensions/int_extension.dart';
 import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_data.dart';
@@ -177,7 +178,7 @@ class _TrainingDetailsContentView extends StatelessWidget {
           slivers: [
             DefaultSliverAppBar(
               onPressed: () => Navigator.of(context).pop(),
-              title: 'Training Details',
+              title: 'Training ${data.date.toDotString()}',
             ),
             SliverPadding(
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16, top: 16),

@@ -7,8 +7,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 
 class ActivityTile extends StatelessWidget {
-  const ActivityTile({required this.activeDays, required this.totalDays, super.key, this.showBorder = true});
-  final bool showBorder;
+  const ActivityTile({required this.activeDays, required this.totalDays, super.key});
 
   final int activeDays;
   final int totalDays;
@@ -24,11 +23,10 @@ class ActivityTile extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: appTheme.beige900,
-        border: showBorder
-            ? Border.all(
-                color: appTheme.strokeCard,
-              )
-            : null,
+
+        border: Border.all(
+          color: appTheme.strokeCard,
+        ),
       ),
       padding: const EdgeInsets.all(16),
       child: Row(
