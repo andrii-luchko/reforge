@@ -4,14 +4,14 @@ import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dar
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 
-part 'exercise_details.freezed.dart';
-part 'exercise_details.g.dart';
+part 'exercise_details_dto.freezed.dart';
+part 'exercise_details_dto.g.dart';
 
 @freezed
-sealed class ExerciseDetails with _$ExerciseDetails {
-  const ExerciseDetails._();
+sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
+  const ExerciseDetailsDTO._();
 
-  const factory ExerciseDetails({
+  const factory ExerciseDetailsDTO({
     required int id,
     required String name,
     required String description,
@@ -25,12 +25,12 @@ sealed class ExerciseDetails with _$ExerciseDetails {
     String? videoInstructionUrl,
     String? thumbnailInstructionUrl,
     @Default({}) Map<String, String> instructionsSteps,
-  }) = _ExerciseDetails;
+  }) = _ExerciseDetailsDTO;
 
-  factory ExerciseDetails.fromJson(Map<String, dynamic> json) => _$ExerciseDetailsFromJson(json);
+  factory ExerciseDetailsDTO.fromJson(Map<String, dynamic> json) => _$ExerciseDetailsDTOFromJson(json);
 }
 
-extension ExerciseDetailsToEntityX on ExerciseDetails {
+extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
   ExerciseDetailsEntity toEntity() {
     return ExerciseDetailsEntity(
       id: id,

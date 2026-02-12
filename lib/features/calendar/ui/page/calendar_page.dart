@@ -1,129 +1,161 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/features/calendar/controllers/calendar/calendar_cubit.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/activity_tile.dart';
 import 'package:reforge/shared/calendar/calendar_piker.dart';
-import 'package:reforge/shared/calendar/widgets/calendar_days_view.dart';
-import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
+import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class CalendarPage extends StatelessWidget {
   const CalendarPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-    return Scaffold(
-      appBar: AppAppBar(
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Text(
-              'Forge Calendar',
-              style: subheadH1Medium.copyWith(color: appTheme.beige100),
-            ),
-          ),
-        ],
-      ),
-      body: const DefaultBackground(body: CalendarBody()),
+    return const Scaffold(
+      body: DefaultBackground(body: CalendarBody()),
     );
   }
 }
 
-class CalendarBody extends StatelessWidget {
+class CalendarBody extends StatefulWidget {
   const CalendarBody({super.key});
-  Map<DateTime, CalendarEvent> getMockEventsMap() {
-    final rawList = [
-      (dateTime: DateTime(2026, 1, 6), hasWorkout: true),
 
-      (dateTime: DateTime(2026, 1, 8), hasWorkout: true),
+  static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
 
-      (dateTime: DateTime(2026, 1, 10), hasWorkout: true),
+  @override
+  State<CalendarBody> createState() => _CalendarBodyState();
+}
 
-      (dateTime: DateTime(2026, 1, 13), hasWorkout: true),
+class _CalendarBodyState extends State<CalendarBody> {
+  late final CalendarCubit cubit = context.read<CalendarCubit>();
 
-      (dateTime: DateTime(2026, 1, 15), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 17), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 20), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 22), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 24), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 27), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 29), hasWorkout: true),
-
-      (dateTime: DateTime(2026, 1, 31), hasWorkout: true),
-    ];
-
-    return {for (final event in rawList) DateUtils.dateOnly(event.dateTime): event};
+  @override
+  void initState() {
+    super.initState();
+    unawaited(cubit.initialize());
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: const .all(16),
+      top: false,
+      bottom: false,
 
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            ColoredBox(
-              color: context.appTheme.beige900,
+      child: BlocBuilder<CalendarCubit, CalendarState>(
+        builder: (context, state) {
+          final currentMonth = state.currentMonth;
 
-              child: Container(
-                padding: const .symmetric(horizontal: 0, vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: const RadialGradient(
-                    center: .topLeft,
-                    radius: 1,
-                    colors: [
-                      Color(0x994A2105),
-                      Color(0x004A2105),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: context.appTheme.beige100.withValues(alpha: 0.1),
+          final event = state.currentMonthDays;
+          return RefreshIndicator(
+            onRefresh: () => cubit.refresh(),
+            child: CustomScrollView(
+              slivers: [
+                DefaultSliverAppBar(
+                  onPressed: () => Navigator.of(context).pop(),
+                  title: 'Forge Calendar',
+                ),
+                SliverPadding(
+                  padding: CalendarBody.horizontalPadding.copyWith(bottom: 32, top: 16),
+
+                  sliver: SliverToBoxAdapter(
+                    child: Stack(
+                      alignment: .center,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: context.appTheme.beige900,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: context.appTheme.beige100.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Container(
+                            padding: const .symmetric(horizontal: 8, vertical: 12),
+
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: const RadialGradient(
+                                center: .topLeft,
+                                radius: 1,
+                                colors: [
+                                  Color(0x994A2105),
+                                  Color(0x004A2105),
+                                ],
+                              ),
+                            ),
+                            child: Skeleton.shade(
+                              child: CalendarPicker(
+                                headerTitle: 'Your Forge Rhythm',
+                                needBottomLine: false,
+
+                                initialDate: DateTime.now(),
+                                firstDay: firstDay,
+                                lastDay: lastDay,
+
+                                onDateSelected: (date) {
+                                  final day = cubit.navigationCheck(date);
+                                  final sessionId = day?.latestSessionId;
+
+                                  if (day != null && sessionId != null) {
+                                    unawaited(
+                                      TrainingDetailsPageRoute(
+                                        date: day.date,
+                                        workoutSessionID: sessionId,
+                                      ).push<void>(context),
+                                    );
+                                  }
+                                },
+                                onFocusedDayChanged: cubit.changeMonth,
+                                events: event,
+                              ),
+                            ),
+                          ).animateEntrance(),
+                        ),
+
+                        if (state.isLoading)
+                          const Positioned.fill(
+                            child: ScreenLoadingIndicator(
+                              padding: EdgeInsets.all(12),
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
+                      ],
+                    ),
                   ),
                 ),
-                child: CalendarPicker(
-                  headerTitle: 'Your Forge Rhythm',
-                  needBottomLine: false,
 
-                  initialDate: DateTime.now(),
-                  firstDay: DateTime(2020),
-                  lastDay: DateTime(2030),
-                  onDateSelected: (date) {
-                    getMockEventsMap();
-                    // if (map.containsKey(DateUtils.dateOnly(date))) {
-
-                    // }
-                  },
-                  events: getMockEventsMap(),
+                SliverPadding(
+                  padding: CalendarBody.horizontalPadding.copyWith(bottom: 16),
+                  sliver: const SliverToBoxAdapter(
+                    child: const Text(
+                      'Workout days',
+                      style: subheadH2Medium,
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 32),
-            const Text(
-              'Workout days',
-              style: subheadH2Medium,
+                SliverPadding(
+                  padding: CalendarBody.horizontalPadding.copyWith(bottom: 16),
+                  sliver: SliverToBoxAdapter(
+                    child: ActivityTile(
+                      activeDays: currentMonth?.totalCompleted ?? 0,
+                      totalDays: currentMonth?.totalPlanned ?? 0,
+                    ).animateEntrance(),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            const ActivityTile(
-              showBorder: false,
-              activeDays: 0,
-              totalDays: 0,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

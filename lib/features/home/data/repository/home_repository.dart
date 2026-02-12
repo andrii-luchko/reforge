@@ -30,8 +30,8 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<Result<UserStats>> getUserStats(StatsPeriod period) async {
     try {
-      final startDate = period.range.start.toIso8601String();
-      final endDate = period.range.end.toIso8601String();
+      final startDate = period.range.start.toUtc().toIso8601String();
+      final endDate = period.range.end.toUtc().toIso8601String();
       final result = await _apiClient.getUserStats(startDate: startDate, endDate: endDate);
 
       final stats = result.data.toDomain();

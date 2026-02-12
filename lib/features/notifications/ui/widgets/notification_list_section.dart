@@ -8,6 +8,7 @@ import 'package:reforge/features/notifications/ui/widgets/notification_list_tile
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 import 'package:reforge/shared/delete_wrapper.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 
 class NotificationListSection extends StatelessWidget {
@@ -87,26 +88,11 @@ class NotificationListEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: Column(
-        mainAxisAlignment: .center,
-        spacing: 10,
-        children: [
-          Text(
-            'No notifications yet',
-            textAlign: .center,
-            style: subheadH3Medium.copyWith(color: appTheme.beige100),
-          ),
-          Text(
-            'You’re all caught up! Once there’s something new — like updates, reminders, or messages — you’ll see it here.',
-            textAlign: .center,
-            style: subheadH6Regular.copyWith(color: appTheme.beige700),
-          ),
-        ],
-      ).animateEntrance(),
+    return const SliverEmptyListMessage(
+      icon: Icons.notifications_off_outlined,
+      title: 'No notifications yet',
+      subtitle:
+          'You’re all caught up! Once there’s something new — like updates, reminders, or messages — you’ll see it here.',
     );
   }
 }

@@ -1,5 +1,6 @@
 // field_date_picker.dart
 import 'package:flutter/material.dart';
+import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 import 'package:reforge/shared/calendar/enum/calendar_view_mode.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_days_view.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_header.dart';
@@ -17,6 +18,7 @@ class CalendarPicker extends StatefulWidget {
     this.headerTitle,
     this.events = const {},
     this.selectedDate,
+    this.onFocusedDayChanged,
     super.key,
   });
 
@@ -26,8 +28,9 @@ class CalendarPicker extends StatefulWidget {
   final DateTime? selectedDate;
   final DateTime firstDay;
   final DateTime lastDay;
-  final Map<DateTime, CalendarEvent> events;
+  final Map<DateTime, DayEntity> events;
   final ValueChanged<DateTime> onDateSelected;
+  final ValueChanged<DateTime>? onFocusedDayChanged;
 
   @override
   State<CalendarPicker> createState() => _CalendarPickerState();
@@ -38,10 +41,35 @@ class _CalendarPickerState extends State<CalendarPicker> {
 
   CalendarViewMode _viewMode = CalendarViewMode.days;
 
+  DateTime _clampFocusedDay(DateTime day) {
+    final dateOnly = DateUtils.dateOnly(day);
+    final first = DateUtils.dateOnly(widget.firstDay);
+    final last = DateUtils.dateOnly(widget.lastDay);
+    if (dateOnly.isBefore(first)) return first;
+    if (dateOnly.isAfter(last)) return last;
+    return dateOnly;
+  }
+
+  void _updateFocusedDay(DateTime day) {
+    final clamped = _clampFocusedDay(day);
+    if (_focusedDay != clamped) {
+      setState(() => _focusedDay = clamped);
+      widget.onFocusedDayChanged?.call(_focusedDay);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _focusedDay = widget.initialDate;
+    _focusedDay = _clampFocusedDay(widget.initialDate);
+  }
+
+  @override
+  void didUpdateWidget(CalendarPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.firstDay != widget.firstDay || oldWidget.lastDay != widget.lastDay) {
+      _focusedDay = _clampFocusedDay(_focusedDay);
+    }
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -50,22 +78,24 @@ class _CalendarPickerState extends State<CalendarPicker> {
 
   void _onPrevious() {
     setState(() {
-      _focusedDay = switch (_viewMode) {
+      _focusedDay = _clampFocusedDay(switch (_viewMode) {
         CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month - 1),
         CalendarViewMode.months => DateTime(_focusedDay.year - 1, _focusedDay.month),
         CalendarViewMode.years => DateTime(_focusedDay.year - 10, _focusedDay.month),
-      };
+      });
     });
+    widget.onFocusedDayChanged?.call(_focusedDay);
   }
 
   void _onNext() {
     setState(() {
-      _focusedDay = switch (_viewMode) {
+      _focusedDay = _clampFocusedDay(switch (_viewMode) {
         CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month + 1),
         CalendarViewMode.months => DateTime(_focusedDay.year + 1, _focusedDay.month),
         CalendarViewMode.years => DateTime(_focusedDay.year + 10, _focusedDay.month),
-      };
+      });
     });
+    widget.onFocusedDayChanged?.call(_focusedDay);
   }
 
   void _onHeaderTap() {
@@ -75,23 +105,43 @@ class _CalendarPickerState extends State<CalendarPicker> {
         CalendarViewMode.months => CalendarViewMode.years,
         CalendarViewMode.years => CalendarViewMode.days,
       };
+      _focusedDay = _clampFocusedDay(_focusedDay);
     });
   }
 
   void _onMonthSelected(int month) {
     setState(() {
-      _focusedDay = DateTime(_focusedDay.year, month);
+      _focusedDay = _clampFocusedDay(DateTime(_focusedDay.year, month));
     });
+    widget.onFocusedDayChanged?.call(_focusedDay);
   }
 
   void _onYearSelected(int year) {
     setState(() {
-      _focusedDay = DateTime(year, _focusedDay.month);
+      _focusedDay = _clampFocusedDay(DateTime(year, _focusedDay.month));
     });
+    widget.onFocusedDayChanged?.call(_focusedDay);
   }
+
+  DateTime get _prevDate => switch (_viewMode) {
+    CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month - 1),
+    CalendarViewMode.months => DateTime(_focusedDay.year - 1, _focusedDay.month),
+    CalendarViewMode.years => DateTime(_focusedDay.year - 10, _focusedDay.month),
+  };
+
+  DateTime get _nextDate => switch (_viewMode) {
+    CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month + 1),
+    CalendarViewMode.months => DateTime(_focusedDay.year + 1, _focusedDay.month),
+    CalendarViewMode.years => DateTime(_focusedDay.year + 10, _focusedDay.month),
+  };
 
   @override
   Widget build(BuildContext context) {
+    final first = DateUtils.dateOnly(widget.firstDay);
+    final last = DateUtils.dateOnly(widget.lastDay);
+    final canGoPrevious = !DateUtils.dateOnly(_prevDate).isBefore(first);
+    final canGoNext = !DateUtils.dateOnly(_nextDate).isAfter(last);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -103,6 +153,8 @@ class _CalendarPickerState extends State<CalendarPicker> {
           onHeaderTap: _onHeaderTap,
           onPrevious: _onPrevious,
           onNext: _onNext,
+          canGoPrevious: canGoPrevious,
+          canGoNext: canGoNext,
         ),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -126,15 +178,20 @@ class _CalendarPickerState extends State<CalendarPicker> {
               today: widget.initialDate,
               onDaySelected: _onDaySelected,
               events: widget.events,
+              onPageChanged: _updateFocusedDay,
             ),
             CalendarViewMode.months => CalendarMonthsView(
               key: const ValueKey('months_view'),
               focusedDay: _focusedDay,
+              firstDay: widget.firstDay,
+              lastDay: widget.lastDay,
               onMonthSelected: _onMonthSelected,
             ),
             CalendarViewMode.years => CalendarYearsView(
               key: const ValueKey('years_view'),
               focusedDay: _focusedDay,
+              firstDay: widget.firstDay,
+              lastDay: widget.lastDay,
               onYearSelected: _onYearSelected,
             ),
           },

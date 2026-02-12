@@ -1,3 +1,5 @@
+import 'package:reforge/app/utils/extensions/int_extension.dart';
+
 class UserStats {
   UserStats({
     required this.level,
@@ -26,11 +28,7 @@ class UserStats {
 
 extension UserStatsX on UserStats {
   ({int hours, int minutes}) get durationFormatted {
-    final duration = Duration(seconds: totalWorkoutsDuration);
-    return (
-      hours: duration.inHours,
-      minutes: duration.inMinutes.remainder(60),
-    );
+    return totalWorkoutsDuration.durationFormatted;
   }
 
   static UserStats mock({

@@ -107,4 +107,15 @@ class UserRepositoryImpl implements UserRepository {
       return Result.error(e);
     }
   }
+
+  @override
+  Future<Result<void>> updateUserEmail({required String email, required int userId}) async {
+    try {
+      final result = await _remoteDataSource.updateUserEmail(email, userId);
+
+      return Result.success(result);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
 }

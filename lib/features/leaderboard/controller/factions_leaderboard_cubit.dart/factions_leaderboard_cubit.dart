@@ -8,7 +8,7 @@ import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repos
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_factions.dart';
+
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
 part 'factions_leaderboard_state.dart';
@@ -24,8 +24,8 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
 
   Future<void> loadFactions() async {
     if (state.isLoading) return;
-    final mocked = generateMockFactions();
-    emit(state.copyWith(isLoading: true, error: null, factions: mocked));
+
+    emit(state.copyWith(isLoading: true, error: null));
 
     final userFaction = _repository.getUserFaction();
     final result = await _repository.getFactionsLeaderboard();

@@ -24,9 +24,9 @@ class PreviousResultDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wsets = result.sets!.isEmpty
+    final wsets = result.sets.isEmpty
         ? <ResultExerciseData>[]
-        : result.sets!
+        : result.sets
               .mapIndexed(
                 (i, set) => ResultExerciseData(
                   metrics: result.metrics,
@@ -76,7 +76,7 @@ class PreviousResultDialog extends StatelessWidget {
                       ...wsets,
                     ],
                   ),
-                  _NotesSection(
+                  NotesSection(
                     notes: result.notes,
                   ),
                 ],
@@ -89,10 +89,8 @@ class PreviousResultDialog extends StatelessWidget {
   }
 }
 
-class _NotesSection extends StatelessWidget {
-  const _NotesSection({
-    this.notes,
-  });
+class NotesSection extends StatelessWidget {
+  const NotesSection({this.notes, super.key});
 
   final String? notes;
 

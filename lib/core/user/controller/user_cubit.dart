@@ -1,7 +1,6 @@
 // ignore_for_file: no_empty_block
 import 'dart:async';
 import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,6 +75,7 @@ class UserCubit extends Cubit<UserState> {
 
   /// Refresh user data from server
   Future<void> refreshUser() async {
+    final currentState = state;
     final result = await _userRepository.refreshUser();
 
     switch (result) {
@@ -83,6 +83,7 @@ class UserCubit extends Cubit<UserState> {
         emit(UserState.loaded(user));
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
+        emit(currentState);
     }
   }
 
@@ -130,7 +131,7 @@ class UserCubit extends Cubit<UserState> {
       switch (result) {
         case Success(value: final updatedUser):
           await _userSessionService.saveUser(updatedUser);
-          emit(UserState.loaded(updatedUser));
+          emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
           return result;
 
         case ErrorR(error: final error):
@@ -176,6 +177,27 @@ class UserCubit extends Cubit<UserState> {
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
+    }
+  }
+
+  Future<Result<User>> updateEmail(String newEmail) async {
+    final currentState = state;
+    if (currentState is! Loaded) return Result.error(Exception('User not loaded'));
+    final result = await _userRepository.updateUserEmail(
+      email: newEmail,
+      userId: currentState.user.id,
+    );
+
+    switch (result) {
+      case Success():
+        await _userSessionService.saveUser(currentState.user.copyWith(email: newEmail));
+        emit(UserState.loaded(currentState.user.copyWith(email: newEmail)));
+
+        return Result.success(currentState.user.copyWith(email: newEmail));
+
+      case ErrorR(error: final error):
+        emit(UserState.loaded(currentState.user));
+        return Result.error(error);
     }
   }
 

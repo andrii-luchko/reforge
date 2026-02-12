@@ -36,13 +36,13 @@ class SelectableGridCell extends StatelessWidget {
   const SelectableGridCell({
     required this.text,
     required this.isSelected,
-    required this.onTap,
+    this.onTap,
     super.key,
   });
 
   final String text;
   final bool isSelected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

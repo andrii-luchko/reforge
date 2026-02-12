@@ -22,7 +22,9 @@ import 'package:reforge/features/auth/ui/pages/reset_send_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_in_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
+import 'package:reforge/features/calendar/controllers/training_details/training_details_cubit.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
+import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -321,6 +323,25 @@ class CalendarPageRoute extends GoRouteData with $CalendarPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const CalendarPage();
+  }
+}
+
+@TypedGoRoute<TrainingDetailsPageRoute>(path: '/training-details')
+class TrainingDetailsPageRoute extends GoRouteData with $TrainingDetailsPageRoute {
+  const TrainingDetailsPageRoute({
+    required this.date,
+    required this.workoutSessionID,
+  });
+
+  final DateTime date;
+  final int workoutSessionID;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return BlocProvider(
+      create: (context) => di.getIt<TrainingDetailsCubit>(param1: workoutSessionID),
+      child: const TrainingDetailsPage(),
+    );
   }
 }
 

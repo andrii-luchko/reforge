@@ -7,12 +7,10 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
-import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
@@ -146,14 +144,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         sliver: SliverBadgesGrid(
-                          badges: List.generate(
-                            3,
-                            (i) => BadgeEntity(
-                              imageUrl: Assets.images.png.badge.path,
-                              title: 'Peak of Might',
-                              isLocked: false,
-                            ),
-                          ),
+                          badges: state.badges.sublist(0, 3),
                         ),
                       ),
                     ],

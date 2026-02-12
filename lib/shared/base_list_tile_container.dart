@@ -19,7 +19,7 @@ class BaseListTileContainer extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: borderRadius,
-        gradient: appTheme.radioButtonGradient,
+        gradient: appTheme.cardNavigation,
 
         border: Border.all(
           color: appTheme.strokeCard,

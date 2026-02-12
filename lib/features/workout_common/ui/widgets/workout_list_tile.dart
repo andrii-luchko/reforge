@@ -19,6 +19,7 @@ class StaticWorkoutTile extends StatelessWidget {
     this.tags,
     this.onTap,
     this.showTrailingIcon = true,
+    this.icon,
     super.key,
   });
 
@@ -27,12 +28,20 @@ class StaticWorkoutTile extends StatelessWidget {
   final String? imageUrl;
   final List<String>? tags;
   final VoidCallback? onTap;
+  final Widget? icon;
   final bool showTrailingIcon;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
+    final icon =
+        this.icon ??
+        Icon(
+          Icons.chevron_right_rounded,
+          color: appTheme.beige200,
+          size: 32,
+        );
     return _BaseWorkoutTileContainer(
       onTap: onTap,
       child: Padding(
@@ -45,13 +54,7 @@ class StaticWorkoutTile extends StatelessWidget {
 
           imageSize: const Size(62, 62),
           isDescriptionExpanded: false,
-          trailing: showTrailingIcon
-              ? Icon(
-                  Icons.chevron_right_rounded,
-                  color: appTheme.beige200,
-                  size: 32,
-                )
-              : null,
+          trailing: showTrailingIcon ? icon : null,
         ),
       ),
     );
@@ -151,7 +154,7 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
                   imageUrl: widget.imageUrl,
                   tags: widget.tags,
                   imageSize: imageSize,
-                  isDescriptionExpanded: _isExpanded, // Анимируем текст
+                  isDescriptionExpanded: _isExpanded,
                   trailing: RotationTransition(
                     turns: _iconTurns,
                     child: Icon(

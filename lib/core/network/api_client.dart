@@ -12,6 +12,7 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
+import 'package:reforge/features/calendar/data/models/calendar_data.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
@@ -20,8 +21,9 @@ import 'package:reforge/features/quiz/data/requests/update_profile_request.dart'
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day.dart';
+import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
@@ -67,6 +69,9 @@ abstract class ApiClient {
   @PATCH('/users/me')
   Future<BaseResponse<User>> updateCurrentUser(@Body() PatchProfileRequest request);
 
+  @PATCH('/users/{id}/email')
+  Future<BaseResponse<User>> updateCurrentUserEmail(@Path('id') int id, @Body() PatchProfileRequest request);
+
   @DELETE('/users/me')
   Future<BaseResponse<void>> deleteUser();
 
@@ -78,7 +83,7 @@ abstract class ApiClient {
 
   //Training session
   @GET('/workout-programs/program-days/{programDayId}')
-  Future<BaseResponse<List<ProgramDay>>> getWorkoutByDay(@Path('programDayId') int programDayId);
+  Future<BaseResponse<List<ProgramDayDTO>>> getWorkoutByDay(@Path('programDayId') int programDayId);
 
   //
   @POST('/workout-exercise-set-sessions')
@@ -155,4 +160,13 @@ abstract class ApiClient {
     @Query('startDate') required String startDate,
     @Query('endDate') required String endDate,
   });
+
+  //Calendar
+  @GET('/workout-sessions/month-calendar')
+  Future<BaseResponse<CalendarData>> geMonthCalendar({
+    @Query('month') required String month,
+  });
+
+  @GET('/workout-sessions/{sessionId}')
+  Future<BaseResponse<WorkoutSessionDetailsDTO>> getWorkoutDetails(@Path('sessionId') int sessionId);
 }

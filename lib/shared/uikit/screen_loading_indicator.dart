@@ -28,3 +28,18 @@ class ScreenLoadingIndicator extends StatelessWidget {
     );
   }
 }
+
+class PaginationLoader extends StatelessWidget {
+  const PaginationLoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: SizedBox(
+        height: 60,
+        width: 60,
+        child: ScreenLoadingIndicator(padding: EdgeInsets.all(16)),
+      ),
+    );
+  }
+}

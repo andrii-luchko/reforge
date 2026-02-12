@@ -34,7 +34,9 @@ class SettingsNavigation {
       ProfileSettings.name => NamePage(
         name: user.userName,
       ),
-      ProfileSettings.email => const EmailPage(),
+      ProfileSettings.email => EmailPage(
+        initialEmail: user.email,
+      ),
       ProfileSettings.dateOfBirth => DateOfBirthPage(
         dateOfBirth: user.birthDate,
       ),

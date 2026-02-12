@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 
 part 'exercise_session_dto.freezed.dart';
@@ -16,6 +17,7 @@ sealed class ExerciseSessionDTO with _$ExerciseSessionDTO {
     required bool isActive,
     String? notes,
     List<ExerciseSetDTO>? sets,
+    ExerciseDetailsDTO? exercise,
   }) = _ExerciseSessionDTO;
 
   factory ExerciseSessionDTO.fromJson(Map<String, dynamic> json) => _$ExerciseSessionDTOFromJson(json);

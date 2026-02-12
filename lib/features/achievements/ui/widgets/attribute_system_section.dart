@@ -5,6 +5,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_guide_bottom_sheet.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_list.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 class AttributeSystemSection extends StatelessWidget {
@@ -28,9 +29,16 @@ class AttributeSystemSection extends StatelessWidget {
           spacing: 16,
           children: [
             const AttributeSystemHeader(),
-            AttributesList(
-              attributes: attributes,
-            ),
+            attributes.isNotEmpty
+                ? EmptyListMessage(
+                    icon: Icons.visibility_off_outlined,
+                    iconSize: 48,
+                    title: 'No Attributes Found',
+                    subtitle: 'It looks like you have no attributes yet.',
+                  )
+                : AttributesList(
+                    attributes: attributes,
+                  ),
           ],
         ),
       ),

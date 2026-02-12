@@ -1,13 +1,10 @@
 // field_date_picker.dart
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_day_cell.dart';
-
 import 'package:table_calendar/table_calendar.dart';
-
-typedef CalendarEvent = ({DateTime dateTime, bool hasWorkout});
 
 class CalendarDaysView extends StatefulWidget {
   const CalendarDaysView({
@@ -18,6 +15,7 @@ class CalendarDaysView extends StatefulWidget {
     required this.onDaySelected,
     required this.today,
     this.events = const {},
+    this.onPageChanged,
     super.key,
   });
 
@@ -26,8 +24,9 @@ class CalendarDaysView extends StatefulWidget {
   final DateTime focusedDay;
   final DateTime? selectedDay;
   final DateTime today;
-  final Map<DateTime, CalendarEvent> events;
+  final Map<DateTime, DayEntity> events;
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
+  final ValueChanged<DateTime>? onPageChanged;
 
   @override
   State<CalendarDaysView> createState() => _CalendarDaysViewState();
@@ -66,15 +65,17 @@ class _CalendarDaysViewState extends State<CalendarDaysView> {
 
   @override
   Widget build(BuildContext context) {
-    return TableCalendar<CalendarEvent>(
+    return TableCalendar<DayEntity>(
       firstDay: widget.firstDay,
       lastDay: widget.lastDay,
       focusedDay: _focusedDay,
+
       selectedDayPredicate: (day) => isSameDay(widget.selectedDay, day),
       startingDayOfWeek: StartingDayOfWeek.monday,
       onDaySelected: widget.onDaySelected,
       headerVisible: false,
-      onPageChanged: (focusedDay) => setState(() => _focusedDay = focusedDay),
+
+      onPageChanged: (focusedDay) => widget.onPageChanged?.call(focusedDay),
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: subheadH7Medium.copyWith(
           color: context.appTheme.beige700,
@@ -87,6 +88,7 @@ class _CalendarDaysViewState extends State<CalendarDaysView> {
       rowHeight: 55,
       availableGestures: .horizontalSwipe,
       calendarBuilders: CalendarBuilders(
+        disabledBuilder: (context, day, focusedDay) => _buildDayCell(day),
         selectedBuilder: (context, day, focusedDay) => _buildDayCell(day),
         todayBuilder: (context, day, focusedDay) => _buildDayCell(day),
         defaultBuilder: (context, day, focusedDay) => _buildDayCell(day),

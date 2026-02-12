@@ -1,12 +1,12 @@
 // ignore_for_file: prefer_first
-import 'package:reforge/features/workout_common/models/exercise_details.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day.dart';
-import 'package:reforge/features/workout_flow/data/models/program_exercise.dart';
+import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
+import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
+import 'package:reforge/features/workout_flow/data/models/program_exercise_dto.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 
-final List<ExerciseDetails> newMockExercises = [
+final List<ExerciseDetailsDTO> newMockExercises = [
   // ID 1: Barbell Deadlift
-  const ExerciseDetails(
+  const ExerciseDetailsDTO(
     id: 1,
     name: 'Barbell Deadlift',
     description:
@@ -20,7 +20,7 @@ final List<ExerciseDetails> newMockExercises = [
   ),
 
   // ID 2: High Intensity Burpees
-  const ExerciseDetails(
+  const ExerciseDetailsDTO(
     id: 2,
     name: 'High Intensity Burpees',
     description:
@@ -33,7 +33,7 @@ final List<ExerciseDetails> newMockExercises = [
   ),
 
   // ID 3: Weighted Twists
-  const ExerciseDetails(
+  const ExerciseDetailsDTO(
     id: 3,
     name: 'Weighted Twists',
     description:
@@ -47,24 +47,24 @@ final List<ExerciseDetails> newMockExercises = [
   ),
 ];
 
-final ProgramDayEntity mockProgramDay = ProgramDay(
+final ProgramDayEntity mockProgramDay = ProgramDayDTO(
   id: 0,
   name: 'Loading Workout Program...',
   dayNumber: 1,
   exercises: [
-    ProgramExercise(
+    ProgramExerciseDTO(
       id: 1,
       order: 1,
       sets: 4,
       exerciseDetails: newMockExercises[0],
     ),
-    ProgramExercise(
+    ProgramExerciseDTO(
       id: 2,
       order: 2,
       sets: 3,
       exerciseDetails: newMockExercises[1],
     ),
-    ProgramExercise(
+    ProgramExerciseDTO(
       id: 3,
       order: 3,
       sets: 3,
