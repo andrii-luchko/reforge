@@ -52,98 +52,103 @@ class SettingsPage extends StatelessWidget {
         body: DefaultBackground(
           body: SafeArea(
             top: false,
-            child: CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  sliver: SliverAppBar(
-                    actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    automaticallyImplyLeading: false,
-                    centerTitle: false,
-                    title: Skeleton.keep(
-                      child: Text(
-                        'Profile info',
-                        style: subheadH1Medium.copyWith(color: appTheme.beige100),
+            child: RefreshIndicator(
+              onRefresh: () => context.read<UserCubit>().refreshUser(),
+              child: Skeletonizer(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      sliver: SliverAppBar(
+                        actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        scrolledUnderElevation: 0,
+                        automaticallyImplyLeading: false,
+                        centerTitle: false,
+                        title: Skeleton.keep(
+                          child: Text(
+                            'Profile info',
+                            style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
 
-                BlocBuilder<UserCubit, UserState>(
-                  builder: (context, state) {
-                    return state.maybeMap(
-                      loaded: (value) {
-                        final user = value.user;
+                    BlocBuilder<UserCubit, UserState>(
+                      builder: (context, state) {
+                        return state.maybeMap(
+                          loaded: (value) {
+                            final user = value.user;
 
-                        return user.map(
-                          newUser: (user) => const SettingsNewUserWidget(),
-                          onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                            return user.map(
+                              newUser: (user) => const SettingsNewUserWidget(),
+                              onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                            );
+                          },
+                          updating: (value) {
+                            final user = value.user;
+
+                            return user.map(
+                              newUser: (user) => const SettingsNewUserWidget(),
+                              onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                            );
+                          },
+
+                          orElse: () {
+                            return const SettingsNewUserWidget();
+                          },
                         );
                       },
-                      updating: (value) {
-                        final user = value.user;
-
-                        return user.map(
-                          newUser: (user) => const SettingsNewUserWidget(),
-                          onboarded: (onboarded) => SettingsGroup(user: onboarded),
-                        );
-                      },
-
-                      orElse: () {
-                        return const SettingsNewUserWidget();
-                      },
-                    );
-                  },
-                ),
-                SliverPadding(
-                  padding: const .symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: PrimaryButton(
-                      text: 'Logout',
-                      onPressed: () async {
-                        final logout =
-                            await confirmAction(
-                              context,
-                              title: 'Log out',
-                              message: 'Are you sure you want to log out?',
-                            ) ??
-                            false;
-
-                        if (logout && context.mounted) {
-                          await context.read<AuthCubit>().signOut();
-                        }
-                      },
                     ),
-                  ),
-                ),
-                const SliverPadding(padding: .only(bottom: 16)),
-                SliverPadding(
-                  padding: const .symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: SecondaryButton(
-                      text: 'Delete account',
-                      onPressed: () async {
-                        final delete =
-                            await confirmAction(
-                              context,
-                              title: 'Delete account',
-                              message: 'Do you really want to delete?\nThis action cannot be undone',
-                            ) ??
-                            false;
+                    SliverPadding(
+                      padding: const .symmetric(horizontal: 16),
+                      sliver: SliverToBoxAdapter(
+                        child: PrimaryButton(
+                          text: 'Logout',
+                          onPressed: () async {
+                            final logout =
+                                await confirmAction(
+                                  context,
+                                  title: 'Log out',
+                                  message: 'Are you sure you want to log out?',
+                                ) ??
+                                false;
 
-                        if (delete && context.mounted) {
-                          final userCubit = context.read<UserCubit>();
-                          await userCubit.deleteUser();
-                        }
-                      },
+                            if (logout && context.mounted) {
+                              await context.read<AuthCubit>().signOut();
+                            }
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                    const SliverPadding(padding: .only(bottom: 16)),
+                    SliverPadding(
+                      padding: const .symmetric(horizontal: 16),
+                      sliver: SliverToBoxAdapter(
+                        child: SecondaryButton(
+                          text: 'Delete account',
+                          onPressed: () async {
+                            final delete =
+                                await confirmAction(
+                                  context,
+                                  title: 'Delete account',
+                                  message: 'Do you really want to delete?\nThis action cannot be undone',
+                                ) ??
+                                false;
+
+                            if (delete && context.mounted) {
+                              final userCubit = context.read<UserCubit>();
+                              await userCubit.deleteUser();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
+                  ],
                 ),
-                SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
-              ],
+              ),
             ),
           ),
 

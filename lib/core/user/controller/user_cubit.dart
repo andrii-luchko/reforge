@@ -1,7 +1,6 @@
 // ignore_for_file: no_empty_block
 import 'dart:async';
 import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,6 +75,7 @@ class UserCubit extends Cubit<UserState> {
 
   /// Refresh user data from server
   Future<void> refreshUser() async {
+    final currentState = state;
     final result = await _userRepository.refreshUser();
 
     switch (result) {
@@ -83,6 +83,7 @@ class UserCubit extends Cubit<UserState> {
         emit(UserState.loaded(user));
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
+        emit(currentState);
     }
   }
 
@@ -130,7 +131,7 @@ class UserCubit extends Cubit<UserState> {
       switch (result) {
         case Success(value: final updatedUser):
           await _userSessionService.saveUser(updatedUser);
-          emit(UserState.loaded(updatedUser));
+          emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
           return result;
 
         case ErrorR(error: final error):
