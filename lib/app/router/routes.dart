@@ -22,6 +22,7 @@ import 'package:reforge/features/auth/ui/pages/reset_send_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_in_page.dart';
 import 'package:reforge/features/auth/ui/pages/sign_up_page.dart';
 import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart';
+import 'package:reforge/features/calendar/controllers/training_details/training_details_cubit.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
@@ -337,7 +338,10 @@ class TrainingDetailsPageRoute extends GoRouteData with $TrainingDetailsPageRout
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const TrainingDetailsPage();
+    return BlocProvider(
+      create: (context) => di.getIt<TrainingDetailsCubit>(param1: workoutSessionID),
+      child: const TrainingDetailsPage(),
+    );
   }
 }
 

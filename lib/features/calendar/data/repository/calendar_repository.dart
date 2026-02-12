@@ -2,10 +2,10 @@ import 'package:injectable/injectable.dart';
 
 import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
+import 'package:reforge/features/calendar/data/datasources/workout_details_local_datasource.dart';
 import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -14,15 +14,23 @@ import 'package:reforge/features/workout_flow/data/models/workout_session_detail
 abstract interface class CalendarRepository {
   Future<Result<CalendarEntity>> getMonthCalendarData(DateTime month);
 
-  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(int sessionId);
+  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(
+    int sessionId, {
+    bool forceRefresh = false,
+  });
 }
 
 @Injectable(as: CalendarRepository)
 class CalendarRepositoryImpl implements CalendarRepository {
-  CalendarRepositoryImpl(this._apiClient, this._userSessionService);
+  CalendarRepositoryImpl(
+    this._apiClient,
+    this._userSessionService,
+    this._localDataSource,
+  );
 
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
+  final WorkoutDetailsLocalDataSource _localDataSource;
   @override
   Future<Result<CalendarEntity>> getMonthCalendarData(DateTime month) async {
     try {
@@ -37,7 +45,15 @@ class CalendarRepositoryImpl implements CalendarRepository {
   }
 
   @override
-  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(int sessionId) async {
+  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(
+    int sessionId, {
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh) {
+      final cached = _localDataSource.get(sessionId);
+      if (cached != null) return Result.success(cached);
+    }
+
     try {
       final system =
           _userSessionService.currentUser?.map(
@@ -47,10 +63,10 @@ class CalendarRepositoryImpl implements CalendarRepository {
           MeasurementSystem.metric;
 
       final response = await _apiClient.getWorkoutDetails(sessionId);
+      final entity = response.data.toEntity(system);
+      _localDataSource.put(sessionId, entity);
 
-      logger.d(response.data);
-
-      return Result.success(response.data.toEntity(system));
+      return Result.success(entity);
     } on Exception catch (e) {
       return Result.error(e);
     }

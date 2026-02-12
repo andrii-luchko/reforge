@@ -28,6 +28,7 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
       duration: duration,
       totalXpEarned: totalXpEarned,
       exercises: toPreviousResults(system),
+      measurementSystem: system,
     );
   }
 

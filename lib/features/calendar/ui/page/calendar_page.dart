@@ -52,12 +52,12 @@ class _CalendarBodyState extends State<CalendarBody> {
           final currentMonth = state.currentMonth;
 
           final event = state.currentMonthDays;
-          return CustomScrollView(
+          return RefreshIndicator(
+            onRefresh: () => cubit.refresh(),
+            child: CustomScrollView(
             slivers: [
               DefaultSliverAppBar(
-                onPressed: () {
-                  cubit.test();
-                },
+                onPressed: () => Navigator.of(context).pop(),
                 title: 'Forge Calendar',
               ),
               SliverPadding(
@@ -115,7 +115,7 @@ class _CalendarBodyState extends State<CalendarBody> {
 
               SliverPadding(
                 padding: CalendarBody.horizontalPadding.copyWith(bottom: 16),
-                sliver: SliverToBoxAdapter(
+                sliver: const SliverToBoxAdapter(
                   child: const Text(
                     'Workout days',
                     style: subheadH2Medium,
@@ -134,7 +134,8 @@ class _CalendarBodyState extends State<CalendarBody> {
                 ),
               ),
             ],
-          );
+          ),
+        );
         },
       ),
     );

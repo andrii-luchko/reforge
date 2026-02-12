@@ -24,10 +24,10 @@ class CalendarCubit extends Cubit<CalendarState> {
     return changeMonth(currentDate);
   }
 
-  Future<void> changeMonth(DateTime month) async {
+  Future<void> changeMonth(DateTime month, {bool forceRefresh = false}) async {
     final monthNormalized = month.toYearMonth();
 
-    if (state.calendar.containsKey(monthNormalized)) {
+    if (!forceRefresh && state.calendar.containsKey(monthNormalized)) {
       emit(state.copyWith(currentDate: month));
       return;
     }
@@ -60,6 +60,11 @@ class CalendarCubit extends Cubit<CalendarState> {
     }
   }
 
+  Future<void> refresh() async {
+    final currentDate = state.currentDate ?? DateTime.now();
+    return changeMonth(currentDate, forceRefresh: true);
+  }
+
   DayEntity? navigationCheck(DateTime date) {
     final currentMonthDays = state.currentMonthDays;
     if (currentMonthDays.isEmpty) return null;
@@ -67,9 +72,5 @@ class CalendarCubit extends Cubit<CalendarState> {
     final day = currentMonthDays[date.dateOnly];
 
     return day;
-  }
-
-  Future<void> test() async {
-    await _repository.getWorkoutDetails(55);
   }
 }

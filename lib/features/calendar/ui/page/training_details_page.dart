@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/int_extension.dart';
@@ -9,17 +10,16 @@ import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_data.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_header.dart';
 import 'package:reforge/features/active_workout/ui/widgets/previous_result_dialog.dart';
-import 'package:reforge/features/calendar/domain/mock/genertor.dart';
+import 'package:reforge/features/calendar/controllers/training_details/training_details_cubit.dart';
+import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
-
 import 'package:reforge/features/workout_common/ui/widgets/workout_list_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/horizontal_xp_bar.dart';
-
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -32,7 +32,6 @@ class TrainingDetailsPage extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-
       body: DefaultBackground(body: TrainingDetailsBody()),
     );
   }
@@ -40,7 +39,26 @@ class TrainingDetailsPage extends StatelessWidget {
 
 class TrainingDetailsBody extends StatelessWidget {
   const TrainingDetailsBody({super.key});
+
   static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TrainingDetailsCubit, TrainingDetailsState>(
+      builder: (context, state) {
+        return state.map(
+          initial: (_) => const _TrainingDetailsLoadingView(),
+          loading: (_) => const _TrainingDetailsLoadingView(),
+          loaded: (s) => _TrainingDetailsContentView(data: s.data),
+          error: (s) => _TrainingDetailsErrorView(message: s.message),
+        );
+      },
+    );
+  }
+}
+
+class _TrainingDetailsLoadingView extends StatelessWidget {
+  const _TrainingDetailsLoadingView();
 
   @override
   Widget build(BuildContext context) {
@@ -48,69 +66,169 @@ class TrainingDetailsBody extends StatelessWidget {
     return SafeArea(
       top: false,
       bottom: false,
+      child: Skeletonizer(
+        child: CustomScrollView(
+          slivers: [
+            DefaultSliverAppBar(
+              onPressed: () => Navigator.of(context).pop(),
+              title: 'Training Details',
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16, top: 16),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Overview',
+                  style: subheadH2Medium.copyWith(color: appTheme.beige100),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: const SliverToBoxAdapter(
+                child: TotalDurationTile(trainingDuration: 0),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: const SliverToBoxAdapter(
+                child: XpTile(progress: 0.5, xp: 0),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Workout info',
+                  style: subheadH2Medium.copyWith(color: appTheme.beige100),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverList.separated(
+                itemCount: 2,
+                itemBuilder: (context, index) => const WorkoutInfoTile(
+                  result: PreviousExerciseResult(
+                    name: 'Loading',
+                    description: 'Loading...',
+                  ),
+                  system: MeasurementSystem.metric,
+                ),
+                separatorBuilder: (_, _) => const SizedBox(height: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TrainingDetailsErrorView extends StatelessWidget {
+  const _TrainingDetailsErrorView({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      bottom: false,
       child: CustomScrollView(
         slivers: [
           DefaultSliverAppBar(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            title: 'Notification',
+            onPressed: () => Navigator.of(context).pop(),
+            title: 'Training Details',
           ),
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16, top: 16),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                'Overview',
-                style: subheadH2Medium.copyWith(color: appTheme.beige100),
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: const TotalDurationTile(
-                trainingDuration: 1000,
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: const XpTile(
-                progress: 0.5,
-                xp: 1000,
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                'Workout info',
-                style: subheadH2Medium.copyWith(color: appTheme.beige100),
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: horizontalPadding.copyWith(bottom: 16),
-            sliver: SliverList.separated(
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                return WorkoutInfoTile(
-                  result: MockExerciseGenerator.generateList().first,
-                  system: MeasurementSystem.metric,
-                );
-              },
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 16,
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: TrainingDetailsBody.horizontalPadding,
+              child: Center(
+                child: Text(
+                  message,
+                  style: subheadH3Medium.copyWith(color: context.appTheme.beige600),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TrainingDetailsContentView extends StatelessWidget {
+  const _TrainingDetailsContentView({required this.data});
+
+  final TrainingDetailsEntity data;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: RefreshIndicator(
+        onRefresh: () => context.read<TrainingDetailsCubit>().refresh(),
+        child: CustomScrollView(
+          slivers: [
+            DefaultSliverAppBar(
+              onPressed: () => Navigator.of(context).pop(),
+              title: 'Training Details',
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16, top: 16),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Overview',
+                  style: subheadH2Medium.copyWith(color: appTheme.beige100),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverToBoxAdapter(
+                child: TotalDurationTile(trainingDuration: data.duration),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverToBoxAdapter(
+                child: XpTile(
+                  progress: 0.5,
+                  xp: data.totalXpEarned,
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Workout info',
+                  style: subheadH2Medium.copyWith(color: appTheme.beige100),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+              sliver: SliverList.separated(
+                itemCount: data.exercises.length,
+                itemBuilder: (context, index) {
+                  return WorkoutInfoTile(
+                    result: data.exercises[index],
+                    system: data.measurementSystem,
+                  );
+                },
+                separatorBuilder: (context, index) => const SizedBox(
+                  height: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
