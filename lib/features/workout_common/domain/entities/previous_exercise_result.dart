@@ -12,6 +12,6 @@ sealed class PreviousExerciseResult with _$PreviousExerciseResult {
     String? imageUrl,
     @Default([]) List<WorkoutMetric> metrics,
     String? notes,
-    List<WorkoutSet>? sets,
+    @Default([]) List<WorkoutSet> sets,
   }) = _PreviousExerciseResult;
 }

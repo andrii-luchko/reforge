@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/activity_tile.dart';
 import 'package:reforge/shared/calendar/calendar_piker.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_days_view.dart';
@@ -100,8 +102,12 @@ class CalendarBody extends StatelessWidget {
                   initialDate: DateTime.now(),
                   firstDay: DateTime(2020),
                   lastDay: DateTime(2030),
+
                   onDateSelected: (date) {
+                    logger.d(date);
+                    TrainingDetailsPageRoute(date: date, workoutSessionID: 1).push<void>(context);
                     getMockEventsMap();
+
                     // if (map.containsKey(DateUtils.dateOnly(date))) {
 
                     // }

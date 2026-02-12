@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/home/ui/widgets/xp_tile.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
+import 'package:reforge/shared/horizontal_xp_bar.dart';
 import 'package:reforge/shared/sunrays_image_container.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:reforge/shared/uikit/staggered_summary_card.dart';
