@@ -69,6 +69,9 @@ abstract class ApiClient {
   @PATCH('/users/me')
   Future<BaseResponse<User>> updateCurrentUser(@Body() PatchProfileRequest request);
 
+  @PATCH('/users/{id}/email')
+  Future<BaseResponse<User>> updateCurrentUserEmail(@Path('id') int id, @Body() PatchProfileRequest request);
+
   @DELETE('/users/me')
   Future<BaseResponse<void>> deleteUser();
 

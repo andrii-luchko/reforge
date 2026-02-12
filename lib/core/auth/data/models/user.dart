@@ -11,9 +11,7 @@ part 'user.g.dart';
 
 @Freezed(copyWith: true, fromJson: true, toJson: true, map: FreezedMapOptions(map: true))
 sealed class User with _$User {
-  const factory User.newUser({
-    required int id,
-  }) = NewUser;
+  const factory User.newUser({required int id, String? email}) = NewUser;
 
   const factory User.onboarded({
     required int id,

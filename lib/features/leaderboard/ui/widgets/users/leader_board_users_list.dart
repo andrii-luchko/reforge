@@ -4,13 +4,12 @@ import 'package:gradient_borders/gradient_borders.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/xp_tag.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
 import 'package:reforge/shared/empty_list_message.dart';
-import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderBoardUsersList extends StatelessWidget {
@@ -91,10 +90,8 @@ class LeaderboardUserListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            AppTag(
-              text: 'XP:${XpFormatter.precise(user.xp)}',
-
-              textStyle: subheadH8Semibold.copyWith(color: appTheme.beige100),
+            XpTag(
+              xp: user.xp,
             ),
           ],
         ),

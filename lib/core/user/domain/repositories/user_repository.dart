@@ -18,6 +18,8 @@ abstract interface class UserRepository {
   /// Takes parts of UpdateProfileRequest with fields
   Future<Result<User>> updateUser(PatchProfileRequest request);
 
+  Future<Result<void>> updateUserEmail({required String email, required int userId});
+
   /// Delete the current user
   Future<Result<void>> deleteUser();
 

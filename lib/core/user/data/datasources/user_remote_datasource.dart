@@ -13,6 +13,7 @@ abstract interface class UserRemoteDataSource {
   Future<void> deleteUser();
   Future<void> deleteUserById(int id);
   Future<String> uploadUserAvatar(File file);
+  Future<void> updateUserEmail(String email, int userId);
 }
 
 @Injectable(as: UserRemoteDataSource)
@@ -55,6 +56,13 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<String> uploadUserAvatar(File file) async {
     const bucketName = 'user_avatar_bucket';
     final response = await _apiClient.uploadFile(bucket: bucketName, file: file);
+    return response.data;
+  }
+
+  @override
+  Future<User> updateUserEmail(String email, int userId) async {
+    final request = PatchProfileRequest(emailAddress: email);
+    final response = await _apiClient.updateCurrentUserEmail(userId, request);
     return response.data;
   }
 }

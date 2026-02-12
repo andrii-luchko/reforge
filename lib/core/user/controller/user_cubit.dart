@@ -179,6 +179,27 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
+  Future<Result<User>> updateEmail(String newEmail) async {
+    final currentState = state;
+    if (currentState is! Loaded) return Result.error(Exception('User not loaded'));
+    final result = await _userRepository.updateUserEmail(
+      email: newEmail,
+      userId: currentState.user.id,
+    );
+
+    switch (result) {
+      case Success():
+        await _userSessionService.saveUser(currentState.user.copyWith(email: newEmail));
+        emit(UserState.loaded(currentState.user.copyWith(email: newEmail)));
+
+        return Result.success(currentState.user.copyWith(email: newEmail));
+
+      case ErrorR(error: final error):
+        emit(UserState.loaded(currentState.user));
+        return Result.error(error);
+    }
+  }
+
   @override
   Future<void> close() {
     unawaited(_authSubscription?.cancel());

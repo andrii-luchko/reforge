@@ -17,6 +17,7 @@ sealed class PatchProfileRequest with _$PatchProfileRequest {
     String? username,
     String? avatarUrl,
 
+    @JsonKey(name: 'email') String? emailAddress,
     @JsonKey(name: 'factionId') int? mainFaction,
     @JsonKey(name: 'secondaryFactionId') int? secondFaction,
 

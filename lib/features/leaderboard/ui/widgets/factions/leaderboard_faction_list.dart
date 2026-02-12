@@ -3,14 +3,13 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/xp_tag.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
 import 'package:reforge/shared/empty_list_message.dart';
-import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderboardFactionList extends StatelessWidget {
@@ -106,12 +105,8 @@ class LeaderboardFactionListTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    child: AppTag(
-                      text: 'XP: ${XpFormatter.precise(faction.xp)}',
-
-                      textStyle: subheadH8Semibold.copyWith(color: appTheme.beige100),
-                    ),
+                  XpTag(
+                    xp: faction.xp,
                   ),
                 ],
               ),
