@@ -6,7 +6,6 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
 part 'users_leaderboard_state.dart';
 part 'users_leaderboard_cubit.freezed.dart';
 
@@ -22,7 +21,6 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
       state.copyWith(
         isLoading: true,
         error: null,
-        currentUsersList: generateMockUsers(),
         currentPage: 1,
         hasReachedMax: false,
       ),

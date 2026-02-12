@@ -21,6 +21,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     if (state.attributes.isNotEmpty) return;
 
     await loadAttributes();
+    await loadBadges();
   }
 
   Future<void> loadAttributes({bool forceRefresh = false}) async {

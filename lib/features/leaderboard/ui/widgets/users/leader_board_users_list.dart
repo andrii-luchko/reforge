@@ -9,6 +9,7 @@ import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_mo
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -19,23 +20,29 @@ class LeaderBoardUsersList extends StatelessWidget {
   final int? currentUserIndex;
   @override
   Widget build(BuildContext context) {
-    return SliverList.separated(
-      itemCount: users.length,
-      itemBuilder: (context, index) {
-        // final isMe = index == currentUserIndex;
+    return users.isEmpty
+        ? const SliverEmptyListMessage(
+            title: 'No Users Found',
+            subtitle: 'It looks like there are no active user in this league yet.',
+            icon: Icons.groups_3_outlined,
+          )
+        : SliverList.separated(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              // final isMe = index == currentUserIndex;
 
-        final user = users[index];
-        return Skeleton.leaf(
-          child: LeaderboardUserListTile(
-            key: ValueKey(user.rank),
-            user: user,
-          ).animateEntrance(),
-        );
-      },
-      separatorBuilder: (context, index) => const SizedBox(
-        height: 8,
-      ),
-    );
+              final user = users[index];
+              return Skeleton.leaf(
+                child: LeaderboardUserListTile(
+                  key: ValueKey(user.rank),
+                  user: user,
+                ).animateEntrance(),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 8,
+            ),
+          );
   }
 }
 

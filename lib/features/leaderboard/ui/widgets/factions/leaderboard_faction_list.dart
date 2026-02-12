@@ -9,6 +9,7 @@ import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -20,27 +21,33 @@ class LeaderboardFactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverList.separated(
-      itemCount: factions.length,
-      itemBuilder: (context, index) {
-        final faction = factions[index];
+    return factions.isEmpty
+        ? const SliverEmptyListMessage(
+            title: 'No Factions Found',
+            subtitle: 'It looks like there are no active factions in this league yet.',
+            icon: Icons.groups_3_outlined,
+          )
+        : SliverList.separated(
+            itemCount: factions.length,
+            itemBuilder: (context, index) {
+              final faction = factions[index];
 
-        final rank = index + 1;
-        return Skeleton.leaf(
-          child:
-              LeaderboardFactionListTile(
-                key: ValueKey(faction.name),
-                faction: faction,
-                rank: rank,
-              ).animateEntrance(
-                index: index,
-              ),
-        );
-      },
-      separatorBuilder: (context, index) => const SizedBox(
-        height: 8,
-      ),
-    );
+              final rank = index + 1;
+              return Skeleton.leaf(
+                child:
+                    LeaderboardFactionListTile(
+                      key: ValueKey(faction.name),
+                      faction: faction,
+                      rank: rank,
+                    ).animateEntrance(
+                      index: index,
+                    ),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 8,
+            ),
+          );
   }
 }
 

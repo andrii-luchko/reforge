@@ -6,11 +6,13 @@ import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
+import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_factions.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/faction_mode_picker.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/leaderboard_faction_list.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/victory_point_section.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
@@ -109,12 +111,16 @@ class _LeaderboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mockFaction = generateMockFactions();
+    final isLoading = state.isLoading;
+    final currentFaction = isLoading ? mockFaction : state.factionsSortByMode;
+
     switch (state.selectedType) {
       case FactionShowType.list:
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: LeaderboardFactionList(
-            factions: state.factionsSortByMode,
+            factions: currentFaction,
             mode: state.selectedMode,
           ),
         );
@@ -122,12 +128,18 @@ class _LeaderboardContent extends StatelessWidget {
       case FactionShowType.victoryPoints:
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverToBoxAdapter(
-            child: VictoryPointSection(
-              mode: state.selectedMode,
-              factions: state.factionsSortByMode,
-            ).animateEntrance(),
-          ),
+          sliver: currentFaction.isEmpty
+              ? const SliverEmptyListMessage(
+                  title: 'No Factions Found',
+                  subtitle: 'It looks like there are no active factions in this league yet.',
+                  icon: Icons.groups_3_outlined,
+                )
+              : SliverToBoxAdapter(
+                  child: VictoryPointSection(
+                    factions: currentFaction,
+                    mode: state.selectedMode,
+                  ).animateEntrance(),
+                ),
         );
     }
   }

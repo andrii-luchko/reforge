@@ -6,6 +6,7 @@ import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
@@ -91,6 +92,7 @@ class LeaderBoardListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mockUsers = generateMockUsers();
     return BlocConsumer<UsersLeaderboardCubit, UsersLeaderboardState>(
       listener: (context, state) {
         final error = state.error;
@@ -98,8 +100,8 @@ class LeaderBoardListSection extends StatelessWidget {
         toastification.showErrorToast(error, context);
       },
       builder: (context, state) {
-        final currentUsers = state.currentUsersList;
         final isLoading = state.isLoading;
+        final currentUsers = isLoading ? mockUsers : state.currentUsersList;
         final isPaginationLoading = state.isPaginationLoading;
 
         return SliverSkeletonizer(

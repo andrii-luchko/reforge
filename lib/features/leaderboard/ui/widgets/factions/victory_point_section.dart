@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/victory_card.dart';
+
 import 'package:skeletonizer/skeletonizer.dart';
 
 class VictoryPointSection extends StatelessWidget {

@@ -155,7 +155,7 @@ class AppThemeValues {
       end: Alignment.bottomRight,
     ),
 
-    sliverBottomSpacing: 200,
+    sliverBottomSpacing: 100,
 
     cardNavigation: const LinearGradient(
       begin: Alignment(-0.53, -1),
@@ -322,7 +322,7 @@ class AppThemeValues {
       end: Alignment.bottomRight,
     ),
 
-    sliverBottomSpacing: 200,
+    sliverBottomSpacing: 100,
 
     cardNavigation: const LinearGradient(
       begin: Alignment(-0.53, -1),
