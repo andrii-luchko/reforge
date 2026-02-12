@@ -14,6 +14,8 @@ class CalendarHeader extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     required this.needBottomLine,
+    required this.canGoPrevious,
+    required this.canGoNext,
     this.headerTitle,
     super.key,
   });
@@ -24,6 +26,8 @@ class CalendarHeader extends StatelessWidget {
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final bool needBottomLine;
+  final bool canGoPrevious;
+  final bool canGoNext;
   final String? headerTitle;
 
   @override
@@ -76,7 +80,7 @@ class CalendarHeader extends StatelessWidget {
                   width: 44,
                   height: 44,
                   iconSize: 22,
-                  onPressed: onPrevious,
+                  onPressed: canGoPrevious ? onPrevious : null,
                 ),
                 const SizedBox(width: 8),
                 AppIconButton.icon(
@@ -84,7 +88,7 @@ class CalendarHeader extends StatelessWidget {
                   width: 44,
                   height: 44,
                   iconSize: 22,
-                  onPressed: onNext,
+                  onPressed: canGoNext ? onNext : null,
                 ),
               ],
             ),

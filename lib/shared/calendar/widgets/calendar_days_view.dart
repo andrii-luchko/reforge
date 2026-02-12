@@ -18,6 +18,7 @@ class CalendarDaysView extends StatefulWidget {
     required this.onDaySelected,
     required this.today,
     this.events = const {},
+    this.onPageChanged,
     super.key,
   });
 
@@ -28,6 +29,7 @@ class CalendarDaysView extends StatefulWidget {
   final DateTime today;
   final Map<DateTime, CalendarEvent> events;
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
+  final ValueChanged<DateTime>? onPageChanged;
 
   @override
   State<CalendarDaysView> createState() => _CalendarDaysViewState();
@@ -74,7 +76,7 @@ class _CalendarDaysViewState extends State<CalendarDaysView> {
       startingDayOfWeek: StartingDayOfWeek.monday,
       onDaySelected: widget.onDaySelected,
       headerVisible: false,
-      onPageChanged: (focusedDay) => setState(() => _focusedDay = focusedDay),
+      onPageChanged: (focusedDay) => widget.onPageChanged?.call(focusedDay),
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: subheadH7Medium.copyWith(
           color: context.appTheme.beige700,
