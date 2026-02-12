@@ -13,6 +13,10 @@ extension DateTimeFormatting on DateTime {
     return DateFormat('dd MMM yyyy').format(this);
   }
 
+  String toYearMonth() {
+    return DateFormat('yyyy-MM').format(this);
+  }
+
   String toNotificationTime() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -26,4 +30,6 @@ extension DateTimeFormatting on DateTime {
       return '$dayOfWeek $time';
     }
   }
+
+  DateTime get dateOnly => DateTime(year, month, day);
 }

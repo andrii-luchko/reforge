@@ -1,5 +1,6 @@
 // field_date_picker.dart
 import 'package:flutter/material.dart';
+import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 import 'package:reforge/shared/calendar/enum/calendar_view_mode.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_days_view.dart';
 import 'package:reforge/shared/calendar/widgets/calendar_header.dart';
@@ -27,7 +28,7 @@ class CalendarPicker extends StatefulWidget {
   final DateTime? selectedDate;
   final DateTime firstDay;
   final DateTime lastDay;
-  final Map<DateTime, CalendarEvent> events;
+  final Map<DateTime, DayEntity> events;
   final ValueChanged<DateTime> onDateSelected;
   final ValueChanged<DateTime>? onFocusedDayChanged;
 
@@ -123,16 +124,16 @@ class _CalendarPickerState extends State<CalendarPicker> {
   }
 
   DateTime get _prevDate => switch (_viewMode) {
-        CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month - 1),
-        CalendarViewMode.months => DateTime(_focusedDay.year - 1, _focusedDay.month),
-        CalendarViewMode.years => DateTime(_focusedDay.year - 10, _focusedDay.month),
-      };
+    CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month - 1),
+    CalendarViewMode.months => DateTime(_focusedDay.year - 1, _focusedDay.month),
+    CalendarViewMode.years => DateTime(_focusedDay.year - 10, _focusedDay.month),
+  };
 
   DateTime get _nextDate => switch (_viewMode) {
-        CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month + 1),
-        CalendarViewMode.months => DateTime(_focusedDay.year + 1, _focusedDay.month),
-        CalendarViewMode.years => DateTime(_focusedDay.year + 10, _focusedDay.month),
-      };
+    CalendarViewMode.days => DateTime(_focusedDay.year, _focusedDay.month + 1),
+    CalendarViewMode.months => DateTime(_focusedDay.year + 1, _focusedDay.month),
+    CalendarViewMode.years => DateTime(_focusedDay.year + 10, _focusedDay.month),
+  };
 
   @override
   Widget build(BuildContext context) {
