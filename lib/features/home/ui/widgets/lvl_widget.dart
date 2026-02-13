@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/generated/flutter_gen/fonts.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class LvlWidget extends StatelessWidget {
   const LvlWidget({
@@ -26,7 +27,7 @@ class LvlWidget extends StatelessWidget {
             fontFamily: FontFamily.mechsuit,
             height: 23 / 12,
           ),
-          'LV.\n$lvl',
+          '${t.home.lvPrefix}\n$lvl',
         ),
       ),
     );

@@ -8,6 +8,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
@@ -89,7 +90,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           child: Skeleton.replace(
                             replacement: const AvatarCardShimmer(),
                             child: AvatarRankCard(
-                              rank: RankEntity.mock(),
+                              rank: RankEntity.mockWith(context.t),
                             ),
                           ),
                         ),

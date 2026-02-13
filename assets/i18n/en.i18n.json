@@ -334,7 +334,9 @@
             "year_to_date": "Year to Date",
             "all_time": "All Time"
         },
-        "rank_label": "Rank"
+        "rank_label": "Rank",
+        "lvPrefix": "LV.",
+        "mockBadgeName": "Iron Lifter"
     },
     "leaderboard": {
         "title": "LeaderBoard",

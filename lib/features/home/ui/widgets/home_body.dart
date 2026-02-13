@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
@@ -46,7 +47,7 @@ class HomeBody extends StatelessWidget {
                       child: Skeleton.replace(
                         replacement: const AvatarCardShimmer(),
                         child: AvatarRankCard(
-                          rank: state.rank ?? RankEntity.mock(),
+                          rank: state.rank ?? RankEntity.mockWith(t),
                         ),
                       ),
                     ),
@@ -67,7 +68,9 @@ class HomeBody extends StatelessWidget {
                       currentStats: state.currentStats,
                     ),
                     builder: (context, state) {
-                      final currentStats = state.isStatsLoading ? UserStatsX.mock() : state.currentStats;
+                      final currentStats = state.isStatsLoading
+                          ? UserStatsX.mock(badgeName: t.home.mockBadgeName)
+                          : state.currentStats;
 
                       if (currentStats == null) {
                         return const HomeWorkoutResultEmpty();
