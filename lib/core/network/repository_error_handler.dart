@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
@@ -34,13 +36,14 @@ mixin RepositoryErrorHandler {
         return t.errors.request_cancelled;
       case DioExceptionType.connectionError:
         return t.errors.no_internet;
-      default:
+      case DioExceptionType.badCertificate:
+      case DioExceptionType.unknown:
         return t.errors.unexpected;
     }
   }
 
   void _logError(String? label, Object error, StackTrace stack) {
     logger.e('ERROR [$label]: $error', error, stack);
-    FirebaseCrashlytics.instance.recordError(error, stack, reason: label);
+    unawaited(FirebaseCrashlytics.instance.recordError(error, stack, reason: label));
   }
 }
