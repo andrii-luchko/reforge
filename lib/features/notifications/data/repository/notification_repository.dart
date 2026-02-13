@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
@@ -12,6 +13,14 @@ abstract interface class NotificationRepository {
 
 @Injectable(as: NotificationRepository)
 class NotificationRepositoryImpl with RepositoryErrorHandler implements NotificationRepository {
+  NotificationRepositoryImpl(this._firebaseMessaging);
+
+  final FirebaseMessaging _firebaseMessaging;
+
+  Future<void> getNotifi() async {
+    _firebaseMessaging.requestPermission();
+  }
+
   @override
   Future<Result<List<NotificationEntity>>> getNotifications() async {
     try {
