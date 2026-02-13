@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs
 // ignore_for_file: sort_constructors_first
 
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';

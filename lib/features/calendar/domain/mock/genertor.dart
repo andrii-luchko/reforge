@@ -9,28 +9,28 @@ class MockExerciseGenerator {
   static final _random = Random();
 
   static List<PreviousExerciseResult> generateList({int count = 5}) {
-    return List.generate(count, (index) => _generateSingle(index));
+    return List.generate(count, _generateSingle);
   }
 
   static PreviousExerciseResult _generateSingle(int index) {
-    final exerciseNames = ['Приседания', 'Жим лежа', 'Становая тяга', 'Бег', 'Планка'];
+    final exerciseNames = ['Fusion', 'Fusion', 'Fusion', 'Fusion', 'Fusion'];
     final name = exerciseNames[index % exerciseNames.length];
 
     final metrics = _getMetricsForExercise(name);
 
     return PreviousExerciseResult(
       name: name,
-      description: 'Описание для $name — отличная тренировка на все группы мышц.',
+      description: 'FusionFusionFusion $name — FusionFusionFusionFusionFusionFusionFusion',
       imageUrl: 'https://picsum.photos/200/200?random=$index',
       metrics: metrics,
-      notes: _random.nextBool() ? 'Чувствовал себя отлично, увеличил вес' : null,
+      notes: _random.nextBool() ? 'FusionFusionFusionFusionFusion' : null,
       sets: _generateSets(metrics),
     );
   }
 
   static List<WorkoutMetric> _getMetricsForExercise(String name) {
-    if (name == 'Бег') return [WorkoutMetric.distance, WorkoutMetric.time, WorkoutMetric.pace];
-    if (name == 'Планка') return [WorkoutMetric.time];
+    if (name == 'Fusion') return [WorkoutMetric.distance, WorkoutMetric.time, WorkoutMetric.pace];
+    if (name == 'Fusion') return [WorkoutMetric.time];
     return [WorkoutMetric.weight, WorkoutMetric.reps];
   }
 
@@ -40,7 +40,6 @@ class MockExerciseGenerator {
         id: _random.nextInt(10000),
         setNumber: i + 1,
         isDone: true,
-        // Заполняем только те поля, которые есть в метриках
         weight: metrics.contains(WorkoutMetric.weight) ? (40.0 + _random.nextInt(60)) : null,
         reps: metrics.contains(WorkoutMetric.reps) ? (8 + _random.nextInt(7)) : null,
         distance: metrics.contains(WorkoutMetric.distance) ? (1000.0 + _random.nextInt(5000)) : null,

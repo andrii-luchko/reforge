@@ -55,6 +55,10 @@ class SettingsPage extends StatelessWidget {
             child: RefreshIndicator(
               onRefresh: () => context.read<UserCubit>().refreshUser(),
               child: Skeletonizer(
+                enabled: context.watch<UserCubit>().state.maybeWhen(
+                  loading: () => true,
+                  orElse: () => false,
+                ),
                 child: CustomScrollView(
                   slivers: [
                     SliverPadding(

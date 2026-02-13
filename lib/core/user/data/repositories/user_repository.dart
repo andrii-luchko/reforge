@@ -24,7 +24,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   Future<Result<User?>> getCurrentUser() async {
     try {
       final user = await makeRequest(
-        () => _remoteDataSource.getCurrentUser(),
+        _remoteDataSource.getCurrentUser,
         label: 'getCurrentUser',
       );
       await _localDataSource.saveUser(user);
@@ -70,7 +70,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   Future<Result<void>> deleteUser() async {
     try {
       await makeRequest(
-        () => _remoteDataSource.deleteUser(),
+        _remoteDataSource.deleteUser,
         label: 'deleteUser',
       );
       await _localDataSource.clearUser();
@@ -101,7 +101,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   Future<Result<User>> refreshUser() async {
     try {
       final user = await makeRequest(
-        () => _remoteDataSource.getCurrentUser(),
+        _remoteDataSource.getCurrentUser,
         label: 'refreshUser',
       );
       await _localDataSource.saveUser(user);

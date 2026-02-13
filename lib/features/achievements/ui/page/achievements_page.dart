@@ -144,7 +144,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         sliver: SliverBadgesGrid(
-                          badges: state.badges.sublist(0, 3),
+                          badges: state.badges.take(3).toList(),
                         ),
                       ),
                     ],

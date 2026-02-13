@@ -29,16 +29,17 @@ class AttributeSystemSection extends StatelessWidget {
           spacing: 16,
           children: [
             const AttributeSystemHeader(),
-            attributes.isNotEmpty
-                ? EmptyListMessage(
-                    icon: Icons.visibility_off_outlined,
-                    iconSize: 48,
-                    title: 'No Attributes Found',
-                    subtitle: 'It looks like you have no attributes yet.',
-                  )
-                : AttributesList(
-                    attributes: attributes,
-                  ),
+            if (attributes.isNotEmpty)
+              const EmptyListMessage(
+                icon: Icons.visibility_off_outlined,
+                iconSize: 48,
+                title: 'No Attributes Found',
+                subtitle: 'It looks like you have no attributes yet.',
+              )
+            else
+              AttributesList(
+                attributes: attributes,
+              ),
           ],
         ),
       ),

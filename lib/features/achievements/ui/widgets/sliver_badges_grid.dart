@@ -11,7 +11,7 @@ class SliverBadgesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (badges.isEmpty) {
-      return SliverEmptyListMessage(
+      return const SliverEmptyListMessage(
         title: 'No Badges Found',
         subtitle: 'It looks like you have no badges yet.',
         icon: Icons.emoji_events_outlined,
