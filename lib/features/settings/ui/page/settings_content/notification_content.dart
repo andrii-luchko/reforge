@@ -1,32 +1,26 @@
 import 'dart:async';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
+import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
+import 'package:reforge/features/settings/ui/widgets/notification_switcher.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-class NotificationPage extends StatelessWidget {
-  const NotificationPage({super.key});
+class SettingsNotificationPage extends StatelessWidget {
+  const SettingsNotificationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BaseSettingsEditPage(
       title: WorkoutSettings.notification.title(t),
-      body: const NotificationContent(),
-    );
-  }
-}
-
-class SubscriptionPage extends StatelessWidget {
-  const SubscriptionPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BaseSettingsEditPage(
-      title: WorkoutSettings.subscription.title(t),
       body: const NotificationContent(),
     );
   }
@@ -39,150 +33,182 @@ class NotificationContent extends StatefulWidget {
   State<NotificationContent> createState() => _NotificationContentState();
 }
 
-class _NotificationContentState extends State<NotificationContent> {
-  bool _reminders = false;
-  bool _announcements = false;
+class _NotificationContentState extends State<NotificationContent> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<NotificationPermissionCubit>().checkPermission();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<NotificationPermissionCubit, NotificationPermissionState>(
+      builder: (context, notificationState) {
+        return notificationState.when(
+          checking: () => const _NotificationContentSkeleton(),
+          permissionNotDetermined: () => _NotificationTogglesContent(
+            togglesEnabled: false,
+            showPermissionBanner: true,
+            onOpenSettings: () async {
+              await context.read<NotificationPermissionCubit>().requestPermission();
+              if (context.mounted) {
+                await context.read<NotificationPermissionCubit>().checkPermission();
+              }
+            },
+          ),
+          permissionDenied: () => _NotificationTogglesContent(
+            togglesEnabled: false,
+            showPermissionBanner: true,
+            onOpenSettings: () async {
+              await AppSettings.openAppSettings();
+              if (context.mounted) {
+                await context.read<NotificationPermissionCubit>().checkPermission();
+              }
+            },
+          ),
+          permissionGranted: (token, isRequestingPermission) =>
+              const _NotificationTogglesContent(
+            togglesEnabled: true,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NotificationContentSkeleton extends StatelessWidget {
+  const _NotificationContentSkeleton();
+
   @override
   Widget build(BuildContext context) {
     return Column(
       spacing: 12,
       children: [
-        NotificationSwitcher(
-          title: 'Reminders',
-          value: _reminders,
-          onChanged: (value) {
-            setState(() {
-              _reminders = value;
-            });
-          },
-        ),
-        NotificationSwitcher(
-          title: 'Announcements',
-          value: _announcements,
-          onChanged: (value) {
-            setState(() {
-              _announcements = value;
-            });
-          },
-        ),
+        _SkeletonSwitcher(),
+        _SkeletonSwitcher(),
       ],
     );
   }
 }
 
-class NotificationSwitcher extends StatelessWidget {
-  const NotificationSwitcher({required this.onChanged, required this.title, required this.value, super.key});
-
-  final String title;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
+class _SkeletonSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 56,
       decoration: BoxDecoration(
         color: context.appTheme.beige900,
         border: Border.all(color: context.appTheme.strokeCard),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Container(
-        padding: const .all(16),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: context.appTheme.cardNavigation),
-        child: Row(
-          mainAxisAlignment: .spaceBetween,
-          children: [
-            Text(
-              title,
-              style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
-            ),
-            ReforgeSwitch(
-              value: value,
-              onChanged: onChanged,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
 
-class ReforgeSwitch extends StatelessWidget {
-  const ReforgeSwitch({
-    required this.value,
-    required this.onChanged,
-    super.key,
+class _NotificationTogglesContent extends StatelessWidget {
+  const _NotificationTogglesContent({
+    required this.togglesEnabled,
+    this.showPermissionBanner = false,
+    this.onOpenSettings,
   });
 
-  final bool value;
-  final ValueChanged<bool> onChanged;
+  final bool togglesEnabled;
+  final bool showPermissionBanner;
+  final VoidCallback? onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        onChanged(!value);
-        unawaited(HapticFeedback.lightImpact());
-      },
-      child: SizedBox(
-        width: 36,
-        height: 20,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFC66C32),
-                    Color(0x00C66C32),
-                  ],
+    return Column(
+      spacing: 12,
+      children: [
+        if (showPermissionBanner && onOpenSettings != null) _PermissionDeniedBanner(onOpenSettings: onOpenSettings!),
+        BlocBuilder<UserCubit, UserState>(
+          builder: (context, userState) {
+            final user = userState.maybeWhen(
+              loaded: (u) => u is OnboardedUser ? u : null,
+              orElse: () => null,
+            );
+            return Column(
+              spacing: 12,
+              children: [
+                NotificationSwitcher(
+                  title: 'Reminders',
+                  value: user?.remindersEnabled ?? false,
+                  enabled: togglesEnabled,
+                  onChanged: togglesEnabled ? (value) => _onRemindersChanged(context, value) : null,
                 ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(1),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(9),
-
-                  color: value ? const Color(0xFF9D3C10) : const Color(0xFF4B2105),
+                NotificationSwitcher(
+                  title: 'Announcements',
+                  value: user?.announcementsEnabled ?? false,
+                  enabled: togglesEnabled,
+                  onChanged: togglesEnabled ? (value) => _onAnnouncementsChanged(context, value) : null,
                 ),
-              ),
-            ),
-
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFDDD7CD),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF101828).withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                      BoxShadow(
-                        color: const Color(0xFF101828).withValues(alpha: 0.06),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
+      ],
+    );
+  }
+
+  Future<void> _onRemindersChanged(BuildContext context, bool value) async {
+    await context.read<UserCubit>().updateProfile(
+      PatchProfileRequest(remindersEnabled: value),
+    );
+  }
+
+  Future<void> _onAnnouncementsChanged(BuildContext context, bool value) async {
+    await context.read<UserCubit>().updateProfile(
+      PatchProfileRequest(announcementsEnabled: value),
+    );
+  }
+}
+
+class _PermissionDeniedBanner extends StatelessWidget {
+  const _PermissionDeniedBanner({required this.onOpenSettings});
+
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.appTheme.beige900,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.appTheme.strokeCard),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Notifications are disabled',
+            style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enable notifications in app settings to receive reminders and updates.',
+            style: bodyLRegular.copyWith(color: context.appTheme.beige300),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: onOpenSettings,
+            child: const Text('Open Settings'),
+          ),
+        ],
       ),
     );
   }

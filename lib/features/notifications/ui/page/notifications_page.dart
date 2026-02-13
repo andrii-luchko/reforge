@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/features/notifications/controller/notification_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
 import 'package:reforge/features/notifications/ui/widgets/notification_list_section.dart';
@@ -20,13 +20,31 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  late final NotificationCubit cubit = context.read<NotificationCubit>();
-  final List<NotificationEntity> mockedNotifications = NotificationGenerator.generateMocks(8);
+  late final NotificationFeedCubit _cubit = context.read<NotificationFeedCubit>();
+  final List<NotificationEntity> _mockedNotifications = NotificationGenerator.generateMocks(8);
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    unawaited(cubit.loadNotifications());
+    unawaited(_cubit.loadNotifications());
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    if (maxScroll - currentScroll < 200) {
+      unawaited(_cubit.loadMore());
+    }
   }
 
   @override
@@ -41,8 +59,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
           top: false,
           bottom: false,
           child: RefreshIndicator(
-            onRefresh: () => cubit.loadNotifications(forceRefresh: true),
+            onRefresh: () => _cubit.loadNotifications(forceRefresh: true),
             child: CustomScrollView(
+              controller: _scrollController,
               slivers: [
                 DefaultSliverAppBar(
                   onPressed: () {
@@ -50,24 +69,52 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   },
                   title: 'Notification',
                 ),
-                BlocBuilder<NotificationCubit, NotificationState>(
+                BlocBuilder<NotificationFeedCubit, NotificationFeedState>(
                   builder: (context, state) {
-                    final displayedNotifications = state.isLoading ? mockedNotifications : state.notifications;
-                    return SliverSkeletonizer(
-                      enabled: state.isLoading,
-                      child: NotificationListSection(
-                        notifications: displayedNotifications,
-                        onClearAll: cubit.clearAllNotifications,
-                        onNotificationClear: cubit.clearNotification,
+                    return state.when(
+                      initial: () => SliverSkeletonizer(
+                        child: NotificationListSection(
+                          notifications: _mockedNotifications,
+                          onClearAll: () {},
+                          onNotificationClear: (_) {},
+                        ),
+                      ),
+                      loading: () => SliverSkeletonizer(
+                        child: NotificationListSection(
+                          notifications: _mockedNotifications,
+                          onClearAll: () {},
+                          onNotificationClear: (_) {},
+                        ),
+                      ),
+                      loaded: (notifications, hasMore, isLoadingMore, error) =>
+                          _buildNotificationList(notifications: notifications),
+                      error: (message) => SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(message),
+                        ),
                       ),
                     );
                   },
                 ),
-                const SliverPadding(padding: .only(bottom: 50)),
+                const SliverPadding(padding: EdgeInsets.only(bottom: 50)),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationList({
+    required List<NotificationEntity> notifications,
+  }) {
+    return SliverSkeletonizer(
+      enabled: false,
+      child: NotificationListSection(
+        notifications: notifications,
+        onClearAll: _cubit.clearAllNotifications,
+        onNotificationClear: _cubit.clearNotification,
       ),
     );
   }

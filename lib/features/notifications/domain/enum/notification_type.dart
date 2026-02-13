@@ -5,7 +5,8 @@ enum NotificationType {
   xpSummary,
   rankUpdate,
   weeklyWinner,
-  paymentFailed
+  paymentFailed,
+  unknown,
   ;
 
   String get iconAsset {
@@ -15,6 +16,7 @@ enum NotificationType {
       rankUpdate => Assets.images.icons.cup,
       weeklyWinner => Assets.images.icons.medalInactive,
       paymentFailed => Assets.images.icons.cardRemove,
+      unknown => Assets.images.icons.bell,
     };
   }
 }

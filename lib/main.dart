@@ -15,7 +15,8 @@ import 'package:reforge/features/achievements/controllers/achievements_cubit.dar
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
 import 'package:reforge/features/calendar/controllers/calendar/calendar_cubit.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
-import 'package:reforge/features/notifications/controller/notification_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
 
@@ -69,7 +70,11 @@ class App extends StatelessWidget {
         BlocProvider(
           create: (_) => di.getIt<AchievementsCubit>(),
         ),
-        BlocProvider(create: (_) => di.getIt<NotificationCubit>()),
+        BlocProvider(create: (_) => di.getIt<NotificationFeedCubit>()),
+        BlocProvider(
+          create: (_) => di.getIt<NotificationPermissionCubit>(),
+          lazy: false,
+        ),
 
         BlocProvider(create: (_) => di.getIt<HomeCubit>()),
 

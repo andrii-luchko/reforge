@@ -15,6 +15,7 @@ sealed class User with _$User {
 
   const factory User.onboarded({
     required int id,
+    String? email,
     @JsonKey(name: 'bodyweight') double? bodyWeight,
 
     required MeasurementSystem measurementSystem,
@@ -31,7 +32,9 @@ sealed class User with _$User {
     int? currentProgramDayId,
     String? avatarUrl,
     @JsonKey(name: 'username') String? userName,
-    String? email,
+
+    @Default(false) @JsonKey(name: 'remindersEnabled') bool remindersEnabled,
+    @Default(false) @JsonKey(name: 'announcementsEnabled') bool announcementsEnabled,
   }) = OnboardedUser;
 
   factory User.fromJson(Map<String, dynamic> json) {

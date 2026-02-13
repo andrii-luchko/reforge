@@ -76,7 +76,7 @@ class MeasurementContent extends StatelessWidget {
                 MultiOptionSwitcher<MeasurementSystem>(
                   selectedValue: state.value,
                   values: MeasurementSystem.values,
-                  labelBuilder: (v) => v.weightSymbol(t),
+                  labelBuilder: (v) => v.title(t),
                   onSelected: cubit.onChanged,
                 ),
               ],

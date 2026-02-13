@@ -30,7 +30,7 @@ class MeasureSwitcher extends StatelessWidget {
         children: [
           Expanded(
             child: _MeasureOption(
-              label: MeasurementSystem.metric.weightSymbol(t),
+              label: MeasurementSystem.metric.title(t),
               isSelected: selectedMeasure == MeasurementSystem.metric,
               onTap: () => onSelected(MeasurementSystem.metric),
             ),
@@ -38,7 +38,7 @@ class MeasureSwitcher extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: _MeasureOption(
-              label: MeasurementSystem.imperial.weightSymbol(t),
+              label: MeasurementSystem.imperial.title(t),
               isSelected: selectedMeasure == MeasurementSystem.imperial,
               onTap: () => onSelected(MeasurementSystem.imperial),
             ),

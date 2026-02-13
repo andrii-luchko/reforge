@@ -31,6 +31,9 @@ sealed class PatchProfileRequest with _$PatchProfileRequest {
 
     @JsonKey(name: 'bodyweight') int? bodyWeight,
 
+    @JsonKey(name: 'remindersEnabled') bool? remindersEnabled,
+    @JsonKey(name: 'announcementsEnabled') bool? announcementsEnabled,
+
     Gender? gender,
   }) = _PatchProfileRequest;
 

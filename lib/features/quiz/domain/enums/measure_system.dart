@@ -11,6 +11,15 @@ enum MeasurementSystem {
 }
 
 extension MeasurementSystemExtension on MeasurementSystem {
+  String title(Translations t) {
+    switch (this) {
+      case MeasurementSystem.metric:
+        return '${t.measure_system.metric} (${t.measure_system.weight.metric_symbol})';
+      case MeasurementSystem.imperial:
+        return '${t.measure_system.imperial} (${t.measure_system.weight.imperial_symbol})';
+    }
+  }
+
   String weightName(Translations t) {
     switch (this) {
       case MeasurementSystem.metric:

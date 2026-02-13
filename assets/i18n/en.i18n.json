@@ -252,6 +252,8 @@
         "seconds_short": "s"
     },
     "measure_system": {
+        "metric": "Metric",
+        "imperial": "Imperial",
         "weight": {
             "metric_symbol": "kg",
             "imperial_symbol": "lb",

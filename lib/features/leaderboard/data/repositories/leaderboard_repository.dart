@@ -83,8 +83,8 @@ class LeaderboardRepositoryImpl with RepositoryErrorHandler implements Leaderboa
         finalModels.add(
           LeaderboardFactionModel(
             faction: faction,
-            activeUsers: 0,
-            xp: 0,
+            activeUsers: localDto.totalUsers,
+            xp: localDto.totalXp,
             localScore: localDto.totalWins,
             globalScore: globalScores[localDto.factionId] ?? 0,
           ),
