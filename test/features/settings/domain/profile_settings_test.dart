@@ -56,7 +56,7 @@ void main() {
     });
 
     test('name returns setYourName when userName is null', () {
-      final user = createTestUser(userName: null);
+      final user = createTestUser();
       expect(
         ProfileSettings.name.getDisplayValue(user, t),
         t.settings.setYourName,
@@ -86,7 +86,7 @@ void main() {
     });
 
     test('heightAndWeight returns null when bodyWeight is null', () {
-      final user = createTestUser(bodyWeight: null);
+      final user = createTestUser();
       expect(ProfileSettings.heightAndWeight.getDisplayValue(user, t), isNull);
     });
 

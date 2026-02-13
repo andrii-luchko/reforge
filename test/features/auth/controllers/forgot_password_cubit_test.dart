@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/forgot_password_cubit.dart';
-import '../mocks/mock_reset_password_repository.dart';
 
 import '../../../helpers/test_setup.dart';
+import '../mocks/mock_reset_password_repository.dart';
 
 void main() {
   setUpAll(initTestTranslations);
@@ -20,7 +20,7 @@ void main() {
     blocTest<ForgotPasswordCubit, ForgotPasswordState>(
       'resetState resets to initial state',
       build: () => ForgotPasswordCubit(mockRepository),
-      seed: () => ForgotPasswordState(
+      seed: () => const ForgotPasswordState(
         email: 'user@example.com',
         emailError: 'error',
         apiError: 'api error',

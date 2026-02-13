@@ -1,4 +1,3 @@
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
@@ -28,7 +27,7 @@ void main() {
 
   group('TrainingDetailsCubit', () {
     test('loadWorkoutDetails emits Loaded when repository succeeds', () async {
-      when(() => mockRepository.getWorkoutDetails(1, forceRefresh: false))
+      when(() => mockRepository.getWorkoutDetails(1))
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));
       final cubit = TrainingDetailsCubit(mockRepository, 1);
       await Future.delayed(const Duration(milliseconds: 50));
@@ -37,7 +36,7 @@ void main() {
     });
 
     test('loadWorkoutDetails emits Error when repository fails', () async {
-      when(() => mockRepository.getWorkoutDetails(1, forceRefresh: false))
+      when(() => mockRepository.getWorkoutDetails(1))
           .thenAnswer((_) async => Result.error(Exception('Network error')));
       final cubit = TrainingDetailsCubit(mockRepository, 1);
       await Future.delayed(const Duration(milliseconds: 50));
@@ -45,7 +44,7 @@ void main() {
     });
 
     test('refresh calls loadWorkoutDetails with forceRefresh true', () async {
-      when(() => mockRepository.getWorkoutDetails(1, forceRefresh: false))
+      when(() => mockRepository.getWorkoutDetails(1))
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));
       when(() => mockRepository.getWorkoutDetails(1, forceRefresh: true))
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));

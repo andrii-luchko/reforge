@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart'
-    show workoutFrequencyValidator, WorkoutFrequencyValue;
+    show workoutFrequencyValidator;
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 import '../../../helpers/test_setup.dart';

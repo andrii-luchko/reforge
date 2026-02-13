@@ -25,7 +25,7 @@ void main() {
   group('PlatesEntity', () {
     group('loreSteps', () {
       test('returns empty list when loreBody is null', () {
-        final entity = createTestPlatesEntity(loreBody: null);
+        final entity = createTestPlatesEntity();
         expect(entity.loreSteps, isEmpty);
       });
 

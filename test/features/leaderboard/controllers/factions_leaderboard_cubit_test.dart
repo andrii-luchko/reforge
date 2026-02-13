@@ -31,9 +31,7 @@ LeaderboardFactionModel createTestFactionModel(
 void main() {
   late MockLeaderboardRepository mockRepository;
 
-  setUpAll(() {
-    initTestTranslations();
-  });
+  setUpAll(initTestTranslations);
 
   setUp(() {
     mockRepository = MockLeaderboardRepository();
@@ -89,7 +87,7 @@ void main() {
       test('emits state with selectedMode', () async {
         when(() => mockRepository.getUserFaction()).thenReturn(null);
         when(() => mockRepository.getFactionsLeaderboard())
-            .thenAnswer((_) async => Result.success([]));
+            .thenAnswer((_) async => const Result.success([]));
 
         final cubit = FactionsLeaderboardCubit(mockRepository);
         await Future.delayed(const Duration(milliseconds: 50));
@@ -104,7 +102,7 @@ void main() {
       test('emits state with selectedType', () async {
         when(() => mockRepository.getUserFaction()).thenReturn(null);
         when(() => mockRepository.getFactionsLeaderboard())
-            .thenAnswer((_) async => Result.success([]));
+            .thenAnswer((_) async => const Result.success([]));
 
         final cubit = FactionsLeaderboardCubit(mockRepository);
         await Future.delayed(const Duration(milliseconds: 50));
@@ -119,7 +117,6 @@ void main() {
   group('FactionsLeaderboardState getters', () {
     test('versusMatchup returns null when factions empty', () {
       const state = FactionsLeaderboardState(
-        factions: [],
         userFaction: Faction.gakki,
       );
       expect(state.versusMatchup, isNull);
@@ -128,7 +125,6 @@ void main() {
     test('versusMatchup returns null when userFaction null', () {
       final state = FactionsLeaderboardState(
         factions: [createTestFactionModel(Faction.gakki)],
-        userFaction: null,
       );
       expect(state.versusMatchup, isNull);
     });
@@ -147,7 +143,7 @@ void main() {
     });
 
     test('factionsSortByMode returns empty when factions empty', () {
-      const state = FactionsLeaderboardState(factions: []);
+      const state = FactionsLeaderboardState();
       expect(state.factionsSortByMode, isEmpty);
     });
 
@@ -156,7 +152,6 @@ void main() {
       final high = createTestFactionModel(Faction.gyohyo, localScore: 50, globalScore: 50);
       final state = FactionsLeaderboardState(
         factions: [low, high],
-        selectedMode: FactionMode.currentFight,
       );
       final sorted = state.factionsSortByMode;
       expect(sorted.first.faction, Faction.gyohyo);

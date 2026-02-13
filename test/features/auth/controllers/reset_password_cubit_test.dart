@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/auth/controllers/forgot_password/reset_password_cubit.dart';
-import '../mocks/mock_reset_password_repository.dart';
 
 import '../../../helpers/test_setup.dart';
+import '../mocks/mock_reset_password_repository.dart';
 
 void main() {
   setUpAll(initTestTranslations);
@@ -44,8 +44,9 @@ void main() {
       'passwordChanged updates confirmPasswordError when confirmPassword already set',
       build: () => ResetPasswordCubit(testToken, mockRepository),
       act: (cubit) {
-        cubit.confirmPasswordChanged('mismatch');
-        cubit.passwordChanged('password123');
+        cubit
+          ..confirmPasswordChanged('mismatch')
+          ..passwordChanged('password123');
       },
       expect: () => [
         isA<ResetPasswordState>().having(
@@ -63,8 +64,9 @@ void main() {
       'confirmPasswordChanged with mismatch sets confirmPasswordError',
       build: () => ResetPasswordCubit(testToken, mockRepository),
       act: (cubit) {
-        cubit.passwordChanged('password123');
-        cubit.confirmPasswordChanged('different');
+        cubit
+          ..passwordChanged('password123')
+          ..confirmPasswordChanged('different');
       },
       expect: () => [
         isA<ResetPasswordState>().having((s) => s.newPassword, 'newPassword', 'password123'),
@@ -78,8 +80,9 @@ void main() {
       'confirmPasswordChanged with match clears confirmPasswordError',
       build: () => ResetPasswordCubit(testToken, mockRepository),
       act: (cubit) {
-        cubit.passwordChanged('password123');
-        cubit.confirmPasswordChanged('password123');
+        cubit
+          ..passwordChanged('password123')
+          ..confirmPasswordChanged('password123');
       },
       expect: () => [
         isA<ResetPasswordState>().having((s) => s.newPassword, 'newPassword', 'password123'),

@@ -10,11 +10,9 @@ import 'package:reforge/features/workout_quiz/domain/enums/hydrated_level.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/sleep_quality.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/stress_level.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/work_out_quiz_steps.dart';
-import 'package:reforge/features/workout_quiz/domain/repositories/workout_quiz_repository.dart';
-
 import '../mocks/mock_workout_quiz_repository.dart';
 
-WorkoutQuizAnswers get _fallbackWorkoutQuizAnswers => WorkoutQuizAnswers(
+WorkoutQuizAnswers get _fallbackWorkoutQuizAnswers => const WorkoutQuizAnswers(
       sleepQuality: SleepQuality.good,
       energizedLevel: EnergizedLevel.moderate,
       stressLevel: StressLevel.neutral,
@@ -121,55 +119,76 @@ void main() {
     group('isStepValid', () {
       test('sleepQualityStep valid when sleepQuality set', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setSleepQuality(SleepQuality.good);
-        cubit.onStepChanged(WorkOutQuizSteps.sleepQualityStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setSleepQuality(SleepQuality.good)
+            ..onStepChanged(WorkOutQuizSteps.sleepQualityStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('sleepQualityStep invalid when sleepQuality null', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.onStepChanged(WorkOutQuizSteps.sleepQualityStep.index);
-        expect(cubit.isStepValid, isFalse);
+        expect(
+          (cubit..onStepChanged(WorkOutQuizSteps.sleepQualityStep.index)).isStepValid,
+          isFalse,
+        );
       });
 
       test('energizedLevelStep valid when energizedLevel set', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setEnergizedLevel(EnergizedLevel.good);
-        cubit.onStepChanged(WorkOutQuizSteps.energizedLevelStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setEnergizedLevel(EnergizedLevel.good)
+            ..onStepChanged(WorkOutQuizSteps.energizedLevelStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('stressLevelStep valid when stressLevel set', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setStressLevel(StressLevel.neutral);
-        cubit.onStepChanged(WorkOutQuizSteps.stressLevelStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setStressLevel(StressLevel.neutral)
+            ..onStepChanged(WorkOutQuizSteps.stressLevelStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('bodyFellStep valid when bodyFeel set', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setBodyFeel(BodyFeel.mostlyFresh);
-        cubit.onStepChanged(WorkOutQuizSteps.bodyFellStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setBodyFeel(BodyFeel.mostlyFresh)
+            ..onStepChanged(WorkOutQuizSteps.bodyFellStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('hydratedLevelStep valid when hydratedLevel set', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setHydratedLevel(HydratedLevel.hydrated);
-        cubit.onStepChanged(WorkOutQuizSteps.hydratedLevelStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setHydratedLevel(HydratedLevel.hydrated)
+            ..onStepChanged(WorkOutQuizSteps.hydratedLevelStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('hasEatenRecentlyStep always valid', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.onStepChanged(WorkOutQuizSteps.hasEatenRecentlyStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit..onStepChanged(WorkOutQuizSteps.hasEatenRecentlyStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('isMorningSessionStep always valid', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.onStepChanged(WorkOutQuizSteps.isMorningSessionStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit..onStepChanged(WorkOutQuizSteps.isMorningSessionStep.index)).isStepValid,
+          isTrue,
+        );
       });
     });
 
@@ -181,24 +200,28 @@ void main() {
 
       test('true when all 5 enum fields filled', () {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setSleepQuality(SleepQuality.good);
-        cubit.setEnergizedLevel(EnergizedLevel.moderate);
-        cubit.setStressLevel(StressLevel.neutral);
-        cubit.setBodyFeel(BodyFeel.mostlyFresh);
-        cubit.setHydratedLevel(HydratedLevel.hydrated);
-        expect(cubit.isFormComplete, isTrue);
+        expect(
+          (cubit
+            ..setSleepQuality(SleepQuality.good)
+            ..setEnergizedLevel(EnergizedLevel.moderate)
+            ..setStressLevel(StressLevel.neutral)
+            ..setBodyFeel(BodyFeel.mostlyFresh)
+            ..setHydratedLevel(HydratedLevel.hydrated)).isFormComplete,
+          isTrue,
+        );
       });
     });
 
     group('isTodaySubmitted', () {
       test('returns true without calling repository when form complete and already submitted', () async {
         final cubit = WorkoutQuizCubit(mockRepository);
-        cubit.setSleepQuality(SleepQuality.good);
-        cubit.setEnergizedLevel(EnergizedLevel.moderate);
-        cubit.setStressLevel(StressLevel.neutral);
-        cubit.setBodyFeel(BodyFeel.mostlyFresh);
-        cubit.setHydratedLevel(HydratedLevel.hydrated);
-        cubit.emit(cubit.state.copyWith(isSubmitted: true));
+        cubit
+          ..setSleepQuality(SleepQuality.good)
+          ..setEnergizedLevel(EnergizedLevel.moderate)
+          ..setStressLevel(StressLevel.neutral)
+          ..setBodyFeel(BodyFeel.mostlyFresh)
+          ..setHydratedLevel(HydratedLevel.hydrated)
+          ..emit(cubit.state.copyWith(isSubmitted: true));
         final result = await cubit.isTodaySubmitted();
         expect(result, isTrue);
         verifyNever(() => mockRepository.isQuizTodaySubmitted());
@@ -211,7 +234,7 @@ void main() {
               .thenAnswer((_) async => const Result.success(true));
           return WorkoutQuizCubit(mockRepository);
         },
-        seed: () => WorkoutQuizState(
+        seed: () => const WorkoutQuizState(
           sleepQuality: SleepQuality.good,
           energizedLevel: EnergizedLevel.moderate,
           stressLevel: StressLevel.neutral,
@@ -235,7 +258,7 @@ void main() {
           );
           return WorkoutQuizCubit(mockRepository);
         },
-        seed: () => WorkoutQuizState(
+        seed: () => const WorkoutQuizState(
           sleepQuality: SleepQuality.good,
           energizedLevel: EnergizedLevel.moderate,
           stressLevel: StressLevel.neutral,
@@ -267,7 +290,7 @@ void main() {
               .thenAnswer((_) async => const Result.success(null));
           return WorkoutQuizCubit(mockRepository);
         },
-        seed: () => WorkoutQuizState(
+        seed: () => const WorkoutQuizState(
           sleepQuality: SleepQuality.good,
           energizedLevel: EnergizedLevel.moderate,
           stressLevel: StressLevel.neutral,
@@ -291,7 +314,7 @@ void main() {
           );
           return WorkoutQuizCubit(mockRepository);
         },
-        seed: () => WorkoutQuizState(
+        seed: () => const WorkoutQuizState(
           sleepQuality: SleepQuality.good,
           energizedLevel: EnergizedLevel.moderate,
           stressLevel: StressLevel.neutral,

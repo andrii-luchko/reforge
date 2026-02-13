@@ -6,8 +6,7 @@ void main() {
     group('currentXp', () {
       test('returns totalXp minus xpToNextLevel when positive', () {
         final stats = UserStatsX.mock(
-          totalXp: 2000,
-          xpToNextLevel: 450,
+          
         );
         expect(stats.currentXp, 1550);
       });
@@ -31,7 +30,7 @@ void main() {
 
     group('UserStatsX.durationFormatted', () {
       test('delegates to int extension for 3665 seconds', () {
-        final stats = UserStatsX.mock(totalWorkoutsDuration: 3665);
+        final stats = UserStatsX.mock();
         final formatted = stats.durationFormatted;
         expect(formatted.hours, 1);
         expect(formatted.minutes, 1);

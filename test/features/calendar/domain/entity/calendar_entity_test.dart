@@ -5,8 +5,8 @@ import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 void main() {
   group('CalendarEntity.fromDto', () {
     test('maps summary fields correctly', () {
-      final dto = CalendarData(
-        summary: const CalendarSummary(
+      const dto = CalendarData(
+        summary: CalendarSummary(
           totalPlannedInMonth: 20,
           totalCompletedInMonth: 15,
           complianceRate: 75,
@@ -30,8 +30,8 @@ void main() {
     });
 
     test('maps calendar days with normalized dates', () {
-      final dto = CalendarData(
-        summary: const CalendarSummary(
+      const dto = CalendarData(
+        summary: CalendarSummary(
           totalPlannedInMonth: 1,
           totalCompletedInMonth: 0,
           complianceRate: 0,
@@ -55,8 +55,8 @@ void main() {
     });
 
     test('skips days with invalid date string', () {
-      final dto = CalendarData(
-        summary: const CalendarSummary(
+      const dto = CalendarData(
+        summary: CalendarSummary(
           totalPlannedInMonth: 1,
           totalCompletedInMonth: 0,
           complianceRate: 0,
@@ -78,8 +78,8 @@ void main() {
     });
 
     test('skips days with null date', () {
-      final dto = CalendarData(
-        summary: const CalendarSummary(
+      const dto = CalendarData(
+        summary: CalendarSummary(
           totalPlannedInMonth: 1,
           totalCompletedInMonth: 0,
           complianceRate: 0,

@@ -35,7 +35,7 @@ void main() {
     });
 
     test('faction returns main and secondary faction titles', () {
-      final user = createTestUser(factionId: 1, secondaryFactionId: 2);
+      final user = createTestUser();
       final result = WorkoutSettings.faction.getDisplayValue(user, t);
       expect(result, isNotNull);
       expect(result, contains(t.common.factions.gakki));
@@ -43,7 +43,7 @@ void main() {
     });
 
     test('faction handles null secondaryFaction', () {
-      final user = createTestUser(factionId: 1, secondaryFactionId: null);
+      final user = createTestUser(secondaryFactionId: null);
       final result = WorkoutSettings.faction.getDisplayValue(user, t);
       expect(result, isNotNull);
       expect(result, contains(t.common.factions.gakki));
@@ -55,7 +55,7 @@ void main() {
     });
 
     test('measureSystem returns weight symbol for metric', () {
-      final user = createTestUser(measurementSystem: MeasurementSystem.metric);
+      final user = createTestUser();
       final result = WorkoutSettings.measureSystem.getDisplayValue(user, t);
       expect(result, t.measure_system.weight.metric_symbol);
     });

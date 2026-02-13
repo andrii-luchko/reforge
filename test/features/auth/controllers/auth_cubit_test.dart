@@ -37,7 +37,7 @@ void main() {
         when(() => mockRepository.getTokens())
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signin(any(), any()))
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         return AuthCubit(mockRepository);
       },
       act: (cubit) async {
@@ -76,7 +76,7 @@ void main() {
         when(() => mockRepository.getTokens())
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signup(any(), any()))
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         return AuthCubit(mockRepository);
       },
       act: (cubit) async {
@@ -115,7 +115,7 @@ void main() {
         when(() => mockRepository.getTokens())
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signWithGoogle())
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         return AuthCubit(mockRepository);
       },
       act: (cubit) async {
@@ -174,7 +174,7 @@ void main() {
         when(() => mockRepository.getTokens())
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signWithApple())
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         return AuthCubit(mockRepository);
       },
       act: (cubit) async {
@@ -211,7 +211,7 @@ void main() {
       'signOut emits unauthenticated when from authenticated state',
       build: () {
         when(() => mockRepository.getTokens())
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         when(() => mockRepository.signOut())
             .thenAnswer((_) async => const Result.success(null));
         return AuthCubit(mockRepository);
@@ -230,7 +230,7 @@ void main() {
       'signOut restores state when repository fails',
       build: () {
         when(() => mockRepository.getTokens())
-            .thenAnswer((_) async => Result.success(testTokens));
+            .thenAnswer((_) async => const Result.success(testTokens));
         when(() => mockRepository.signOut()).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
         );

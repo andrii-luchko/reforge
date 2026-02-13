@@ -3,7 +3,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
-import 'package:reforge/features/lore/domain/repositories/lore_repository.dart';
 
 import '../mocks/mock_lore_repository.dart';
 
@@ -50,11 +49,9 @@ void main() {
     group('loadLore', () {
       test('Success emits items, totalCount, hasMore, isLoading false', () async {
         final data = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
-          total: 1,
-          hasMore: false,
+          items: [createTestPlatesEntity()],
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(data));
 
         final cubit = LoreCubit(mockRepository);
@@ -68,7 +65,7 @@ void main() {
       });
 
       test('Error emits error, restores items, isLoading false', () async {
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.error(Exception('Network error')));
 
         final cubit = LoreCubit(mockRepository);
@@ -83,16 +80,15 @@ void main() {
     group('loadMore', () {
       test('Success appends items and updates hasMore', () async {
         final page1 = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
+          items: [createTestPlatesEntity()],
           total: 2,
           hasMore: true,
         );
         final page2 = createTestPaginatedPlates(
           items: [createTestPlatesEntity(id: 2)],
           total: 2,
-          hasMore: false,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
         when(() => mockRepository.getPlates(page: 2))
             .thenAnswer((_) async => Result.success(page2));
@@ -111,11 +107,11 @@ void main() {
 
       test('Error decrements page and emits error', () async {
         final page1 = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
+          items: [createTestPlatesEntity()],
           total: 2,
           hasMore: true,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
         when(() => mockRepository.getPlates(page: 2))
             .thenAnswer((_) async => Result.error(Exception('Load more failed')));
@@ -132,11 +128,9 @@ void main() {
 
       test('when hasMore false does not call repository', () async {
         final page1 = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
-          total: 1,
-          hasMore: false,
+          items: [createTestPlatesEntity()],
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
         final cubit = LoreCubit(mockRepository);
@@ -149,11 +143,11 @@ void main() {
 
       test('when isLoadingMore does not call repository', () async {
         final page1 = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
+          items: [createTestPlatesEntity()],
           total: 2,
           hasMore: true,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
         final cubit = LoreCubit(mockRepository);
@@ -168,17 +162,14 @@ void main() {
 
     group('loadPlateDetail', () {
       test('Success updates item in list', () async {
-        final itemWithoutBody = createTestPlatesEntity(id: 1, loreBody: null);
+        final itemWithoutBody = createTestPlatesEntity();
         final itemWithBody = createTestPlatesEntity(
-          id: 1,
           loreBody: 'Full lore content',
         );
         final page1 = createTestPaginatedPlates(
           items: [itemWithoutBody],
-          total: 1,
-          hasMore: false,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
         when(() => mockRepository.getPlateById(1))
             .thenAnswer((_) async => Result.success(itemWithBody));
@@ -192,13 +183,11 @@ void main() {
       });
 
       test('Error emits error', () async {
-        final itemWithoutBody = createTestPlatesEntity(id: 1, loreBody: null);
+        final itemWithoutBody = createTestPlatesEntity();
         final page1 = createTestPaginatedPlates(
           items: [itemWithoutBody],
-          total: 1,
-          hasMore: false,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
         when(() => mockRepository.getPlateById(1))
             .thenAnswer((_) async => Result.error(Exception('Detail load failed')));
@@ -213,15 +202,12 @@ void main() {
 
       test('when loreBody already set does not call repository', () async {
         final itemWithBody = createTestPlatesEntity(
-          id: 1,
           loreBody: 'Already loaded',
         );
         final page1 = createTestPaginatedPlates(
           items: [itemWithBody],
-          total: 1,
-          hasMore: false,
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
         final cubit = LoreCubit(mockRepository);
@@ -234,11 +220,9 @@ void main() {
 
       test('when id not in items does not call repository', () async {
         final page1 = createTestPaginatedPlates(
-          items: [createTestPlatesEntity(id: 1)],
-          total: 1,
-          hasMore: false,
+          items: [createTestPlatesEntity()],
         );
-        when(() => mockRepository.getPlates(page: 1))
+        when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
         final cubit = LoreCubit(mockRepository);

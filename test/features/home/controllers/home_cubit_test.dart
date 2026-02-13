@@ -3,7 +3,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
-import 'package:reforge/features/home/data/repository/home_repository.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
@@ -23,7 +22,6 @@ OnboardedUser createTestOnboardedUser({int factionId = 1}) {
     birthDate: DateTime(1990, 1, 15),
     workoutsPerWeek: 3,
     userName: 'TestUser',
-    avatarUrl: null,
   ) as OnboardedUser;
 }
 
@@ -165,8 +163,7 @@ void main() {
       test('returns statsMap value for current period', () {
         final stats = createTestUserStats();
         const state = HomeState(
-          period: StatsPeriod.lastWeek,
-          statsMap: {},
+          
         );
         final stateWithStats = state.copyWith(
           statsMap: {StatsPeriod.lastWeek: stats},
@@ -177,7 +174,6 @@ void main() {
       test('returns null when period not in statsMap', () {
         const state = HomeState(
           period: StatsPeriod.lastMonth,
-          statsMap: {},
         );
         expect(state.currentStats, isNull);
       });

@@ -155,7 +155,7 @@ void main() {
       blocTest<QuizCubit, QuizState>(
         'toggleSecondFaction removes faction when in list',
         build: () => QuizCubit(mockRepository),
-        seed: () => QuizState(secondFactions: [Faction.gyohyo]),
+        seed: () => const QuizState(secondFactions: [Faction.gyohyo]),
         act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
         expect: () => [
           isA<QuizState>().having((s) => s.secondFactions, 'secondFactions', isEmpty),
@@ -175,34 +175,46 @@ void main() {
     group('isStepValid', () {
       test('dateBirthStep valid when date set and no error', () {
         final cubit = QuizCubit(mockRepository);
-        cubit.setDateOfBirth(DateTime(1990, 1, 15));
-        cubit.onStepChanged(QuizSteps.dateBirthStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setDateOfBirth(DateTime(1990, 1, 15))
+            ..onStepChanged(QuizSteps.dateBirthStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('dateBirthStep invalid when date is null', () {
         final cubit = QuizCubit(mockRepository);
-        cubit.onStepChanged(QuizSteps.dateBirthStep.index);
-        expect(cubit.isStepValid, isFalse);
+        expect(
+          (cubit..onStepChanged(QuizSteps.dateBirthStep.index)).isStepValid,
+          isFalse,
+        );
       });
 
       test('measurementSystemStep always valid', () {
         final cubit = QuizCubit(mockRepository);
-        cubit.onStepChanged(QuizSteps.measurementSystemStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit..onStepChanged(QuizSteps.measurementSystemStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('bodyWeightStep valid when bodyWeight set', () {
         final cubit = QuizCubit(mockRepository);
-        cubit.setBodyWeight(70);
-        cubit.onStepChanged(QuizSteps.bodyWeightStep.index);
-        expect(cubit.isStepValid, isTrue);
+        expect(
+          (cubit
+            ..setBodyWeight(70)
+            ..onStepChanged(QuizSteps.bodyWeightStep.index)).isStepValid,
+          isTrue,
+        );
       });
 
       test('bodyWeightStep invalid when bodyWeight null', () {
         final cubit = QuizCubit(mockRepository);
-        cubit.onStepChanged(QuizSteps.bodyWeightStep.index);
-        expect(cubit.isStepValid, isFalse);
+        expect(
+          (cubit..onStepChanged(QuizSteps.bodyWeightStep.index)).isStepValid,
+          isFalse,
+        );
       });
 
       test('mainGoalStep valid when mainGoal set', () {

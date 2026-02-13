@@ -20,7 +20,6 @@ ImmortalForgeEntity createTestImmortalForgeEntity({
     score: score,
     rank: rank,
     title: title,
-    avatarUrl: null,
   );
 }
 
@@ -74,7 +73,7 @@ void main() {
     });
 
     test('changeFaction when not cached calls repository', () async {
-      final gakkiLeaders = [createTestImmortalForgeEntity(userId: 1)];
+      final gakkiLeaders = [createTestImmortalForgeEntity()];
       final gyohyoLeaders = [createTestImmortalForgeEntity(userId: 2)];
       when(() => mockRepository.getUserFaction()).thenReturn(Faction.gakki);
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gakki))
@@ -110,7 +109,6 @@ void main() {
     test('returns forgeData for selectedFaction', () {
       final leaders = [createTestImmortalForgeEntity()];
       final state = ImmortalForgesState(
-        selectedFaction: Faction.gakki,
         forgeData: {Faction.gakki: leaders},
       );
       expect(state.currentList, leaders);
@@ -118,8 +116,7 @@ void main() {
 
     test('returns empty list when faction not in forgeData', () {
       const state = ImmortalForgesState(
-        selectedFaction: Faction.gakki,
-        forgeData: {},
+        
       );
       expect(state.currentList, isEmpty);
     });

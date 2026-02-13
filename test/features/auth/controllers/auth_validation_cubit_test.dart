@@ -23,8 +23,9 @@ void main() {
       'setMode switches to signIn',
       build: AuthValidationCubit.new,
       act: (cubit) {
-        cubit.setMode(AuthMode.signUp);
-        cubit.setMode(AuthMode.signIn);
+        cubit
+          ..setMode(AuthMode.signUp)
+          ..setMode(AuthMode.signIn);
       },
       expect: () => [
         isA<AuthValidationState>().having((s) => s.mode, 'mode', AuthMode.signUp),
@@ -80,9 +81,10 @@ void main() {
       'confirmPasswordChanged in signUp with mismatch sets confirmPasswordError',
       build: AuthValidationCubit.new,
       act: (cubit) {
-        cubit.setMode(AuthMode.signUp);
-        cubit.passwordChanged('password123');
-        cubit.confirmPasswordChanged('different');
+        cubit
+          ..setMode(AuthMode.signUp)
+          ..passwordChanged('password123')
+          ..confirmPasswordChanged('different');
       },
       expect: () => [
         isA<AuthValidationState>().having((s) => s.mode, 'mode', AuthMode.signUp),
@@ -97,11 +99,12 @@ void main() {
       'termsAcceptanceChanged in signUp affects canSubmit',
       build: AuthValidationCubit.new,
       act: (cubit) {
-        cubit.setMode(AuthMode.signUp);
-        cubit.emailChanged('user@example.com');
-        cubit.passwordChanged('password123');
-        cubit.confirmPasswordChanged('password123');
-        cubit.termsAcceptanceChanged(true);
+        cubit
+          ..setMode(AuthMode.signUp)
+          ..emailChanged('user@example.com')
+          ..passwordChanged('password123')
+          ..confirmPasswordChanged('password123')
+          ..termsAcceptanceChanged(true);
       },
       skip: 5,
       expect: () => [
@@ -115,10 +118,11 @@ void main() {
       'signUp mode: canSubmit false without terms accepted',
       build: AuthValidationCubit.new,
       act: (cubit) {
-        cubit.setMode(AuthMode.signUp);
-        cubit.emailChanged('user@example.com');
-        cubit.passwordChanged('password123');
-        cubit.confirmPasswordChanged('password123');
+        cubit
+          ..setMode(AuthMode.signUp)
+          ..emailChanged('user@example.com')
+          ..passwordChanged('password123')
+          ..confirmPasswordChanged('password123');
       },
       expect: () => [
         isA<AuthValidationState>().having((s) => s.mode, 'mode', AuthMode.signUp),
@@ -134,8 +138,9 @@ void main() {
       'signIn mode: valid email and password sets canSubmit true',
       build: AuthValidationCubit.new,
       act: (cubit) {
-        cubit.emailChanged('user@example.com');
-        cubit.passwordChanged('password123');
+        cubit
+          ..emailChanged('user@example.com')
+          ..passwordChanged('password123');
       },
       skip: 2,
       expect: () => [

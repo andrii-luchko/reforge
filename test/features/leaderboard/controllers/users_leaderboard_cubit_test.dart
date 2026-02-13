@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
-import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
 
 import '../mocks/mock_leaderboard_repository.dart';
@@ -13,7 +12,7 @@ import '../mocks/mock_leaderboard_repository.dart';
   LeaderboardUserModel? currentUser,
   int totalPages = 1,
 }) {
-  final defaultUser = LeaderboardUserModel(
+  const defaultUser = LeaderboardUserModel(
     rank: 1,
     username: 'TestUser',
     avatarUrl: null,
@@ -37,10 +36,9 @@ void main() {
     test('loadUsers Success emits state with users and hasReachedMax', () async {
       final data = createTestMappedLeaderboardData(
         usersList: [
-          LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
+          const LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
         ],
-        currentUser: LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
-        totalPages: 1,
+        currentUser: const LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
       );
       when(() => mockRepository.getGlobalUserListPaginated(page: 1))
           .thenAnswer((_) async => Result.success(data));
@@ -68,11 +66,11 @@ void main() {
 
     test('loadNextPage Success appends users and updates page', () async {
       final page1Data = createTestMappedLeaderboardData(
-        usersList: [LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500)],
+        usersList: [const LeaderboardUserModel(rank: 1, username: 'User1', avatarUrl: null, xp: 500)],
         totalPages: 2,
       );
       final page2Data = createTestMappedLeaderboardData(
-        usersList: [LeaderboardUserModel(rank: 2, username: 'User2', avatarUrl: null, xp: 400)],
+        usersList: [const LeaderboardUserModel(rank: 2, username: 'User2', avatarUrl: null, xp: 400)],
         totalPages: 2,
       );
       when(() => mockRepository.getGlobalUserListPaginated(page: 1))
@@ -108,7 +106,7 @@ void main() {
     });
 
     test('loadNextPage when hasReachedMax does not call repository', () async {
-      final data = createTestMappedLeaderboardData(totalPages: 1);
+      final data = createTestMappedLeaderboardData();
       when(() => mockRepository.getGlobalUserListPaginated(page: 1))
           .thenAnswer((_) async => Result.success(data));
 

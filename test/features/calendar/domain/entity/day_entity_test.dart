@@ -70,7 +70,7 @@ void main() {
 
     group('fromDto', () {
       test('maps CalendarDayDto to DayEntity', () {
-        final dto = CalendarDayDto(
+        const dto = CalendarDayDto(
           date: '2025-03-20',
           dayOfWeek: 4,
           isSpecificDay: true,
@@ -89,7 +89,7 @@ void main() {
       });
 
       test('uses epoch when date string is invalid', () {
-        final dto = CalendarDayDto(
+        const dto = CalendarDayDto(
           date: 'invalid',
           dayOfWeek: 1,
           isSpecificDay: false,
