@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -12,7 +13,7 @@ class XpTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppTag(
-      text: 'XP: ${XpFormatter.compact(xp, extSuffix: '')}',
+      text: '${t.leaderboard.xpLabel}: ${XpFormatter.compact(xp, extSuffix: '')}',
 
       textStyle: subheadH8Semibold.copyWith(color: context.appTheme.beige100),
     );

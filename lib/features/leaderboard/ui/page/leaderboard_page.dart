@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
@@ -25,22 +26,33 @@ class LeaderboardPage extends StatefulWidget {
 
 class _LeaderboardPageState extends State<LeaderboardPage> {
   final ValueNotifier<LeaderboardMode> _leaderboardModeNotifier = ValueNotifier(.users);
+  final ScrollController _scrollController = ScrollController();
 
-  bool _onScrollNotification(ScrollUpdateNotification notification, BuildContext context) {
-    final metrics = notification.metrics;
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_leaderboardModeNotifier.value != LeaderboardMode.users) return;
+
+    final position = _scrollController.position;
     const threshold = 200.0;
+    if (position.pixels < position.maxScrollExtent - threshold) return;
 
-    if (_leaderboardModeNotifier.value == LeaderboardMode.users &&
-        metrics.pixels >= metrics.maxScrollExtent - threshold) {
-      final cubit = context.read<UsersLeaderboardCubit>();
-
-      if (!cubit.state.isLoading && !cubit.state.hasReachedMax) {
-        unawaited(cubit.loadNextPage());
-      }
+    final cubit = context.read<UsersLeaderboardCubit>();
+    if (!cubit.state.isLoading && !cubit.state.isPaginationLoading && !cubit.state.hasReachedMax) {
+      unawaited(cubit.loadNextPage());
     }
-
-    return false;
   }
 
   @override
@@ -55,9 +67,16 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
           child: Stack(
             children: [
-              NotificationListener<ScrollUpdateNotification>(
-                onNotification: (n) => _onScrollNotification(n, context),
+              RefreshIndicator(
+                onRefresh: () async {
+                  if (_leaderboardModeNotifier.value == LeaderboardMode.users) {
+                    await context.read<UsersLeaderboardCubit>().loadUsers();
+                  } else {
+                    await context.read<FactionsLeaderboardCubit>().loadFactions();
+                  }
+                },
                 child: CustomScrollView(
+                  controller: _scrollController,
                   physics: const BouncingScrollPhysics(),
                   slivers: [
                     SliverAppBar(
@@ -71,7 +90,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       floating: true,
 
                       title: Text(
-                        'LeaderBoard',
+                        t.leaderboard.title,
                         style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
                       ),
 

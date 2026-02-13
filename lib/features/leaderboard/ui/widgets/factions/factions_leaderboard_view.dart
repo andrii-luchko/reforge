@@ -74,7 +74,7 @@ class FactionsLeaderboardView extends StatelessWidget {
                 sliver: SliverList.list(
                   children: [
                     Text(
-                      'War Standings', // TODO(Masayoshi): context.t.leaderboard.warStandings
+                      t.leaderboard.factions.warStandings,
                       style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
                     ),
                     const SizedBox(height: 16),
@@ -129,9 +129,9 @@ class _LeaderboardContent extends StatelessWidget {
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: currentFaction.isEmpty
-              ? const SliverEmptyListMessage(
-                  title: 'No Factions Found',
-                  subtitle: 'It looks like there are no active factions in this league yet.',
+              ? SliverEmptyListMessage(
+                  title: t.leaderboard.factions.emptyTitle,
+                  subtitle: t.leaderboard.factions.emptySubtitle,
                   icon: Icons.groups_3_outlined,
                 )
               : SliverToBoxAdapter(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
@@ -21,9 +22,9 @@ class LeaderboardFactionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return factions.isEmpty
-        ? const SliverEmptyListMessage(
-            title: 'No Factions Found',
-            subtitle: 'It looks like there are no active factions in this league yet.',
+        ? SliverEmptyListMessage(
+            title: t.leaderboard.factions.emptyTitle,
+            subtitle: t.leaderboard.factions.emptySubtitle,
             icon: Icons.groups_3_outlined,
           )
         : SliverList.separated(
@@ -116,7 +117,7 @@ class LeaderboardFactionListTile extends StatelessWidget {
                   crossAxisAlignment: .end,
                   children: [
                     Text(
-                      'Active users',
+                      t.leaderboard.factions.activeUsers,
                       style: subheadH8Semibold.copyWith(color: appTheme.beige700),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

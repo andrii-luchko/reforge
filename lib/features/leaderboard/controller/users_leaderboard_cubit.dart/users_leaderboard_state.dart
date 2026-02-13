@@ -8,7 +8,6 @@ sealed class UsersLeaderboardState with _$UsersLeaderboardState {
     @Default([]) List<LeaderboardUserModel> currentUsersList,
 
     LeaderboardUserModel? currentUser,
-    int? currentUserIndex,
 
     @Default(false) bool isLoading,
     @Default(false) bool isPaginationLoading,

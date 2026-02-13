@@ -336,6 +336,32 @@
         },
         "rank_label": "Rank"
     },
+    "leaderboard": {
+        "title": "LeaderBoard",
+        "modes": {
+            "users": "Leaderboard",
+            "factions": "Faction wars"
+        },
+        "usersList": {
+            "title": "Leaderboard list",
+            "retry": "Retry",
+            "emptyTitle": "No Users Found",
+            "emptySubtitle": "It looks like there are no active user in this league yet."
+        },
+        "factions": {
+            "warStandings": "War Standings",
+            "emptyTitle": "No Factions Found",
+            "emptySubtitle": "It looks like there are no active factions in this league yet.",
+            "activeUsers": "Active users"
+        },
+        "immortalForges": {
+            "immortal": "IMMORTAL",
+            "forges": "FORGES",
+            "noLeaders": "No leaders in $faction yet",
+            "beFirst": "Be the first to claim the title!"
+        },
+        "xpLabel": "XP"
+    },
     "errors": {
         "connection_timeout": "Connection timeout. Please check your internet.",
         "unauthorized": "Unauthorized",

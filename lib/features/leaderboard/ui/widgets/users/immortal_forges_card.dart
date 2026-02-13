@@ -58,7 +58,7 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
             Icon(Icons.shield_moon_outlined, size: 48, color: context.appTheme.beige100),
             const SizedBox(height: 12),
             Text(
-              'No leaders in ${faction.title(t)} yet',
+              t.leaderboard.immortalForges.noLeaders(faction: faction.title(t)),
               style: subheadH5Medium.copyWith(
                 color: context.appTheme.beige100,
               ),
@@ -66,7 +66,7 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Be the first to claim the title!',
+              t.leaderboard.immortalForges.beFirst,
               style: subheadH8Semibold.copyWith(color: context.appTheme.beige700),
             ),
           ],
@@ -114,7 +114,10 @@ class ImmortalForcesCard extends StatelessWidget {
                   children: [
                     const Align(
                       alignment: Alignment(0, -0.8),
-                      child: GradientTextHeader(),
+                      child: GradientTextHeader(
+                        immortalText: t.leaderboard.immortalForges.immortal,
+                        forgesText: t.leaderboard.immortalForges.forges,
+                      ),
                     ),
 
                     if (ranks[1] != null) const _RankLabel(rank: 2, alignment: Alignment(-0.9, -0.2)),
