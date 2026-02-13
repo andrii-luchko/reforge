@@ -112,8 +112,8 @@ class ImmortalForcesCard extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Align(
-                      alignment: Alignment(0, -0.8),
+                    Align(
+                      alignment: const Alignment(0, -0.8),
                       child: GradientTextHeader(
                         immortalText: t.leaderboard.immortalForges.immortal,
                         forgesText: t.leaderboard.immortalForges.forges,
