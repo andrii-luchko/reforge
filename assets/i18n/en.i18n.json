@@ -422,7 +422,47 @@
         "completeOrDeleteSets": "Some sets are undone.\nComplete or delete set to go further"
     },
     "achievements": {
-        "learnMore": "Learn more"
+        "learnMore": "Learn more",
+        "badges": "Badges",
+        "ranks": "Ranks",
+        "rankFaction": "Rank faction",
+        "noRanksFound": "No ranks found",
+        "badgesList": "Badges list",
+        "itemsCount": "$unlocked/$total items",
+        "noBadgesFound": "No Badges Found",
+        "noBadgesSubtitle": "It looks like you have no badges yet.",
+        "noAttributesFound": "No Attributes Found",
+        "noAttributesSubtitle": "It looks like you have no attributes yet.",
+        "attributeSystem": "Attribute system",
+        "xpDistribution": "Your XP distribution",
+        "attributeMasteryGuide": "Attribute Mastery Guide",
+        "forgeAttributes": {
+            "kobo": {
+                "title": "Kōbō",
+                "subtitle": "The Soul Furnace",
+                "description": "Measures growth and intensity.\nXP is awarded for personal records (PRs) and exceeding previous bests."
+            },
+            "kozuchi": {
+                "title": "Kozuchi",
+                "subtitle": "The Craftsman's Hammer",
+                "description": "Measures consistency and volume.\nXP increases through total workout completion and tonnage."
+            },
+            "sensho": {
+                "title": "Sensho",
+                "subtitle": "The Stroke of War",
+                "description": "Measures efficiency relative to potential.\nXP scales based on how close performance is to the target goal."
+            },
+            "kobokai": {
+                "title": "Kobokai",
+                "subtitle": "The Workshop Unleashed",
+                "description": "Measures cumulative lifetime effort.\nAwards XP for hitting large milestones (e.g., 100k kg lifted)."
+            },
+            "kannuki": {
+                "title": "Kannuki",
+                "subtitle": "The Soul-Forge Gate-Locks",
+                "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
+            }
+        }
     },
     "workout_tiers": {
         "beginner": "Beginner",
@@ -437,5 +477,44 @@
         "eliteDescription": "The elite. Access to exclusive opportunities and rare rewards.",
         "factionLeader": "Faction Leader",
         "factionLeaderDescription": "The apex of the hierarchy. You lead the pack."
+    },
+    "lore": {
+        "pageTitle": "Plates of Jiku",
+        "totalPlate": "Total Plate: $count",
+        "emptyTitle": "No Plates Found",
+        "emptySubtitle": "It seems there are no plates available at the moment. Please check back later.",
+        "contentPlaceholder": "We are currently working on\ncontent for this plate",
+        "lockedPlateToast": "$name unlock on lvl $level",
+        "unlockAtRequiredLevel": "Unlock at required level"
+    },
+    "settings": {
+        "profileInfo": "Profile info",
+        "logout": "Logout",
+        "logoutTitle": "Log out",
+        "logoutMessage": "Are you sure you want to log out?",
+        "deleteAccount": "Delete account",
+        "deleteAccountMessage": "Do you really want to delete?\nThis action cannot be undone",
+        "settings": "Settings",
+        "userEmpty": "User is empty",
+        "uploadImage": "Upload image",
+        "name": "Name",
+        "email": "Email",
+        "dateOfBirth": "Date of birth",
+        "weight": "Weight",
+        "setYourName": "Set your name",
+        "subscription": "Subscription",
+        "changeFaction": "Change Faction",
+        "notifications": "Notifications",
+        "measurement": "Measurement",
+        "workoutDays": "Workout days",
+        "daysPerWeek": "$count days per week",
+        "selectMeasurementSystem": "Select a measurement System",
+        "reminders": "Reminders",
+        "announcements": "Announcements",
+        "notificationsDisabled": "Notifications are disabled",
+        "enableNotificationsHint": "Enable notifications in app settings to receive reminders and updates.",
+        "openSettings": "Open Settings",
+        "weightCantBeNull": "Weight cant be null",
+        "selectAtLeast2Factions": "You need to select at least 2 Factions"
     }
 }

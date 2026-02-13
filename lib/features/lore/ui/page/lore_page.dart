@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
@@ -116,14 +118,14 @@ class _LoreBodyState extends State<LoreBody> {
                         centerTitle: false,
                         title: Skeleton.keep(
                           child: Text(
-                            'Plates of Jiku',
+                            t.lore.pageTitle,
                             style: subheadH1Medium.copyWith(color: appTheme.beige100),
                           ),
                         ),
                         actions: [
                           Center(
                             child: Text(
-                              'Total Plate: $totalCount',
+                              t.lore.totalPlate(count: totalCount),
                               style: subheadH5Medium.copyWith(color: appTheme.beige700),
                             ),
                           ),
@@ -172,9 +174,9 @@ class PlatesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return plates.isEmpty
-        ? const SliverEmptyListMessage(
-            title: 'No Plates Found',
-            subtitle: 'It seems there are no plates available at the moment. Please check back later.',
+        ? SliverEmptyListMessage(
+            title: t.lore.emptyTitle,
+            subtitle: t.lore.emptySubtitle,
             icon: Icons.auto_stories_outlined,
           )
         : SliverList.separated(

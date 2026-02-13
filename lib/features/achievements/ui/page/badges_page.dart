@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 
@@ -59,7 +61,7 @@ class BadgesPage extends StatelessWidget {
                           actions: [
                             Skeleton.keep(
                               child: Text(
-                                'Badges',
+                                t.achievements.badges,
                                 style: subheadH1Medium.copyWith(color: appTheme.beige100),
                               ),
                             ),
@@ -82,13 +84,13 @@ class BadgesPage extends StatelessWidget {
                               children: [
                                 Skeleton.keep(
                                   child: Text(
-                                    'Badges list',
+                                    t.achievements.badgesList,
                                     style: subheadH1Medium.copyWith(color: appTheme.beige100),
                                   ),
                                 ),
 
                                 Text(
-                                  '${state.unLockedCount}/${badges.length} items',
+                                  t.achievements.itemsCount(unlocked: state.unLockedCount, total: badges.length),
                                   style: subheadH5Medium.copyWith(color: appTheme.beige600),
                                 ),
                               ],

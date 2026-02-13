@@ -145,13 +145,13 @@ class _NotificationTogglesContent extends StatelessWidget {
               spacing: 12,
               children: [
                 NotificationSwitcher(
-                  title: 'Reminders',
+                  title: t.settings.reminders,
                   value: user?.remindersEnabled ?? false,
                   enabled: togglesEnabled,
                   onChanged: togglesEnabled ? (value) => _onRemindersChanged(context, value) : null,
                 ),
                 NotificationSwitcher(
-                  title: 'Announcements',
+                  title: t.settings.announcements,
                   value: user?.announcementsEnabled ?? false,
                   enabled: togglesEnabled,
                   onChanged: togglesEnabled ? (value) => _onAnnouncementsChanged(context, value) : null,
@@ -195,18 +195,18 @@ class _PermissionDeniedBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Notifications are disabled',
+            t.settings.notificationsDisabled,
             style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
           ),
           const SizedBox(height: 8),
           Text(
-            'Enable notifications in app settings to receive reminders and updates.',
+            t.settings.enableNotificationsHint,
             style: bodyLRegular.copyWith(color: context.appTheme.beige300),
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: onOpenSettings,
-            child: const Text('Open Settings'),
+            child: Text(t.settings.openSettings),
           ),
         ],
       ),

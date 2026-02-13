@@ -119,7 +119,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                                 children: [
                                   Skeleton.keep(
                                     child: Text(
-                                      'Badges',
+                                      t.achievements.badges,
                                       style: subheadH1Medium.copyWith(color: appTheme.beige100),
                                     ),
                                   ),

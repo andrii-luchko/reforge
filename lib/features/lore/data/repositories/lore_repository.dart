@@ -52,7 +52,7 @@ class LoreRepositoryImpl with RepositoryErrorHandler implements LoreRepository {
       return Result.success(model.toEntity());
     } on DioException catch (e, stackTrace) {
       if (e.response?.statusCode == 403) {
-        return Result.error(Exception('Unlock at required level'));
+        return Result.error(Exception(t.lore.unlockAtRequiredLevel));
       }
       final userMessage = _toUserMessage(e);
       logger.e('ERROR [getPlateById]: $e', e, stackTrace);

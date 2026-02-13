@@ -68,7 +68,7 @@ class MeasurementContent extends StatelessWidget {
               crossAxisAlignment: .start,
               children: [
                 Text(
-                  'Select a measurement System',
+                  t.settings.selectMeasurementSystem,
                   style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
                 ),
                 const SizedBox(height: 16),

@@ -1,7 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
@@ -60,7 +62,7 @@ class _PlateListTileState extends State<PlateListTile> {
 
   void _showMessage() {
     toastification.showSimpleToast(
-      '${widget.model.name} unlock on lvl ${widget.model.unlockLevel}',
+      t.lore.lockedPlateToast(name: widget.model.name, level: widget.model.unlockLevel),
       alignment: .center,
       duration: const Duration(seconds: 2),
     );

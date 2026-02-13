@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
@@ -30,11 +32,11 @@ class AttributeSystemSection extends StatelessWidget {
           children: [
             const AttributeSystemHeader(),
             if (attributes.isNotEmpty)
-              const EmptyListMessage(
+              EmptyListMessage(
                 icon: Icons.visibility_off_outlined,
                 iconSize: 48,
-                title: 'No Attributes Found',
-                subtitle: 'It looks like you have no attributes yet.',
+                title: t.achievements.noAttributesFound,
+                subtitle: t.achievements.noAttributesSubtitle,
               )
             else
               AttributesList(
@@ -61,11 +63,11 @@ class AttributeSystemHeader extends StatelessWidget {
           spacing: 8,
           children: [
             Text(
-              'Attribute system',
+              t.achievements.attributeSystem,
               style: subheadH2Medium.copyWith(color: appTheme.beige100),
             ),
             Text(
-              'Your XP distribution',
+              t.achievements.xpDistribution,
               style: bodyMRegular.copyWith(color: appTheme.beige700),
             ),
           ],

@@ -72,7 +72,7 @@ class SettingsPage extends StatelessWidget {
                         centerTitle: false,
                         title: Skeleton.keep(
                           child: Text(
-                            'Profile info',
+                            t.settings.profileInfo,
                             style: subheadH1Medium.copyWith(color: appTheme.beige100),
                           ),
                         ),
@@ -109,13 +109,13 @@ class SettingsPage extends StatelessWidget {
                       padding: const .symmetric(horizontal: 16),
                       sliver: SliverToBoxAdapter(
                         child: PrimaryButton(
-                          text: 'Logout',
+                          text: t.settings.logout,
                           onPressed: () async {
                             final logout =
                                 await confirmAction(
                                   context,
-                                  title: 'Log out',
-                                  message: 'Are you sure you want to log out?',
+                                  title: t.settings.logoutTitle,
+                                  message: t.settings.logoutMessage,
                                 ) ??
                                 false;
 
@@ -131,13 +131,13 @@ class SettingsPage extends StatelessWidget {
                       padding: const .symmetric(horizontal: 16),
                       sliver: SliverToBoxAdapter(
                         child: SecondaryButton(
-                          text: 'Delete account',
+                          text: t.settings.deleteAccount,
                           onPressed: () async {
                             final delete =
                                 await confirmAction(
                                   context,
-                                  title: 'Delete account',
-                                  message: 'Do you really want to delete?\nThis action cannot be undone',
+                                  title: t.settings.deleteAccount,
+                                  message: t.settings.deleteAccountMessage,
                                 ) ??
                                 false;
 
@@ -245,7 +245,7 @@ class SettingsGroup extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverToBoxAdapter(
             child: Text(
-              'Settings',
+              t.settings.settings,
               style: subheadH2Medium.copyWith(color: appTheme.beige100),
             ),
           ),
@@ -300,7 +300,7 @@ class SettingsNewUserWidget extends StatelessWidget {
               children: [
                 Icon(Icons.error_outline, size: 48, color: appTheme.red400),
                 const SizedBox(height: 16),
-                const Text('User is empty', style: bodyLRegular),
+                Text(t.settings.userEmpty, style: bodyLRegular),
               ],
             ),
           ),

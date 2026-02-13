@@ -35,7 +35,7 @@ class HeightAndWeightPage extends StatelessWidget {
       create: (context) => GenericValidationCubit<double?>(
         initialValue: weight,
         validator: (w) {
-          if (w == null) return 'Weight cant be null';
+          if (w == null) return t.settings.weightCantBeNull;
           return null;
         },
         onSave: (value) => onSave(value, userCubit),

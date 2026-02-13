@@ -39,7 +39,7 @@ class ChangeFactionPage extends StatelessWidget {
             //   return 'You need to select at least one Faction';
             // }
             if (value.length < 2) {
-              return 'You need to select at least 2 Factions';
+              return t.settings.selectAtLeast2Factions;
             }
             return null;
           },
