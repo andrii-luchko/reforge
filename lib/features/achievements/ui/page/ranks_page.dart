@@ -63,7 +63,7 @@ class RanksPage extends StatelessWidget {
                           actions: [
                             Skeleton.keep(
                               child: Text(
-                                'Ranks',
+                                t.achievements.ranks,
                                 style: subheadH1Medium.copyWith(color: appTheme.beige100),
                               ),
                             ),
@@ -80,7 +80,7 @@ class RanksPage extends StatelessWidget {
                             crossAxisAlignment: .start,
                             spacing: 16,
                             children: [
-                              Text('Rank faction', style: subheadH2Medium.copyWith(color: appTheme.beige100)),
+                              Text(t.achievements.rankFaction, style: subheadH2Medium.copyWith(color: appTheme.beige100)),
 
                               Skeleton.leaf(
                                 child: MultiOptionSwitcher<Faction>(
@@ -103,7 +103,7 @@ class RanksPage extends StatelessWidget {
                         sliver: SliverFillRemaining(
                           hasScrollBody: false,
                           child: displayRanks.isEmpty && !state.isLoading
-                              ? const Center(child: Text('No ranks found'))
+                              ? Center(child: Text(t.achievements.noRanksFound))
                               : DeepStackScroll(
                                   children: displayRanks
                                       .map(

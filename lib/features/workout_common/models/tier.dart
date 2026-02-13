@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:reforge/generated/i18n/translations.g.dart';
+
 part 'tier.freezed.dart';
 
 part 'tier.g.dart';
@@ -17,35 +19,35 @@ sealed class Tier with _$Tier {
   factory Tier.fromJson(Map<String, dynamic> json) => _$TierFromJson(json);
 }
 
-final List<Tier> mockTiers = [
-  const Tier(
-    title: 'Beginner',
-    description: 'The start of the journey. Mastering the basics.',
-    rank: 1,
-  ),
-  const Tier(
-    title: 'Novice',
-    description: 'You are settling in, but there is still work to do.',
-    rank: 2,
-  ),
-  const Tier(
-    title: 'Intermediate',
-    description: 'The golden mean. Consistent results and solid understanding.',
-    rank: 3,
-  ),
-  const Tier(
-    title: 'Advanced',
-    description: 'High level of mastery. Complex challenges are within reach.',
-    rank: 4,
-  ),
-  const Tier(
-    title: 'Elite',
-    description: 'The elite. Access to exclusive opportunities and rare rewards.',
-    rank: 5,
-  ),
-  const Tier(
-    title: 'Faction Leader',
-    description: 'The apex of the hierarchy. You lead the pack.',
-    rank: 6,
-  ),
-];
+List<Tier> get mockTiers => [
+      Tier(
+        title: t.workout_tiers.beginner,
+        description: t.workout_tiers.beginnerDescription,
+        rank: 1,
+      ),
+      Tier(
+        title: t.workout_tiers.novice,
+        description: t.workout_tiers.noviceDescription,
+        rank: 2,
+      ),
+      Tier(
+        title: t.workout_tiers.intermediate,
+        description: t.workout_tiers.intermediateDescription,
+        rank: 3,
+      ),
+      Tier(
+        title: t.workout_tiers.advanced,
+        description: t.workout_tiers.advancedDescription,
+        rank: 4,
+      ),
+      Tier(
+        title: t.workout_tiers.elite,
+        description: t.workout_tiers.eliteDescription,
+        rank: 5,
+      ),
+      Tier(
+        title: t.workout_tiers.factionLeader,
+        description: t.workout_tiers.factionLeaderDescription,
+        rank: 6,
+      ),
+    ];

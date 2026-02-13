@@ -3,7 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reforge/features/workout_common/domain/media_service.dart';
@@ -47,6 +48,6 @@ class MediaService implements IMediaService {
 
   @override
   Future<void> saveToGallery(Uint8List bytes) async {
-    await ImageGallerySaver.saveImage(bytes);
+    await ImageGallerySaverPlus.saveImage(bytes);
   }
 }

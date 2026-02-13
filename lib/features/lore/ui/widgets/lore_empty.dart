@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 class LoreEmpty extends StatelessWidget {
@@ -19,7 +21,7 @@ class LoreEmpty extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'We are currently working on\ncontent for this plate',
+              t.lore.contentPlaceholder,
               textAlign: TextAlign.center,
               style: subheadH6Regular.copyWith(
                 color: context.appTheme.beige600,

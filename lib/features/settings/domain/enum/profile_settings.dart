@@ -25,18 +25,18 @@ extension ProfileSettingsX on ProfileSettings {
 
   String title(Translations t) {
     return switch (this) {
-      ProfileSettings.image => 'Upload image',
-      ProfileSettings.name => 'Name',
-      ProfileSettings.email => 'Email',
-      ProfileSettings.dateOfBirth => 'Date of birth',
-      ProfileSettings.heightAndWeight => 'Weight',
+      ProfileSettings.image => t.settings.uploadImage,
+      ProfileSettings.name => t.settings.name,
+      ProfileSettings.email => t.settings.email,
+      ProfileSettings.dateOfBirth => t.settings.dateOfBirth,
+      ProfileSettings.heightAndWeight => t.settings.weight,
     };
   }
 
   String? getDisplayValue(OnboardedUser user, Translations t) {
     return switch (this) {
       ProfileSettings.image => user.avatarUrl,
-      ProfileSettings.name => user.userName ?? 'Set your name',
+      ProfileSettings.name => user.userName ?? t.settings.setYourName,
       ProfileSettings.email => user.email,
       ProfileSettings.dateOfBirth => formatDate(user.birthDate),
       ProfileSettings.heightAndWeight =>

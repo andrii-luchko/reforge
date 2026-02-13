@@ -1,8 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
-
 import 'package:reforge/core/network/api_client.dart';
+import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
@@ -13,7 +13,7 @@ abstract interface class HomeRepository {
 }
 
 @Injectable(as: HomeRepository)
-class HomeRepositoryImpl implements HomeRepository {
+class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
   HomeRepositoryImpl(this._apiClient, this._userSessionService);
 
   final ApiClient _apiClient;
@@ -32,7 +32,10 @@ class HomeRepositoryImpl implements HomeRepository {
     try {
       final startDate = period.range.start.toUtc().toIso8601String();
       final endDate = period.range.end.toUtc().toIso8601String();
-      final result = await _apiClient.getUserStats(startDate: startDate, endDate: endDate);
+      final result = await makeRequest(
+        () => _apiClient.getUserStats(startDate: startDate, endDate: endDate),
+        label: 'getUserStats',
+      );
 
       final stats = result.data.toDomain();
       return Result.success(stats);

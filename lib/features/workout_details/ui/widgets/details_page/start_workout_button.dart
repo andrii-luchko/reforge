@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -21,7 +22,7 @@ class StartWorkoutButton extends StatelessWidget {
         padding: const .symmetric(vertical: 16),
         width: buttonWidth,
         child: PrimaryButton(
-          text: 'Start Workout',
+          text: t.workout_details.startWorkout,
           onPressed: onPressed,
         ),
       ),

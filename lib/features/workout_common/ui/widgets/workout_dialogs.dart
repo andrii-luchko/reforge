@@ -46,13 +46,13 @@ class WorkoutDialogs {
     return AppDialog.show<bool?>(
       context,
       child: TwoOptionsDialog(
-        title: 'Finish Workout?',
+        title: t.workout.finishWorkoutTitle,
         rightButtonLabel: t.common.complete_button,
         leftButtonLabel: t.common.cancel_button,
         contentBuilder: (context) => Padding(
           padding: const EdgeInsets.all(8),
           child: Text(
-            'Are you sure you want to end this workout? Your progress and XP will be saved only after confirmation.',
+            t.workout.finishWorkoutMessage,
             textAlign: TextAlign.center,
             style: bodyLRegular.copyWith(color: context.appTheme.beige600),
           ),
@@ -67,13 +67,13 @@ class WorkoutDialogs {
     return AppDialog.show<bool?>(
       context,
       child: TwoOptionsDialog(
-        title: 'Delete Set?',
+        title: t.workout.deleteSetTitle,
         rightButtonLabel: t.common.delete_button,
         leftButtonLabel: t.common.cancel_button,
         contentBuilder: (context) => Padding(
           padding: const EdgeInsets.all(8),
           child: Text(
-            'Are you sure you want to delete this set? This action cannot be undone',
+            t.workout.deleteSetMessage,
             textAlign: TextAlign.center,
             style: bodyLRegular.copyWith(color: context.appTheme.beige600),
           ),

@@ -13,11 +13,11 @@ extension FitnessGoalExtension on MainGoal {
   String title(Translations t) {
     switch (this) {
       case MainGoal.buildStrength:
-        return t.quiz.steps.main_goal.build_strength.title;
+        return '${t.quiz.steps.main_goal.build_strength.title} (${Faction.gakki.title(t)})';
       case MainGoal.improveEndurance:
-        return t.quiz.steps.main_goal.improve_endurance.title;
+        return '${t.quiz.steps.main_goal.improve_endurance.title} (${Faction.gyohyo.title(t)})';
       case MainGoal.enhanceFlexibility:
-        return t.quiz.steps.main_goal.enhance_flexibility.title;
+        return '${t.quiz.steps.main_goal.enhance_flexibility.title} (${Faction.seiren.title(t)})';
     }
   }
 

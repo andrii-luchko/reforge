@@ -63,10 +63,10 @@ class NameContent extends StatelessWidget {
           },
           builder: (context, value) {
             return LabeledAppTextField(
-              label: 'Name',
+              label: t.settings.name,
               field: AppTextField(
                 initialValue: value.name,
-                hintText: 'Name',
+                hintText: t.settings.name,
                 errorText: value.error,
                 onChanged: cubit.onChanged,
               ),

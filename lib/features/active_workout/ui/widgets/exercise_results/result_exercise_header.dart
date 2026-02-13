@@ -21,7 +21,7 @@ class ResultExerciseHeader extends StatelessWidget {
     final style = subheadH3Medium.copyWith(color: context.appTheme.beige100);
 
     return WorkoutRowLayout(
-      setsCell: Text('Sets', style: style, textAlign: TextAlign.center),
+      setsCell: Text(t.workout.sets, style: style, textAlign: TextAlign.center),
 
       metricCells: metrics.map((m) {
         return Text(

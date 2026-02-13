@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gradient_borders/gradient_borders.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
@@ -13,23 +14,20 @@ import 'package:reforge/shared/empty_list_message.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderBoardUsersList extends StatelessWidget {
-  const LeaderBoardUsersList({required this.users, required this.currentUserIndex, super.key});
+  const LeaderBoardUsersList({required this.users, super.key});
 
   final List<LeaderboardUserModel> users;
-  final int? currentUserIndex;
   @override
   Widget build(BuildContext context) {
     return users.isEmpty
-        ? const SliverEmptyListMessage(
-            title: 'No Users Found',
-            subtitle: 'It looks like there are no active user in this league yet.',
+        ? SliverEmptyListMessage(
+            title: t.leaderboard.usersList.emptyTitle,
+            subtitle: t.leaderboard.usersList.emptySubtitle,
             icon: Icons.groups_3_outlined,
           )
         : SliverList.separated(
             itemCount: users.length,
             itemBuilder: (context, index) {
-              // final isMe = index == currentUserIndex;
-
               final user = users[index];
               return Skeleton.leaf(
                 child: LeaderboardUserListTile(

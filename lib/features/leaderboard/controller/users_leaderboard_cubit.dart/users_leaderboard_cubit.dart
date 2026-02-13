@@ -57,6 +57,7 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
         emit(
           state.copyWith(
             isPaginationLoading: false,
+            paginationError: null,
             currentUsersList: [...state.currentUsersList, ...data.usersList],
             currentPage: nextPage,
             hasReachedMax: nextPage >= data.totalPages,
@@ -66,32 +67,5 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
       case ErrorR(error: final e):
         emit(state.copyWith(isPaginationLoading: false, paginationError: e.toString()));
     }
-  }
-
-  // ignore: unused_element
-  Future<void> _mockedPagination() async {
-    if (state.isPaginationLoading) return;
-    emit(state.copyWith(isPaginationLoading: true));
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    final mockMore = List.generate(
-      10,
-      (i) => LeaderboardUserModel(
-        rank: state.currentUsersList.length + i + 1,
-        username: 'Fake Player ${state.currentUsersList.length + i}',
-        xp: 1000,
-        avatarUrl: null,
-      ),
-    );
-
-    emit(
-      state.copyWith(
-        isPaginationLoading: false,
-        currentUsersList: [...state.currentUsersList, ...mockMore],
-        currentPage: state.currentPage + 1,
-        hasReachedMax: state.currentPage > 10,
-      ),
-    );
   }
 }

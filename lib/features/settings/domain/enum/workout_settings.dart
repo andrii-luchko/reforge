@@ -25,11 +25,11 @@ extension WorkoutSettingsX on WorkoutSettings {
 
   String title(Translations t) {
     return switch (this) {
-      WorkoutSettings.subscription => 'Subscription',
-      WorkoutSettings.faction => 'Change Faction',
-      WorkoutSettings.notification => 'Notifications',
-      WorkoutSettings.measureSystem => 'Measurement',
-      WorkoutSettings.workoutDays => 'Workout days',
+      WorkoutSettings.subscription => t.settings.subscription,
+      WorkoutSettings.faction => t.settings.changeFaction,
+      WorkoutSettings.notification => t.settings.notifications,
+      WorkoutSettings.measureSystem => t.settings.measurement,
+      WorkoutSettings.workoutDays => t.settings.workoutDays,
     };
   }
 
@@ -39,7 +39,7 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.faction => '${user.mainFaction?.title(t)}, ${user.secondaryFaction?.title(t)}',
       WorkoutSettings.notification => null,
       WorkoutSettings.measureSystem => user.measurementSystem.weightSymbol(t),
-      WorkoutSettings.workoutDays => '${user.workoutsPerWeek} days per week',
+      WorkoutSettings.workoutDays => t.settings.daysPerWeek(count: user.workoutsPerWeek),
     };
   }
 }

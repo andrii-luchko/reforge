@@ -9,6 +9,7 @@ import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'home_state.dart';
 part 'home_cubit.freezed.dart';
@@ -77,7 +78,7 @@ class HomeCubit extends Cubit<HomeState> {
   RankEntity _createRank(OnboardedUser? user, UserStats stats) {
     return RankEntity(
       imageUrl: Assets.images.png.avatar.path,
-      rankName: 'Foundryman',
+      rankName: t.tiers.intermediate,
       faction: user?.mainFaction ?? Faction.gakki,
       lvl: stats.level,
       xp: stats.currentXp,

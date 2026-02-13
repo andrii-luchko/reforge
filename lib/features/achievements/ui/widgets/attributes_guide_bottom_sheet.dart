@@ -48,9 +48,9 @@ class ForgeSystemGuideSheet extends StatelessWidget {
               //   ),
               // ),
               // const SizedBox(height: 20),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: DefaultDialogHeader(title: 'Attribute Mastery Guide'),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: DefaultDialogHeader(title: t.achievements.attributeMasteryGuide),
               ),
               // Text('THE FIVE-FORGE SYSTEM', style: subheadH1Medium.copyWith(color: theme.beige100)),
               // const SizedBox(height: 4),

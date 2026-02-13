@@ -10,7 +10,8 @@ sealed class FactionLeaderboardDto with _$FactionLeaderboardDto {
     required String factionName,
     required int totalWins,
     @Default([]) List<int> wonWeeks,
-
+    @Default(0) int totalUsers,
+    @Default(0) int totalXp,
     int? periodId,
   }) = _FactionLeaderboardDto;
 

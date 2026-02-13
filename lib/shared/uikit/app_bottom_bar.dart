@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -80,7 +82,7 @@ class _AppBottomBarState extends State<AppBottomBar> {
               setState(() {
                 _draggedIndex = index;
               });
-              HapticFeedback.selectionClick();
+              unawaited(HapticFeedback.selectionClick());
             },
 
             onHorizontalDragUpdate: (details) async {
@@ -90,7 +92,7 @@ class _AppBottomBarState extends State<AppBottomBar> {
                 setState(() {
                   _draggedIndex = newIndex;
                 });
-                await HapticFeedback.selectionClick();
+                unawaited(HapticFeedback.selectionClick());
               }
             },
 

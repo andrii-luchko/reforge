@@ -3,6 +3,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
+import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
@@ -22,7 +23,7 @@ abstract interface class LeaderboardRepositoryI {
 }
 
 @Injectable(as: LeaderboardRepositoryI)
-class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
+class LeaderboardRepositoryImpl with RepositoryErrorHandler implements LeaderboardRepositoryI {
   const LeaderboardRepositoryImpl(this._apiClient, this._userSessionService);
 
   final UserSessionService _userSessionService;
@@ -31,7 +32,10 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
   @override
   Future<Result<MappedLeaderboardData>> getGlobalUserListPaginated({required int page, int limit = 20}) async {
     try {
-      final response = await _apiClient.getGlobalUserList(page, limit);
+      final response = await makeRequest(
+        () => _apiClient.getGlobalUserList(page, limit),
+        label: 'getGlobalUserListPaginated',
+      );
       return Result.success(response.toDomain());
     } on Exception catch (e) {
       return Result.error(e);
@@ -41,7 +45,10 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
   @override
   Future<Result<List<ImmortalForgeEntity>>> getImmortalForgesForFaction(Faction faction) async {
     try {
-      final response = await _apiClient.getImmortalForges(faction.name);
+      final response = await makeRequest(
+        () => _apiClient.getImmortalForges(faction.name),
+        label: 'getImmortalForgesForFaction',
+      );
       logger.d(response.data);
       final parsed = response.toDomain();
       return Result.success(parsed);
@@ -53,10 +60,13 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
   @override
   Future<Result<List<LeaderboardFactionModel>>> getFactionsLeaderboard() async {
     try {
-      final results = await Future.wait([
-        _apiClient.getLocalFactionsLeaderboard(),
-        _apiClient.getGlobalFactionsLeaderboard(),
-      ]);
+      final results = await makeRequest(
+        () => Future.wait([
+          _apiClient.getLocalFactionsLeaderboard(),
+          _apiClient.getGlobalFactionsLeaderboard(),
+        ]),
+        label: 'getFactionsLeaderboard',
+      );
 
       final local = results.first.data;
       final global = results[1].data;
@@ -73,8 +83,8 @@ class LeaderboardRepositoryImpl implements LeaderboardRepositoryI {
         finalModels.add(
           LeaderboardFactionModel(
             faction: faction,
-            activeUsers: 0,
-            xp: 0,
+            activeUsers: localDto.totalUsers,
+            xp: localDto.totalXp,
             localScore: localDto.totalWins,
             globalScore: globalScores[localDto.factionId] ?? 0,
           ),

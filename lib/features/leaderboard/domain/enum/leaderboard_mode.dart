@@ -9,9 +9,9 @@ extension LeaderboardTypeX on LeaderboardMode {
   String title(Translations t) {
     switch (this) {
       case LeaderboardMode.users:
-        return 'Leaderboard';
+        return t.leaderboard.modes.users;
       case LeaderboardMode.factions:
-        return 'Faction wars';
+        return t.leaderboard.modes.factions;
     }
   }
 }

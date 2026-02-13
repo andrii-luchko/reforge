@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/lore/data/models/jiku_plate_dto.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 
 part 'plates_model.freezed.dart';
@@ -19,6 +20,33 @@ sealed class PlatesModel with _$PlatesModel {
   }) = _PlatesModel;
 
   factory PlatesModel.fromJson(Map<String, dynamic> json) => _$PlatesModelFromJson(json);
+
+  factory PlatesModel.fromListDto(JikuPlateListDto dto) => PlatesModel(
+        id: dto.id,
+        name: dto.title,
+        title: dto.title,
+        imageUrl: dto.imageUrl,
+        loreBody: null,
+        unlockLevel: dto.unlockLevel,
+        isLocked: !dto.isUnlocked,
+      );
+
+  factory PlatesModel.fromDetailDto(JikuPlateDetailDto dto) => PlatesModel(
+        id: dto.id,
+        name: dto.title,
+        title: dto.title,
+        imageUrl: dto.imageUrl,
+        loreBody: dto.text,
+        unlockLevel: dto.unlockLevel,
+        isLocked: false,
+      );
+
+  PlatesModel mergeWithDetail(PlatesModel detail) => copyWith(
+        loreBody: detail.loreBody,
+        imageUrl: detail.imageUrl,
+        title: detail.title,
+        name: detail.name,
+      );
 
   PlatesEntity toEntity() {
     return PlatesEntity(

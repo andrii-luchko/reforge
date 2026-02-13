@@ -16,8 +16,8 @@ import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
-class UsersLeaderboardSlivers extends StatelessWidget {
-  const UsersLeaderboardSlivers({super.key});
+class UsersLeaderboardView extends StatelessWidget {
+  const UsersLeaderboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,10 +94,19 @@ class LeaderBoardListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final mockUsers = generateMockUsers();
     return BlocConsumer<UsersLeaderboardCubit, UsersLeaderboardState>(
+      listenWhen: (prev, curr) =>
+          prev.error != curr.error && curr.error != null ||
+          prev.paginationError != curr.paginationError && curr.paginationError != null,
       listener: (context, state) {
         final error = state.error;
-        if (error == null) return;
-        toastification.showErrorToast(error, context);
+        if (error != null) {
+          toastification.showErrorToast(error, context);
+          return;
+        }
+        final paginationError = state.paginationError;
+        if (paginationError != null) {
+          toastification.showErrorToast(paginationError, context);
+        }
       },
       builder: (context, state) {
         final isLoading = state.isLoading;
@@ -114,7 +123,7 @@ class LeaderBoardListSection extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Text(
-                      'Leaderboard list',
+                      t.leaderboard.usersList.title,
                       style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
                     ),
                   ),
@@ -122,16 +131,27 @@ class LeaderBoardListSection extends StatelessWidget {
               ),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: LeaderBoardUsersList(
-                  users: currentUsers,
-                  currentUserIndex: state.currentUserIndex,
-                ),
+                sliver: LeaderBoardUsersList(users: currentUsers),
               ),
 
               if (isPaginationLoading)
                 const SliverPadding(
                   padding: EdgeInsets.symmetric(vertical: 24),
                   sliver: SliverToBoxAdapter(child: PaginationLoader()),
+                ),
+
+              if (state.paginationError != null && !state.isPaginationLoading)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () =>
+                            context.read<UsersLeaderboardCubit>().loadNextPage(),
+                        child: Text(t.leaderboard.usersList.retry),
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),

@@ -8,8 +8,15 @@ class NotificationGenerator {
   static final Random _random = Random(15);
 
   static List<NotificationEntity> generateMocks(int count) {
+    const types = [
+      NotificationType.plateUnlocked,
+      NotificationType.xpSummary,
+      NotificationType.rankUpdate,
+      NotificationType.weeklyWinner,
+      NotificationType.paymentFailed,
+    ];
     return List.generate(count, (index) {
-      final type = NotificationType.values[_random.nextInt(NotificationType.values.length)];
+      final type = types[_random.nextInt(types.length)];
       final data = _getMockDataByType(type);
 
       return NotificationEntity(
@@ -49,6 +56,10 @@ class NotificationGenerator {
       NotificationType.paymentFailed => {
         'title': 'Payment Failed',
         'subtitle': 'Please update your payment method',
+      },
+      NotificationType.unknown => {
+        'title': 'Notification',
+        'subtitle': '',
       },
     };
   }

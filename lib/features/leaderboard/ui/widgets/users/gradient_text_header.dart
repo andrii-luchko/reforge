@@ -3,20 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:reforge/generated/flutter_gen/fonts.gen.dart';
 
 class GradientTextHeader extends StatelessWidget {
-  const GradientTextHeader({super.key});
+  const GradientTextHeader({
+    required this.immortalText,
+    required this.forgesText,
+    super.key,
+  });
+
+  final String immortalText;
+  final String forgesText;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
-
       children: [
-        GradientText(
-          text: 'IMMORTAL',
-        ),
-        GradientText(
-          text: 'FORGES',
-        ),
+        GradientText(text: immortalText),
+        GradientText(text: forgesText),
       ],
     );
   }

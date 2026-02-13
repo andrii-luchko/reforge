@@ -161,6 +161,8 @@ class UserCubit extends Cubit<UserState> {
     }
 
     if (request.bodyWeight != null && user.bodyWeight?.round() != request.bodyWeight) return false;
+    if (request.remindersEnabled != null && user.remindersEnabled != request.remindersEnabled) return false;
+    if (request.announcementsEnabled != null && user.announcementsEnabled != request.announcementsEnabled) return false;
 
     return true;
   }

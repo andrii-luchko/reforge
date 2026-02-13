@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/shared/uikit/app_bottom_bar.dart';
@@ -19,6 +20,12 @@ class _RootPageState extends State<RootPage> {
       extendBody: true,
       resizeToAvoidBottomInset: false,
       body: widget.navigationShell,
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              onPressed: () {},
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: AppBottomBar(
         navigationShell: widget.navigationShell,
       ),

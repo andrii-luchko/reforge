@@ -1,6 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/workout_share/controllers/share/share_controller.dart';
@@ -22,7 +25,7 @@ class ShareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SecondaryButton(
-      text: 'Share',
+      text: t.workout_share.share,
       onPressed: () async {
         final controller = di.getIt<ShareController>();
 
@@ -75,8 +78,8 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const DefaultDialogHeader(
-            title: 'Share Your Progress',
+          DefaultDialogHeader(
+            title: t.workout_share.shareYourProgress,
             textFlex: 5,
           ),
           const SizedBox(height: 16),
@@ -97,7 +100,7 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
             child: Column(
               children: [
                 ThirtyButton(
-                  text: 'Instagram',
+                  text: t.workout_share.instagram,
                   onPressed: () => _performAction(
                     () => widget.controller.captureAndShare(_contentKey),
                   ),
@@ -108,7 +111,7 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
                   children: [
                     Expanded(
                       child: SecondaryButton(
-                        text: 'Share',
+                        text: t.workout_share.share,
                         onPressed: () => _performAction(
                           () => widget.controller.captureAndShare(_contentKey),
                         ),
@@ -116,12 +119,12 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
                     ),
                     Expanded(
                       child: PrimaryButton(
-                        text: 'Save',
+                        text: t.workout_share.save,
                         onPressed: () => _performAction(() async {
                           final saved = await widget.controller.captureAndSaveToGallery(_contentKey);
 
                           if (saved) {
-                            toastification.showSimpleToast('Saved');
+                            toastification.showSimpleToast(t.workout_share.saved);
                           }
                         }),
                       ),

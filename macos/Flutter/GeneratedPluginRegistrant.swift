@@ -5,10 +5,12 @@
 import FlutterMacOS
 import Foundation
 
+import app_settings
 import file_selector_macos
 import firebase_analytics
 import firebase_core
 import firebase_crashlytics
+import firebase_messaging
 import flutter_secure_storage_darwin
 import google_sign_in_ios
 import path_provider_foundation
@@ -20,10 +22,12 @@ import url_launcher_macos
 import video_player_avfoundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  AppSettingsPlugin.register(with: registry.registrar(forPlugin: "AppSettingsPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
   FirebaseAnalyticsPlugin.register(with: registry.registrar(forPlugin: "FirebaseAnalyticsPlugin"))
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))
   FLTFirebaseCrashlyticsPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCrashlyticsPlugin"))
+  FLTFirebaseMessagingPlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseMessagingPlugin"))
   FlutterSecureStorageDarwinPlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStorageDarwinPlugin"))
   FLTGoogleSignInPlugin.register(with: registry.registrar(forPlugin: "FLTGoogleSignInPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))

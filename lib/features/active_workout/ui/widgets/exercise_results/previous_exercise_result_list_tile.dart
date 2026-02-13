@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
@@ -17,8 +19,8 @@ class PreviousExerciseResultListTile extends StatelessWidget {
       leadingIcon: AppIconButton(
         iconAsset: Assets.images.icons.dumbbell,
       ),
-      title: 'Previous achievements',
-      subtitle: 'Your past highlights',
+      title: t.workout.previousAchievementsInline,
+      subtitle: t.workout.yourPastHighlights,
       onTap: () async {
         await WorkoutDialogs.pastResultsDialog(context, result, system);
       },

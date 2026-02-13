@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 typedef StepModel = ({
@@ -37,7 +38,7 @@ class InstructionSection extends StatelessWidget {
         crossAxisAlignment: .start,
         children: [
           Text(
-            'How to perform ',
+            t.workout_instruction.howToPerform,
             style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
           ),
           const SizedBox(height: 8),
@@ -231,7 +232,7 @@ class InstructionEmpty extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'We are currently working on\ninstructions for this exercise',
+              t.workout_instruction.instructionsPlaceholder,
               textAlign: TextAlign.center,
               style: subheadH6Regular.copyWith(
                 color: context.appTheme.beige600,

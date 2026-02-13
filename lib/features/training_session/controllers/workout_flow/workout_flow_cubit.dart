@@ -11,6 +11,7 @@ import 'package:reforge/features/workout_flow/domain/entities/program_day_entity
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'workout_flow_state.dart';
 part 'workout_flow_cubit.freezed.dart';
@@ -73,7 +74,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
         emit(
           state.copyWith(
             isStartingWorkout: false,
-            error: 'Failed to start workout: $error',
+            error: t.workout_flow.startWorkoutError(error: error),
           ),
         );
     }
@@ -115,7 +116,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
         );
       case ErrorR(error: final error):
         emit(
-          state.copyWith(error: 'Failed to ${status.name} workout: $error', isLoading: false),
+            state.copyWith(error: t.workout_flow.workoutActionError(action: status.name, error: error), isLoading: false),
         );
     }
   }
