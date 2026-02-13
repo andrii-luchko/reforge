@@ -124,7 +124,7 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
                           final saved = await widget.controller.captureAndSaveToGallery(_contentKey);
 
                           if (saved) {
-                            toastification.showSimpleToast('Saved');
+                            toastification.showSimpleToast(t.workout_share.saved);
                           }
                         }),
                       ),

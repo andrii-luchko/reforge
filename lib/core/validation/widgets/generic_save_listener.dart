@@ -33,9 +33,9 @@ class GenericSaveListener<T> extends StatelessWidget {
 
           case GenericExternalError(error: final msg):
             if (onError != null) {
-              onError!(msg ?? 'Error');
+              onError!(msg ?? t.errors.unexpected);
             } else {
-              toastification.showErrorToast(msg ?? 'Server Error', context);
+              toastification.showErrorToast(msg ?? t.errors.generic_server_error, context);
             }
 
           default:

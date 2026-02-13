@@ -85,7 +85,10 @@
         "skip_button": "Skip",
         "continue_button": "Continue",
         "save_changes_button": "Save changes",
-        "lv": "lv"
+        "lv": "lv",
+        "loading": "Loading",
+        "loadingDescription": "Loading...",
+        "done_button": "Done"
     },
     "validation": {
         "email_required": "Email is required",
@@ -368,6 +371,7 @@
         "connection_timeout": "Connection timeout. Please check your internet.",
         "unauthorized": "Unauthorized",
         "server_error": "Server error: $statusCode",
+        "generic_server_error": "Server error",
         "request_cancelled": "Request cancelled",
         "no_internet": "No internet connection",
         "unexpected": "Unexpected error occurred"
@@ -406,11 +410,14 @@
         "share": "Share",
         "shareYourProgress": "Share Your Progress",
         "instagram": "Instagram",
-        "save": "Save"
+        "save": "Save",
+        "saved": "Saved"
     },
     "training_details": {
         "title": "Training Details",
-        "overview": "Overview"
+        "overview": "Overview",
+        "workout_info": "Workout info",
+        "trainingDateTitle": "Training $date"
     },
     "workout_flow": {
         "startWorkoutError": "Failed to start workout: $error",
@@ -516,5 +523,13 @@
         "openSettings": "Open Settings",
         "weightCantBeNull": "Weight cant be null",
         "selectAtLeast2Factions": "You need to select at least 2 Factions"
+    },
+    "notifications": {
+        "pageTitle": "Notifications",
+        "itemsCount": "$count items",
+        "clearAll": "Clear all",
+        "emptyTitle": "No notifications yet",
+        "emptySubtitle": "You're all caught up! Once there's something new — like updates, reminders, or messages — you'll see it here.",
+        "defaultTitle": "Notification"
     }
 }

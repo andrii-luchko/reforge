@@ -41,12 +41,12 @@ class NotificationListSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${notifications.length} items',
+                    t.notifications.itemsCount(count: notifications.length),
                     style: subheadH5Medium.copyWith(color: appTheme.beige700),
                   ),
 
                   ThirtyButton(
-                    text: 'Clear all',
+                    text: t.notifications.clearAll,
                     onPressed: onClearAll,
                   ),
                 ],
@@ -55,7 +55,7 @@ class NotificationListSection extends StatelessWidget {
           ),
         ),
         if (isEmpty)
-          const SliverPadding(padding: horizontalPadding, sliver: NotificationListEmpty())
+          SliverPadding(padding: horizontalPadding, sliver: NotificationListEmpty())
         else
           SliverPadding(
             padding: horizontalPadding,
@@ -88,11 +88,10 @@ class NotificationListEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SliverEmptyListMessage(
+    return SliverEmptyListMessage(
       icon: Icons.notifications_off_outlined,
-      title: 'No notifications yet',
-      subtitle:
-          'You’re all caught up! Once there’s something new — like updates, reminders, or messages — you’ll see it here.',
+      title: t.notifications.emptyTitle,
+      subtitle: t.notifications.emptySubtitle,
     );
   }
 }

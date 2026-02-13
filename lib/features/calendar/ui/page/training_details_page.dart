@@ -99,7 +99,7 @@ class _TrainingDetailsLoadingView extends StatelessWidget {
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  'Workout info',
+                  t.training_details.workout_info,
                   style: subheadH2Medium.copyWith(color: appTheme.beige100),
                 ),
               ),
@@ -108,10 +108,10 @@ class _TrainingDetailsLoadingView extends StatelessWidget {
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: SliverList.separated(
                 itemCount: 2,
-                itemBuilder: (context, index) => const WorkoutInfoTile(
+                itemBuilder: (context, index) => WorkoutInfoTile(
                   result: PreviousExerciseResult(
-                    name: 'Loading',
-                    description: 'Loading...',
+                    name: t.common.loading,
+                    description: t.common.loadingDescription,
                   ),
                   system: MeasurementSystem.metric,
                 ),
@@ -178,7 +178,7 @@ class _TrainingDetailsContentView extends StatelessWidget {
           slivers: [
             DefaultSliverAppBar(
               onPressed: () => Navigator.of(context).pop(),
-              title: 'Training ${data.date.toDotString()}',
+              title: t.training_details.trainingDateTitle(date: data.date.toDotString()),
             ),
             SliverPadding(
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16, top: 16),
@@ -208,7 +208,7 @@ class _TrainingDetailsContentView extends StatelessWidget {
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: SliverToBoxAdapter(
                 child: Text(
-                  'Workout info',
+                  t.training_details.workout_info,
                   style: subheadH2Medium.copyWith(color: appTheme.beige100),
                 ),
               ),

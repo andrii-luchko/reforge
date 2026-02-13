@@ -6,6 +6,7 @@ import 'package:reforge/features/notifications/controller/notification_feed_cubi
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
 import 'package:reforge/features/notifications/ui/widgets/notification_list_section.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
@@ -68,7 +69,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  title: 'Notification',
+                  title: t.notifications.pageTitle,
                 ),
                 BlocBuilder<NotificationFeedCubit, NotificationFeedState>(
                   builder: (context, state) {
