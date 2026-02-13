@@ -1,5 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:flutter/services.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/workout_common/ui/widgets/gloving_arc.dart';
@@ -125,10 +128,9 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
                   ),
                 ),
                 const SizedBox(height: 8),
-                const CenteredTitleSection(
-                  title: 'Get Ready to Run',
-                  subtitle:
-                      'Your session starts in a moment. Focus on your breath, set your pace, and prepare to begin as the countdown hits zero.',
+                CenteredTitleSection(
+                  title: t.workout.getReadyToRun,
+                  subtitle: t.workout.startRunningSubtitle,
                 ),
 
                 const Spacer(

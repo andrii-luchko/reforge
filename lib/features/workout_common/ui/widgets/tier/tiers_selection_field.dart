@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
@@ -24,10 +26,10 @@ class TierSelectionField extends StatelessWidget {
     final style = subheadH3Medium.copyWith(color: context.appTheme.beige100);
 
     return LabeledAppTextField(
-      label: 'Select tier',
+      label: t.workout.selectTier,
       field: PortalSelectField(
         controller: controller,
-        hintText: 'Select tier',
+        hintText: t.workout.selectTier,
         heightFactor: 3,
         contentBuilder: (context, close) {
           final possibleTiers = tiersList

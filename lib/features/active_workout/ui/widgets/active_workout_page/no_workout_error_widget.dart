@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 class NoWorkoutErrorWidget extends StatelessWidget {
@@ -30,7 +32,7 @@ class NoWorkoutErrorWidget extends StatelessWidget {
           const Icon(Icons.error, size: 48),
 
           Text(
-            'Something went wrong and we cant find right exercise.\n\nPlease try again later',
+            t.workout.exerciseNotFoundError,
             style: subheadH1Medium.copyWith(
               color: appTheme.beige100,
             ),

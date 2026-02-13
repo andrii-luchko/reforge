@@ -89,7 +89,7 @@ class _DynamicWorkoutFormState extends State<DynamicWorkoutForm> {
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: ThirtyButton(
-            text: 'Add Set',
+            text: t.workout.addSet,
             onPressed: widget.onAddSet,
           ),
         ),

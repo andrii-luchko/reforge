@@ -14,6 +14,7 @@ import 'package:reforge/features/workout_common/models/workout_set.dart';
 
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'active_exercise_cubit.freezed.dart';
 part 'active_exercise_state.dart';
@@ -111,7 +112,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     final metrics = programExercise.exerciseDetails.metrics;
 
     if (!currentSet.isValid(metrics)) {
-      emit(state.copyWith(setValidationError: 'Please fill all fields'));
+      emit(state.copyWith(setValidationError: t.workout_validation.fillAllFields));
       return;
     }
 
@@ -152,12 +153,12 @@ submitted: ${state.isSubmitted}
     if (state.isSubmitted) return;
 
     if (state.sets.isEmpty) {
-      emit(state.copyWith(setValidationError: 'Complete at least 1 set to go further'));
+      emit(state.copyWith(setValidationError: t.workout_validation.completeOneSet));
       return;
     }
 
     if (state.sets.any((set) => !set.isDone)) {
-      emit(state.copyWith(setValidationError: 'Some sets are undone.\nComplete or delete set to go further'));
+      emit(state.copyWith(setValidationError: t.workout_validation.completeOrDeleteSets));
       return;
     }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 class ExerciseDescriptionSection extends StatelessWidget {
@@ -13,7 +15,7 @@ class ExerciseDescriptionSection extends StatelessWidget {
       crossAxisAlignment: .start,
       children: [
         Text(
-          'About the exercise',
+          t.workout_instruction.aboutExercise,
           style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
         ),
         const SizedBox(height: 8),

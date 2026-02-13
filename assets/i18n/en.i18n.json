@@ -371,5 +371,71 @@
         "request_cancelled": "Request cancelled",
         "no_internet": "No internet connection",
         "unexpected": "Unexpected error occurred"
+    },
+    "workout": {
+        "addNotesHint": "Add notes...",
+        "startRunning": "Start Running",
+        "forgeNextMove": "Forge the next move",
+        "addSet": "Add Set",
+        "previousAchievements": "Previous\nachievements",
+        "notes": "Notes",
+        "noNotes": "No notes",
+        "previousAchievementsInline": "Previous achievements",
+        "yourPastHighlights": "Your past highlights",
+        "exerciseNotFoundError": "Something went wrong and we cant find right exercise.\n\nPlease try again later",
+        "getReadyToRun": "Get Ready to Run",
+        "startRunningSubtitle": "Your session starts in a moment. Focus on your breath, set your pace, and prepare to begin as the countdown hits zero.",
+        "sets": "Sets",
+        "done": "Done",
+        "finishWorkoutTitle": "Finish Workout?",
+        "finishWorkoutMessage": "Are you sure you want to end this workout? Your progress and XP will be saved only after confirmation.",
+        "deleteSetTitle": "Delete Set?",
+        "deleteSetMessage": "Are you sure you want to delete this set? This action cannot be undone",
+        "selectTier": "Select tier"
+    },
+    "workout_details": {
+        "startWorkout": "Start Workout"
+    },
+    "workout_instruction": {
+        "howToPerform": "How to perform",
+        "instructionsPlaceholder": "We are currently working on\ninstructions for this exercise",
+        "videoInstructions": "Video instructions",
+        "aboutExercise": "About the exercise"
+    },
+    "workout_share": {
+        "share": "Share",
+        "shareYourProgress": "Share Your Progress",
+        "instagram": "Instagram",
+        "save": "Save"
+    },
+    "training_details": {
+        "title": "Training Details",
+        "overview": "Overview"
+    },
+    "workout_flow": {
+        "startWorkoutError": "Failed to start workout: $error",
+        "workoutActionError": "Failed to $action workout: $error"
+    },
+    "workout_validation": {
+        "fillAllFields": "Please fill all fields",
+        "completeOneSet": "Complete at least 1 set to go further",
+        "completeOrDeleteSets": "Some sets are undone.\nComplete or delete set to go further"
+    },
+    "achievements": {
+        "learnMore": "Learn more"
+    },
+    "workout_tiers": {
+        "beginner": "Beginner",
+        "beginnerDescription": "The start of the journey. Mastering the basics.",
+        "novice": "Novice",
+        "noviceDescription": "You are settling in, but there is still work to do.",
+        "intermediate": "Intermediate",
+        "intermediateDescription": "The golden mean. Consistent results and solid understanding.",
+        "advanced": "Advanced",
+        "advancedDescription": "High level of mastery. Complex challenges are within reach.",
+        "elite": "Elite",
+        "eliteDescription": "The elite. Access to exclusive opportunities and rare rewards.",
+        "factionLeader": "Faction Leader",
+        "factionLeaderDescription": "The apex of the hierarchy. You lead the pack."
     }
 }

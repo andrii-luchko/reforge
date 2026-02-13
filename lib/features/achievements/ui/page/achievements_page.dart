@@ -64,13 +64,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           actionsPadding: const .only(right: 8),
                           title: Skeleton.keep(
                             child: Text(
-                              'Rank',
+                              t.home.rank_label,
                               style: subheadH1Medium.copyWith(color: appTheme.beige100),
                             ),
                           ),
                           actions: [
                             ThirtyButton(
-                              text: 'Learn more',
+                              text: t.achievements.learnMore,
                               onPressed: () {
                                 unawaited(_cubit.loadRanks());
                                 unawaited(
@@ -124,7 +124,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                                     ),
                                   ),
                                   ThirtyButton(
-                                    text: 'Learn more',
+                                    text: t.achievements.learnMore,
                                     onPressed: () {
                                       unawaited(_cubit.loadBadges());
 

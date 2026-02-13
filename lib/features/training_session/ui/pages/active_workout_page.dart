@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
@@ -59,7 +61,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(top: 16, bottom: 16),
                                 child: AppTextField(
-                                  hintText: 'Add notes...',
+                                  hintText: t.workout.addNotesHint,
                                   maxLines: null,
                                   maxLength: 500,
                                   keyboardType: TextInputType.multiline,
@@ -106,7 +108,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                       if (exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance)) ...[
                         const SizedBox(height: 8),
                         SecondaryButton(
-                          text: 'Start Running',
+                          text: t.workout.startRunning,
                           onPressed: () {
                             unawaited(const StartRunningPageRoute().push<void>(context));
                           },
@@ -116,7 +118,7 @@ class ActiveWorkoutPage extends StatelessWidget {
 
                       const SizedBox(height: 8),
                       PrimaryButton(
-                        text: 'Forge the next move',
+                        text: t.workout.forgeNextMove,
                         onPressed: () async {
                           await context.read<ActiveExerciseCubit>().finishExercise();
                         },
