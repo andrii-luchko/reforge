@@ -100,7 +100,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       valueListenable: _leaderboardModeNotifier,
                       builder: (context, mode, child) {
                         return mode == LeaderboardMode.users
-                            ? const UsersLeaderboardSlivers()
+                            ? const UsersLeaderboardView()
                             : const FactionsLeaderboardView();
                       },
                     ),

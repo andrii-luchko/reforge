@@ -8,6 +8,7 @@ import 'package:reforge/features/notifications/domain/mock/notification_generato
 import 'package:reforge/features/notifications/ui/widgets/notification_list_section.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
+import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -86,8 +87,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           onNotificationClear: (_) {},
                         ),
                       ),
-                      loaded: (notifications, hasMore, isLoadingMore, error) =>
+                      loaded: (notifications, hasMore, isLoadingMore, error) => SliverMainAxisGroup(
+                        slivers: [
                           _buildNotificationList(notifications: notifications),
+                          if (isLoadingMore)
+                            const SliverPadding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              sliver: SliverToBoxAdapter(child: PaginationLoader()),
+                            ),
+                        ],
+                      ),
                       error: (message) => SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.all(16),

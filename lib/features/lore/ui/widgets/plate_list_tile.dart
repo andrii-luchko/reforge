@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_empty.dart';
@@ -11,9 +13,14 @@ import 'package:reforge/shared/app_cached_net_image.dart';
 import 'package:toastification/toastification.dart';
 
 class PlateListTile extends StatefulWidget {
-  const PlateListTile({required this.model, super.key});
+  const PlateListTile({
+    required this.model,
+    this.loadingDetailId,
+    super.key,
+  });
 
   final PlatesEntity model;
+  final int? loadingDetailId;
 
   @override
   State<PlateListTile> createState() => _PlateListTileState();
@@ -45,6 +52,9 @@ class _PlateListTileState extends State<PlateListTile> {
   );
 
   void _handleTap() {
+    if (!widget.model.isLocked && widget.model.loreBody == null) {
+      context.read<LoreCubit>().loadPlateDetail(widget.model.id);
+    }
     setState(() => _isExpanded = !_isExpanded);
   }
 
@@ -69,7 +79,10 @@ class _PlateListTileState extends State<PlateListTile> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
 
-      child: PlateDetails(model: widget.model),
+      child: PlateDetails(
+        model: widget.model,
+        isLoading: widget.loadingDetailId == widget.model.id,
+      ),
       builder: (context, value, cachedChild) {
         final currentStroke = isLocked ? lockedStroke : Color.lerp(_defaultStrokeColor, _activeStrokeColor, value);
 
@@ -127,9 +140,14 @@ class _PlateListTileState extends State<PlateListTile> {
 }
 
 class PlateDetails extends StatelessWidget {
-  const PlateDetails({required this.model, super.key});
+  const PlateDetails({
+    required this.model,
+    this.isLoading = false,
+    super.key,
+  });
 
   final PlatesEntity model;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +156,7 @@ class PlateDetails extends StatelessWidget {
         children: [
           const SizedBox(height: 8),
           Container(
-            margin: const .symmetric(horizontal: 6),
+            margin: const EdgeInsets.symmetric(horizontal: 6),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: context.appTheme.beige900,
@@ -155,7 +173,12 @@ class PlateDetails extends StatelessWidget {
                   style: subheadH5Medium.copyWith(color: context.appTheme.beige700),
                 ),
                 const SizedBox(height: 16),
-                if (model.loreSteps.isEmpty)
+                if (isLoading && model.loreBody == null)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (model.loreSteps.isEmpty)
                   const LoreEmpty()
                 else
                   ...model.loreSteps.mapIndexed(

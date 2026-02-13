@@ -17,6 +17,8 @@ import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
+import 'package:reforge/features/lore/data/models/jiku_plate_dto.dart';
+import 'package:reforge/features/lore/data/response/jiku_plates_response.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
@@ -169,4 +171,15 @@ abstract class ApiClient {
 
   @GET('/workout-sessions/{sessionId}')
   Future<BaseResponse<WorkoutSessionDetailsDTO>> getWorkoutDetails(@Path('sessionId') int sessionId);
+
+  // Lore / Jiku Plates
+  @GET('/jiku-plates')
+  Future<JikuPlatesResponse> getJikuPlates(
+    @Query('page') int page,
+    @Query('limit') int limit,
+    @Query('search') String? search,
+  );
+
+  @GET('/jiku-plates/{id}')
+  Future<BaseResponse<JikuPlateDetailDto>> getJikuPlateById(@Path('id') int id);
 }

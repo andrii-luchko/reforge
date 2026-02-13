@@ -16,8 +16,8 @@ import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
-class UsersLeaderboardSlivers extends StatelessWidget {
-  const UsersLeaderboardSlivers({super.key});
+class UsersLeaderboardView extends StatelessWidget {
+  const UsersLeaderboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
