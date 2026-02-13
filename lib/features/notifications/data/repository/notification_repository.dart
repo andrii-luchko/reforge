@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
 
@@ -10,12 +11,18 @@ abstract interface class NotificationRepository {
 }
 
 @Injectable(as: NotificationRepository)
-class NotificationRepositoryImpl implements NotificationRepository {
+class NotificationRepositoryImpl with RepositoryErrorHandler implements NotificationRepository {
   @override
   Future<Result<List<NotificationEntity>>> getNotifications() async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      final notifications = NotificationGenerator.generateMocks(10)..sort((a, b) => b.date.compareTo(a.date));
+      final notifications = await makeRequest(
+        () async {
+          await Future.delayed(const Duration(seconds: 1));
+          final list = NotificationGenerator.generateMocks(10)..sort((a, b) => b.date.compareTo(a.date));
+          return list;
+        },
+        label: 'getNotifications',
+      );
       return Result.success(notifications);
     } on Exception catch (e) {
       return Result.error(e);
@@ -25,7 +32,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<Result<void>> markAllAsRead() async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      await makeRequest(
+        () => Future.delayed(const Duration(seconds: 1)),
+        label: 'markAllAsRead',
+      );
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
@@ -35,7 +45,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
   @override
   Future<Result<void>> markNotificationAsRead(int id) async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      await makeRequest(
+        () => Future.delayed(const Duration(seconds: 1)),
+        label: 'markNotificationAsRead',
+      );
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);

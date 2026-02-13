@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
+import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
@@ -18,7 +19,7 @@ import 'package:reforge/features/workout_flow/domain/entities/program_day_entity
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
 @Injectable(as: TrainingSessionRepository)
-class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
+class TrainingSessionRepositoryImpl with RepositoryErrorHandler implements TrainingSessionRepository {
   TrainingSessionRepositoryImpl(
     this._apiClient,
     this._userSessionService,
@@ -30,7 +31,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   @override
   Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
     try {
-      final response = await _apiClient.getWorkoutByDay(day);
+      final response = await makeRequest(
+        () => _apiClient.getWorkoutByDay(day),
+        label: 'getWorkoutByDay',
+      );
       return response.data.isEmpty ? const Result.success(null) : Result.success(response.data.first.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
@@ -59,7 +63,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   @override
   Future<Result<WorkoutSession>> startWorkoutSession(int programId) async {
     try {
-      final response = await _apiClient.starWorkoutSession(StartWorkoutSessionRequest(workoutProgramDayId: programId));
+      final response = await makeRequest(
+        () => _apiClient.starWorkoutSession(StartWorkoutSessionRequest(workoutProgramDayId: programId)),
+        label: 'startWorkoutSession',
+      );
       return Result.success(response.data);
     } on Exception catch (e) {
       return Result.error(e);
@@ -73,8 +80,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
     required MeasurementSystem system,
   }) async {
     try {
-      final response = await _apiClient.getPreviousExercise(workoutSessionId, programExerciseId);
-
+      final response = await makeRequest(
+        () => _apiClient.getPreviousExercise(workoutSessionId, programExerciseId),
+        label: 'getPreviousResults',
+      );
       final data = response.data;
 
       if (data == null) {
@@ -98,8 +107,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
   }) async {
     try {
       final request = CompleteWorkoutSessionRequest(status: status, durationInSeconds: workoutSessionDuration);
-      final response = await _apiClient.completeWorkoutSession(workoutSessionId, request);
-
+      final response = await makeRequest(
+        () => _apiClient.completeWorkoutSession(workoutSessionId, request),
+        label: 'endWorkoutSession',
+      );
       return Result.success(response.data.toEntity());
     } on Exception catch (e) {
       return Result.error(e);
@@ -122,9 +133,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
         workoutSessionId: workoutSessionId,
         system: system,
       );
-
-      await _apiClient.completeSet(request);
-
+      await makeRequest(
+        () => _apiClient.completeSet(request),
+        label: 'completeSet',
+      );
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
@@ -139,8 +151,10 @@ class TrainingSessionRepositoryImpl implements TrainingSessionRepository {
     required String note,
   }) async {
     try {
-      await _apiClient.saveExerciseNotes(workoutSessionId, workoutProgramExerciseId, exerciseId, note);
-
+      await makeRequest(
+        () => _apiClient.saveExerciseNotes(workoutSessionId, workoutProgramExerciseId, exerciseId, note),
+        label: 'saveWorkoutNote',
+      );
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);

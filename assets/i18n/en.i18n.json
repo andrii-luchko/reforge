@@ -333,5 +333,13 @@
             "all_time": "All Time"
         },
         "rank_label": "Rank"
+    },
+    "errors": {
+        "connection_timeout": "Connection timeout. Please check your internet.",
+        "unauthorized": "Unauthorized",
+        "server_error": "Server error: $statusCode",
+        "request_cancelled": "Request cancelled",
+        "no_internet": "No internet connection",
+        "unexpected": "Unexpected error occurred"
     }
 }
