@@ -53,7 +53,8 @@ class _CalendarBodyState extends State<CalendarBody> {
         builder: (context, state) {
           final currentMonth = state.currentMonth;
 
-          final event = state.currentMonthDays;
+          final events = state.visibleMonthDays;
+
           return RefreshIndicator(
             onRefresh: () => cubit.refresh(),
             child: CustomScrollView(
@@ -114,7 +115,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                                   }
                                 },
                                 onFocusedDayChanged: cubit.changeMonth,
-                                events: event,
+                                events: events,
                               ),
                             ),
                           ).animateEntrance(),

@@ -15,7 +15,15 @@ sealed class CalendarState with _$CalendarState {
     return calendar[currentDate!.toYearMonth()];
   }
 
-  Map<DateTime, DayEntity> get currentMonthDays {
-    return currentMonth?.days ?? {};
+  Map<DateTime, DayEntity> get visibleMonthDays {
+    if (currentDate == null) return {};
+
+    final current = currentMonth?.days ?? {};
+    final prevKey = DateTime(currentDate!.year, currentDate!.month - 1).toYearMonth();
+    final nextKey = DateTime(currentDate!.year, currentDate!.month + 1).toYearMonth();
+    final prev = calendar[prevKey]?.days ?? {};
+    final next = calendar[nextKey]?.days ?? {};
+
+    return {...prev, ...current, ...next};
   }
 }

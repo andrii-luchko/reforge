@@ -66,7 +66,7 @@ class CalendarCubit extends Cubit<CalendarState> {
   }
 
   DayEntity? navigationCheck(DateTime date) {
-    final currentMonthDays = state.currentMonthDays;
+    final currentMonthDays = state.visibleMonthDays;
     if (currentMonthDays.isEmpty) return null;
 
     final day = currentMonthDays[date.dateOnly];
