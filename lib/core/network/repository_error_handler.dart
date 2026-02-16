@@ -9,6 +9,7 @@ mixin RepositoryErrorHandler {
   Future<T> makeRequest<T>(
     Future<T> Function() request, {
     String? label,
+    Exception? Function(Object error, StackTrace stackTrace)? transformError,
   }) async {
     try {
       return await request();
@@ -17,6 +18,13 @@ mixin RepositoryErrorHandler {
       _logError(label, e, stackTrace);
       throw Exception(userMessage);
     } catch (e, stackTrace) {
+      if (transformError != null) {
+        final transformed = transformError(e, stackTrace);
+        if (transformed != null) {
+          _logError(label, e, stackTrace);
+          throw transformed;
+        }
+      }
       _logError(label, e, stackTrace);
       rethrow;
     }

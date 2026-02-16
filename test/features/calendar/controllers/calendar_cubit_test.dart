@@ -59,11 +59,13 @@ void main() {
       test('cache hit does not call repository', () async {
         final monthKey = DateTime(2025, 3, 15).toYearMonth();
         final cubit = CalendarCubit(mockRepository);
-        await (cubit
-          ..emit(CalendarState(
-            currentDate: DateTime(2025, 3),
-            calendar: {monthKey: createTestCalendarEntity()},
-          ))).changeMonth(DateTime(2025, 3, 15));
+        await (cubit..emit(
+              CalendarState(
+                currentDate: DateTime(2025, 3),
+                calendar: {monthKey: createTestCalendarEntity()},
+              ),
+            ))
+            .changeMonth(DateTime(2025, 3, 15));
         expect(cubit.state.currentDate, DateTime(2025, 3, 15));
         verifyNever(() => mockRepository.getMonthCalendarData(any()));
       });
@@ -73,9 +75,11 @@ void main() {
         build: () {
           when(() => mockRepository.getMonthCalendarData(any())).thenAnswer(
             (_) async => Result.success(
-              createTestCalendarEntity(days: {
-                DateTime(2025, 4): createTestDayEntity(DateTime(2025, 4)),
-              }),
+              createTestCalendarEntity(
+                days: {
+                  DateTime(2025, 4): createTestDayEntity(DateTime(2025, 4)),
+                },
+              ),
             ),
           );
           return CalendarCubit(mockRepository);
@@ -154,18 +158,20 @@ void main() {
         final dayEntity = createTestDayEntity(date, sessionIds: [1, 2]);
         final cubit = CalendarCubit(mockRepository);
         expect(
-          (cubit
-            ..emit(CalendarState(
-              currentDate: DateTime(2025, 8),
-              calendar: {
-                '2025-08': CalendarEntity(
-                  totalPlanned: 1,
-                  totalCompleted: 0,
-                  complianceRate: 0,
-                  days: {date: dayEntity},
+          (cubit..emit(
+                CalendarState(
+                  currentDate: DateTime(2025, 8),
+                  calendar: {
+                    '2025-08': CalendarEntity(
+                      totalPlanned: 1,
+                      totalCompleted: 0,
+                      complianceRate: 0,
+                      days: {date: dayEntity},
+                    ),
+                  },
                 ),
-              },
-            ))).navigationCheck(date),
+              ))
+              .navigationCheck(date),
           dayEntity,
         );
       });
@@ -191,18 +197,20 @@ void main() {
         final otherDate = DateTime(2025, 10, 20);
         final cubit = CalendarCubit(mockRepository);
         expect(
-          (cubit
-            ..emit(CalendarState(
-              currentDate: DateTime(2025, 10),
-              calendar: {
-                '2025-10': CalendarEntity(
-                  totalPlanned: 1,
-                  totalCompleted: 0,
-                  complianceRate: 0,
-                  days: {otherDate: createTestDayEntity(otherDate)},
+          (cubit..emit(
+                CalendarState(
+                  currentDate: DateTime(2025, 10),
+                  calendar: {
+                    '2025-10': CalendarEntity(
+                      totalPlanned: 1,
+                      totalCompleted: 0,
+                      complianceRate: 0,
+                      days: {otherDate: createTestDayEntity(otherDate)},
+                    ),
+                  },
                 ),
-              },
-            ))).navigationCheck(date),
+              ))
+              .navigationCheck(date),
           isNull,
         );
       });
@@ -216,9 +224,9 @@ void main() {
         expect(state.currentMonth, isNull);
       });
 
-      test('currentMonthDays returns empty when currentMonth is null', () {
+      test('visibleMonthDays returns empty when currentMonth is null', () {
         const state = CalendarState();
-        expect(state.currentMonthDays, isEmpty);
+        expect(state.visibleMonthDays, isEmpty);
       });
 
       test('currentMonth returns entity when currentDate matches calendar key', () {
@@ -230,7 +238,7 @@ void main() {
         expect(state.currentMonth, entity);
       });
 
-      test('currentMonthDays returns days from currentMonth', () {
+      test('visibleMonthDays returns days from currentMonth', () {
         final days = {
           DateTime(2025, 3): createTestDayEntity(DateTime(2025, 3)),
         };
@@ -239,7 +247,7 @@ void main() {
           currentDate: DateTime(2025, 3, 15),
           calendar: {'2025-03': entity},
         );
-        expect(state.currentMonthDays, days);
+        expect(state.visibleMonthDays, days);
       });
     });
   });

@@ -374,7 +374,10 @@
         "generic_server_error": "Server error",
         "request_cancelled": "Request cancelled",
         "no_internet": "No internet connection",
-        "unexpected": "Unexpected error occurred"
+        "unexpected": "Unexpected error occurred",
+        "purchase_not_allowed": "Purchases are not allowed on this device",
+        "product_unavailable": "Product is not available",
+        "store_error": "Store error. Please try again later"
     },
     "workout": {
         "addNotesHint": "Add notes...",
