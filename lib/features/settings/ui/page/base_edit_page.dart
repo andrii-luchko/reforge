@@ -35,6 +35,7 @@ class BaseSettingsEditPage extends StatelessWidget {
       ),
       body: DefaultBackground(
         body: SafeArea(
+          bottom: false,
           child: Padding(
             padding: const .symmetric(horizontal: 16),
             child: Column(
