@@ -20,6 +20,7 @@ class BaseGlassContainer extends StatelessWidget {
     this.backgroundColor,
     this.glassEffectGradientAlignmentBegin = Alignment.centerLeft,
     this.glassEffectGradientAlignmentEnd = Alignment.centerRight,
+    this.constraints,
   });
 
   final Widget? child;
@@ -36,6 +37,7 @@ class BaseGlassContainer extends StatelessWidget {
   final List<Color>? surfaceGradientColors;
   final List<double>? surfaceGradientStops;
   final Color? backgroundColor;
+  final BoxConstraints? constraints;
   final AlignmentGeometry glassEffectGradientAlignmentBegin;
   final AlignmentGeometry glassEffectGradientAlignmentEnd;
 
@@ -71,6 +73,7 @@ class BaseGlassContainer extends StatelessWidget {
       height: height,
       margin: margin,
       alignment: alignment,
+      constraints: constraints,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: BoxBorder.all(

@@ -53,30 +53,36 @@ class NameContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<GenericValidationCubit<String?>>();
-    return Column(
-      mainAxisAlignment: .spaceBetween,
-      children: [
+    return SliverMainAxisGroup(
+      slivers: [
         BlocSelector<GenericValidationCubit<String?>, GenericValidationState<String?>, ({String? name, String? error})>(
           selector: (state) {
             final error = state is GenericValidationError ? state.error : null;
             return (name: state.value, error: error);
           },
           builder: (context, value) {
-            return LabeledAppTextField(
-              label: t.settings.name,
-              field: AppTextField(
-                initialValue: value.name,
-                hintText: t.settings.name,
-                errorText: value.error,
-                onChanged: cubit.onChanged,
+            return SliverToBoxAdapter(
+              child: LabeledAppTextField(
+                label: t.settings.name,
+                field: AppTextField(
+                  initialValue: value.name,
+                  hintText: t.settings.name,
+                  errorText: value.error,
+                  onChanged: cubit.onChanged,
+                ),
               ),
             );
           },
         ),
-
-        SecondaryButton(
-          text: t.common.save_changes_button,
-          onPressed: cubit.save,
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SecondaryButton(
+              text: t.common.save_changes_button,
+              onPressed: cubit.save,
+            ),
+          ),
         ),
       ],
     );

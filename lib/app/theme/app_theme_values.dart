@@ -173,6 +173,11 @@ class AppThemeValues {
         Color(0xFF4A2105),
       ],
     ),
+
+    buttonConstrains: const BoxConstraints(
+      maxHeight: 55,
+      minHeight: 55,
+    ),
   );
 
   static final dark = AppTheme(
@@ -339,6 +344,11 @@ class AppThemeValues {
         Color(0x004A2105),
         Color(0xFF4A2105),
       ],
+    ),
+
+    buttonConstrains: const BoxConstraints(
+      maxHeight: 55,
+      minHeight: 55,
     ),
   );
 }

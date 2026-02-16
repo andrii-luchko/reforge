@@ -26,29 +26,35 @@ class PrimaryButton extends StatelessWidget {
         borderRadius: borderRadius,
 
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          enableFeedback: false,
-          onTap: onPressed,
-          splashFactory: InkSparkle.splashFactory,
-          splashColor: appTheme.orange100.withValues(alpha: 0.2),
-          highlightColor: appTheme.orange100.withValues(alpha: 0.1),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: CustomPaint(
-              painter: DashedBorderPainter(color: isActive ? appTheme.orange300 : appTheme.beige700),
-              child: AnimatedContainer(
-                duration: Durations.medium2,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: isActive ? appTheme.orange400 : appTheme.beige800,
-                  borderRadius: borderRadius,
-                ),
-                child: Center(
-                  child: Text(
-                    text,
-                    style: subheadH5Medium.copyWith(
-                      color: appTheme.beige100,
+        child: Container(
+          constraints: appTheme.buttonConstrains,
+          child: InkWell(
+            enableFeedback: false,
+            onTap: onPressed,
+            splashFactory: InkSparkle.splashFactory,
+            splashColor: appTheme.orange100.withValues(alpha: 0.2),
+            highlightColor: appTheme.orange100.withValues(alpha: 0.1),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+              ),
+              child: CustomPaint(
+                painter: DashedBorderPainter(color: isActive ? appTheme.orange300 : appTheme.beige700),
+                child: AnimatedContainer(
+                  duration: Durations.medium2,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  decoration: BoxDecoration(
+                    color: isActive ? appTheme.orange400 : appTheme.beige800,
+                    borderRadius: borderRadius,
+                  ),
+                  child: Center(
+                    child: Text(
+                      text,
+                      style: subheadH5Medium.copyWith(
+                        color: appTheme.beige100,
+                      ),
                     ),
                   ),
                 ),

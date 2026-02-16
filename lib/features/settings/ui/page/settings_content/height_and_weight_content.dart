@@ -74,9 +74,8 @@ class HeightAndWeightContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<GenericValidationCubit<double?>>();
 
-    return Column(
-      mainAxisAlignment: .spaceBetween,
-      children: [
+    return SliverMainAxisGroup(
+      slivers: [
         BlocSelector<
           GenericValidationCubit<double?>,
           GenericValidationState<double?>,
@@ -84,22 +83,28 @@ class HeightAndWeightContent extends StatelessWidget {
         >(
           selector: (state) {
             final error = state is GenericValidationError ? state.error : null;
-
             return (weight: state.value, error: error);
           },
           builder: (context, value) {
-            return WeightSelectField(
-              measurementSystem: system,
-              value: value.weight,
-              errorText: value.error,
-              onChanged: cubit.onChanged,
+            return SliverToBoxAdapter(
+              child: WeightSelectField(
+                measurementSystem: system,
+                value: value.weight,
+                errorText: value.error,
+                onChanged: cubit.onChanged,
+              ),
             );
           },
         ),
-
-        SecondaryButton(
-          text: t.common.save_changes_button,
-          onPressed: cubit.save,
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SecondaryButton(
+              text: t.common.save_changes_button,
+              onPressed: cubit.save,
+            ),
+          ),
         ),
       ],
     );

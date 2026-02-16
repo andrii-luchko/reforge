@@ -94,11 +94,17 @@ class _NotificationContentSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      spacing: 12,
-      children: [
-        _SkeletonSwitcher(),
-        _SkeletonSwitcher(),
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            spacing: 12,
+            children: [
+              _SkeletonSwitcher(),
+              _SkeletonSwitcher(),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -131,34 +137,41 @@ class _NotificationTogglesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      spacing: 12,
-      children: [
-        if (showPermissionBanner && onOpenSettings != null) _PermissionDeniedBanner(onOpenSettings: onOpenSettings!),
-        BlocBuilder<UserCubit, UserState>(
-          builder: (context, userState) {
-            final user = userState.maybeWhen(
-              loaded: (u) => u is OnboardedUser ? u : null,
-              orElse: () => null,
-            );
-            return Column(
-              spacing: 12,
-              children: [
-                NotificationSwitcher(
-                  title: t.settings.reminders,
-                  value: user?.remindersEnabled ?? false,
-                  enabled: togglesEnabled,
-                  onChanged: togglesEnabled ? (value) => _onRemindersChanged(context, value) : null,
-                ),
-                NotificationSwitcher(
-                  title: t.settings.announcements,
-                  value: user?.announcementsEnabled ?? false,
-                  enabled: togglesEnabled,
-                  onChanged: togglesEnabled ? (value) => _onAnnouncementsChanged(context, value) : null,
-                ),
-              ],
-            );
-          },
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            spacing: 12,
+            children: [
+              if (showPermissionBanner && onOpenSettings != null)
+                _PermissionDeniedBanner(onOpenSettings: onOpenSettings!),
+              BlocBuilder<UserCubit, UserState>(
+                builder: (context, userState) {
+                  final user = userState.maybeWhen(
+                    loaded: (u) => u is OnboardedUser ? u : null,
+                    orElse: () => null,
+                  );
+                  return Column(
+                    spacing: 12,
+                    children: [
+                      NotificationSwitcher(
+                        title: t.settings.reminders,
+                        value: user?.remindersEnabled ?? false,
+                        enabled: togglesEnabled,
+                        onChanged: togglesEnabled ? (value) => _onRemindersChanged(context, value) : null,
+                      ),
+                      NotificationSwitcher(
+                        title: t.settings.announcements,
+                        value: user?.announcementsEnabled ?? false,
+                        enabled: togglesEnabled,
+                        onChanged: togglesEnabled ? (value) => _onAnnouncementsChanged(context, value) : null,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ],
     );

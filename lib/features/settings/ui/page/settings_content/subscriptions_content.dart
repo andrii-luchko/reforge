@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -20,6 +20,6 @@ class SubscriptionsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column();
+    return const SliverMainAxisGroup(slivers: []);
   }
 }

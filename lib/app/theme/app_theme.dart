@@ -53,6 +53,8 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
     required this.sliverBottomSpacing,
     required this.cardNavigation,
     required this.factionCardFillGradient,
+
+    required this.buttonConstrains,
   });
 
   // Beige palette
@@ -105,4 +107,5 @@ class AppTheme extends ThemeExtension<AppTheme> with _$AppTheme {
 
   final LinearGradient cardNavigation;
   final LinearGradient factionCardFillGradient;
+  final BoxConstraints buttonConstrains;
 }

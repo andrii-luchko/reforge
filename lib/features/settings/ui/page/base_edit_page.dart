@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
-import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
@@ -24,26 +22,23 @@ class BaseSettingsEditPage extends StatelessWidget {
       extendBody: true,
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
-      appBar: AppAppBar(
-        actions: [
-          Padding(
-            padding: const .only(right: 16),
-            child: Text(title, style: subheadH1Medium.copyWith(color: context.appTheme.beige100)),
-          ),
-        ],
-        onPressed: () => Navigator.of(context).pop(),
-      ),
       body: DefaultBackground(
         body: SafeArea(
+          top: false,
           bottom: false,
-          child: Padding(
-            padding: const .symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                Expanded(child: body),
-              ],
-            ),
+          child: CustomScrollView(
+            slivers: [
+              DefaultSliverAppBar(
+                onPressed: () => Navigator.of(context).pop(),
+                title: title,
+              ),
+              const SliverPadding(padding: EdgeInsets.only(top: 16)),
+              SliverPadding(
+                padding: DefaultSliverAppBar.horizontalPadding,
+                sliver: body,
+              ),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 16)),
+            ],
           ),
         ),
         loader: const Positioned.fill(child: UserUpdatingLoader()),
