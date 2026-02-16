@@ -24,7 +24,7 @@ class OnboardingCard extends StatelessWidget {
           const OnboardingHeader(),
 
           ShakingWidget(
-            child: Assets.images.png.faction.image(fit: .fill),
+            child: Assets.images.png.factions.image(fit: .fill),
           ),
 
           Align(

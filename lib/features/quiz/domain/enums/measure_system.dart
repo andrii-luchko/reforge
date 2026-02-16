@@ -14,9 +14,9 @@ extension MeasurementSystemExtension on MeasurementSystem {
   String title(Translations t) {
     switch (this) {
       case MeasurementSystem.metric:
-        return '${t.measure_system.metric} (${t.measure_system.weight.metric_symbol})';
+        return t.measure_system.metric;
       case MeasurementSystem.imperial:
-        return '${t.measure_system.imperial} (${t.measure_system.weight.imperial_symbol})';
+        return t.measure_system.imperial;
     }
   }
 
