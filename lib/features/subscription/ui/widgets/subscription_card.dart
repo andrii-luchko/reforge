@@ -20,8 +20,7 @@ class SubscriptionCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  static const String _description =
-      'Unlock all features and get exclusive content with our premium subscription.';
+  static const String _description = 'Unlock all features and get exclusive content with our premium subscription.';
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +58,7 @@ class SubscriptionCard extends StatelessWidget {
                     if (package.trialInfo != null)
                       Text(
                         '(after ${package.trialInfo?.period ?? '14'})',
-                        style:
-                            subheadH8Semibold.copyWith(color: appTheme.beige700),
+                        style: subheadH8Semibold.copyWith(color: appTheme.beige700),
                       ),
                     if (package.trialInfo != null) const SizedBox(width: 8),
                     Text(
@@ -77,15 +75,13 @@ class SubscriptionCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         _description,
-                        style:
-                            subheadH6Regular.copyWith(color: appTheme.beige700),
+                        style: subheadH6Regular.copyWith(color: appTheme.beige700),
                       ),
                     ),
                     const SizedBox(width: 3),
                     Text(
                       package.periodType.displayPeriod(t),
-                      style:
-                          subheadH6Regular.copyWith(color: appTheme.beige700),
+                      style: subheadH6Regular.copyWith(color: appTheme.beige700),
                     ),
                   ],
                 ),

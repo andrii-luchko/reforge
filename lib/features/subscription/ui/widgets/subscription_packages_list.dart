@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:reforge/features/settings/ui/page/settings_content/subscription_card.dart';
-import 'package:reforge/features/settings/ui/page/settings_content/subscription_card_skeleton.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionPackagesList extends StatelessWidget {
@@ -35,10 +34,16 @@ class SubscriptionPackagesList extends StatelessWidget {
   List<Widget> _buildSkeletonSlivers() {
     return List.generate(
       3,
-      (_) => const SliverPadding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+      (_) => SliverPadding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         sliver: SliverToBoxAdapter(
-          child: SubscriptionCardSkeleton(),
+          child: Skeleton.leaf(
+            child: SubscriptionCard(
+              package: SubscriptionPackagePlaceholder.placeholder,
+              isSelected: false,
+              onTap: () {},
+            ),
+          ),
         ),
       ),
     );

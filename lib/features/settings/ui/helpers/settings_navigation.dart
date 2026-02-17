@@ -10,7 +10,7 @@ import 'package:reforge/features/settings/ui/page/settings_content/height_and_we
 import 'package:reforge/features/settings/ui/page/settings_content/measurement_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/name_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/notification_content.dart';
-import 'package:reforge/features/settings/ui/page/settings_content/subscriptions_content.dart';
+import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart';
 
 class SettingsNavigation {

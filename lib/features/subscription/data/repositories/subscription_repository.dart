@@ -94,10 +94,10 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     );
   }
 
-  SubscriptionEntity _mapCustomerInfo(CustomerInfo info) {
+  SubscriptionEntity? _mapCustomerInfo(CustomerInfo info) {
     final active = info.entitlements.active;
     if (active.isEmpty) {
-      return const SubscriptionEntity(isActive: false);
+      return null;
     }
     final first = active.values.first;
     DateTime? expirationDate;
@@ -140,7 +140,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   }
 
   @override
-  Future<Result<SubscriptionEntity>> purchasePackage(
+  Future<Result<SubscriptionEntity?>> purchasePackage(
     SubscriptionPackage package,
   ) async {
     try {
@@ -169,7 +169,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   }
 
   @override
-  Future<Result<SubscriptionEntity>> getCurrentSubscription() async {
+  Future<Result<SubscriptionEntity?>> getCurrentSubscription() async {
     try {
       final info = await makeRequest(
         Purchases.getCustomerInfo,

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
@@ -70,6 +71,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
             isPurchasing: false,
           ),
         );
+
+        logger.d('Subscription purchased: ${subscription.toString()}');
       case ErrorR(error: final error):
         if (error is PurchaseCancelledException) {
           emit(state.copyWith(isPurchasing: false));

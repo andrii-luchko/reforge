@@ -26,7 +26,7 @@ class _RootPageState extends State<RootPage> {
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
               onPressed: () async {
-                final token =
+                const token =
                     'f05gB9U-fUWCjmui7MmQ2i:APA91bFzyoy71iYPBYWpE4cUYKe-rcr2qJZWbZ35ykvCP0BKlL4-ZpQzruns1o5VI0UiDB8Lhtw9L4LwAlFBTx2Ww3Wds7hHp8eWUcBqyS5BkDybR8aPvmg';
                 await di.getIt<FcmNotificationService>().sendTestNotification(token);
                 // FirebaseMessaging.instance

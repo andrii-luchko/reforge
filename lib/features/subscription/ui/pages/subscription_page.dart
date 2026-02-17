@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
-import 'package:reforge/features/settings/ui/page/settings_content/subscription_content_body.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_content_body.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:toastification/toastification.dart';
@@ -37,7 +37,6 @@ class SubscriptionsContent extends StatefulWidget {
 }
 
 class _SubscriptionsContentState extends State<SubscriptionsContent> {
-  // late final _subscriptionCubit = context.read<SubscriptionCubit>();
   SubscriptionPackage? _selectedPackage;
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:reforge/features/settings/ui/page/settings_content/subscription_packages_list.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 
