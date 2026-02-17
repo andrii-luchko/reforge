@@ -19,6 +19,8 @@ import 'package:reforge/features/leaderboard/data/response/immortal_forges_respo
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/lore/data/models/jiku_plate_dto.dart';
 import 'package:reforge/features/lore/data/response/jiku_plates_response.dart';
+import 'package:reforge/features/notifications/data/models/notification_model_dto.dart';
+import 'package:reforge/features/notifications/data/models/notification_test_request.dart';
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
@@ -185,6 +187,18 @@ abstract class ApiClient {
   Future<BaseResponse<JikuPlateDetailDto>> getJikuPlateById(@Path('id') int id);
 
   //notifications
-  @POST('notifications/register-token')
+  @GET('/notifications/history')
+  Future<BaseResponse<List<NotificationModelDto>>> getNotificationHistory();
+
+  @POST('/notifications/register-token')
   Future<void> registerToken(RegisterFcmTokensRequestDto request);
+
+  @PATCH('/notifications/{id}/read')
+  Future<void> markNotificationAsRead(@Path('id') int id);
+
+  @POST('/notifications/read-all')
+  Future<void> markAllNotificationsAsRead();
+
+  @POST('/notifications/test-custom')
+  Future<void> sendTestNotification(NotificationTestRequest request);
 }

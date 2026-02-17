@@ -6,6 +6,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/notifications/data/repository/notification_repository.dart';
 import 'package:reforge/features/notifications/domain/enum/notification_permission_status.dart';
 
@@ -14,11 +15,21 @@ part 'notification_permission_state.dart';
 
 @injectable
 class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
-  NotificationPermissionCubit(this._repository) : super(const NotificationPermissionState.checking()) {
+  NotificationPermissionCubit(this._repository, this._authCubit)
+      : super(const NotificationPermissionState.checking()) {
     unawaited(checkPermission());
+    _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
   }
 
   final NotificationRepository _repository;
+  final AuthCubit _authCubit;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  void _onAuthStateChanged(AuthState state) {
+    state.whenOrNull(
+      unauthenticated: () => unawaited(_repository.clearSavedFcmToken()),
+    );
+  }
 
   Future<void> checkPermission() async {
     final result = await _repository.getNotificationPermissionStatus();
@@ -91,5 +102,11 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
         logger.d('FCM token saved (mock): $token');
       }
     }
+  }
+
+  @override
+  Future<void> close() {
+    unawaited(_authSubscription?.cancel());
+    return super.close();
   }
 }

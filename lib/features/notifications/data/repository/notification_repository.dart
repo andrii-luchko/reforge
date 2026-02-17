@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:injectable/injectable.dart';
@@ -6,11 +7,13 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
+import 'package:reforge/features/notifications/data/datasources/fcm_token_storage.dart';
+import 'package:reforge/features/notifications/data/models/notification_test_request.dart';
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/enum/device_type.dart';
 import 'package:reforge/features/notifications/domain/enum/notification_permission_status.dart';
-import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
+import 'package:reforge/features/notifications/domain/enum/notification_type.dart';
 
 typedef PaginatedNotifications = ({List<NotificationEntity> items, bool hasMore});
 
@@ -25,14 +28,17 @@ abstract interface class NotificationRepository {
   Future<Result<NotificationPermissionStatus>> getNotificationPermissionStatus();
   Future<Result<String?>> getFcmToken();
   Future<Result<void>> saveFcmToken(String token);
+  Future<void> clearSavedFcmToken();
+  Future<void> sendTestNotification(String token);
 }
 
 @Injectable(as: NotificationRepository)
 class NotificationRepositoryImpl with RepositoryErrorHandler implements NotificationRepository {
-  NotificationRepositoryImpl(this._firebaseMessaging, this._apiClient);
+  NotificationRepositoryImpl(this._firebaseMessaging, this._apiClient, this._fcmTokenStorage);
 
   final ApiClient _apiClient;
   final FirebaseMessaging _firebaseMessaging;
+  final FcmTokenStorage _fcmTokenStorage;
 
   NotificationPermissionStatus _fromFirebase(AuthorizationStatus status) {
     return switch (status) {
@@ -80,17 +86,14 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
     try {
       final notifications = await makeRequest(
         () async {
-          await Future.delayed(const Duration(seconds: 1));
-          const totalMocks = 25;
-          final all = NotificationGenerator.generateMocks(totalMocks)..sort((a, b) => b.date.compareTo(a.date));
-          final start = (page - 1) * limit;
-          final end = (start + limit).clamp(0, all.length);
-          final items = all.sublist(start, end);
-          final hasMore = end < all.length;
-          return (items: items, hasMore: hasMore);
+          final response = await _apiClient.getNotificationHistory();
+          final all = response.data.where((d) => !d.isRead).map((dto) => dto.toEntity()).toList();
+
+          return (items: all, hasMore: false);
         },
         label: 'getNotifications',
       );
+
       return Result.success(notifications);
     } on Exception catch (e) {
       return Result.error(e);
@@ -101,7 +104,7 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
   Future<Result<void>> markAllAsRead() async {
     try {
       await makeRequest(
-        () => Future.delayed(const Duration(seconds: 1)),
+        _apiClient.markAllNotificationsAsRead,
         label: 'markAllAsRead',
       );
       return const Result.success(null);
@@ -114,7 +117,9 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
   Future<Result<void>> markNotificationAsRead(int id) async {
     try {
       await makeRequest(
-        () => Future.delayed(const Duration(seconds: 1)),
+        () {
+          return _apiClient.markNotificationAsRead(id);
+        },
         label: 'markNotificationAsRead',
       );
       return const Result.success(null);
@@ -140,6 +145,11 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
   @override
   Future<Result<void>> saveFcmToken(String token) async {
     try {
+      final lastSaved = await _fcmTokenStorage.getLastSavedToken();
+      if (token == lastSaved) {
+        return const Result.success(null);
+      }
+
       final result = await makeRequest(
         () => _apiClient.registerToken(
           RegisterFcmTokensRequestDto(
@@ -150,9 +160,38 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
         label: 'saveFcmToken',
       );
 
+      await _fcmTokenStorage.saveToken(token);
       return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
+    }
+  }
+
+  @override
+  Future<void> clearSavedFcmToken() async {
+    await _fcmTokenStorage.clear();
+  }
+
+  @override
+  Future<void> sendTestNotification(String token) async {
+    try {
+      await makeRequest(
+        () async {
+          final type = NotificationType.values[Random().nextInt(NotificationType.values.length)];
+
+          await _apiClient.sendTestNotification(
+            NotificationTestRequest(
+              notificationType: type,
+              metadata: NotificationMetadata.current(token: token),
+            ),
+          );
+
+          logger.d('Sent test notification of type $type to token $token');
+        },
+        label: 'sendTestNotification',
+      );
+    } on Exception catch (e) {
+      logger.e('Failed to send test notification', e);
     }
   }
 }

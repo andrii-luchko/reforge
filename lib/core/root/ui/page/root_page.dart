@@ -2,6 +2,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/features/notifications/data/service/fcm_notification_service.dart';
 import 'package:reforge/shared/uikit/app_bottom_bar.dart';
 
 class RootPage extends StatefulWidget {
@@ -23,7 +25,10 @@ class _RootPageState extends State<RootPage> {
       body: widget.navigationShell,
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
+                final token =
+                    'f05gB9U-fUWCjmui7MmQ2i:APA91bFzyoy71iYPBYWpE4cUYKe-rcr2qJZWbZ35ykvCP0BKlL4-ZpQzruns1o5VI0UiDB8Lhtw9L4LwAlFBTx2Ww3Wds7hHp8eWUcBqyS5BkDybR8aPvmg';
+                await di.getIt<FcmNotificationService>().sendTestNotification(token);
                 // FirebaseMessaging.instance
                 //     .getToken()
                 //     .then((token) {
@@ -33,7 +38,7 @@ class _RootPageState extends State<RootPage> {
                 //       debugPrint('Error fetching FCM token: $error');
                 //     });
               },
-              child: const Icon(Icons.add),
+              child: const Icon(Icons.notification_add),
             )
           : null,
       bottomNavigationBar: AppBottomBar(

@@ -64,6 +64,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             onRefresh: () => _cubit.loadNotifications(forceRefresh: true),
             child: CustomScrollView(
               controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 DefaultSliverAppBar(
                   onPressed: () {
