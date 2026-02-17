@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
+import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
+import 'package:reforge/features/notifications/domain/enum/device_type.dart';
 import 'package:reforge/features/notifications/domain/enum/notification_permission_status.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
 
@@ -24,8 +29,9 @@ abstract interface class NotificationRepository {
 
 @Injectable(as: NotificationRepository)
 class NotificationRepositoryImpl with RepositoryErrorHandler implements NotificationRepository {
-  NotificationRepositoryImpl(this._firebaseMessaging);
+  NotificationRepositoryImpl(this._firebaseMessaging, this._apiClient);
 
+  final ApiClient _apiClient;
   final FirebaseMessaging _firebaseMessaging;
 
   NotificationPermissionStatus _fromFirebase(AuthorizationStatus status) {
@@ -134,9 +140,17 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
   @override
   Future<Result<void>> saveFcmToken(String token) async {
     try {
-      // TODO(reforge): Send to backend when API is ready
-      logger.d('FCM token (mock save): $token');
-      return const Result.success(null);
+      final result = await makeRequest(
+        () => _apiClient.registerToken(
+          RegisterFcmTokensRequestDto(
+            token: token,
+            deviceType: Platform.isAndroid ? DeviceType.android : DeviceType.ios,
+          ),
+        ),
+        label: 'saveFcmToken',
+      );
+
+      return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
     }

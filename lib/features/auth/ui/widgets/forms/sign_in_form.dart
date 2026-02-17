@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/auth/controllers/validation/auth_validation_cubit.dart';
@@ -15,6 +16,7 @@ import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/titled_divider.dart';
+import 'package:toastification/toastification.dart';
 
 class SignInForm extends StatefulWidget {
   const SignInForm({super.key});
@@ -41,10 +43,9 @@ class _SignInFormState extends State<SignInForm> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         state.maybeMap(
+          error: (value) => toastification.showErrorToast(value.toString(), context),
           // ignore: no_empty_block
           orElse: () {},
-
-          error: (value) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value.toString()))),
         );
       },
       child: Column(

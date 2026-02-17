@@ -19,6 +19,7 @@ import 'package:reforge/features/leaderboard/data/response/immortal_forges_respo
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/lore/data/models/jiku_plate_dto.dart';
 import 'package:reforge/features/lore/data/response/jiku_plates_response.dart';
+import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
@@ -182,4 +183,8 @@ abstract class ApiClient {
 
   @GET('/jiku-plates/{id}')
   Future<BaseResponse<JikuPlateDetailDto>> getJikuPlateById(@Path('id') int id);
+
+  //notifications
+  @POST('notifications/register-token')
+  Future<void> registerToken(RegisterFcmTokensRequestDto request);
 }
