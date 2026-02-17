@@ -36,7 +36,10 @@ extension WorkoutSettingsX on WorkoutSettings {
   String? getDisplayValue(OnboardedUser user, Translations t) {
     return switch (this) {
       WorkoutSettings.subscription => null,
-      WorkoutSettings.faction => '${user.mainFaction?.title(t)}, ${user.secondaryFaction?.title(t)}',
+      WorkoutSettings.faction => [
+        user.mainFaction?.title(t),
+        user.secondaryFaction?.title(t),
+      ].whereType<String>().where((s) => s.isNotEmpty).join(', '),
       WorkoutSettings.notification => null,
       WorkoutSettings.measureSystem => user.measurementSystem.weightSymbol(t),
       WorkoutSettings.workoutDays => t.settings.daysPerWeek(count: user.workoutsPerWeek),

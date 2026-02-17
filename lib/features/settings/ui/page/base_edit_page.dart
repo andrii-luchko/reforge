@@ -29,6 +29,7 @@ class BaseSettingsEditPage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           title: title,
         ),
+        const SliverPadding(padding: EdgeInsets.all(8)),
         const SliverPadding(padding: EdgeInsets.only(top: 16)),
         SliverPadding(
           padding: DefaultSliverAppBar.horizontalPadding,

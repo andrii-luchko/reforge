@@ -49,7 +49,7 @@ class _NotificationContentState extends State<NotificationContent> with WidgetsB
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      context.read<NotificationPermissionCubit>().checkPermission();
+      unawaited(context.read<NotificationPermissionCubit>().checkPermission());
     }
   }
 
@@ -79,8 +79,7 @@ class _NotificationContentState extends State<NotificationContent> with WidgetsB
               }
             },
           ),
-          permissionGranted: (token, isRequestingPermission) =>
-              const _NotificationTogglesContent(
+          permissionGranted: (token, isRequestingPermission) => const _NotificationTogglesContent(
             togglesEnabled: true,
           ),
         );

@@ -1,3 +1,4 @@
+//import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +23,16 @@ class _RootPageState extends State<RootPage> {
       body: widget.navigationShell,
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                // FirebaseMessaging.instance
+                //     .getToken()
+                //     .then((token) {
+                //       debugPrint('FCM Token: $token');
+                //     })
+                //     .catchError((error) {
+                //       debugPrint('Error fetching FCM token: $error');
+                //     });
+              },
               child: const Icon(Icons.add),
             )
           : null,

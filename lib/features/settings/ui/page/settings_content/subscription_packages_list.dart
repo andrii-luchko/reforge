@@ -26,10 +26,8 @@ class SubscriptionPackagesList extends StatelessWidget {
       enabled: showSkeleton,
       child: SliverMainAxisGroup(
         slivers: [
-          const SliverPadding(padding: EdgeInsets.all(8)),
           if (showSkeleton) ..._buildSkeletonSlivers(),
-          if (!showSkeleton && state.offerings != null)
-            ..._buildPackagesSlivers(),
+          if (!showSkeleton && state.offerings != null) ..._buildPackagesSlivers(),
         ],
       ),
     );
