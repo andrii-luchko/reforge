@@ -61,7 +61,6 @@ class SettingsNavigation {
       WorkoutSettings.measureSystem => MeasurementPage(
         system: user.measurementSystem,
       ),
-      //TODO (Masayoshi) continue setup when ready
       WorkoutSettings.notification => const SettingsNotificationPage(),
       WorkoutSettings.subscription => const SubscriptionPage(),
     };

@@ -137,7 +137,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                 SliverPadding(
                   padding: CalendarBody.horizontalPadding.copyWith(bottom: 16),
                   sliver: const SliverToBoxAdapter(
-                    child: const Text(
+                    child: Text(
                       'Workout days',
                       style: subheadH2Medium,
                     ),

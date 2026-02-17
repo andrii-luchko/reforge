@@ -23,7 +23,7 @@ OnboardedUser get testUser => OnboardedUser(
   birthDate: DateTime(1990, 1, 15),
   workoutsPerWeek: 3,
   userName: 'testuser',
-  bodyWeight: 75.0,
+  bodyWeight: 75,
 );
 
 bool _isLoaded(UserState s) => s.maybeMap(loaded: (_) => true, orElse: () => false);
@@ -52,7 +52,7 @@ void main() {
   });
 
   tearDown(() {
-    authStreamController.close();
+    unawaited(authStreamController.close());
   });
 
   UserCubit createCubit() => UserCubit(
@@ -167,7 +167,7 @@ void main() {
 
       expect(result, isA<Success<User>>());
       expect((result as Success).value, testUser);
-      cubit.close();
+      await cubit.close();
     });
 
     blocTest<UserCubit, UserState>(
@@ -213,7 +213,7 @@ void main() {
       final result = await cubit.updateProfile(const PatchProfileRequest(username: 'new'));
 
       expect(result, isA<ErrorR<User>>());
-      cubit.close();
+      await cubit.close();
     });
 
     blocTest<UserCubit, UserState>(

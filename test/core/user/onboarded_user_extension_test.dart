@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_redundant_argument_values
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -12,17 +14,18 @@ OnboardedUser createUser({
   List<int> specificDays = const [],
 }) {
   return User.onboarded(
-    id: 1,
-    email: 'test@example.com',
-    bodyWeight: bodyWeight,
-    measurementSystem: measurementSystem,
-    factionId: factionId,
-    secondaryFactionId: secondaryFactionId,
-    birthDate: DateTime(1990, 1, 15),
-    workoutsPerWeek: 3,
-    specificDays: specificDays,
-    userName: 'John',
-  ) as OnboardedUser;
+        id: 1,
+        email: 'test@example.com',
+        bodyWeight: bodyWeight,
+        measurementSystem: measurementSystem,
+        factionId: factionId,
+        secondaryFactionId: secondaryFactionId,
+        birthDate: DateTime(1990, 1, 15),
+        workoutsPerWeek: 3,
+        specificDays: specificDays,
+        userName: 'John',
+      )
+      as OnboardedUser;
 }
 
 void main() {

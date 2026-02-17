@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/badge_card.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/empty_list_message.dart';
 
 class SliverBadgesGrid extends StatelessWidget {

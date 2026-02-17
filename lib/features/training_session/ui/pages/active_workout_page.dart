@@ -2,18 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:reforge/app/router/routes.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/dynamic_workout_form.dart';
-
 import 'package:reforge/features/training_session/controllers/workout_flow/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_section.dart';
-
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';

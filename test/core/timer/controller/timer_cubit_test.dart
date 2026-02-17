@@ -1,3 +1,5 @@
+// ignore_for_file: discarded_futures
+
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
@@ -15,8 +17,7 @@ void main() {
     });
 
     test('startTimer when already running does nothing', () {
-      final cubit = TimerCubit();
-      cubit.startTimer();
+      final cubit = TimerCubit()..startTimer();
       final stateAfterFirstStart = cubit.state;
 
       cubit.startTimer();
@@ -26,8 +27,7 @@ void main() {
     });
 
     test('pauseTimer sets isRunning to false', () {
-      final cubit = TimerCubit();
-      cubit.startTimer();
+      final cubit = TimerCubit()..startTimer();
       expect(cubit.state.isRunning, true);
 
       cubit.pauseTimer();
@@ -37,10 +37,9 @@ void main() {
     });
 
     test('stopTimer resets state', () {
-      final cubit = TimerCubit();
-      cubit.startTimer();
-
-      cubit.stopTimer();
+      final cubit = TimerCubit()
+        ..startTimer()
+        ..stopTimer();
 
       expect(cubit.state.duration, 0);
       expect(cubit.state.isRunning, false);
@@ -49,8 +48,7 @@ void main() {
 
     test('startTimer increments duration every second', () {
       FakeAsync().run((fakeAsync) {
-        final cubit = TimerCubit();
-        cubit.startTimer();
+        final cubit = TimerCubit()..startTimer();
 
         expect(cubit.state.isRunning, true);
         expect(cubit.state.duration, 0);

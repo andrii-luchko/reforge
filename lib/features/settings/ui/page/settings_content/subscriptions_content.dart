@@ -69,9 +69,9 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
           state: state,
           selectedPackage: _selectedPackage,
           onPackageSelected: (p) => setState(() => _selectedPackage = p),
-          onPurchase: () {
+          onPurchase: () async {
             if (_selectedPackage != null) {
-              context.read<SubscriptionCubit>().purchase(_selectedPackage!);
+              await context.read<SubscriptionCubit>().purchase(_selectedPackage!);
             }
           },
         );

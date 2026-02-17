@@ -1,3 +1,5 @@
+// ignore_for_file: always_put_required_named_parameters_first
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'jiku_plate_dto.freezed.dart';
@@ -13,8 +15,7 @@ sealed class JikuPlateListDto with _$JikuPlateListDto {
     @JsonKey(name: 'isUnlocked') required bool isUnlocked,
   }) = _JikuPlateListDto;
 
-  factory JikuPlateListDto.fromJson(Map<String, dynamic> json) =>
-      _$JikuPlateListDtoFromJson(json);
+  factory JikuPlateListDto.fromJson(Map<String, dynamic> json) => _$JikuPlateListDtoFromJson(json);
 }
 
 @freezed
@@ -27,6 +28,5 @@ sealed class JikuPlateDetailDto with _$JikuPlateDetailDto {
     required int unlockLevel,
   }) = _JikuPlateDetailDto;
 
-  factory JikuPlateDetailDto.fromJson(Map<String, dynamic> json) =>
-      _$JikuPlateDetailDtoFromJson(json);
+  factory JikuPlateDetailDto.fromJson(Map<String, dynamic> json) => _$JikuPlateDetailDtoFromJson(json);
 }

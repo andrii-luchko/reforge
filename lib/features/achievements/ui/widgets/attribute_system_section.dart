@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_guide_bottom_sheet.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_list.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 

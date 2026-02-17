@@ -1,16 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_empty.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_step.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_cached_net_image.dart';
 import 'package:toastification/toastification.dart';
 
@@ -18,11 +16,13 @@ class PlateListTile extends StatefulWidget {
   const PlateListTile({
     required this.model,
     this.loadingDetailId,
+    this.onTap,
     super.key,
   });
 
   final PlatesEntity model;
   final int? loadingDetailId;
+  final VoidCallback? onTap;
 
   @override
   State<PlateListTile> createState() => _PlateListTileState();
@@ -55,7 +55,7 @@ class _PlateListTileState extends State<PlateListTile> {
 
   void _handleTap() {
     if (!widget.model.isLocked && widget.model.loreBody == null) {
-      context.read<LoreCubit>().loadPlateDetail(widget.model.id);
+      widget.onTap?.call();
     }
     setState(() => _isExpanded = !_isExpanded);
   }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/subscription_card.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/subscription_card_skeleton.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import 'subscription_card.dart';
-import 'subscription_card_skeleton.dart';
 
 class SubscriptionPackagesList extends StatelessWidget {
   const SubscriptionPackagesList({

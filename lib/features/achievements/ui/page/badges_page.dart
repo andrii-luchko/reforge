@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
-
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
-
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
