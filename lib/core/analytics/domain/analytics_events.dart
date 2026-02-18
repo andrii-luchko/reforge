@@ -48,4 +48,14 @@ abstract final class AnalyticsEvents {
   static const String settingsDeleteAccountClick = 'settings_delete_account_click';
   static const String workoutQuizComplete = 'workout_quiz_complete';
   static const String workoutQuizSummaryStartWorkoutClick = 'workout_quiz_summary_start_workout_click';
+  static const String workoutCancel = 'workout_cancel';
+  static const String workoutDetailsStartClick = 'workout_details_start_click';
+  static const String workoutSummaryFinishClick = 'workout_summary_finish_click';
+  static const String workoutShareClick = 'workout_share_click';
+  static const String workoutLevelUp = 'workout_level_up';
+  static const String workoutBadgeEarned = 'workout_badge_earned';
+  static const String workoutAchievementNextClick = 'workout_achievement_next_click';
+  static const String workoutPastResultsClick = 'workout_past_results_click';
+  static const String workoutRestTimerClick = 'workout_rest_timer_click';
+  static const String workoutSetComplete = 'workout_set_complete';
 }
