@@ -60,9 +60,14 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
           prev.error != curr.error ||
           prev.currentSubscription != curr.currentSubscription,
       builder: (context, state) {
-        if (state.offerings != null && state.offerings!.packages.isNotEmpty && _selectedPackage == null) {
+        if (state.offerings != null && state.offerings!.packages.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && _selectedPackage == null) {
+            if (!mounted) return;
+            final current = state.currentPackage;
+
+            if (current != null) return;
+
+            if (_selectedPackage == null) {
               setState(() => _selectedPackage = state.offerings!.packages.first);
             }
           });

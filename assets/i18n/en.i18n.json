@@ -529,6 +529,8 @@
     },
     "subscription": {
         "lifetimeStatus": "You have lifetime access",
+        "lifetimeTitle": "Lifetime Access",
+        "lifetimeSubtitle": "Thank you for your support. All premium features are yours forever.",
         "activeUntil": "Active until $date",
         "manageSubscription": "Manage subscription",
         "currentPlan": "Current plan",

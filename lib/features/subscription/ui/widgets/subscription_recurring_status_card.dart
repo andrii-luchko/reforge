@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
+import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_manage_button.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/rising_aura_effect.dart';
 
 class SubscriptionRecurringStatusCard extends StatelessWidget {
   const SubscriptionRecurringStatusCard({
+    required this.currentPackage,
     required this.expirationDate,
     this.managementUrl,
     super.key,
   });
 
+  final SubscriptionPackage currentPackage;
   final DateTime? expirationDate;
   final String? managementUrl;
 
@@ -20,26 +24,40 @@ class SubscriptionRecurringStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateText = expirationDate != null ? expirationDate!.toDateTimeString() : '—';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: context.appTheme.beige900,
-        border: GradientBoxBorder(
+    return ColoredBox(
+      color: context.appTheme.beige900,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
           gradient: context.appTheme.cardNavigation,
+          border: Border.all(color: context.appTheme.strokeCard),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            t.subscription.activeUntil(date: dateText),
-            style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
-          ),
-          const SizedBox(height: 12),
-          SubscriptionManageButton(managementUrl: managementUrl),
-        ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 24,
+          children: [
+            Text(
+              t.subscription.currentPlan,
+              style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
+            ),
+            Text(
+              t.subscription.activeUntil(date: dateText),
+              style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
+            ),
+            RisingAuraEffect(
+              child: AbsorbPointer(
+                child: SubscriptionCard(
+                  package: currentPackage,
+                  isSelected: true,
+                  margin: EdgeInsets.zero,
+                ),
+              ),
+            ),
+
+            if (managementUrl != null) SubscriptionManageButton(managementUrl: managementUrl),
+          ],
+        ),
       ),
     );
   }

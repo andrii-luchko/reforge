@@ -12,15 +12,17 @@ class SubscriptionCard extends StatelessWidget {
   const SubscriptionCard({
     required this.package,
     required this.isSelected,
-    required this.onTap,
+    this.onTap,
     this.isCurrentPlan = false,
+    this.margin = const EdgeInsets.only(bottom: 12),
     super.key,
   });
 
   final SubscriptionPackage package;
   final bool isSelected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isCurrentPlan;
+  final EdgeInsetsGeometry? margin;
 
   static const String _description = 'Unlock all features and get exclusive content with our premium subscription.';
 
@@ -36,7 +38,7 @@ class SubscriptionCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: margin,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: context.appTheme.beige900,

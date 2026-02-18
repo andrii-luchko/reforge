@@ -67,10 +67,12 @@ class SubscriptionContentBody extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: SubscriptionRecurringStatusCard(
+              currentPackage: state.currentPackage!,
               expirationDate: state.currentSubscription!.expirationDate,
               managementUrl: state.currentSubscription!.managementUrl,
             ),
           ),
+          const SliverPadding(padding: .only(bottom: 24)),
           SubscriptionPackagesList(
             state: state,
             selectedPackage: selectedPackage,
