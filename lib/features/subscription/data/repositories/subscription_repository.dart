@@ -213,4 +213,20 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
       return Result.error(e);
     }
   }
+
+  @override
+  Future<Result<SubscriptionEntity?>> restorePurchases({
+    List<SubscriptionPackage>? packages,
+  }) async {
+    try {
+      final info = await makeRequest(
+        Purchases.restorePurchases,
+        label: 'restorePurchases',
+        transformError: _transformRevenueCatError,
+      );
+      return Result.success(_mapCustomerInfo(info, packages: packages));
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
 }

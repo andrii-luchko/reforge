@@ -106,4 +106,27 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         break;
     }
   }
+
+  Future<void> restorePurchases() async {
+    if (state.offerings == null) return;
+
+    emit(state.copyWith(isPurchasing: true, error: null));
+
+    final result = await _repository.restorePurchases(
+      packages: state.offerings!.packages,
+    );
+
+    switch (result) {
+      case Success(value: final subscription):
+        emit(state.copyWith(
+          currentSubscription: subscription,
+          isPurchasing: false,
+        ));
+      case ErrorR(error: final error):
+        emit(state.copyWith(
+          error: 'Restore failed: $error',
+          isPurchasing: false,
+        ));
+    }
+  }
 }

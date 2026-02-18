@@ -65,6 +65,13 @@ const subheadH6Regular = TextStyle(
   fontVariations: <FontVariation>[FontVariation('wght', 400)],
 );
 
+const subheadH6Medium = TextStyle(
+  fontFamily: FontFamily.orbitron,
+  fontSize: 14,
+  height: 1.1,
+  fontVariations: <FontVariation>[FontVariation('wght', 500)],
+);
+
 const subheadH7Medium = TextStyle(
   fontFamily: FontFamily.clashGrotesk,
   fontSize: 14,

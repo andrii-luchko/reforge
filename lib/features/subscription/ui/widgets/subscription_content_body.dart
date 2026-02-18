@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/app/constants/env.dart';
+import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
@@ -10,7 +10,6 @@ import 'package:reforge/features/subscription/ui/widgets/subscription_packages_l
 import 'package:reforge/features/subscription/ui/widgets/subscription_recurring_status_card.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
-import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 
 class SubscriptionContentBody extends StatelessWidget {
@@ -19,6 +18,7 @@ class SubscriptionContentBody extends StatelessWidget {
     required this.selectedPackage,
     required this.onPackageSelected,
     required this.onPurchase,
+    required this.onRestorePurchases,
     super.key,
   });
 
@@ -26,6 +26,7 @@ class SubscriptionContentBody extends StatelessWidget {
   final SubscriptionPackage? selectedPackage;
   final ValueChanged<SubscriptionPackage> onPackageSelected;
   final VoidCallback onPurchase;
+  final VoidCallback onRestorePurchases;
 
   String _buttonLabel() {
     if (state.hasLifetime) return '';
@@ -37,7 +38,7 @@ class SubscriptionContentBody extends StatelessWidget {
           ? t.subscription.upgrade
           : t.subscription.changePlan;
     }
-    return t.common.save_changes_button;
+    return t.common.continue_button;
   }
 
   bool _canPurchase() {
@@ -77,12 +78,10 @@ class SubscriptionContentBody extends StatelessWidget {
           ),
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: SecondaryButton(
-                text: _buttonLabel(),
-                onPressed: _canPurchase() ? onPurchase : null,
-              ),
+            child: SubscriptionFooterAction(
+              buttonLabel: _buttonLabel(),
+              onPressed: _canPurchase() ? onPurchase : null,
+              onRestorePurchases: onRestorePurchases,
             ),
           ),
         ],
@@ -101,6 +100,7 @@ class SubscriptionContentBody extends StatelessWidget {
           child: SubscriptionFooterAction(
             buttonLabel: _buttonLabel(),
             onPressed: _canPurchase() ? onPurchase : null,
+            onRestorePurchases: onRestorePurchases,
           ),
         ),
       ],
@@ -112,16 +112,18 @@ class SubscriptionFooterAction extends StatelessWidget {
   const SubscriptionFooterAction({
     required this.buttonLabel,
     required this.onPressed,
+    required this.onRestorePurchases,
     super.key,
   });
 
   final String buttonLabel;
   final VoidCallback? onPressed;
+  final VoidCallback onRestorePurchases;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: .end,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         PrimaryButton(
           text: buttonLabel,
@@ -133,28 +135,24 @@ class SubscriptionFooterAction extends StatelessWidget {
           children: [
             ThirtyButton(
               text: 'Restore Purchases',
-              onPressed: () {
-                Purchases.restorePurchases();
-              },
+              onPressed: onRestorePurchases,
+              style: subheadH6Medium,
             ),
 
             ThirtyButton(
               text: 'Terms',
-              onPressed: () {
-                LaunchUrl.launchAppLink(Env.termsOfUseUrl);
-
-                ;
-              },
+              onPressed: () => LaunchUrl.launchAppLink(Env.termsOfUseUrl),
+              style: subheadH6Medium,
             ),
 
             ThirtyButton(
               text: 'Privacy',
-              onPressed: () {
-                LaunchUrl.launchAppLink(Env.privacyPolicyUrl);
-              },
+              onPressed: () => LaunchUrl.launchAppLink(Env.privacyPolicyUrl),
+              style: subheadH6Medium,
             ),
           ],
         ),
+        const SizedBox(height: 8),
       ],
     );
   }

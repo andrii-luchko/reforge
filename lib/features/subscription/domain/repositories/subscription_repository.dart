@@ -9,4 +9,8 @@ abstract interface class SubscriptionRepository {
   Future<Result<SubscriptionEntity?>> getCurrentSubscription({
     List<SubscriptionPackage>? packages,
   });
+
+  Future<Result<SubscriptionEntity?>> restorePurchases({
+    List<SubscriptionPackage>? packages,
+  });
 }

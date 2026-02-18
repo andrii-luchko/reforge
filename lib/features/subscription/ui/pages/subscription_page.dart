@@ -76,6 +76,7 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
               await context.read<SubscriptionCubit>().purchase(_selectedPackage!);
             }
           },
+          onRestorePurchases: () => context.read<SubscriptionCubit>().restorePurchases(),
         );
       },
     );

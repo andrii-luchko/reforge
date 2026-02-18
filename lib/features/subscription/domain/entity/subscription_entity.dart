@@ -1,6 +1,5 @@
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 
-// ignore_for_file: public_member_api_docs
 /// Current subscription status of the user.
 class SubscriptionEntity {
   const SubscriptionEntity({
