@@ -29,7 +29,7 @@ class AttributeSystemSection extends StatelessWidget {
           spacing: 16,
           children: [
             const AttributeSystemHeader(),
-            if (attributes.isNotEmpty)
+            if (attributes.isEmpty)
               EmptyListMessage(
                 icon: Icons.visibility_off_outlined,
                 iconSize: 48,

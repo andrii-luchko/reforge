@@ -7,7 +7,6 @@ import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
-import 'package:reforge/features/achievements/domain/mock/generate_badges.dart';
 import 'package:reforge/features/achievements/domain/mock/generate_ranks.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
@@ -53,9 +52,17 @@ class AchievementsRepositoryImpl with RepositoryErrorHandler implements Achievem
   @override
   Future<Result<List<BadgeEntity>>> getUserBadges() async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      final result = await makeRequest(
+        () async {
+          final result = await _apiClient.getUserBadges();
 
-      return Result.success(BadgesGenerator.generateBadges());
+          final mappedList = result.data.map((badge) => badge.toDomain()).toList();
+          return mappedList;
+        },
+        label: 'getUserBadges',
+      );
+
+      return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
     }

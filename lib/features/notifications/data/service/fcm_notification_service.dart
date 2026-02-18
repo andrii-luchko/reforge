@@ -56,7 +56,11 @@ class FcmNotificationService {
     }
   }
 
-  Future<void> sendTestNotification(String token) async {
-    await _repository.sendTestNotification(token);
+  Future<void> sendTestNotification() async {
+    await _repository.sendTestNotification();
+  }
+
+  Future<void> sendDefaultNotification() async {
+    await _repository.sendDefaultTestNotification();
   }
 }

@@ -29,7 +29,9 @@ abstract interface class NotificationRepository {
   Future<Result<String?>> getFcmToken();
   Future<Result<void>> saveFcmToken(String token);
   Future<void> clearSavedFcmToken();
-  Future<void> sendTestNotification(String token);
+
+  Future<void> sendTestNotification();
+  Future<void> sendDefaultTestNotification();
 }
 
 @Injectable(as: NotificationRepository)
@@ -175,7 +177,7 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
   }
 
   @override
-  Future<void> sendTestNotification(String token) async {
+  Future<void> sendTestNotification() async {
     try {
       await makeRequest(
         () async {
@@ -191,9 +193,23 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
           logger.d(request.toJson());
           await _apiClient.sendTestNotification(request);
 
-          logger.d('Sent test notification of type $type to token $token');
+          logger.d('Sent test notification of type $type');
         },
         label: 'sendTestNotification',
+      );
+    } on Exception catch (e) {
+      logger.e('Failed to send test notification', e);
+    }
+  }
+
+  @override
+  Future<void> sendDefaultTestNotification() async {
+    try {
+      await makeRequest(
+        () async {
+          await _apiClient.sendNotificationTEST();
+        },
+        label: 'sendDefaultTestNotification',
       );
     } on Exception catch (e) {
       logger.e('Failed to send test notification', e);
