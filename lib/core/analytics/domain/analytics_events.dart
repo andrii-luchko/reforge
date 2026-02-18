@@ -20,4 +20,8 @@ abstract final class AnalyticsEvents {
   static const String calendarRefresh = 'calendar_refresh';
   static const String trainingDetailsView = 'training_details_view';
   static const String trainingDetailsRefresh = 'training_details_refresh';
+  static const String notificationsView = 'notifications_view';
+  static const String notificationsRefresh = 'notifications_refresh';
+  static const String notificationsClearOne = 'notifications_clear_one';
+  static const String notificationsClearAll = 'notifications_clear_all';
 }

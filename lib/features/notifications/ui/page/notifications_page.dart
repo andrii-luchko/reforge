@@ -61,7 +61,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
           top: false,
           bottom: false,
           child: RefreshIndicator(
-            onRefresh: () => _cubit.loadNotifications(forceRefresh: true),
+            onRefresh: () async {
+              _cubit.onRefresh();
+              await _cubit.loadNotifications(forceRefresh: true);
+            },
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
