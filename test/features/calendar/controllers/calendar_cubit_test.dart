@@ -5,6 +5,8 @@ import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/calendar/controllers/calendar/calendar_cubit.dart';
 import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
+
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_calendar_repository.dart';
 
 CalendarEntity createTestCalendarEntity({Map<DateTime, DayEntity>? days}) {
@@ -29,9 +31,13 @@ DayEntity createTestDayEntity(DateTime date, {List<int> sessionIds = const []}) 
 
 void main() {
   late MockCalendarRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUp(() {
     mockRepository = MockCalendarRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('CalendarCubit', () {
@@ -42,7 +48,7 @@ void main() {
           when(() => mockRepository.getMonthCalendarData(any())).thenAnswer(
             (_) async => Result.success(createTestCalendarEntity()),
           );
-          return CalendarCubit(mockRepository);
+          return CalendarCubit(mockRepository, mockAnalytics);
         },
         act: (cubit) => cubit.initialize(),
         expect: () => [
@@ -58,7 +64,7 @@ void main() {
     group('changeMonth', () {
       test('cache hit does not call repository', () async {
         final monthKey = DateTime(2025, 3, 15).toYearMonth();
-        final cubit = CalendarCubit(mockRepository);
+        final cubit = CalendarCubit(mockRepository, mockAnalytics);
         await (cubit..emit(
               CalendarState(
                 currentDate: DateTime(2025, 3),
@@ -82,7 +88,7 @@ void main() {
               ),
             ),
           );
-          return CalendarCubit(mockRepository);
+          return CalendarCubit(mockRepository, mockAnalytics);
         },
         act: (cubit) => cubit.changeMonth(DateTime(2025, 4, 15)),
         expect: () => [
@@ -100,7 +106,7 @@ void main() {
           when(() => mockRepository.getMonthCalendarData(any())).thenAnswer(
             (_) async => Result.error(Exception('Network error')),
           );
-          return CalendarCubit(mockRepository);
+          return CalendarCubit(mockRepository, mockAnalytics);
         },
         act: (cubit) => cubit.changeMonth(DateTime(2025, 5, 15)),
         expect: () => [
@@ -117,7 +123,7 @@ void main() {
           when(() => mockRepository.getMonthCalendarData(any())).thenAnswer(
             (_) async => Result.success(createTestCalendarEntity()),
           );
-          return CalendarCubit(mockRepository);
+          return CalendarCubit(mockRepository, mockAnalytics);
         },
         seed: () {
           final month = DateTime(2025, 6, 15);
@@ -141,7 +147,7 @@ void main() {
           when(() => mockRepository.getMonthCalendarData(any())).thenAnswer(
             (_) async => Result.success(createTestCalendarEntity()),
           );
-          return CalendarCubit(mockRepository);
+          return CalendarCubit(mockRepository, mockAnalytics);
         },
         seed: () => CalendarState(currentDate: DateTime(2025, 7, 15)),
         act: (cubit) => cubit.refresh(),
@@ -156,7 +162,7 @@ void main() {
       test('returns DayEntity when date exists in currentMonthDays', () {
         final date = DateTime(2025, 8, 15);
         final dayEntity = createTestDayEntity(date, sessionIds: [1, 2]);
-        final cubit = CalendarCubit(mockRepository);
+        final cubit = CalendarCubit(mockRepository, mockAnalytics);
         expect(
           (cubit..emit(
                 CalendarState(
@@ -177,7 +183,7 @@ void main() {
       });
 
       test('returns null when currentMonthDays is empty', () {
-        final cubit = CalendarCubit(mockRepository);
+        final cubit = CalendarCubit(mockRepository, mockAnalytics);
         expect(
           (cubit..emit(const CalendarState())).navigationCheck(DateTime(2025, 9, 15)),
           isNull,
@@ -185,7 +191,7 @@ void main() {
       });
 
       test('returns null when currentDate is null', () {
-        final cubit = CalendarCubit(mockRepository);
+        final cubit = CalendarCubit(mockRepository, mockAnalytics);
         expect(
           (cubit..emit(const CalendarState())).navigationCheck(DateTime(2025, 9, 15)),
           isNull,
@@ -195,7 +201,7 @@ void main() {
       test('returns null when date not in currentMonthDays', () {
         final date = DateTime(2025, 10, 15);
         final otherDate = DateTime(2025, 10, 20);
-        final cubit = CalendarCubit(mockRepository);
+        final cubit = CalendarCubit(mockRepository, mockAnalytics);
         expect(
           (cubit..emit(
                 CalendarState(

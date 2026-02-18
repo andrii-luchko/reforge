@@ -106,6 +106,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                                   final sessionId = day?.latestSessionId;
 
                                   if (day != null && sessionId != null) {
+                                    cubit.onTrainingDetailsTap();
                                     unawaited(
                                       TrainingDetailsPageRoute(
                                         date: day.date,

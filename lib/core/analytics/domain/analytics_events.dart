@@ -14,4 +14,10 @@ abstract final class AnalyticsEvents {
   static const String homeView = 'home_view';
   static const String homeStartWorkoutClick = 'home_start_workout_click';
   static const String homeStatsPeriodChange = 'home_stats_period_change';
+  static const String calendarView = 'calendar_view';
+  static const String calendarTrainingDetailsClick = 'calendar_training_details_click';
+  static const String calendarMonthChange = 'calendar_month_change';
+  static const String calendarRefresh = 'calendar_refresh';
+  static const String trainingDetailsView = 'training_details_view';
+  static const String trainingDetailsRefresh = 'training_details_refresh';
 }

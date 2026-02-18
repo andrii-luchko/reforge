@@ -5,6 +5,7 @@ import 'package:reforge/features/calendar/controllers/training_details/training_
 import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_calendar_repository.dart';
 
 TrainingDetailsEntity createTestTrainingDetailsEntity() {
@@ -20,16 +21,20 @@ TrainingDetailsEntity createTestTrainingDetailsEntity() {
 
 void main() {
   late MockCalendarRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUp(() {
     mockRepository = MockCalendarRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('TrainingDetailsCubit', () {
     test('loadWorkoutDetails emits Loaded when repository succeeds', () async {
       when(() => mockRepository.getWorkoutDetails(1))
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));
-      final cubit = TrainingDetailsCubit(mockRepository, 1);
+      final cubit = TrainingDetailsCubit(mockRepository, mockAnalytics, 1);
       await Future.delayed(const Duration(milliseconds: 50));
       expect(cubit.state.maybeWhen(loaded: (_) => true, orElse: () => false), isTrue);
       expect(cubit.state.maybeWhen(loaded: (d) => d.id, orElse: () => 0), 1);
@@ -38,7 +43,7 @@ void main() {
     test('loadWorkoutDetails emits Error when repository fails', () async {
       when(() => mockRepository.getWorkoutDetails(1))
           .thenAnswer((_) async => Result.error(Exception('Network error')));
-      final cubit = TrainingDetailsCubit(mockRepository, 1);
+      final cubit = TrainingDetailsCubit(mockRepository, mockAnalytics, 1);
       await Future.delayed(const Duration(milliseconds: 50));
       expect(cubit.state.maybeWhen(error: (_) => true, orElse: () => false), isTrue);
     });
@@ -48,7 +53,7 @@ void main() {
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));
       when(() => mockRepository.getWorkoutDetails(1, forceRefresh: true))
           .thenAnswer((_) async => Result.success(createTestTrainingDetailsEntity()));
-      final cubit = TrainingDetailsCubit(mockRepository, 1);
+      final cubit = TrainingDetailsCubit(mockRepository, mockAnalytics, 1);
       await Future.delayed(const Duration(milliseconds: 50));
       await cubit.refresh();
       verify(() => mockRepository.getWorkoutDetails(1, forceRefresh: true)).called(1);
