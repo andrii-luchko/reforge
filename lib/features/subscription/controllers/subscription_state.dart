@@ -11,13 +11,9 @@ sealed class SubscriptionState with _$SubscriptionState {
     String? error,
   }) = _SubscriptionState;
 
-  bool isCurrentPackage(SubscriptionPackage package) {
-    final entity = currentSubscription;
-    if (entity == null) return false;
-    // Android: productPlanIdentifier ?? productIdentifier
-    final purchasedId = Platform.isAndroid
-        ? (entity.productPlanIdentifier ?? entity.productIdentifier)
-        : entity.productIdentifier;
-    return purchasedId == package.productIdentifier;
-  }
+  bool get hasActiveSubscription => currentSubscription != null && currentSubscription!.isActive;
+
+  SubscriptionPackage? get currentPackage => currentSubscription?.matchedPackage;
+
+  bool get hasLifetime => currentPackage?.periodType == SubscriptionPeriodType.lifetime;
 }

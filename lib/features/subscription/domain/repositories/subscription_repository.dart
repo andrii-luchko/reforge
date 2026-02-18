@@ -6,5 +6,7 @@ import 'package:reforge/features/subscription/domain/entity/subscription_package
 abstract interface class SubscriptionRepository {
   Future<Result<SubscriptionOfferings>> getOfferings();
   Future<Result<SubscriptionEntity?>> purchasePackage(SubscriptionPackage package);
-  Future<Result<SubscriptionEntity?>> getCurrentSubscription();
+  Future<Result<SubscriptionEntity?>> getCurrentSubscription({
+    List<SubscriptionPackage>? packages,
+  });
 }

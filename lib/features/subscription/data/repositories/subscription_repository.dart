@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -94,7 +96,26 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     );
   }
 
-  SubscriptionEntity? _mapCustomerInfo(CustomerInfo info) {
+  SubscriptionPackage? _findMatchedPackage(
+    String? productIdentifier,
+    String? productPlanIdentifier,
+    List<SubscriptionPackage> packages,
+  ) {
+    final purchasedId = Platform.isAndroid ? (productPlanIdentifier ?? productIdentifier) : productIdentifier;
+    if (purchasedId == null) return null;
+    try {
+      return packages.firstWhere(
+        (p) => p.productIdentifier == purchasedId || p.id == purchasedId,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  SubscriptionEntity? _mapCustomerInfo(
+    CustomerInfo info, {
+    List<SubscriptionPackage>? packages,
+  }) {
     final active = info.entitlements.active;
     if (active.isEmpty) {
       return null;
@@ -104,12 +125,21 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     if (first.expirationDate != null) {
       expirationDate = DateTime.tryParse(first.expirationDate!);
     }
+    final matchedPackage = packages != null
+        ? _findMatchedPackage(
+            first.productIdentifier,
+            first.productPlanIdentifier,
+            packages,
+          )
+        : null;
     return SubscriptionEntity(
       isActive: first.isActive,
       expirationDate: expirationDate,
       entitlementId: first.identifier,
       productIdentifier: first.productIdentifier,
       productPlanIdentifier: first.productPlanIdentifier,
+      matchedPackage: matchedPackage,
+      managementUrl: info.managementURL,
     );
   }
 
@@ -123,9 +153,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
       );
       final current = offerings.current;
       if (current == null || current.availablePackages.isEmpty) {
-        return const Result.success(
-          SubscriptionOfferings(packages: []),
-        );
+        return const Result.success(SubscriptionOfferings(packages: []));
       }
       final packages = current.availablePackages.map(_mapPackage).toList();
       return Result.success(
@@ -149,6 +177,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'getOfferings',
         transformError: _transformRevenueCatError,
       );
+      final current = offerings.current;
       final rcPackage = _findPackageById(offerings, package.id);
       if (rcPackage == null) {
         return Result.error(
@@ -160,7 +189,8 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'purchasePackage',
         transformError: _transformRevenueCatError,
       );
-      return Result.success(_mapCustomerInfo(result.customerInfo));
+      final packages = current?.availablePackages.map(_mapPackage).toList() ?? [];
+      return Result.success(_mapCustomerInfo(result.customerInfo, packages: packages));
     } on PurchaseCancelledException {
       return const Result.error(PurchaseCancelledException());
     } on Exception catch (e) {
@@ -169,14 +199,16 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   }
 
   @override
-  Future<Result<SubscriptionEntity?>> getCurrentSubscription() async {
+  Future<Result<SubscriptionEntity?>> getCurrentSubscription({
+    List<SubscriptionPackage>? packages,
+  }) async {
     try {
       final info = await makeRequest(
         Purchases.getCustomerInfo,
         label: 'getCurrentSubscription',
         transformError: _transformRevenueCatError,
       );
-      return Result.success(_mapCustomerInfo(info));
+      return Result.success(_mapCustomerInfo(info, packages: packages));
     } on Exception catch (e) {
       return Result.error(e);
     }

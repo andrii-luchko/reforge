@@ -13,22 +13,24 @@ class SubscriptionCard extends StatelessWidget {
     required this.package,
     required this.isSelected,
     required this.onTap,
+    this.isCurrentPlan = false,
     super.key,
   });
 
   final SubscriptionPackage package;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isCurrentPlan;
 
   static const String _description = 'Unlock all features and get exclusive content with our premium subscription.';
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final tag = package.periodType.displayTag(t);
+    final tag = isCurrentPlan ? t.subscription.currentPlan : package.periodType.displayTag(t);
     return PressableAnimation(
       scaleAmount: 0.98,
-      onTap: onTap,
+      onTap: isCurrentPlan ? () {} : onTap,
       child: Stack(
         clipBehavior: Clip.none,
         children: [

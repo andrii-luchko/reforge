@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list_content.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_packages_skeleton.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionPackagesList extends StatelessWidget {
@@ -22,51 +23,16 @@ class SubscriptionPackagesList extends StatelessWidget {
 
     return SliverSkeletonizer(
       enabled: showSkeleton,
-      child: SliverMainAxisGroup(
-        slivers: [
-          if (showSkeleton) ..._buildSkeletonSlivers(),
-          if (!showSkeleton && state.offerings != null) ..._buildPackagesSlivers(),
-        ],
-      ),
+      child: showSkeleton
+          ? const SubscriptionPackagesSkeleton()
+          : state.offerings != null
+          ? SubscriptionPackagesListContent(
+              packages: state.offerings!.packages,
+              selectedPackage: selectedPackage,
+              currentPackage: state.currentPackage,
+              onPackageSelected: onPackageSelected,
+            )
+          : const SliverMainAxisGroup(slivers: []),
     );
-  }
-
-  List<Widget> _buildSkeletonSlivers() {
-    return List.generate(
-      3,
-      (_) => SliverPadding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        sliver: SliverToBoxAdapter(
-          child: Skeleton.leaf(
-            child: SubscriptionCard(
-              package: SubscriptionPackagePlaceholder.placeholder,
-              isSelected: false,
-              onTap: () {},
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildPackagesSlivers() {
-    final offerings = state.offerings!;
-    if (offerings.packages.isEmpty) {
-      return [];
-    }
-    return offerings.packages
-        .map(
-          (package) => SliverPadding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            sliver: SliverToBoxAdapter(
-              child: SubscriptionCard(
-                package: package,
-                isSelected: selectedPackage?.id == package.id,
-                onTap: () => onPackageSelected(package),
-              ),
-            ),
-          ),
-        )
-        .toList();
   }
 }

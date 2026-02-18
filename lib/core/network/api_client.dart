@@ -191,7 +191,7 @@ abstract class ApiClient {
   Future<BaseResponse<List<NotificationModelDto>>> getNotificationHistory();
 
   @POST('/notifications/register-token')
-  Future<void> registerToken(RegisterFcmTokensRequestDto request);
+  Future<BaseResponse<dynamic>> registerToken(RegisterFcmTokensRequestDto request);
 
   @PATCH('/notifications/{id}/read')
   Future<void> markNotificationAsRead(@Path('id') int id);
@@ -199,6 +199,8 @@ abstract class ApiClient {
   @POST('/notifications/read-all')
   Future<void> markAllNotificationsAsRead();
 
+  @POST('notifications/test')
+  Future<BaseResponse<dynamic>> sendNotificationTEST();
   @POST('/notifications/test-custom')
-  Future<void> sendTestNotification(NotificationTestRequest request);
+  Future<BaseResponse<dynamic>> sendTestNotification(NotificationTestRequest request);
 }

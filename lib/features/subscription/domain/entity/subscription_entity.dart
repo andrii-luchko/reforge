@@ -1,4 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+
+// ignore_for_file: public_member_api_docs
 /// Current subscription status of the user.
 class SubscriptionEntity {
   const SubscriptionEntity({
@@ -7,6 +9,8 @@ class SubscriptionEntity {
     this.entitlementId,
     this.productIdentifier,
     this.productPlanIdentifier,
+    this.matchedPackage,
+    this.managementUrl,
   });
 
   final bool isActive;
@@ -14,6 +18,8 @@ class SubscriptionEntity {
   final String? entitlementId;
   final String? productIdentifier;
   final String? productPlanIdentifier;
+  final SubscriptionPackage? matchedPackage;
+  final String? managementUrl;
 
   @override
   String toString() {

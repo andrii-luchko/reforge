@@ -55,7 +55,10 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
         context.read<SubscriptionCubit>().clearError();
       },
       buildWhen: (prev, curr) =>
-          prev.offerings != curr.offerings || prev.isLoading != curr.isLoading || prev.error != curr.error,
+          prev.offerings != curr.offerings ||
+          prev.isLoading != curr.isLoading ||
+          prev.error != curr.error ||
+          prev.currentSubscription != curr.currentSubscription,
       builder: (context, state) {
         if (state.offerings != null && state.offerings!.packages.isNotEmpty && _selectedPackage == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {

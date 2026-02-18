@@ -4,11 +4,17 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 
 @JsonEnum()
 enum NotificationType {
+  @JsonValue('plateUnlocked')
   plateUnlocked,
+  @JsonValue('xpSummary')
   xpSummary,
+  @JsonValue('rankUpdate')
   rankUpdate,
+  @JsonValue('weeklyWinner')
   weeklyWinner,
+  @JsonValue('paymentFailed')
   paymentFailed,
+  @JsonValue('unknown')
   unknown
   ;
 

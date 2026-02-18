@@ -150,18 +150,20 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
         return const Result.success(null);
       }
 
-      final result = await makeRequest(
-        () => _apiClient.registerToken(
-          RegisterFcmTokensRequestDto(
-            token: token,
-            deviceType: Platform.isAndroid ? DeviceType.android : DeviceType.ios,
-          ),
-        ),
+      final request = RegisterFcmTokensRequestDto(
+        token: token,
+        deviceType: Platform.isAndroid ? DeviceType.android : DeviceType.ios,
+      );
+
+      logger.d('Registering FCM token with request: ${request.toJson()}');
+
+      await makeRequest(
+        () => _apiClient.registerToken(request),
         label: 'saveFcmToken',
       );
 
       await _fcmTokenStorage.saveToken(token);
-      return Result.success(result);
+      return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -178,13 +180,16 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
       await makeRequest(
         () async {
           final type = NotificationType.values[Random().nextInt(NotificationType.values.length)];
-
-          await _apiClient.sendTestNotification(
-            NotificationTestRequest(
-              notificationType: type,
-              metadata: NotificationMetadata.current(token: token),
+          final request = NotificationTestRequest(
+            notificationType: type,
+            metadata: const NotificationMetadata(
+              newRank: 'GigaChad',
+              xpBonus: 500,
             ),
           );
+
+          logger.d(request.toJson());
+          await _apiClient.sendTestNotification(request);
 
           logger.d('Sent test notification of type $type to token $token');
         },

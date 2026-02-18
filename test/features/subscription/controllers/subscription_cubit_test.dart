@@ -64,7 +64,7 @@ void main() {
           when(() => mockRepository.getOfferings()).thenAnswer(
             (_) async => Result.success(createTestOfferings()),
           );
-          when(() => mockRepository.getCurrentSubscription()).thenAnswer(
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
           return SubscriptionCubit(mockRepository);
@@ -89,9 +89,6 @@ void main() {
           when(() => mockRepository.getOfferings()).thenAnswer(
             (_) async => Result.error(Exception('Network error')),
           );
-          when(() => mockRepository.getCurrentSubscription()).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
           return SubscriptionCubit(mockRepository);
         },
         act: (cubit) => cubit.loadOfferings(),
@@ -109,7 +106,7 @@ void main() {
           when(() => mockRepository.getOfferings()).thenAnswer(
             (_) async => Result.success(createTestOfferings()),
           );
-          when(() => mockRepository.getCurrentSubscription()).thenAnswer(
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.error(Exception('Not found')),
           );
           return SubscriptionCubit(mockRepository);
@@ -136,7 +133,12 @@ void main() {
     group('purchase', () {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'does nothing when state is not loaded',
-        build: () => SubscriptionCubit(mockRepository),
+        build: () {
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.error(Exception('')),
+          );
+          return SubscriptionCubit(mockRepository);
+        },
         seed: () => const SubscriptionState(),
         act: (cubit) => cubit.purchase(createTestPackage()),
         expect: () => <SubscriptionState>[],
@@ -145,6 +147,12 @@ void main() {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'emits purchasing then loaded with updated subscription on success',
         build: () {
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(createTestOfferings()),
+          );
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
+            (_) async => Result.success(createTestSubscription()),
+          );
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
@@ -169,6 +177,12 @@ void main() {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'emits purchasing then loaded when user cancels',
         build: () {
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(createTestOfferings()),
+          );
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
+            (_) async => Result.success(createTestSubscription()),
+          );
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => const Result.error(PurchaseCancelledException()),
           );
@@ -193,6 +207,12 @@ void main() {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'emits purchasing then error when purchase fails',
         build: () {
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(createTestOfferings()),
+          );
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
+            (_) async => Result.success(createTestSubscription()),
+          );
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => Result.error(Exception('Payment failed')),
           );
@@ -219,7 +239,10 @@ void main() {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'updates currentSubscription when in loaded state',
         build: () {
-          when(() => mockRepository.getCurrentSubscription()).thenAnswer(
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(createTestOfferings()),
+          );
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
           return SubscriptionCubit(mockRepository);
@@ -238,7 +261,10 @@ void main() {
       blocTest<SubscriptionCubit, SubscriptionState>(
         'does nothing when getCurrentSubscription fails',
         build: () {
-          when(() => mockRepository.getCurrentSubscription()).thenAnswer(
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(createTestOfferings()),
+          );
+          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.error(Exception('Error')),
           );
           return SubscriptionCubit(mockRepository);

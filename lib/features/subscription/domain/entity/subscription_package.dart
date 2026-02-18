@@ -68,7 +68,7 @@ extension SubscriptionPackagePlaceholder on SubscriptionPackage {
     id: 'skeleton',
     title: 'Monthly',
     price: 9.99,
-    priceString: '\$9.99',
+    priceString: r'$9.99',
     currencyCode: 'USD',
     periodType: SubscriptionPeriodType.monthly,
   );

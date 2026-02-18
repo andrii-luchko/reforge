@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -9,6 +8,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/features/subscription/domain/repositories/subscription_repository.dart' as domain;
 
@@ -27,11 +27,12 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     emit(state.copyWith(isLoading: true, error: null));
 
     final offeringsResult = await _repository.getOfferings();
-    final subscriptionResult = await _repository.getCurrentSubscription();
-
+    SubscriptionEntity? currentSubscription;
     switch (offeringsResult) {
       case Success(value: final offerings):
-        SubscriptionEntity? currentSubscription;
+        final subscriptionResult = await _repository.getCurrentSubscription(
+          packages: offerings.packages,
+        );
         switch (subscriptionResult) {
           case Success(value: final sub):
             currentSubscription = sub;
@@ -92,7 +93,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   Future<void> checkSubscriptionStatus() async {
-    final result = await _repository.getCurrentSubscription();
+    final result = await _repository.getCurrentSubscription(
+      packages: state.offerings?.packages,
+    );
 
     switch (result) {
       case Success(value: final subscription):

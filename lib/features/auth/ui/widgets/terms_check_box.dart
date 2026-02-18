@@ -34,7 +34,7 @@ class TermsConfirmationCheckBox extends StatelessWidget {
               style: subheadH8Semibold.copyWith(color: appTheme.beige700),
               children: [
                 TextSpan(
-                  recognizer: launchUrlRecognizer(Env.termsOfUseUrl),
+                  recognizer: LaunchUrl.launchUrlRecognizer(Env.termsOfUseUrl),
                   text: t.create_acc.terms_text_part2,
                   style: subheadH8Semibold.copyWith(color: appTheme.beige100),
                 ),

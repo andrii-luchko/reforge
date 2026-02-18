@@ -62,6 +62,7 @@ class BaseSettingsEditPage extends StatelessWidget {
       body: DefaultBackground(
         body: SafeArea(
           top: false,
+          bottom: false,
           child: bodyContent,
         ),
         additionalAnimationsBehind: const [ParticlesWidget()],
