@@ -43,4 +43,16 @@ abstract final class AnalyticsEvents {
   static const String achievementsRanksRefresh = 'achievements_ranks_refresh';
   static const String achievementsRanksFactionChange = 'achievements_ranks_faction_change';
   static const String achievementsAttributeGuideClick = 'achievements_attribute_guide_click';
+  static const String settingsView = 'settings_view';
+  static const String settingsNameView = 'settings_name_view';
+  static const String settingsEmailView = 'settings_email_view';
+  static const String settingsDateOfBirthView = 'settings_date_of_birth_view';
+  static const String settingsHeightAndWeightView = 'settings_height_and_weight_view';
+  static const String settingsSubscriptionView = 'settings_subscription_view';
+  static const String settingsFactionView = 'settings_faction_view';
+  static const String settingsNotificationsView = 'settings_notifications_view';
+  static const String settingsMeasurementView = 'settings_measurement_view';
+  static const String settingsWorkoutDaysView = 'settings_workout_days_view';
+  static const String settingsLogoutClick = 'settings_logout_click';
+  static const String settingsDeleteAccountClick = 'settings_delete_account_click';
 }

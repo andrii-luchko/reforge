@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
@@ -27,8 +30,35 @@ class SettingsNavigation {
     }
 
     if (route != null) {
-      unawaited(Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => route!)));
+      final event = _getViewEvent(setting);
+      final wrappedRoute = _SettingsScreenWithAnalytics(
+        event: event,
+        child: route,
+      );
+      unawaited(Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => wrappedRoute)));
     }
+  }
+
+  static String? _getViewEvent(dynamic setting) {
+    if (setting is ProfileSettings) {
+      return switch (setting) {
+        ProfileSettings.name => AnalyticsEvents.settingsNameView,
+        ProfileSettings.email => AnalyticsEvents.settingsEmailView,
+        ProfileSettings.dateOfBirth => AnalyticsEvents.settingsDateOfBirthView,
+        ProfileSettings.heightAndWeight => AnalyticsEvents.settingsHeightAndWeightView,
+        ProfileSettings.image => null,
+      };
+    }
+    if (setting is WorkoutSettings) {
+      return switch (setting) {
+        WorkoutSettings.workoutDays => AnalyticsEvents.settingsWorkoutDaysView,
+        WorkoutSettings.faction => AnalyticsEvents.settingsFactionView,
+        WorkoutSettings.measureSystem => AnalyticsEvents.settingsMeasurementView,
+        WorkoutSettings.notification => AnalyticsEvents.settingsNotificationsView,
+        WorkoutSettings.subscription => AnalyticsEvents.settingsSubscriptionView,
+      };
+    }
+    return null;
   }
 
   static Widget? _getProfileRoute(ProfileSettings setting, OnboardedUser user) {
@@ -66,4 +96,31 @@ class SettingsNavigation {
       WorkoutSettings.subscription => const SubscriptionPage(),
     };
   }
+}
+
+class _SettingsScreenWithAnalytics extends StatefulWidget {
+  const _SettingsScreenWithAnalytics({
+    required this.event,
+    required this.child,
+  });
+
+  final String? event;
+  final Widget child;
+
+  @override
+  State<_SettingsScreenWithAnalytics> createState() => _SettingsScreenWithAnalyticsState();
+}
+
+class _SettingsScreenWithAnalyticsState extends State<_SettingsScreenWithAnalytics> {
+  @override
+  void initState() {
+    super.initState();
+    final event = widget.event;
+    if (event != null) {
+      unawaited(di.getIt<AnalyticsService>().logEvent(event));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

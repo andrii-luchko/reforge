@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
@@ -25,8 +30,19 @@ import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsView));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +125,7 @@ class SettingsPage extends StatelessWidget {
                       child: PrimaryButton(
                         text: t.settings.logout,
                         onPressed: () async {
+                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsLogoutClick));
                           final logout =
                               await confirmAction(
                                 context,
@@ -131,6 +148,7 @@ class SettingsPage extends StatelessWidget {
                       child: SecondaryButton(
                         text: t.settings.deleteAccount,
                         onPressed: () async {
+                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsDeleteAccountClick));
                           final delete =
                               await confirmAction(
                                 context,
