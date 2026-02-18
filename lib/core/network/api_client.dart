@@ -201,7 +201,7 @@ abstract class ApiClient {
   @PATCH('/notifications/{id}/read')
   Future<void> markNotificationAsRead(@Path('id') int id);
 
-  @POST('/notifications/read-all')
+  @PATCH('/notifications/read-all')
   Future<void> markAllNotificationsAsRead();
 
   @POST('/notifications/test')
