@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router_redirect.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/core/analytics/data/observers/analytics_route_observer.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 
@@ -24,7 +26,7 @@ final router = GoRouter(
   redirect: (context, state) => appRedirect(context, state, authCubit.state, userCubit.state),
   observers: [
     di.getIt<RouteObserver<ModalRoute<void>>>(),
-    // AppRouterObserver(),
+    di.getIt<AnalyticsRouteObserver>(),
   ],
 );
 

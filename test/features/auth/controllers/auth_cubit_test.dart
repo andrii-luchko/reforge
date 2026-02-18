@@ -5,6 +5,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/repositories/auth_repository.dart';
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_auth_repository.dart';
 
 bool _isAuthenticated(AuthState s) =>
@@ -16,6 +17,7 @@ bool _isError(AuthState s) =>
 
 void main() {
   late MockAuthRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUpAll(() {
     registerFallbackValue(const AuthTokens(accessToken: '', refreshToken: ''));
@@ -23,6 +25,14 @@ void main() {
 
   setUp(() {
     mockRepository = MockAuthRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.setUserId(any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.setUserProperty(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.setAnalyticsCollectionEnabled(any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logScreenView(screenName: any(named: 'screenName'), screenClass: any(named: 'screenClass'))).thenAnswer((_) async {});
+    when(() => mockAnalytics.logLogin(method: any(named: 'method'))).thenAnswer((_) async {});
+    when(() => mockAnalytics.logSignUp(method: any(named: 'method'))).thenAnswer((_) async {});
   });
 
   const testTokens = AuthTokens(
@@ -38,7 +48,7 @@ void main() {
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signin(any(), any()))
             .thenAnswer((_) async => const Result.success(testTokens));
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -58,7 +68,7 @@ void main() {
         when(() => mockRepository.signin(any(), any())).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -77,7 +87,7 @@ void main() {
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signup(any(), any()))
             .thenAnswer((_) async => const Result.success(testTokens));
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -97,7 +107,7 @@ void main() {
         when(() => mockRepository.signup(any(), any())).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -116,7 +126,7 @@ void main() {
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signWithGoogle())
             .thenAnswer((_) async => const Result.success(testTokens));
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -136,7 +146,7 @@ void main() {
         when(() => mockRepository.signWithGoogle()).thenAnswer(
           (_) async => const Result.error(AuthCanceledException()),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -156,7 +166,7 @@ void main() {
         when(() => mockRepository.signWithGoogle()).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -175,7 +185,7 @@ void main() {
             .thenAnswer((_) async => const Result.success(null));
         when(() => mockRepository.signWithApple())
             .thenAnswer((_) async => const Result.success(testTokens));
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -195,7 +205,7 @@ void main() {
         when(() => mockRepository.signWithApple()).thenAnswer(
           (_) async => const Result.error(AuthCanceledException()),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -214,7 +224,7 @@ void main() {
             .thenAnswer((_) async => const Result.success(testTokens));
         when(() => mockRepository.signOut())
             .thenAnswer((_) async => const Result.success(null));
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);
@@ -234,7 +244,7 @@ void main() {
         when(() => mockRepository.signOut()).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
         );
-        return AuthCubit(mockRepository);
+        return AuthCubit(mockRepository, mockAnalytics);
       },
       act: (cubit) async {
         await Future.delayed(Duration.zero);

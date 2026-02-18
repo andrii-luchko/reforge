@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
-import 'package:reforge/shared/animations/rising_aura_effect.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/rising_aura_effect.dart';
 
 class FactionContainer extends StatelessWidget {
   const FactionContainer({

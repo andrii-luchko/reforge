@@ -52,6 +52,10 @@ mixin RepositoryErrorHandler {
 
   void _logError(String? label, Object error, StackTrace stack) {
     logger.e('ERROR [$label]: $error', error, stack);
-    unawaited(FirebaseCrashlytics.instance.recordError(error, stack, reason: label));
+    unawaited(
+      FirebaseCrashlytics.instance.recordError(error, stack, reason: label).catchError((e) {
+        logger.e('ERROR [$label]:Crashlytics crash', error, stack);
+      }),
+    );
   }
 }

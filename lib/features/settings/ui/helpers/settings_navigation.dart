@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
@@ -10,8 +11,8 @@ import 'package:reforge/features/settings/ui/page/settings_content/height_and_we
 import 'package:reforge/features/settings/ui/page/settings_content/measurement_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/name_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/notification_content.dart';
-import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart';
+import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 
 class SettingsNavigation {
   const SettingsNavigation._();

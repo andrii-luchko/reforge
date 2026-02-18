@@ -107,6 +107,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
       return packages.firstWhere(
         (p) => p.productIdentifier == purchasedId || p.id == purchasedId,
       );
+      // ignore: avoid_catches_without_on_clauses
     } catch (_) {
       return null;
     }

@@ -14,7 +14,7 @@ SubscriptionPackage createTestPackage({
   String id = 'monthly',
   String title = 'Monthly',
   double price = 9.99,
-  String priceString = '\$9.99',
+  String priceString = r'$9.99',
   String currencyCode = 'USD',
   SubscriptionPeriodType periodType = SubscriptionPeriodType.monthly,
 }) {

@@ -8,13 +8,12 @@ import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cub
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
-import 'package:reforge/shared/animations/rising_aura_effect.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/users_leaderboard_view.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/animations/rising_aura_effect.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
-
 import 'package:reforge/shared/uikit/default_background.dart';
 
 class LeaderboardPage extends StatefulWidget {

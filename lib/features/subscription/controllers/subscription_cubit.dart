@@ -73,7 +73,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
           ),
         );
 
-        logger.d('Subscription purchased: ${subscription.toString()}');
+        logger.d('Subscription purchased: $subscription');
       case ErrorR(error: final error):
         if (error is PurchaseCancelledException) {
           emit(state.copyWith(isPurchasing: false));
@@ -118,15 +118,19 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     switch (result) {
       case Success(value: final subscription):
-        emit(state.copyWith(
-          currentSubscription: subscription,
-          isPurchasing: false,
-        ));
+        emit(
+          state.copyWith(
+            currentSubscription: subscription,
+            isPurchasing: false,
+          ),
+        );
       case ErrorR(error: final error):
-        emit(state.copyWith(
-          error: 'Restore failed: $error',
-          isPurchasing: false,
-        ));
+        emit(
+          state.copyWith(
+            error: 'Restore failed: $error',
+            isPurchasing: false,
+          ),
+        );
     }
   }
 }

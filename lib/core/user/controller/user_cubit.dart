@@ -8,6 +8,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/analytics/domain/analytics_user_properties.dart';
+import 'package:reforge/core/analytics/domain/helpers/anonymization_helpers.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
@@ -23,6 +26,7 @@ class UserCubit extends Cubit<UserState> {
     this._authCubit,
     this._userRepository,
     this._userSessionService,
+    this._analytics,
   ) : super(const UserState.loading()) {
     // Subscribe to authentication state changes
     _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
@@ -31,12 +35,14 @@ class UserCubit extends Cubit<UserState> {
   final AuthCubit _authCubit;
   final UserRepository _userRepository;
   final UserSessionService _userSessionService;
+  final AnalyticsService _analytics;
   StreamSubscription<AuthState>? _authSubscription;
 
   Future<void> _onAuthStateChanged(AuthState state) async {
     await state.when(
       authenticated: (_) => _loadUserProfile(),
       unauthenticated: () {
+        unawaited(_analytics.setUserId(null));
         // Clear user data on logout
         emit(const UserState.initial());
       },
@@ -62,6 +68,10 @@ class UserCubit extends Cubit<UserState> {
       case Success(value: final user):
         if (user != null) {
           await _userSessionService.saveUser(user);
+          unawaited(_analytics.setUserId('${user.id}'));
+          if (user case final OnboardedUser onboarded) {
+            unawaited(_setUserAnalyticsProperties(onboarded));
+          }
           emit(UserState.loaded(user));
         } else {
           await _userSessionService.clearUser();
@@ -71,6 +81,29 @@ class UserCubit extends Cubit<UserState> {
         await _userSessionService.clearUser();
         emit(UserState.error(error.toString()));
     }
+  }
+
+  Future<void> _setUserAnalyticsProperties(OnboardedUser user) async {
+    await _analytics.setUserProperty(
+      AnalyticsUserProperties.measurementSystem,
+      user.measurementSystem.name,
+    );
+    await _analytics.setUserProperty(
+      AnalyticsUserProperties.factionId,
+      '${user.factionId}',
+    );
+    await _analytics.setUserProperty(
+      AnalyticsUserProperties.workoutsPerWeek,
+      '${user.workoutsPerWeek}',
+    );
+    await _analytics.setUserProperty(
+      AnalyticsUserProperties.ageGroup,
+      AnonymizationHelpers.ageGroup(user.birthDate),
+    );
+    await _analytics.setUserProperty(
+      AnalyticsUserProperties.weightRange,
+      AnonymizationHelpers.weightBucket(user.bodyWeight),
+    );
   }
 
   /// Refresh user data from server
@@ -131,6 +164,9 @@ class UserCubit extends Cubit<UserState> {
       switch (result) {
         case Success(value: final updatedUser):
           await _userSessionService.saveUser(updatedUser);
+          if (updatedUser case final OnboardedUser onboarded) {
+            unawaited(_setUserAnalyticsProperties(onboarded));
+          }
           emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
           return result;
 
