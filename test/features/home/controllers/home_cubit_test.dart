@@ -8,6 +8,7 @@ import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../../../helpers/test_setup.dart';
 import '../mocks/mock_home_repository.dart';
 
@@ -29,6 +30,7 @@ UserStats createTestUserStats() => UserStatsX.mock();
 
 void main() {
   late MockHomeRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUpAll(() {
     initTestTranslations();
@@ -37,6 +39,9 @@ void main() {
 
   setUp(() {
     mockRepository = MockHomeRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('HomeCubit', () {
@@ -48,7 +53,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
             .thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         expect(cubit.state.user, user);
@@ -67,7 +72,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
             .thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         expect(cubit.state.user, isNull);
@@ -82,7 +87,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
             .thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         expect(cubit.state.error, isNotNull);
@@ -97,7 +102,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
             .thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         await cubit.loadStatsByPeriod(StatsPeriod.lastWeek);
@@ -113,7 +118,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastMonth))
             .thenAnswer((_) async => Result.success(UserStatsX.mock(level: 6)));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         await cubit.loadStatsByPeriod(StatsPeriod.lastMonth);
@@ -129,7 +134,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
             .thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadStatsByPeriod(StatsPeriod.lastWeek);
 
         expect(cubit.state.error, isNotNull);
@@ -146,7 +151,7 @@ void main() {
         when(() => mockRepository.getUserStats(StatsPeriod.yearToDate))
             .thenAnswer((_) async => Result.success(UserStatsX.mock(level: 7)));
 
-        final cubit = HomeCubit(mockRepository);
+        final cubit = HomeCubit(mockRepository, mockAnalytics);
         await cubit.loadInitialData();
 
         cubit.changePeriod(StatsPeriod.yearToDate);

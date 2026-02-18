@@ -9,4 +9,9 @@ abstract final class AnalyticsEvents {
   static const String subscriptionManageClick = 'subscription_manage_click';
   static const String workoutStart = 'workout_start';
   static const String workoutComplete = 'workout_complete';
+  static const String quizStart = 'quiz_start';
+  static const String quizComplete = 'quiz_complete';
+  static const String homeView = 'home_view';
+  static const String homeStartWorkoutClick = 'home_start_workout_click';
+  static const String homeStatsPeriodChange = 'home_stats_period_change';
 }
