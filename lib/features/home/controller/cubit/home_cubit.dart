@@ -26,7 +26,6 @@ class HomeCubit extends Cubit<HomeState> {
   final AnalyticsService _analytics;
 
   Future<void> loadInitialData() async {
-    unawaited(_analytics.logEvent(AnalyticsEvents.homeView));
     emit(state.copyWith(isLoading: true, error: null));
 
     await Future.wait([
@@ -93,11 +92,13 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void changePeriod(StatsPeriod period) {
-    unawaited(_analytics.logEvent(
-      AnalyticsEvents.homeStatsPeriodChange,
-      {'period': period.name},
-    ));
-    loadStatsByPeriod(period);
+    unawaited(
+      _analytics.logEvent(
+        AnalyticsEvents.homeStatsPeriodChange,
+        {'period': period.name},
+      ),
+    );
+    unawaited(loadStatsByPeriod(period));
   }
 
   void onStartWorkoutTap() {

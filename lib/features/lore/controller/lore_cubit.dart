@@ -16,7 +16,6 @@ part 'lore_cubit.freezed.dart';
 @injectable
 class LoreCubit extends Cubit<LoreState> {
   LoreCubit(this._repository, this._analytics) : super(const LoreState()) {
-    unawaited(_analytics.logEvent(AnalyticsEvents.loreView));
     unawaited(loadLore());
   }
 

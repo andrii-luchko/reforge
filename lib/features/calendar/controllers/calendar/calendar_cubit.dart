@@ -24,7 +24,6 @@ class CalendarCubit extends Cubit<CalendarState> {
   final AnalyticsService _analytics;
 
   Future<void> initialize() async {
-    unawaited(_analytics.logEvent(AnalyticsEvents.calendarView));
     final currentDate = state.currentDate ?? DateTime.now();
 
     return changeMonth(currentDate);

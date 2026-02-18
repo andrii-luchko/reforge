@@ -49,7 +49,7 @@ void main() {
     group('setters', () {
       blocTest<QuizCubit, QuizState>(
         'setDateOfBirth with valid date emits state with date and no error',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setDateOfBirth(DateTime(1990, 1, 15)),
         expect: () => [
           isA<QuizState>()
@@ -60,7 +60,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setDateOfBirth with null emits state with error',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setDateOfBirth(null),
         expect: () => [
           isA<QuizState>()
@@ -71,7 +71,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setMeasurementSystem emits state with system',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setMeasurementSystem(MeasurementSystem.imperial),
         expect: () => [
           isA<QuizState>().having(
@@ -84,7 +84,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setBodyWeight emits state with weight',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setBodyWeight(75),
         expect: () => [
           isA<QuizState>().having((s) => s.bodyWeight, 'bodyWeight', 75),
@@ -93,7 +93,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setMainGoal emits state with goal and faction',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setMainGoal(MainGoal.improveEndurance),
         expect: () => [
           isA<QuizState>()
@@ -104,7 +104,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setTrainingLevel emits state with level',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setTrainingLevel(TrainingLevel.intermediate),
         expect: () => [
           isA<QuizState>().having(
@@ -117,7 +117,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setWorkoutDays emits state with days count',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setWorkoutDays(4),
         expect: () => [
           isA<QuizState>().having(
@@ -130,7 +130,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setSpecificDays emits state with days',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setSpecificDays([WeekDay.monday, WeekDay.wednesday]),
         expect: () => [
           isA<QuizState>().having(
@@ -143,7 +143,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'setMainFaction emits state with faction',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.setMainFaction(Faction.seiren),
         expect: () => [
           isA<QuizState>().having((s) => s.mainFaction, 'mainFaction', Faction.seiren),
@@ -152,7 +152,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'toggleSecondFaction adds faction when not in list',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
         expect: () => [
           isA<QuizState>().having((s) => s.secondFactions, 'secondFactions', [Faction.gyohyo]),
@@ -161,7 +161,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'toggleSecondFaction removes faction when in list',
-        build: () => createCubit(),
+        build: createCubit,
         seed: () => const QuizState(secondFactions: [Faction.gyohyo]),
         act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
         expect: () => [
@@ -171,7 +171,7 @@ void main() {
 
       blocTest<QuizCubit, QuizState>(
         'onStepChanged emits state with new step index',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.onStepChanged(2),
         expect: () => [
           isA<QuizState>().having((s) => s.currentStep, 'currentStep', 2),
@@ -184,8 +184,9 @@ void main() {
         final cubit = createCubit();
         expect(
           (cubit
-            ..setDateOfBirth(DateTime(1990, 1, 15))
-            ..onStepChanged(QuizSteps.dateBirthStep.index)).isStepValid,
+                ..setDateOfBirth(DateTime(1990, 1, 15))
+                ..onStepChanged(QuizSteps.dateBirthStep.index))
+              .isStepValid,
           isTrue,
         );
       });
@@ -210,8 +211,9 @@ void main() {
         final cubit = createCubit();
         expect(
           (cubit
-            ..setBodyWeight(70)
-            ..onStepChanged(QuizSteps.bodyWeightStep.index)).isStepValid,
+                ..setBodyWeight(70)
+                ..onStepChanged(QuizSteps.bodyWeightStep.index))
+              .isStepValid,
           isTrue,
         );
       });
@@ -286,7 +288,7 @@ void main() {
     group('onSubmit', () {
       blocTest<QuizCubit, QuizState>(
         'does not call repository when form incomplete',
-        build: () => createCubit(),
+        build: createCubit,
         act: (cubit) => cubit.onSubmit(),
         expect: () => <QuizState>[],
       );

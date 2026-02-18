@@ -23,7 +23,6 @@ class AchievementsCubit extends Cubit<AchievementsState> {
   final AnalyticsService _analytics;
 
   Future<void> init() async {
-    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsView));
     if (state.attributes.isNotEmpty) return;
 
     await loadAttributes();

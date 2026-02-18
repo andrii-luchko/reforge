@@ -24,9 +24,6 @@ class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
   final int _sessionId;
 
   Future<void> loadWorkoutDetails({bool forceRefresh = false}) async {
-    if (!forceRefresh) {
-      unawaited(_analytics.logEvent(AnalyticsEvents.trainingDetailsView));
-    }
     emit(const TrainingDetailsState.loading());
 
     final result = await _repository.getWorkoutDetails(_sessionId, forceRefresh: forceRefresh);

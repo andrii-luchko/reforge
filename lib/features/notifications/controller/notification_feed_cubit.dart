@@ -28,9 +28,6 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
     }
     if (currentState case _Loading()) return;
 
-    if (!forceRefresh) {
-      unawaited(_analytics.logEvent(AnalyticsEvents.notificationsView));
-    }
     emit(const NotificationFeedState.loading());
     _page = 1;
 

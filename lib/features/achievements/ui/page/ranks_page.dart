@@ -1,11 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/core/analytics/domain/analytics_events.dart';
-import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
@@ -21,19 +16,8 @@ import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-class RanksPage extends StatefulWidget {
+class RanksPage extends StatelessWidget {
   const RanksPage({super.key});
-
-  @override
-  State<RanksPage> createState() => _RanksPageState();
-}
-
-class _RanksPageState extends State<RanksPage> {
-  @override
-  void initState() {
-    super.initState();
-    unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.achievementsRanksView));
-  }
 
   @override
   Widget build(BuildContext context) {
