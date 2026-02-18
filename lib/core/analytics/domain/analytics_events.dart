@@ -24,4 +24,13 @@ abstract final class AnalyticsEvents {
   static const String notificationsRefresh = 'notifications_refresh';
   static const String notificationsClearOne = 'notifications_clear_one';
   static const String notificationsClearAll = 'notifications_clear_all';
+  static const String leaderboardView = 'leaderboard_view';
+  static const String leaderboardModeChange = 'leaderboard_mode_change';
+  static const String leaderboardRefresh = 'leaderboard_refresh';
+  static const String leaderboardUsersFactionChange = 'leaderboard_users_faction_change';
+  static const String leaderboardFactionsModeChange = 'leaderboard_factions_mode_change';
+  static const String leaderboardFactionsShowTypeChange = 'leaderboard_factions_show_type_change';
+  static const String loreView = 'lore_view';
+  static const String loreRefresh = 'lore_refresh';
+  static const String lorePlateClick = 'lore_plate_click';
 }

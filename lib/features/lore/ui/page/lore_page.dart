@@ -95,7 +95,10 @@ class _LoreBodyState extends State<LoreBody> {
           }
         },
         child: RefreshIndicator(
-          onRefresh: () => context.read<LoreCubit>().loadLore(),
+          onRefresh: () async {
+          context.read<LoreCubit>().onRefresh();
+          await context.read<LoreCubit>().loadLore();
+        },
           child: BlocBuilder<LoreCubit, LoreState>(
             builder: (context, state) {
               final displayedItems = state.isLoading && state.items.isEmpty ? _skeletonPlaceholders() : state.items;
