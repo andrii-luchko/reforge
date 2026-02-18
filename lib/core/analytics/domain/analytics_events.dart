@@ -33,4 +33,14 @@ abstract final class AnalyticsEvents {
   static const String loreView = 'lore_view';
   static const String loreRefresh = 'lore_refresh';
   static const String lorePlateClick = 'lore_plate_click';
+  static const String achievementsView = 'achievements_view';
+  static const String achievementsRefresh = 'achievements_refresh';
+  static const String achievementsLearnMoreRanksClick = 'achievements_learn_more_ranks_click';
+  static const String achievementsLearnMoreBadgesClick = 'achievements_learn_more_badges_click';
+  static const String achievementsBadgesView = 'achievements_badges_view';
+  static const String achievementsBadgesRefresh = 'achievements_badges_refresh';
+  static const String achievementsRanksView = 'achievements_ranks_view';
+  static const String achievementsRanksRefresh = 'achievements_ranks_refresh';
+  static const String achievementsRanksFactionChange = 'achievements_ranks_faction_change';
+  static const String achievementsAttributeGuideClick = 'achievements_attribute_guide_click';
 }

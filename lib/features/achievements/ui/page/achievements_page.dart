@@ -50,7 +50,10 @@ class _AchievementsPageState extends State<AchievementsPage> {
               return Skeletonizer(
                 enabled: state.isLoading,
                 child: RefreshIndicator(
-                  onRefresh: () => _cubit.loadAttributes(forceRefresh: true),
+                  onRefresh: () async {
+                    _cubit.onRefresh();
+                    await _cubit.loadAttributes(forceRefresh: true);
+                  },
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
@@ -72,6 +75,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                             ThirtyButton(
                               text: t.achievements.learnMore,
                               onPressed: () {
+                                _cubit.onLearnMoreRanksClick();
                                 unawaited(_cubit.loadRanks());
                                 unawaited(
                                   GoRouter.of(context).push<void>(
@@ -126,8 +130,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                                   ThirtyButton(
                                     text: t.achievements.learnMore,
                                     onPressed: () {
+                                      _cubit.onLearnMoreBadgesClick();
                                       unawaited(_cubit.loadBadges());
-
                                       unawaited(
                                         GoRouter.of(context).push<void>(
                                           const BadgesPageRoute().location,

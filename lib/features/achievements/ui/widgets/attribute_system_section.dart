@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_guide_bottom_sheet.dart';
@@ -73,7 +78,10 @@ class AttributeSystemHeader extends StatelessWidget {
 
         AppIconButton.icon(
           iconData: Icons.info_outline_rounded,
-          onPressed: () => ForgeSystemGuideSheet.showForgeSystemGuide(context),
+          onPressed: () {
+            unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.achievementsAttributeGuideClick));
+            ForgeSystemGuideSheet.showForgeSystemGuide(context);
+          },
         ),
       ],
     );
