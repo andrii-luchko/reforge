@@ -11,6 +11,7 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 
+import '../../analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_auth_cubit.dart';
 import '../mocks/mock_user_repository.dart';
 import '../mocks/mock_user_session_service.dart';
@@ -23,7 +24,7 @@ OnboardedUser get testUser => OnboardedUser(
   birthDate: DateTime(1990, 1, 15),
   workoutsPerWeek: 3,
   userName: 'testuser',
-  bodyWeight: 75.0,
+  bodyWeight: 75,
 );
 
 bool _isLoaded(UserState s) => s.maybeMap(loaded: (_) => true, orElse: () => false);
@@ -34,6 +35,7 @@ void main() {
   late MockAuthCubit mockAuthCubit;
   late MockUserRepository mockUserRepository;
   late MockUserSessionService mockUserSessionService;
+  late MockAnalyticsService mockAnalytics;
   late StreamController<AuthState> authStreamController;
 
   setUpAll(() {
@@ -45,6 +47,9 @@ void main() {
     mockAuthCubit = MockAuthCubit();
     mockUserRepository = MockUserRepository();
     mockUserSessionService = MockUserSessionService();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.setUserId(any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.setUserProperty(any(), any())).thenAnswer((_) async {});
     authStreamController = StreamController<AuthState>.broadcast();
     // Use stream that never emits to avoid _onAuthStateChanged overwriting seeded state
     when(() => mockAuthCubit.stream).thenAnswer((_) => authStreamController.stream);
@@ -52,13 +57,14 @@ void main() {
   });
 
   tearDown(() {
-    authStreamController.close();
+    unawaited(authStreamController.close());
   });
 
   UserCubit createCubit() => UserCubit(
     mockAuthCubit,
     mockUserRepository,
     mockUserSessionService,
+    mockAnalytics,
   );
 
   group('UserCubit', () {
@@ -167,7 +173,7 @@ void main() {
 
       expect(result, isA<Success<User>>());
       expect((result as Success).value, testUser);
-      cubit.close();
+      await cubit.close();
     });
 
     blocTest<UserCubit, UserState>(
@@ -213,7 +219,7 @@ void main() {
       final result = await cubit.updateProfile(const PatchProfileRequest(username: 'new'));
 
       expect(result, isA<ErrorR<User>>());
-      cubit.close();
+      await cubit.close();
     });
 
     blocTest<UserCubit, UserState>(

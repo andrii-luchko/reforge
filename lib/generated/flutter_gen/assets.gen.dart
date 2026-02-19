@@ -179,12 +179,6 @@ class $AssetsImagesIconsGen {
 class $AssetsImagesPngGen {
   const $AssetsImagesPngGen();
 
-  /// File path: assets/images/png/Faction.png
-  AssetGenImage get faction => const AssetGenImage('assets/images/png/Faction.png');
-
-  /// File path: assets/images/png/Faction_serien.png
-  AssetGenImage get factionSerien => const AssetGenImage('assets/images/png/Faction_serien.png');
-
   /// File path: assets/images/png/avatar.jpg
   AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
@@ -196,6 +190,12 @@ class $AssetsImagesPngGen {
 
   /// File path: assets/images/png/faction_gyohyo.png
   AssetGenImage get factionGyohyo => const AssetGenImage('assets/images/png/faction_gyohyo.png');
+
+  /// File path: assets/images/png/faction_seiren.png
+  AssetGenImage get factionSeiren => const AssetGenImage('assets/images/png/faction_seiren.png');
+
+  /// File path: assets/images/png/factions.png
+  AssetGenImage get factions => const AssetGenImage('assets/images/png/factions.png');
 
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
@@ -226,12 +226,12 @@ class $AssetsImagesPngGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
-    faction,
-    factionSerien,
     avatar,
     badge,
     factionGakki,
     factionGyohyo,
+    factionSeiren,
+    factions,
     foreground512x512,
     goldEnvelope,
     goldEnvelopePlus,

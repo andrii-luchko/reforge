@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class NoWorkoutErrorWidget extends StatelessWidget {
   const NoWorkoutErrorWidget({super.key});

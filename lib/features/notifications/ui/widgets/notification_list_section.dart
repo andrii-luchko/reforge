@@ -55,7 +55,7 @@ class NotificationListSection extends StatelessWidget {
           ),
         ),
         if (isEmpty)
-          SliverPadding(padding: horizontalPadding, sliver: NotificationListEmpty())
+          const SliverPadding(padding: horizontalPadding, sliver: NotificationListEmpty())
         else
           SliverPadding(
             padding: horizontalPadding,

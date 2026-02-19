@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
@@ -12,6 +10,7 @@ import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/plate_list_tile.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -96,7 +95,10 @@ class _LoreBodyState extends State<LoreBody> {
           }
         },
         child: RefreshIndicator(
-          onRefresh: () => context.read<LoreCubit>().loadLore(),
+          onRefresh: () async {
+          context.read<LoreCubit>().onRefresh();
+          await context.read<LoreCubit>().loadLore();
+        },
           child: BlocBuilder<LoreCubit, LoreState>(
             builder: (context, state) {
               final displayedItems = state.isLoading && state.items.isEmpty ? _skeletonPlaceholders() : state.items;
@@ -191,6 +193,7 @@ class PlatesList extends StatelessWidget {
                 child: PlateListTile(
                   model: item,
                   loadingDetailId: loadingDetailId,
+                  onTap: () => context.read<LoreCubit>().loadPlateDetail(item.id),
                 ),
               ).animateEntrance();
             },

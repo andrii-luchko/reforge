@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:flutter/services.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/workout_common/ui/widgets/gloving_arc.dart';
 import 'package:reforge/generated/flutter_gen/fonts.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/animations/sparks_overlay.dart';
 import 'package:reforge/shared/centered_title_section.dart';

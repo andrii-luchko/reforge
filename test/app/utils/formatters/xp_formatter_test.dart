@@ -41,6 +41,7 @@ void main() {
 
     test('adds space before suffix when suffix starts with letter or digit', () {
       expect(XpFormatter.compact(100), '100 XP');
+      // ignore: avoid_redundant_argument_values
       expect(XpFormatter.compact(100, extSuffix: 'XP'), '100 XP');
     });
   });

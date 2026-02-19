@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/notifications/data/repository/notification_repository.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 
@@ -12,9 +14,10 @@ part 'notification_feed_state.dart';
 
 @injectable
 class NotificationFeedCubit extends Cubit<NotificationFeedState> {
-  NotificationFeedCubit(this._repository) : super(const NotificationFeedState.initial());
+  NotificationFeedCubit(this._repository, this._analytics) : super(const NotificationFeedState.initial());
 
   final NotificationRepository _repository;
+  final AnalyticsService _analytics;
 
   int _page = 1;
 
@@ -78,9 +81,14 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
     }
   }
 
+  void onRefresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.notificationsRefresh));
+  }
+
   Future<void> clearNotification(int id) async {
     final currentState = state;
     if (currentState case _Loaded(:final notifications)) {
+      unawaited(_analytics.logEvent(AnalyticsEvents.notificationsClearOne));
       final updated = notifications.where((n) => n.id != id).toList();
       emit(currentState.copyWith(notifications: updated));
       final result = await _repository.markNotificationAsRead(id);
@@ -93,6 +101,7 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
   Future<void> clearAllNotifications() async {
     final currentState = state;
     if (currentState case _Loaded(:final notifications)) {
+      unawaited(_analytics.logEvent(AnalyticsEvents.notificationsClearAll));
       emit(currentState.copyWith(notifications: []));
       final result = await _repository.markAllAsRead();
       if (result case ErrorR(error: final e)) {

@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
@@ -18,15 +23,25 @@ import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/two_options_dialog_template.dart';
-
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsView));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,106 +67,105 @@ class SettingsPage extends StatelessWidget {
         body: DefaultBackground(
           body: SafeArea(
             top: false,
-            child: RefreshIndicator(
-              onRefresh: () => context.read<UserCubit>().refreshUser(),
-              child: Skeletonizer(
-                enabled: context.watch<UserCubit>().state.maybeWhen(
-                  loading: () => true,
-                  orElse: () => false,
-                ),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      sliver: SliverAppBar(
-                        actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        scrolledUnderElevation: 0,
-                        automaticallyImplyLeading: false,
-                        centerTitle: false,
-                        title: Skeleton.keep(
-                          child: Text(
-                            t.settings.profileInfo,
-                            style: subheadH1Medium.copyWith(color: appTheme.beige100),
-                          ),
+            child: Skeletonizer(
+              enabled: context.watch<UserCubit>().state.maybeWhen(
+                loading: () => true,
+                orElse: () => false,
+              ),
+              child: CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    sliver: SliverAppBar(
+                      actionsPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      automaticallyImplyLeading: false,
+                      centerTitle: false,
+                      title: Skeleton.keep(
+                        child: Text(
+                          t.settings.profileInfo,
+                          style: subheadH1Medium.copyWith(color: appTheme.beige100),
                         ),
                       ),
                     ),
+                  ),
 
-                    BlocBuilder<UserCubit, UserState>(
-                      builder: (context, state) {
-                        return state.maybeMap(
-                          loaded: (value) {
-                            final user = value.user;
+                  BlocBuilder<UserCubit, UserState>(
+                    builder: (context, state) {
+                      return state.maybeMap(
+                        loaded: (value) {
+                          final user = value.user;
 
-                            return user.map(
-                              newUser: (user) => const SettingsNewUserWidget(),
-                              onboarded: (onboarded) => SettingsGroup(user: onboarded),
-                            );
-                          },
-                          updating: (value) {
-                            final user = value.user;
+                          return user.map(
+                            newUser: (user) => const SettingsNewUserWidget(),
+                            onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                          );
+                        },
+                        updating: (value) {
+                          final user = value.user;
 
-                            return user.map(
-                              newUser: (user) => const SettingsNewUserWidget(),
-                              onboarded: (onboarded) => SettingsGroup(user: onboarded),
-                            );
-                          },
+                          return user.map(
+                            newUser: (user) => const SettingsNewUserWidget(),
+                            onboarded: (onboarded) => SettingsGroup(user: onboarded),
+                          );
+                        },
 
-                          orElse: () {
-                            return const SettingsNewUserWidget();
-                          },
-                        );
-                      },
-                    ),
-                    SliverPadding(
-                      padding: const .symmetric(horizontal: 16),
-                      sliver: SliverToBoxAdapter(
-                        child: PrimaryButton(
-                          text: t.settings.logout,
-                          onPressed: () async {
-                            final logout =
-                                await confirmAction(
-                                  context,
-                                  title: t.settings.logoutTitle,
-                                  message: t.settings.logoutMessage,
-                                ) ??
-                                false;
+                        orElse: () {
+                          return const SettingsNewUserWidget();
+                        },
+                      );
+                    },
+                  ),
+                  SliverPadding(
+                    padding: const .symmetric(horizontal: 16),
+                    sliver: SliverToBoxAdapter(
+                      child: PrimaryButton(
+                        text: t.settings.logout,
+                        onPressed: () async {
+                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsLogoutClick));
+                          final logout =
+                              await confirmAction(
+                                context,
+                                title: t.settings.logoutTitle,
+                                message: t.settings.logoutMessage,
+                              ) ??
+                              false;
 
-                            if (logout && context.mounted) {
-                              await context.read<AuthCubit>().signOut();
-                            }
-                          },
-                        ),
+                          if (logout && context.mounted) {
+                            await context.read<AuthCubit>().signOut();
+                          }
+                        },
                       ),
                     ),
-                    const SliverPadding(padding: .only(bottom: 16)),
-                    SliverPadding(
-                      padding: const .symmetric(horizontal: 16),
-                      sliver: SliverToBoxAdapter(
-                        child: SecondaryButton(
-                          text: t.settings.deleteAccount,
-                          onPressed: () async {
-                            final delete =
-                                await confirmAction(
-                                  context,
-                                  title: t.settings.deleteAccount,
-                                  message: t.settings.deleteAccountMessage,
-                                ) ??
-                                false;
+                  ),
+                  const SliverPadding(padding: .only(bottom: 16)),
+                  SliverPadding(
+                    padding: const .symmetric(horizontal: 16),
+                    sliver: SliverToBoxAdapter(
+                      child: SecondaryButton(
+                        text: t.settings.deleteAccount,
+                        onPressed: () async {
+                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.settingsDeleteAccountClick));
+                          final delete =
+                              await confirmAction(
+                                context,
+                                title: t.settings.deleteAccount,
+                                message: t.settings.deleteAccountMessage,
+                              ) ??
+                              false;
 
-                            if (delete && context.mounted) {
-                              final userCubit = context.read<UserCubit>();
-                              await userCubit.deleteUser();
-                            }
-                          },
-                        ),
+                          if (delete && context.mounted) {
+                            final userCubit = context.read<UserCubit>();
+                            await userCubit.deleteUser();
+                          }
+                        },
                       ),
                     ),
-                    SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
-                  ],
-                ),
+                  ),
+                  SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
+                ],
               ),
             ),
           ),

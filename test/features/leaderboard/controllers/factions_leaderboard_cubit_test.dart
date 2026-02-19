@@ -9,6 +9,7 @@ import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../../../helpers/test_setup.dart';
 import '../mocks/mock_leaderboard_repository.dart';
 
@@ -30,11 +31,15 @@ LeaderboardFactionModel createTestFactionModel(
 
 void main() {
   late MockLeaderboardRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUpAll(initTestTranslations);
 
   setUp(() {
     mockRepository = MockLeaderboardRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('FactionsLeaderboardCubit', () {
@@ -48,7 +53,7 @@ void main() {
         when(() => mockRepository.getFactionsLeaderboard())
             .thenAnswer((_) async => Result.success(factions));
 
-        final cubit = FactionsLeaderboardCubit(mockRepository);
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         expect(cubit.state.factions, hasLength(2));
@@ -62,7 +67,7 @@ void main() {
         when(() => mockRepository.getFactionsLeaderboard())
             .thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = FactionsLeaderboardCubit(mockRepository);
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         expect(cubit.state.isLoading, false);
@@ -74,7 +79,7 @@ void main() {
         when(() => mockRepository.getUserFaction()).thenReturn(Faction.gakki);
         when(() => mockRepository.getFactionsLeaderboard()).thenAnswer((_) => completer.future);
 
-        final cubit = FactionsLeaderboardCubit(mockRepository);
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 10));
 
         await cubit.loadFactions();
@@ -89,7 +94,7 @@ void main() {
         when(() => mockRepository.getFactionsLeaderboard())
             .thenAnswer((_) async => const Result.success([]));
 
-        final cubit = FactionsLeaderboardCubit(mockRepository);
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         cubit.changeMode(FactionMode.global);
@@ -104,7 +109,7 @@ void main() {
         when(() => mockRepository.getFactionsLeaderboard())
             .thenAnswer((_) async => const Result.success([]));
 
-        final cubit = FactionsLeaderboardCubit(mockRepository);
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         cubit.changeShowType(FactionShowType.victoryPoints);

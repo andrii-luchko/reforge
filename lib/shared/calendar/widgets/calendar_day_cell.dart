@@ -98,7 +98,7 @@ class _OrdinaryDayContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWeekend = day.weekday == DateTime.saturday || day.weekday == DateTime.sunday;
 
-    Color textColor = isWeekend ? context.appTheme.beige600 : context.appTheme.beige100;
+    var textColor = isWeekend ? context.appTheme.beige600 : context.appTheme.beige100;
     BoxDecoration? decoration;
 
     if (isSelected) {

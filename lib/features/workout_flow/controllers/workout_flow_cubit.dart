@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
@@ -16,11 +18,12 @@ part 'workout_flow_cubit.freezed.dart';
 
 @lazySingleton
 class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
-  WorkoutFlowCubit(this._repository) : super(const WorkoutFlowState()) {
+  WorkoutFlowCubit(this._repository, this._analytics) : super(const WorkoutFlowState()) {
     unawaited(init());
   }
 
   final TrainingSessionRepository _repository;
+  final AnalyticsService _analytics;
 
   Future<void> init() async {
     //  if (state.programDay != null) return;
@@ -61,6 +64,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
 
     switch (result) {
       case Success(value: final sessionData):
+        unawaited(_analytics.logEvent(AnalyticsEvents.workoutStart));
         emit(
           state.copyWith(
             isStartingWorkout: false,
@@ -114,6 +118,14 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
 
     switch (result) {
       case Success(value: final summary):
+        if (status == WorkoutSessionStatus.completed) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.workoutComplete));
+          if (summary.isLevelUp && summary.currentLevel != null) {
+            unawaited(_analytics.logEvent(AnalyticsEvents.workoutLevelUp, {'level': summary.currentLevel}));
+          }
+        } else if (status == WorkoutSessionStatus.canceled) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.workoutCancel));
+        }
         emit(
           state.copyWith(sessionStatus: status, summary: summary, isLoading: false),
         );

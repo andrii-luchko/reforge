@@ -58,7 +58,7 @@ class LoreRepositoryImpl with RepositoryErrorHandler implements LoreRepository {
       logger.e('ERROR [getPlateById]: $e', e, stackTrace);
       unawaited(FirebaseCrashlytics.instance.recordError(e, stackTrace, reason: 'getPlateById'));
       return Result.error(Exception(userMessage));
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       logger.e('ERROR [getPlateById]: $e', e, stackTrace);
       unawaited(FirebaseCrashlytics.instance.recordError(e, stackTrace, reason: 'getPlateById'));
       return Result.error(Exception(e.toString()));

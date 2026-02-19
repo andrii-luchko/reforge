@@ -4,6 +4,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/lore/controller/lore_cubit.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_lore_repository.dart';
 
 PlatesEntity createTestPlatesEntity({
@@ -40,9 +41,13 @@ PlatesEntity createTestPlatesEntity({
 
 void main() {
   late MockLoreRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUp(() {
     mockRepository = MockLoreRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('LoreCubit', () {
@@ -54,7 +59,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(data));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         expect(cubit.state.items, data.items);
@@ -68,7 +73,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         expect(cubit.state.error, isNotNull);
@@ -93,7 +98,7 @@ void main() {
         when(() => mockRepository.getPlates(page: 2))
             .thenAnswer((_) async => Result.success(page2));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadMore();
@@ -116,7 +121,7 @@ void main() {
         when(() => mockRepository.getPlates(page: 2))
             .thenAnswer((_) async => Result.error(Exception('Load more failed')));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadMore();
@@ -133,7 +138,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadMore();
@@ -150,7 +155,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         cubit.emit(cubit.state.copyWith(isLoadingMore: true));
@@ -174,7 +179,7 @@ void main() {
         when(() => mockRepository.getPlateById(1))
             .thenAnswer((_) async => Result.success(itemWithBody));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadPlateDetail(1);
@@ -192,7 +197,7 @@ void main() {
         when(() => mockRepository.getPlateById(1))
             .thenAnswer((_) async => Result.error(Exception('Detail load failed')));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadPlateDetail(1);
@@ -210,7 +215,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadPlateDetail(1);
@@ -225,7 +230,7 @@ void main() {
         when(() => mockRepository.getPlates())
             .thenAnswer((_) async => Result.success(page1));
 
-        final cubit = LoreCubit(mockRepository);
+        final cubit = LoreCubit(mockRepository, mockAnalytics);
         await Future.delayed(const Duration(milliseconds: 50));
 
         await cubit.loadPlateDetail(999);

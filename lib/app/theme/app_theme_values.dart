@@ -173,6 +173,22 @@ class AppThemeValues {
         Color(0xFF4A2105),
       ],
     ),
+
+    buttonConstrains: const BoxConstraints(
+      maxHeight: 55,
+      minHeight: 55,
+    ),
+
+    selectedGradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: const Alignment(1, 2.5),
+
+      stops: const [0.37, 1.0],
+      colors: [
+        const Color(0xFFC66C32),
+        const Color(0xFFC66C32).withValues(alpha: 0),
+      ],
+    ),
   );
 
   static final dark = AppTheme(
@@ -338,6 +354,22 @@ class AppThemeValues {
       colors: [
         Color(0x004A2105),
         Color(0xFF4A2105),
+      ],
+    ),
+
+    buttonConstrains: const BoxConstraints(
+      maxHeight: 55,
+      minHeight: 55,
+    ),
+
+    selectedGradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: const Alignment(1, 2.5),
+
+      stops: const [0.37, 1.0],
+      colors: [
+        const Color(0xFFC66C32),
+        const Color(0xFFC66C32).withValues(alpha: 0),
       ],
     ),
   );

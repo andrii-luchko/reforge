@@ -5,6 +5,7 @@ import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.da
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
+import '../../../core/analytics/mocks/mock_analytics_service.dart';
 import '../mocks/mock_leaderboard_repository.dart';
 
 ImmortalForgeEntity createTestImmortalForgeEntity({
@@ -25,9 +26,13 @@ ImmortalForgeEntity createTestImmortalForgeEntity({
 
 void main() {
   late MockLeaderboardRepository mockRepository;
+  late MockAnalyticsService mockAnalytics;
 
   setUp(() {
     mockRepository = MockLeaderboardRepository();
+    mockAnalytics = MockAnalyticsService();
+    when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
   });
 
   group('ImmortalForgesCubit', () {
@@ -37,7 +42,7 @@ void main() {
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gakki))
           .thenAnswer((_) async => Result.success(leaders));
 
-      final cubit = ImmortalForgesCubit(mockRepository);
+      final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(cubit.state.selectedFaction, Faction.gakki);
@@ -51,7 +56,7 @@ void main() {
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gakki))
           .thenAnswer((_) async => Result.error(Exception('Network error')));
 
-      final cubit = ImmortalForgesCubit(mockRepository);
+      final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(cubit.state.isLoading, false);
@@ -64,7 +69,7 @@ void main() {
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gakki))
           .thenAnswer((_) async => Result.success(leaders));
 
-      final cubit = ImmortalForgesCubit(mockRepository);
+      final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics);
       await Future.delayed(const Duration(milliseconds: 50));
 
       await cubit.changeFaction(Faction.gakki);
@@ -81,7 +86,7 @@ void main() {
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gyohyo))
           .thenAnswer((_) async => Result.success(gyohyoLeaders));
 
-      final cubit = ImmortalForgesCubit(mockRepository);
+      final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics);
       await Future.delayed(const Duration(milliseconds: 50));
 
       await cubit.changeFaction(Faction.gyohyo);
@@ -96,7 +101,7 @@ void main() {
       when(() => mockRepository.getImmortalForgesForFaction(Faction.gakki))
           .thenAnswer((_) async => Result.success(leaders));
 
-      final cubit = ImmortalForgesCubit(mockRepository);
+      final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics);
       await Future.delayed(const Duration(milliseconds: 50));
 
       await cubit.refresh();

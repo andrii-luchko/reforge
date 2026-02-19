@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/data/repository/home_repository.dart';
@@ -16,9 +20,10 @@ part 'home_cubit.freezed.dart';
 
 @injectable
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._repository) : super(const HomeState());
+  HomeCubit(this._repository, this._analytics) : super(const HomeState());
 
   final HomeRepository _repository;
+  final AnalyticsService _analytics;
 
   Future<void> loadInitialData() async {
     emit(state.copyWith(isLoading: true, error: null));
@@ -86,5 +91,17 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  void changePeriod(StatsPeriod period) => loadStatsByPeriod(period);
+  void changePeriod(StatsPeriod period) {
+    unawaited(
+      _analytics.logEvent(
+        AnalyticsEvents.homeStatsPeriodChange,
+        {'period': period.name},
+      ),
+    );
+    unawaited(loadStatsByPeriod(period));
+  }
+
+  void onStartWorkoutTap() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.homeStartWorkoutClick));
+  }
 }

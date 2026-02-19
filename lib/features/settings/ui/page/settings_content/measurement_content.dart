@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -60,30 +60,35 @@ class MeasurementContent extends StatelessWidget {
     return BlocBuilder<GenericValidationCubit<MeasurementSystem>, GenericValidationState<MeasurementSystem>>(
       builder: (context, state) {
         final cubit = context.read<GenericValidationCubit<MeasurementSystem>>();
-        return Column(
-          mainAxisAlignment: .spaceBetween,
-          crossAxisAlignment: .start,
-          children: [
-            Column(
-              crossAxisAlignment: .start,
-              children: [
-                Text(
-                  t.settings.selectMeasurementSystem,
-                  style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
-                ),
-                const SizedBox(height: 16),
-
-                MultiOptionSwitcher<MeasurementSystem>(
-                  selectedValue: state.value,
-                  values: MeasurementSystem.values,
-                  labelBuilder: (v) => v.title(t),
-                  onSelected: cubit.onChanged,
-                ),
-              ],
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t.settings.selectMeasurementSystem,
+                    style: subheadH1Medium.copyWith(color: context.appTheme.beige100),
+                  ),
+                  const SizedBox(height: 16),
+                  MultiOptionSwitcher<MeasurementSystem>(
+                    selectedValue: state.value,
+                    values: MeasurementSystem.values,
+                    labelBuilder: (v) => v.title(t),
+                    onSelected: cubit.onChanged,
+                  ),
+                ],
+              ),
             ),
-            SecondaryButton(
-              text: t.common.save_changes_button,
-              onPressed: cubit.save,
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SecondaryButton(
+                  text: t.common.save_changes_button,
+                  onPressed: cubit.save,
+                ),
+              ),
             ),
           ],
         );

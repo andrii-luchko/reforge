@@ -74,33 +74,39 @@ class WorkoutDaysContent extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<GenericValidationCubit<WorkoutFrequencyValue>>();
         final error = state is GenericValidationError ? state.error : null;
-        return Column(
-          mainAxisAlignment: .spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: .start,
-              children: [
-                WorkoutFrequencyPicker(
-                  daysPerWeek: state.value.daysPerWeek,
-                  specificDays: state.value.specificDays,
-                  onDaysPerWeekChanged: (count) {
-                    cubit.onChanged((daysPerWeek: count, specificDays: state.value.specificDays));
-                  },
-                  onSpecificDaysChanged: (days) {
-                    cubit.onChanged((daysPerWeek: state.value.daysPerWeek, specificDays: days));
-                  },
-                ),
-                const SizedBox(height: 8),
-                ErrorShakeWidget(
-                  shake: state is GenericValidationError,
-                  error: error,
-                ),
-              ],
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  WorkoutFrequencyPicker(
+                    daysPerWeek: state.value.daysPerWeek,
+                    specificDays: state.value.specificDays,
+                    onDaysPerWeekChanged: (count) {
+                      cubit.onChanged((daysPerWeek: count, specificDays: state.value.specificDays));
+                    },
+                    onSpecificDaysChanged: (days) {
+                      cubit.onChanged((daysPerWeek: state.value.daysPerWeek, specificDays: days));
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  ErrorShakeWidget(
+                    shake: state is GenericValidationError,
+                    error: error,
+                  ),
+                ],
+              ),
             ),
-
-            SecondaryButton(
-              text: t.common.save_changes_button,
-              onPressed: cubit.save,
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SecondaryButton(
+                  text: t.common.save_changes_button,
+                  onPressed: cubit.save,
+                ),
+              ),
             ),
           ],
         );

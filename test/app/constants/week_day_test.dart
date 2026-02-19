@@ -51,7 +51,7 @@ void main() {
     });
 
     test('converts full week to 1-7', () {
-      final allDays = WeekDay.values;
+      const allDays = WeekDay.values;
       expect(allDays.toIntList(), [1, 2, 3, 4, 5, 6, 7]);
     });
 

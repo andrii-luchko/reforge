@@ -41,7 +41,10 @@ class RanksPage extends StatelessWidget {
               return Skeletonizer(
                 enabled: state.isLoading,
                 child: RefreshIndicator(
-                  onRefresh: () => cubit.loadRanks(forceRefresh: true),
+                  onRefresh: () async {
+                    cubit.onRanksRefresh();
+                    await cubit.loadRanks(forceRefresh: true);
+                  },
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(

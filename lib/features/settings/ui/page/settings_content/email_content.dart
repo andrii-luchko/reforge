@@ -50,9 +50,8 @@ class EmailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<GenericValidationCubit<String?>>();
-    return Column(
-      mainAxisAlignment: .spaceBetween,
-      children: [
+    return SliverMainAxisGroup(
+      slivers: [
         BlocSelector<
           GenericValidationCubit<String?>,
           GenericValidationState<String?>,
@@ -63,22 +62,28 @@ class EmailContent extends StatelessWidget {
             return (email: state.value, error: error);
           },
           builder: (context, value) {
-            return LabeledAppTextField(
-              label: t.common.email_label,
-              field: AppTextField(
-                initialValue: value.email,
-                errorText: value.error,
-                hintText: t.common.email_hint,
-
-                onChanged: cubit.onChanged,
+            return SliverToBoxAdapter(
+              child: LabeledAppTextField(
+                label: t.common.email_label,
+                field: AppTextField(
+                  initialValue: value.email,
+                  errorText: value.error,
+                  hintText: t.common.email_hint,
+                  onChanged: cubit.onChanged,
+                ),
               ),
             );
           },
         ),
-
-        SecondaryButton(
-          text: t.common.save_changes_button,
-          onPressed: cubit.save,
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SecondaryButton(
+              text: t.common.save_changes_button,
+              onPressed: cubit.save,
+            ),
+          ),
         ),
       ],
     );

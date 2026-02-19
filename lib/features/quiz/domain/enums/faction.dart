@@ -68,7 +68,7 @@ extension FactionExtension on Faction {
       case Faction.gyohyo:
         return Assets.images.png.factionGyohyo.path;
       case Faction.seiren:
-        return Assets.images.png.factionSerien.path;
+        return Assets.images.png.factionSeiren.path;
     }
   }
 
@@ -79,7 +79,7 @@ extension FactionExtension on Faction {
       case Faction.gyohyo:
         return Assets.images.png.factionGyohyo.path;
       case Faction.seiren:
-        return Assets.images.png.factionSerien.path;
+        return Assets.images.png.factionSeiren.path;
     }
   }
 }

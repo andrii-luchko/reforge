@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/active_workout/ui/widgets/active_workout_page/no_workout_error_widget.dart';
 import 'package:reforge/features/workout_common/ui/workout_navigation_mixin.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/exercise_section.dart';
@@ -59,7 +64,12 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
 
                     Align(
                       alignment: Alignment.bottomRight,
-                      child: StartWorkoutButton(onPressed: () async => handleStartWorkout(context)),
+                      child: StartWorkoutButton(
+                      onPressed: () async {
+                        unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutDetailsStartClick));
+                        await handleStartWorkout(context);
+                      },
+                    ),
                     ),
                   ],
                 ),

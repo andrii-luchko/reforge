@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
@@ -11,6 +12,7 @@ import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:toastification/toastification.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -60,55 +62,87 @@ class _NotificationsPageState extends State<NotificationsPage> {
         body: SafeArea(
           top: false,
           bottom: false,
-          child: RefreshIndicator(
-            onRefresh: () => _cubit.loadNotifications(forceRefresh: true),
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                DefaultSliverAppBar(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  title: t.notifications.pageTitle,
-                ),
-                BlocBuilder<NotificationFeedCubit, NotificationFeedState>(
-                  builder: (context, state) {
-                    return state.when(
-                      initial: () => SliverSkeletonizer(
-                        child: NotificationListSection(
-                          notifications: _mockedNotifications,
-                          onClearAll: () {},
-                          onNotificationClear: (_) {},
+          child: BlocListener<NotificationFeedCubit, NotificationFeedState>(
+            listenWhen: (prev, curr) {
+              final currError = curr.when(
+                initial: () => null,
+                loading: () => null,
+                loaded: (_, _, _, error) => error,
+                error: (m) => m,
+              );
+              final prevError = prev.when(
+                initial: () => null,
+                loading: () => null,
+                loaded: (_, _, _, error) => error,
+                error: (m) => m,
+              );
+              return currError != null && currError != prevError;
+            },
+            listener: (context, state) {
+              final message = state.when(
+                initial: () => null,
+                loading: () => null,
+                loaded: (_, _, _, error) => error,
+                error: (m) => m,
+              );
+              if (message != null) {
+                toastification.showErrorToast(message, context);
+              }
+            },
+            child: RefreshIndicator(
+              onRefresh: () async {
+                _cubit.onRefresh();
+                await _cubit.loadNotifications(forceRefresh: true);
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  DefaultSliverAppBar(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    title: t.notifications.pageTitle,
+                  ),
+                  BlocBuilder<NotificationFeedCubit, NotificationFeedState>(
+                    builder: (context, state) {
+                      return state.when(
+                        initial: () => SliverSkeletonizer(
+                          child: NotificationListSection(
+                            notifications: _mockedNotifications,
+                            onClearAll: () {},
+                            onNotificationClear: (_) {},
+                          ),
                         ),
-                      ),
-                      loading: () => SliverSkeletonizer(
-                        child: NotificationListSection(
-                          notifications: _mockedNotifications,
-                          onClearAll: () {},
-                          onNotificationClear: (_) {},
+                        loading: () => SliverSkeletonizer(
+                          child: NotificationListSection(
+                            notifications: _mockedNotifications,
+                            onClearAll: () {},
+                            onNotificationClear: (_) {},
+                          ),
                         ),
-                      ),
-                      loaded: (notifications, hasMore, isLoadingMore, error) => SliverMainAxisGroup(
-                        slivers: [
-                          _buildNotificationList(notifications: notifications),
-                          if (isLoadingMore)
-                            const SliverPadding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
-                              sliver: SliverToBoxAdapter(child: PaginationLoader()),
-                            ),
-                        ],
-                      ),
-                      error: (message) => SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(message),
+                        loaded: (notifications, hasMore, isLoadingMore, error) => SliverMainAxisGroup(
+                          slivers: [
+                            _buildNotificationList(notifications: notifications),
+                            if (isLoadingMore)
+                              const SliverPadding(
+                                padding: EdgeInsets.symmetric(vertical: 24),
+                                sliver: SliverToBoxAdapter(child: PaginationLoader()),
+                              ),
+                          ],
                         ),
-                      ),
-                    );
-                  },
-                ),
-                const SliverPadding(padding: EdgeInsets.only(bottom: 50)),
-              ],
+                        error: (message) => SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(message),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 50)),
+                ],
+              ),
             ),
           ),
         ),

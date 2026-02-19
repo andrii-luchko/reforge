@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/di/service_injector.dart' as di;
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_share/controllers/share/share_controller.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -27,6 +28,7 @@ class ShareButton extends StatelessWidget {
     return SecondaryButton(
       text: t.workout_share.share,
       onPressed: () async {
+        unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutShareClick));
         final controller = di.getIt<ShareController>();
 
         await AppDialog.show<void>(

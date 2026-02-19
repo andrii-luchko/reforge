@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
@@ -13,11 +15,12 @@ part 'immortal_forges_cubit.freezed.dart';
 
 @injectable
 class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
-  ImmortalForgesCubit(this._repository) : super(const ImmortalForgesState()) {
+  ImmortalForgesCubit(this._repository, this._analytics) : super(const ImmortalForgesState()) {
     unawaited(init());
   }
 
   final LeaderboardRepositoryI _repository;
+  final AnalyticsService _analytics;
 
   Future<void> init() async {
     final userFaction = _repository.getUserFaction() ?? Faction.gakki;
@@ -28,6 +31,7 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
   }
 
   Future<void> changeFaction(Faction faction) async {
+    unawaited(_analytics.logEvent(AnalyticsEvents.leaderboardUsersFactionChange, {'faction': faction.name}));
     emit(state.copyWith(selectedFaction: faction, error: null));
 
     if (!state.forgeData.containsKey(faction)) {

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
 import 'package:reforge/shared/uikit/value_scroll_picker.dart';

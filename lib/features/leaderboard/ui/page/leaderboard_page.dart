@@ -2,19 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/sparks.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/users_leaderboard_view.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/animations/rising_aura_effect.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
-
 import 'package:reforge/shared/uikit/default_background.dart';
 
 class LeaderboardPage extends StatefulWidget {
@@ -69,6 +71,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             children: [
               RefreshIndicator(
                 onRefresh: () async {
+                  unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.leaderboardRefresh));
                   if (_leaderboardModeNotifier.value == LeaderboardMode.users) {
                     await context.read<UsersLeaderboardCubit>().loadUsers();
                   } else {
@@ -106,6 +109,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                                 values: LeaderboardMode.values,
                                 labelBuilder: (value) => value.title(t),
                                 onSelected: (value) {
+                                  unawaited(
+                                    di.getIt<AnalyticsService>().logEvent(
+                                      AnalyticsEvents.leaderboardModeChange,
+                                      {'mode': value.name},
+                                    ),
+                                  );
                                   _leaderboardModeNotifier.value = value;
                                 },
                               );

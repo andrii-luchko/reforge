@@ -7,6 +7,8 @@ import 'package:injectable/injectable.dart';
 
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
@@ -23,6 +25,7 @@ part 'active_exercise_state.dart';
 class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   ActiveExerciseCubit(
     this.repository,
+    this._analytics,
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
   ) : super(const ActiveExerciseState()) {
@@ -30,6 +33,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   final TrainingSessionRepository repository;
+  final AnalyticsService _analytics;
   final int workoutSessionId;
   final ProgramExerciseEntity programExercise;
 
@@ -132,6 +136,14 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     switch (result) {
       case Success():
+        final setNumber = state.sets.indexWhere((s) => s.id == setId) + 1;
+        unawaited(_analytics.logEvent(
+          AnalyticsEvents.workoutSetComplete,
+          {
+            'exercise_id': programExercise.exerciseDetails.id,
+            'set_number': setNumber,
+          },
+        ));
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
         emit(state.copyWith(isSendingSet: false));
 

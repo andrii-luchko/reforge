@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/achievements/data/repositories/achievements_repository.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
@@ -13,9 +17,10 @@ part 'achievements_cubit.freezed.dart';
 
 @injectable
 class AchievementsCubit extends Cubit<AchievementsState> {
-  AchievementsCubit(this._repository) : super(const AchievementsState());
+  AchievementsCubit(this._repository, this._analytics) : super(const AchievementsState());
 
   final AchievementsRepository _repository;
+  final AnalyticsService _analytics;
 
   Future<void> init() async {
     if (state.attributes.isNotEmpty) return;
@@ -73,7 +78,28 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     }
   }
 
+  void onRefresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRefresh));
+  }
+
+  void onLearnMoreRanksClick() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsLearnMoreRanksClick));
+  }
+
+  void onLearnMoreBadgesClick() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsLearnMoreBadgesClick));
+  }
+
+  void onBadgesRefresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsBadgesRefresh));
+  }
+
+  void onRanksRefresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksRefresh));
+  }
+
   Future<void> changeFaction(Faction faction) async {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksFactionChange, {'faction': faction.name}));
     emit(state.copyWith(selectedFaction: faction));
 
     final hasData = state.ranks[faction]?.isNotEmpty ?? false;

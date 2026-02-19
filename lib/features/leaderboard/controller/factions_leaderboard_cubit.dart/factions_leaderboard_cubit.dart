@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
@@ -16,11 +18,12 @@ part 'factions_leaderboard_cubit.freezed.dart';
 
 @injectable
 class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
-  FactionsLeaderboardCubit(this._repository) : super(const FactionsLeaderboardState()) {
+  FactionsLeaderboardCubit(this._repository, this._analytics) : super(const FactionsLeaderboardState()) {
     unawaited(loadFactions());
   }
 
   final LeaderboardRepositoryI _repository;
+  final AnalyticsService _analytics;
 
   Future<void> loadFactions() async {
     if (state.isLoading) return;
@@ -39,10 +42,12 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
   }
 
   void changeMode(FactionMode mode) {
+    unawaited(_analytics.logEvent(AnalyticsEvents.leaderboardFactionsModeChange, {'mode': mode.name}));
     emit(state.copyWith(selectedMode: mode));
   }
 
   void changeShowType(FactionShowType type) {
+    unawaited(_analytics.logEvent(AnalyticsEvents.leaderboardFactionsShowTypeChange, {'type': type.name}));
     emit(state.copyWith(selectedType: type));
   }
 }

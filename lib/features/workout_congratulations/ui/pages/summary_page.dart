@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/congratulations_action_buttons.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/share_content_widgets.dart';
@@ -38,6 +43,7 @@ class WorkoutSummaryPage extends StatelessWidget {
               ),
               nextButtonText: t.common.finish_button,
               onNextPressed: () {
+                unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutSummaryFinishClick));
                 const HomePageRoute().go(context);
               },
             ),

@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/calendar/data/repository/calendar_repository.dart';
 import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
 
@@ -12,11 +14,13 @@ part 'training_details_cubit.freezed.dart';
 
 @injectable
 class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
-  TrainingDetailsCubit(this._repository, @factoryParam this._sessionId) : super(const TrainingDetailsState.initial()) {
+  TrainingDetailsCubit(this._repository, this._analytics, @factoryParam this._sessionId)
+      : super(const TrainingDetailsState.initial()) {
     unawaited(loadWorkoutDetails());
   }
 
   final CalendarRepository _repository;
+  final AnalyticsService _analytics;
   final int _sessionId;
 
   Future<void> loadWorkoutDetails({bool forceRefresh = false}) async {
@@ -32,5 +36,8 @@ class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
     }
   }
 
-  Future<void> refresh() => loadWorkoutDetails(forceRefresh: true);
+  Future<void> refresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.trainingDetailsRefresh));
+    return loadWorkoutDetails(forceRefresh: true);
+  }
 }

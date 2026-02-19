@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/lore/domain/entity/plates_entity.dart';
 import 'package:reforge/features/lore/domain/repositories/lore_repository.dart';
 
@@ -13,11 +15,12 @@ part 'lore_cubit.freezed.dart';
 
 @injectable
 class LoreCubit extends Cubit<LoreState> {
-  LoreCubit(this._repository) : super(const LoreState()) {
+  LoreCubit(this._repository, this._analytics) : super(const LoreState()) {
     unawaited(loadLore());
   }
 
   final LoreRepository _repository;
+  final AnalyticsService _analytics;
 
   int _page = 1;
 
@@ -89,11 +92,16 @@ class LoreCubit extends Cubit<LoreState> {
     }
   }
 
+  void onRefresh() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.loreRefresh));
+  }
+
   Future<void> loadPlateDetail(int id) async {
     final existingItem = state.items.where((e) => e.id == id).firstOrNull;
     if (existingItem == null) return;
     if (existingItem.loreBody != null) return;
 
+    unawaited(_analytics.logEvent(AnalyticsEvents.lorePlateClick, {'plate_id': id}));
     emit(state.copyWith(loadingDetailId: id));
 
     final result = await _repository.getPlateById(id);

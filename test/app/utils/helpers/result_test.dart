@@ -5,13 +5,13 @@ void main() {
   group('Result', () {
     group('Result.success', () {
       test('creates Success with value', () {
-        final result = Result<int>.success(42);
+        const result = Result<int>.success(42);
         expect(result, isA<Success<int>>());
         expect((result as Success<int>).value, 42);
       });
 
       test('Success toString returns expected format', () {
-        final result = Result<String>.success('hello');
+        const result = Result<String>.success('hello');
         expect(result.toString(), 'Result<String>.success(hello)');
       });
     });

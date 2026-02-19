@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_common/ui/workout_navigation_mixin.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/summary_widget.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
@@ -59,7 +64,10 @@ class WorkoutQuizSummaryBody extends StatelessWidget with WorkoutNavigationMixin
             const Spacer(),
             PrimaryButton(
               text: t.workout_quiz.quiz_summary.button_label,
-              onPressed: () async => handleStartWorkout(context),
+              onPressed: () async {
+                unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutQuizSummaryStartWorkoutClick));
+                await handleStartWorkout(context);
+              },
             ),
           ],
         ),

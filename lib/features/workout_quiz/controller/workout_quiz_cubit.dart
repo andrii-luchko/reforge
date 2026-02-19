@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_quiz/data/models/workout_quiz_answers.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/body_feel.dart';
 import 'package:reforge/features/workout_quiz/domain/enums/energized_level.dart';
@@ -17,9 +21,10 @@ part 'workout_quiz_state.dart';
 
 @injectable
 class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
-  WorkoutQuizCubit(this._workoutQuizRepository) : super(const WorkoutQuizState());
+  WorkoutQuizCubit(this._workoutQuizRepository, this._analytics) : super(const WorkoutQuizState());
 
   final WorkoutQuizRepository _workoutQuizRepository;
+  final AnalyticsService _analytics;
 
   bool get isStepValid {
     final currentStep = WorkOutQuizSteps.values[state.currentStep];
@@ -118,6 +123,7 @@ class WorkoutQuizCubit extends Cubit<WorkoutQuizState> {
 
     switch (result) {
       case Success(value: _):
+        unawaited(_analytics.logEvent(AnalyticsEvents.workoutQuizComplete));
         emit(
           state.copyWith(
             isLoading: false,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
@@ -9,6 +8,7 @@ import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/xp_tag.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/base_list_tile_container.dart';
 import 'package:reforge/shared/empty_list_message.dart';
 import 'package:skeletonizer/skeletonizer.dart';

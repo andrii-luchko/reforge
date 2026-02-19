@@ -1,9 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/constants/week_day.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/validators/date_of_birth.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/analytics/domain/analytics_user_properties.dart';
+import 'package:reforge/core/analytics/domain/helpers/anonymization_helpers.dart';
 import 'package:reforge/features/quiz/data/models/quiz_answers.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/main_goal.dart';
@@ -17,9 +24,12 @@ part 'quiz_state.dart';
 
 @injectable
 class QuizCubit extends Cubit<QuizState> {
-  QuizCubit(this._quizRepository) : super(const QuizState());
+  QuizCubit(this._quizRepository, this._analytics) : super(const QuizState()) {
+    unawaited(_analytics.logEvent(AnalyticsEvents.quizStart));
+  }
 
   final QuizRepository _quizRepository;
+  final AnalyticsService _analytics;
 
   bool get isStepValid {
     final currentStep = QuizSteps.values[state.currentStep];
@@ -138,6 +148,58 @@ class QuizCubit extends Cubit<QuizState> {
 
     switch (result) {
       case Success(value: _):
+        final weightInKg = answers.measurementSystem == MeasurementSystem.metric
+            ? answers.bodyWeight.toDouble()
+            : MeasureSystemValues.toKg(answers.bodyWeight.toDouble());
+        final ageGroupVal = AnonymizationHelpers.ageGroup(answers.dateOfBirth);
+        final weightRangeVal = AnonymizationHelpers.weightBucket(weightInKg);
+
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.quizComplete,
+            {
+              'main_goal': answers.mainGoal.name,
+              'training_level': answers.trainingLevel.name,
+              'workouts_per_week': answers.workoutDaysPerWeek,
+              'main_faction_id': answers.mainFaction.id,
+              'has_second_faction': answers.secondFaction != null,
+              'weight_range': weightRangeVal,
+              'age_group': ageGroupVal,
+            },
+          ),
+        );
+
+        unawaited(
+          _analytics.setUserProperty(
+            AnalyticsUserProperties.measurementSystem,
+            answers.measurementSystem.name,
+          ),
+        );
+        unawaited(
+          _analytics.setUserProperty(
+            AnalyticsUserProperties.factionId,
+            '${answers.mainFaction.id}',
+          ),
+        );
+        unawaited(
+          _analytics.setUserProperty(
+            AnalyticsUserProperties.workoutsPerWeek,
+            '${answers.workoutDaysPerWeek}',
+          ),
+        );
+        unawaited(
+          _analytics.setUserProperty(
+            AnalyticsUserProperties.ageGroup,
+            ageGroupVal,
+          ),
+        );
+        unawaited(
+          _analytics.setUserProperty(
+            AnalyticsUserProperties.weightRange,
+            weightRangeVal,
+          ),
+        );
+
         emit(state.copyWith(isSubmitted: true, isLoading: false));
 
       case ErrorR(error: _):

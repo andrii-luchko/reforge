@@ -2,15 +2,14 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_data.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_header.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_list_tile.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 
 class PreviousResultDialog extends StatelessWidget {

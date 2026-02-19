@@ -18,7 +18,7 @@ void main() {
     });
 
     test('returns date_of_birth_future for future date', () {
-      final futureDob = DateTime(2025, 1, 1);
+      final futureDob = DateTime(2025);
       expect(
         validateDateOfBirth(futureDob, currentTime: referenceDate),
         t.validation.date_of_birth_future,
@@ -28,13 +28,13 @@ void main() {
     test('returns date_of_birth_too_young when DOB is today (age 0)', () {
       final todayDob = DateTime(2024, 6, 15);
       expect(
-        validateDateOfBirth(todayDob, currentTime: referenceDate, minAge: 10),
+        validateDateOfBirth(todayDob, currentTime: referenceDate),
         t.validation.date_of_birth_too_young(mimAge: 10),
       );
     });
 
     test('returns date_of_birth_invalid for age over 100', () {
-      final oldDob = DateTime(1920, 1, 1);
+      final oldDob = DateTime(1920);
       expect(
         validateDateOfBirth(oldDob, currentTime: referenceDate),
         t.validation.date_of_birth_invalid,
@@ -44,7 +44,7 @@ void main() {
     test('returns date_of_birth_too_young when age below minAge', () {
       final youngDob = DateTime(2020, 6, 15);
       expect(
-        validateDateOfBirth(youngDob, currentTime: referenceDate, minAge: 10),
+        validateDateOfBirth(youngDob, currentTime: referenceDate),
         t.validation.date_of_birth_too_young(mimAge: 10),
       );
     });
@@ -52,7 +52,7 @@ void main() {
     test('returns null for valid date at exactly minAge', () {
       final dob = DateTime(2014, 6, 15);
       expect(
-        validateDateOfBirth(dob, currentTime: referenceDate, minAge: 10),
+        validateDateOfBirth(dob, currentTime: referenceDate),
         isNull,
       );
     });
@@ -60,7 +60,7 @@ void main() {
     test('returns null for valid date above minAge', () {
       final dob = DateTime(1990, 3, 20);
       expect(
-        validateDateOfBirth(dob, currentTime: referenceDate, minAge: 10),
+        validateDateOfBirth(dob, currentTime: referenceDate),
         isNull,
       );
     });

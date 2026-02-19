@@ -53,7 +53,8 @@ class _CalendarBodyState extends State<CalendarBody> {
         builder: (context, state) {
           final currentMonth = state.currentMonth;
 
-          final event = state.currentMonthDays;
+          final events = state.visibleMonthDays;
+
           return RefreshIndicator(
             onRefresh: () => cubit.refresh(),
             child: CustomScrollView(
@@ -105,6 +106,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                                   final sessionId = day?.latestSessionId;
 
                                   if (day != null && sessionId != null) {
+                                    cubit.onTrainingDetailsTap();
                                     unawaited(
                                       TrainingDetailsPageRoute(
                                         date: day.date,
@@ -114,7 +116,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                                   }
                                 },
                                 onFocusedDayChanged: cubit.changeMonth,
-                                events: event,
+                                events: events,
                               ),
                             ),
                           ).animateEntrance(),
@@ -136,7 +138,7 @@ class _CalendarBodyState extends State<CalendarBody> {
                 SliverPadding(
                   padding: CalendarBody.horizontalPadding.copyWith(bottom: 16),
                   sliver: const SliverToBoxAdapter(
-                    child: const Text(
+                    child: Text(
                       'Workout days',
                       style: subheadH2Medium,
                     ),

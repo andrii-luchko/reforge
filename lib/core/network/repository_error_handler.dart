@@ -9,6 +9,7 @@ mixin RepositoryErrorHandler {
   Future<T> makeRequest<T>(
     Future<T> Function() request, {
     String? label,
+    Exception? Function(Object error, StackTrace stackTrace)? transformError,
   }) async {
     try {
       return await request();
@@ -17,6 +18,13 @@ mixin RepositoryErrorHandler {
       _logError(label, e, stackTrace);
       throw Exception(userMessage);
     } catch (e, stackTrace) {
+      if (transformError != null) {
+        final transformed = transformError(e, stackTrace);
+        if (transformed != null) {
+          _logError(label, e, stackTrace);
+          throw transformed;
+        }
+      }
       _logError(label, e, stackTrace);
       rethrow;
     }
@@ -44,6 +52,10 @@ mixin RepositoryErrorHandler {
 
   void _logError(String? label, Object error, StackTrace stack) {
     logger.e('ERROR [$label]: $error', error, stack);
-    unawaited(FirebaseCrashlytics.instance.recordError(error, stack, reason: label));
+    unawaited(
+      FirebaseCrashlytics.instance.recordError(error, stack, reason: label).catchError((e) {
+        logger.e('ERROR [$label]:Crashlytics crash', error, stack);
+      }),
+    );
   }
 }

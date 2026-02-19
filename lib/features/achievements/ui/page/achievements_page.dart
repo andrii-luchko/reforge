@@ -8,10 +8,10 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
@@ -50,7 +50,10 @@ class _AchievementsPageState extends State<AchievementsPage> {
               return Skeletonizer(
                 enabled: state.isLoading,
                 child: RefreshIndicator(
-                  onRefresh: () => _cubit.loadAttributes(forceRefresh: true),
+                  onRefresh: () async {
+                    _cubit.onRefresh();
+                    await _cubit.loadAttributes(forceRefresh: true);
+                  },
                   child: CustomScrollView(
                     slivers: [
                       SliverPadding(
@@ -72,6 +75,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                             ThirtyButton(
                               text: t.achievements.learnMore,
                               onPressed: () {
+                                _cubit.onLearnMoreRanksClick();
                                 unawaited(_cubit.loadRanks());
                                 unawaited(
                                   GoRouter.of(context).push<void>(
@@ -126,8 +130,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                                   ThirtyButton(
                                     text: t.achievements.learnMore,
                                     onPressed: () {
+                                      _cubit.onLearnMoreBadgesClick();
                                       unawaited(_cubit.loadBadges());
-
                                       unawaited(
                                         GoRouter.of(context).push<void>(
                                           const BadgesPageRoute().location,

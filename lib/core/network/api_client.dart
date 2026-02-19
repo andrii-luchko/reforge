@@ -13,12 +13,16 @@ import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart'
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';
+import 'package:reforge/features/home/data/models/badge_dto.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/lore/data/models/jiku_plate_dto.dart';
 import 'package:reforge/features/lore/data/response/jiku_plates_response.dart';
+import 'package:reforge/features/notifications/data/models/notification_model_dto.dart';
+import 'package:reforge/features/notifications/data/models/notification_test_request.dart';
+import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
@@ -147,6 +151,10 @@ abstract class ApiClient {
   @GET('/user-forge-experience/progress')
   Future<BaseResponse<List<AttributesDto>>> getUserAttributes();
 
+  @GET('/workout-milestones')
+  Future<BaseResponse<List<BadgeDto>>> getUserBadges();
+
+  //images
   @POST('/supabase/upload')
   @MultiPart()
   Future<BaseResponse<String>> uploadFile({
@@ -182,4 +190,23 @@ abstract class ApiClient {
 
   @GET('/jiku-plates/{id}')
   Future<BaseResponse<JikuPlateDetailDto>> getJikuPlateById(@Path('id') int id);
+
+  //notifications
+  @GET('/notifications/history')
+  Future<BaseResponse<List<NotificationModelDto>>> getNotificationHistory();
+
+  @POST('/notifications/register-token')
+  Future<BaseResponse<dynamic>> registerToken(RegisterFcmTokensRequestDto request);
+
+  @PATCH('/notifications/{id}/read')
+  Future<void> markNotificationAsRead(@Path('id') int id);
+
+  @PATCH('/notifications/read-all')
+  Future<void> markAllNotificationsAsRead();
+
+  @POST('/notifications/test')
+  Future<BaseResponse<dynamic>> sendNotificationTEST();
+
+  @POST('/notifications/test-custom')
+  Future<BaseResponse<dynamic>> sendTestNotification(NotificationTestRequest request);
 }

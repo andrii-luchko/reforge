@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/repositories/auth_repository.dart';
 import 'package:reforge/core/auth/domain/repositories/auth_repository.dart' as domain;
@@ -16,11 +17,13 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit(
     this._authRepository,
+    this._analytics,
   ) : super(const AuthState.loading()) {
     unawaited(_initialize());
   }
 
   final domain.AuthRepository _authRepository;
+  final AnalyticsService _analytics;
 
   Future<void> _initialize() async {
     final result = await _authRepository.getTokens();
@@ -44,6 +47,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
+        unawaited(_analytics.logLogin(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
         emit(AuthState.error('Sign in failed: $error'));
@@ -57,6 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
+        unawaited(_analytics.logSignUp(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
         emit(AuthState.error('Sign up failed: $error'));
@@ -70,6 +75,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
+        unawaited(_analytics.logLogin(method: 'google'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
         if (error is AuthCanceledException) {
@@ -88,6 +94,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success(value: final tokens):
+        unawaited(_analytics.logLogin(method: 'apple'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
         if (error is AuthCanceledException) {
@@ -108,6 +115,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     switch (result) {
       case Success():
+        unawaited(_analytics.setUserId(null));
         emit(const AuthState.unauthenticated());
       case ErrorR(error: final error):
         emit(AuthState.error('Sign up failed: $error'));

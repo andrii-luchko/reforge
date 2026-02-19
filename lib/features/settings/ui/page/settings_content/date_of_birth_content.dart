@@ -1,5 +1,5 @@
 // ignore_for_file: no_empty_block
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/validators/date_of_birth.dart';
@@ -54,9 +54,8 @@ class DateOfBirthContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<GenericValidationCubit<DateTime?>>();
-    return Column(
-      mainAxisAlignment: .spaceBetween,
-      children: [
+    return SliverMainAxisGroup(
+      slivers: [
         BlocSelector<
           GenericValidationCubit<DateTime?>,
           GenericValidationState<DateTime?>,
@@ -64,24 +63,30 @@ class DateOfBirthContent extends StatelessWidget {
         >(
           selector: (state) {
             final error = state is GenericValidationError ? state.error : null;
-
             return (dateTime: state.value, error: error);
           },
           builder: (context, dateData) {
-            return LabeledAppTextField(
-              label: t.quiz.steps.date_of_birth.select_date_label,
-              field: DateInputField(
-                initialDate: dateData.dateTime,
-                errorText: dateData.error,
-                onDateSelected: cubit.onChanged,
+            return SliverToBoxAdapter(
+              child: LabeledAppTextField(
+                label: t.quiz.steps.date_of_birth.select_date_label,
+                field: DateInputField(
+                  initialDate: dateData.dateTime,
+                  errorText: dateData.error,
+                  onDateSelected: cubit.onChanged,
+                ),
               ),
             );
           },
         ),
-
-        SecondaryButton(
-          text: t.common.save_changes_button,
-          onPressed: cubit.save,
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SecondaryButton(
+              text: t.common.save_changes_button,
+              onPressed: cubit.save,
+            ),
+          ),
         ),
       ],
     );

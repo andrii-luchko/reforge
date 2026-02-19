@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
@@ -10,6 +9,7 @@ import 'package:reforge/features/home/ui/widgets/home_workout_result_empty.dart'
 import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dart';
 import 'package:reforge/features/home/ui/widgets/start_workout_list_tile.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/home_workout_results_header.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';

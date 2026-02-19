@@ -17,6 +17,7 @@ import 'package:reforge/features/calendar/controllers/calendar/calendar_cubit.da
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
+import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
 
@@ -79,6 +80,7 @@ class App extends StatelessWidget {
         BlocProvider(create: (_) => di.getIt<HomeCubit>()),
 
         BlocProvider(create: (_) => di.getIt<CalendarCubit>()),
+        BlocProvider(create: (_) => di.getIt<SubscriptionCubit>()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

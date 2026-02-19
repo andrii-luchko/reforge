@@ -69,27 +69,27 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Skeleton.unite(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.t.home.header.welcome_back,
-                        style: subheadH5Medium.copyWith(color: appTheme.beige500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.t.home.header.welcome_back,
+                      style: subheadH5Medium.copyWith(color: appTheme.beige500),
+                    ),
+                    FittedBox(
+                      child: Text(
+                        context.t.home.header.hey_name(name: name),
+                        style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                        maxLines: 1,
                       ),
-                      FittedBox(
-                        child: Text(
-                          context.t.home.header.hey_name(name: name),
-                          style: subheadH1Medium.copyWith(color: appTheme.beige100),
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+
               const SizedBox(width: 16),
+
               AppIconButton(
                 iconAsset: Assets.images.icons.calendar,
                 onPressed: () => const CalendarPageRoute().push<void>(context),

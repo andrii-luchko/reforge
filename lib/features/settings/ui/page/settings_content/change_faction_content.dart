@@ -91,37 +91,42 @@ class ChangeFactionContent extends StatelessWidget {
 
         final error = state is GenericValidationError ? state.error : null;
 
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: .start,
-              children: [
-                FactionSelector(
-                  selectedFactions: currentFactions,
-                  onFactionToggled: (selectedFaction) {
-                    final updatedList = List<Faction>.from(currentFactions);
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FactionSelector(
+                    selectedFactions: currentFactions,
+                    onFactionToggled: (selectedFaction) {
+                      final updatedList = List<Faction>.from(currentFactions);
 
-                    if (updatedList.contains(selectedFaction)) {
-                      updatedList.remove(selectedFaction);
-                    } else {
-                      updatedList.add(selectedFaction);
-                    }
+                      if (updatedList.contains(selectedFaction)) {
+                        updatedList.remove(selectedFaction);
+                      } else {
+                        updatedList.add(selectedFaction);
+                      }
 
-                    cubit.onChanged(updatedList);
-                  },
-                ),
-
-                ErrorShakeWidget(
-                  shake: state is GenericValidationError,
-                  error: error,
-                ),
-              ],
+                      cubit.onChanged(updatedList);
+                    },
+                  ),
+                  ErrorShakeWidget(
+                    shake: state is GenericValidationError,
+                    error: error,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            SecondaryButton(
-              text: t.common.save_changes_button,
-              onPressed: cubit.save,
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SecondaryButton(
+                  text: t.common.save_changes_button,
+                  onPressed: cubit.save,
+                ),
+              ),
             ),
           ],
         );
