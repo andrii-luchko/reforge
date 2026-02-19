@@ -46,7 +46,6 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        //  physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: .start,
                           children: [
@@ -65,11 +64,11 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
                     Align(
                       alignment: Alignment.bottomRight,
                       child: StartWorkoutButton(
-                      onPressed: () async {
-                        unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutDetailsStartClick));
-                        await handleStartWorkout(context);
-                      },
-                    ),
+                        onPressed: () async {
+                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutDetailsStartClick));
+                          await handleStartWorkout(context);
+                        },
+                      ),
                     ),
                   ],
                 ),
