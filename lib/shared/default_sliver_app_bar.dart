@@ -25,11 +25,13 @@ class DefaultSliverAppBar extends StatelessWidget {
 
         centerTitle: false,
         leadingWidth: 56,
-        leading: AppIconButton.icon(
-          iconData: Icons.chevron_left_rounded,
-          iconSize: 32,
+        leading: Skeleton.keep(
+          child: AppIconButton.icon(
+            iconData: Icons.chevron_left_rounded,
+            iconSize: 32,
 
-          onPressed: onPressed,
+            onPressed: onPressed,
+          ),
         ),
 
         actions: [

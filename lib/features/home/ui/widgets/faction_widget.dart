@@ -14,7 +14,7 @@ class FactionWidget extends StatelessWidget {
       clipper: SharpFactionClipper(),
       child: Container(
         color: context.appTheme.beige400,
-        padding: const .only(top: 4, bottom: 6.5, left: 5, right: 29),
+        padding: const .only(top: 4, bottom: 6.5, left: 5, right: 30),
         child: Text(
           faction,
 

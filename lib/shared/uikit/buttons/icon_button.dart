@@ -4,7 +4,6 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
@@ -40,33 +39,26 @@ class AppIconButton extends StatelessWidget {
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(50);
 
-    return Skeleton.replace(
-      width: width,
-      height: height,
-      replacement: Bone.circle(
-        size: width,
-      ),
-      child: PressableAnimation(
-        onTap: onPressed,
-        child: BlurContainer(
+    return PressableAnimation(
+      onTap: onPressed,
+      child: BlurContainer(
+        borderRadius: borderRadius,
+        child: BaseGlassContainer(
           borderRadius: borderRadius,
-          child: BaseGlassContainer(
-            borderRadius: borderRadius,
-            width: width,
-            height: height,
-            glassEffectGradientAlignmentBegin: .topLeft,
-            glassEffectGradientAlignmentEnd: .bottomRight,
-            borderGradientColors: [
-              appTheme.beige100,
-              Colors.transparent,
-              Colors.transparent,
-              appTheme.beige100,
-            ],
-            backgroundColor: appTheme.beige50,
-            borderColor: appTheme.beige100.withValues(alpha: 0.1),
-            child: Center(
-              child: _buildIcon(appTheme),
-            ),
+          width: width,
+          height: height,
+          glassEffectGradientAlignmentBegin: .topLeft,
+          glassEffectGradientAlignmentEnd: .bottomRight,
+          borderGradientColors: [
+            appTheme.beige100,
+            Colors.transparent,
+            Colors.transparent,
+            appTheme.beige100,
+          ],
+          backgroundColor: appTheme.beige50,
+          borderColor: appTheme.beige100.withValues(alpha: 0.1),
+          child: Center(
+            child: _buildIcon(appTheme),
           ),
         ),
       ),

@@ -8,55 +8,9 @@ import 'package:reforge/features/home/ui/widgets/rank_card.dart';
 import 'package:reforge/features/home/ui/widgets/xp_indicator.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/uikit/avatar_rank_card/avatar_card_clipper.dart';
+import 'package:reforge/shared/uikit/avatar_rank_card/avatar_card_painter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-class AvatarCardShimmer extends StatelessWidget {
-  const AvatarCardShimmer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return _AvatarCardBase(
-      child: ClipPath(clipper: AvatarClipper(), child: const Bone()),
-    );
-  }
-}
-
-class _AvatarCardBase extends StatelessWidget {
-  const _AvatarCardBase({
-    required this.child,
-  });
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-    return AspectRatio(
-      aspectRatio: 358 / 484,
-      child: FittedBox(
-        child: Container(
-          width: 350,
-          height: 480,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: appTheme.beige900,
-            borderRadius: .circular(10),
-            border: GradientBoxBorder(
-              gradient: LinearGradient(
-                colors: [
-                  appTheme.beige100.withValues(alpha: 0.6),
-                  appTheme.beige100.withValues(alpha: 0),
-                ],
-              ),
-            ),
-          ),
-
-          child: child,
-        ),
-      ),
-    );
-  }
-}
 
 class AvatarRankCard extends StatelessWidget {
   const AvatarRankCard({
@@ -79,7 +33,7 @@ class AvatarRankCard extends StatelessWidget {
             children: [
               Positioned.fill(
                 child: CustomPaint(
-                  painter: AvatarBorderPainter(color: appTheme.beige100),
+                  painter: AvatarCardPainter(color: appTheme.beige100),
                   child: ClipPath(
                     clipper: AvatarClipper(),
                     child: Image.asset(
@@ -130,60 +84,50 @@ class AvatarRankCard extends StatelessWidget {
   }
 }
 
-class AvatarClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    return geAvatarSharpPath(size);
-  }
+class AvatarCardShimmer extends StatelessWidget {
+  const AvatarCardShimmer({super.key});
 
   @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+  Widget build(BuildContext context) {
+    return _AvatarCardBase(
+      child: ClipPath(clipper: AvatarClipper(), child: const Bone()),
+    );
+  }
 }
 
-class AvatarBorderPainter extends CustomPainter {
-  AvatarBorderPainter({
-    this.color = Colors.white,
-    this.strokeWidth = 2.0,
+class _AvatarCardBase extends StatelessWidget {
+  const _AvatarCardBase({
+    required this.child,
   });
 
-  final Color color;
-  final double strokeWidth;
+  final Widget child;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final path = geAvatarSharpPath(size);
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+    return AspectRatio(
+      aspectRatio: 358 / 484,
+      child: FittedBox(
+        child: Container(
+          width: 350,
+          height: 480,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: appTheme.beige900,
+            borderRadius: .circular(10),
+            border: GradientBoxBorder(
+              gradient: LinearGradient(
+                colors: [
+                  appTheme.beige100.withValues(alpha: 0.6),
+                  appTheme.beige100.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
 
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.square;
-
-    canvas.drawPath(path, paint);
+          child: child,
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(AvatarBorderPainter oldDelegate) => false;
-}
-
-Path geAvatarSharpPath(Size size) {
-  final path = Path();
-  final w = size.width;
-  final h = size.height;
-
-  final cutSize = w / 12;
-  final sideIndent = w / 7;
-  final stepHeight = h / 3;
-
-  path
-    ..moveTo(0, 0)
-    ..lineTo(w - sideIndent - cutSize, 0)
-    ..lineTo(w - sideIndent, cutSize)
-    ..lineTo(w - sideIndent, h - stepHeight)
-    ..lineTo(w, h - stepHeight)
-    ..lineTo(w, h)
-    ..lineTo(0, h)
-    ..close();
-
-  return path;
 }

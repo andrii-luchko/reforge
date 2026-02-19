@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 import 'package:reforge/shared/calendar/widgets/grid_selection_view.dart';
 
 class CalendarMonthsView extends StatelessWidget {
@@ -25,8 +26,7 @@ class CalendarMonthsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //TODO(Masayoshi): provide intl
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = List.generate(12, (i) => DateTime(2026, i + 1).shortMonthName);
 
     return GridSelectionView(
       itemCount: 12,

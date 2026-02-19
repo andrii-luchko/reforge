@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 
 import 'package:reforge/shared/calendar/enum/calendar_view_mode.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
@@ -173,20 +174,9 @@ class _HeaderTitleSelector extends StatelessWidget {
   }
 
   String _getMonthName(int month) {
-    const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return monthNames[month - 1];
+    return DateTime(
+      2026,
+      month,
+    ).shortMonthName;
   }
 }
