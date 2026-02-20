@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -25,6 +26,9 @@ void main() async {
   await runZonedGuarded(
     () async {
       final binding = WidgetsFlutterBinding.ensureInitialized()..deferFirstFrame();
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
 
       await LocaleSettings.useDeviceLocale();
       await di.configureDependencies();
