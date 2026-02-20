@@ -63,6 +63,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/cup.svg
   String get cup => 'assets/images/icons/cup.svg';
 
+  /// File path: assets/images/icons/document.svg
+  String get document => 'assets/images/icons/document.svg';
+
   /// File path: assets/images/icons/dumbbell.svg
   String get dumbbell => 'assets/images/icons/dumbbell.svg';
 
@@ -149,6 +152,7 @@ class $AssetsImagesIconsGen {
     check,
     computing,
     cup,
+    document,
     dumbbell,
     eye,
     eyeSlash,

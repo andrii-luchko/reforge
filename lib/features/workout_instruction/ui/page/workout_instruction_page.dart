@@ -67,7 +67,7 @@ class WorkoutInstructionBody extends StatelessWidget {
                 padding: const .symmetric(horizontal: 16, vertical: 16),
                 sliver: SliverToBoxAdapter(
                   child: VideoSection(
-                    videoUrl: exercise.videoInstructionUrl ?? 'https://www.youtube.com/watch?v=ZUXUPxDpes0',
+                    videoUrl: exercise.videoInstructionUrl,
                   ),
                 ),
               ),

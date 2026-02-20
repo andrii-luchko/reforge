@@ -4,13 +4,7 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-enum WorkoutSettings {
-  subscription,
-  faction,
-  notification,
-  measureSystem,
-  workoutDays,
-}
+enum WorkoutSettings { subscription, faction, notification, measureSystem, workoutDays, privacy, termsAndConditions }
 
 extension WorkoutSettingsX on WorkoutSettings {
   String get icon {
@@ -20,6 +14,8 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.notification => Assets.images.icons.bell,
       WorkoutSettings.measureSystem => Assets.images.icons.computing,
       WorkoutSettings.workoutDays => Assets.images.icons.calendarAlt,
+      WorkoutSettings.privacy => Assets.images.icons.lock,
+      WorkoutSettings.termsAndConditions => Assets.images.icons.document,
     };
   }
 
@@ -30,6 +26,8 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.notification => t.settings.notifications,
       WorkoutSettings.measureSystem => t.settings.measurement,
       WorkoutSettings.workoutDays => t.settings.workoutDays,
+      WorkoutSettings.privacy => 'Privacy Policy',
+      WorkoutSettings.termsAndConditions => 'Terms and conditions',
     };
   }
 
@@ -43,6 +41,8 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.notification => null,
       WorkoutSettings.measureSystem => user.measurementSystem.weightSymbol(t),
       WorkoutSettings.workoutDays => t.settings.daysPerWeek(count: user.workoutsPerWeek),
+      WorkoutSettings.privacy => null,
+      WorkoutSettings.termsAndConditions => null,
     };
   }
 }

@@ -44,6 +44,8 @@ abstract final class AnalyticsEvents {
   static const String settingsNotificationsView = 'settings_notifications_view';
   static const String settingsMeasurementView = 'settings_measurement_view';
   static const String settingsWorkoutDaysView = 'settings_workout_days_view';
+  static const String settingsPrivacyView = 'settings_privacy_policy_view';
+  static const String settingsTermsAndConditionsView = 'settings_term_and_conditions_view';
   static const String settingsLogoutClick = 'settings_logout_click';
   static const String settingsDeleteAccountClick = 'settings_delete_account_click';
   static const String workoutQuizComplete = 'workout_quiz_complete';

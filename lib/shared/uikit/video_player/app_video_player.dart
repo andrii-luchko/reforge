@@ -119,6 +119,14 @@ class _YoutubeVideoPlayerState extends State<_YoutubeVideoPlayer> {
       );
     }
 
+    final appTheme = context.appTheme;
+    final progressColors = ProgressBarColors(
+      playedColor: appTheme.orange300,
+      bufferedColor: appTheme.beige200,
+      backgroundColor: appTheme.beige100,
+      handleColor: appTheme.orange300,
+    );
+
     return _VideoPlayerWrapper(
       child: YoutubePlayerBuilder(
         onExitFullScreen: () {
@@ -127,9 +135,19 @@ class _YoutubeVideoPlayerState extends State<_YoutubeVideoPlayer> {
               DeviceOrientation.portraitUp,
             ]),
           );
+          unawaited(SystemChrome.restoreSystemUIOverlays());
         },
         player: YoutubePlayer(
           controller: _controller!,
+          progressColors: progressColors,
+          bottomActions: [
+            const SizedBox(width: 14),
+            const CurrentPosition(),
+            const SizedBox(width: 8),
+            ProgressBar(isExpanded: true, colors: progressColors),
+            const RemainingDuration(),
+            FullScreenButton(color: appTheme.beige100),
+          ],
         ),
         builder: (context, player) => player,
       ),

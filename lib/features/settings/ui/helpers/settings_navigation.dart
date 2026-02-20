@@ -56,6 +56,8 @@ class SettingsNavigation {
         WorkoutSettings.measureSystem => AnalyticsEvents.settingsMeasurementView,
         WorkoutSettings.notification => AnalyticsEvents.settingsNotificationsView,
         WorkoutSettings.subscription => AnalyticsEvents.settingsSubscriptionView,
+        WorkoutSettings.privacy => AnalyticsEvents.settingsPrivacyView,
+        WorkoutSettings.termsAndConditions => AnalyticsEvents.settingsTermsAndConditionsView,
       };
     }
     return null;
@@ -94,6 +96,8 @@ class SettingsNavigation {
       ),
       WorkoutSettings.notification => const SettingsNotificationPage(),
       WorkoutSettings.subscription => const SubscriptionPage(),
+      WorkoutSettings.privacy => null,
+      WorkoutSettings.termsAndConditions => null,
     };
   }
 }

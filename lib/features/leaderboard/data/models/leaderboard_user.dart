@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'leaderboard_user.freezed.dart';
 part 'leaderboard_user.g.dart';
@@ -47,8 +48,7 @@ sealed class Progress with _$Progress {
 
 extension LeaderboardUserX on LeaderboardUser {
   LeaderboardUserModel toDomain() {
-    final userEmail = email ?? '';
-    final username = name ?? (userEmail.isNotEmpty ? userEmail.split('@').first : 'Player $id');
+    final username = name ?? '${t.home.header.default_username} #${id.toString().padLeft(4, '0')}';
 
     return LeaderboardUserModel(
       rank: rank,
