@@ -120,3 +120,11 @@ const pickerBaseStyle = TextStyle(
   fontWeight: FontWeight.w500,
   letterSpacing: 0.4,
 );
+
+const avatarBaseStyle = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.bold,
+  fontFamily: FontFamily.mechsuit,
+  letterSpacing: 1,
+  height: 23 / 12,
+);

@@ -63,7 +63,6 @@ class RankCard extends StatelessWidget {
                           name,
                           style: titleH2Regular.copyWith(
                             color: context.appTheme.beige800,
-
                             fontSize: 100,
                           ),
                         ),

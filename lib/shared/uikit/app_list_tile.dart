@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class AppListTile extends StatelessWidget {
@@ -25,12 +26,7 @@ class AppListTile extends StatelessWidget {
     return Material(
       color: appTheme.beige900,
       borderRadius: borderRadius,
-      child: InkWell(
-        borderRadius: borderRadius,
-        splashFactory: InkSparkle.splashFactory,
-        splashColor: appTheme.beige100.withValues(alpha: 0.1),
-        highlightColor: appTheme.beige100.withValues(alpha: 0.01),
-
+      child: PressableAnimation(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.all(16),

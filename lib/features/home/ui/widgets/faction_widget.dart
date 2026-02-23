@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/generated/flutter_gen/fonts.gen.dart';
+import 'package:reforge/app/theme/typography_theme.dart';
 
 class FactionWidget extends StatelessWidget {
   const FactionWidget({
@@ -14,18 +14,13 @@ class FactionWidget extends StatelessWidget {
       clipper: SharpFactionClipper(),
       child: Container(
         color: context.appTheme.beige400,
-        padding: const .only(top: 4, bottom: 6.5, left: 5, right: 30),
+        padding: const .only(top: 4, bottom: 6.5, left: 5, right: 48),
         child: Text(
           faction,
 
-          style: TextStyle(
-            color: context.appTheme.beige900,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            fontFamily: FontFamily.mechsuit,
-            letterSpacing: 1,
-            height: 23 / 12,
-          ),
+          textAlign: .center,
+
+          style: avatarBaseStyle.copyWith(color: context.appTheme.beige900),
         ),
       ),
     );
@@ -35,14 +30,21 @@ class FactionWidget extends StatelessWidget {
 class SharpFactionClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final cutPointX = w * 0.801;
+
     final path = Path()
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width * 0.8, size.height)
-      ..lineTo(0, size.height)
+      ..moveTo(0, h)
+      ..lineTo(0, 0)
+      ..lineTo(w, 0)
+      ..lineTo(cutPointX, h)
       ..close();
+
     return path;
   }
 
   @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
 }
