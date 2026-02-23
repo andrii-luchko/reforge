@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
@@ -152,6 +153,9 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'getOfferings',
         transformError: _transformRevenueCatError,
       );
+
+      logger.d('offerings: $offerings');
+
       final current = offerings.current;
       if (current == null || current.availablePackages.isEmpty) {
         return const Result.success(SubscriptionOfferings(packages: []));

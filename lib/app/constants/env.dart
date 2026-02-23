@@ -7,6 +7,7 @@ final class Env {
 
   static const revenuecatApiKeyApple = String.fromEnvironment('REVENUECAT_API_KEY_APPLE');
   static const revenuecatApiKeyGoogle = String.fromEnvironment('REVENUECAT_API_KEY_GOOGLE');
+  static const revenuecatApiKeyTest = String.fromEnvironment('REVENUECAT_API_KEY_TEST');
 
   static const googleServerClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
 }

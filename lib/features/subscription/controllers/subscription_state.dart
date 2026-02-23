@@ -16,4 +16,18 @@ sealed class SubscriptionState with _$SubscriptionState {
   SubscriptionPackage? get currentPackage => currentSubscription?.matchedPackage;
 
   bool get hasLifetime => currentPackage?.periodType == SubscriptionPeriodType.lifetime;
+
+  double? getAnnualSavings() {
+    final annual = offerings?.packages.firstWhereOrNull((p) => p.periodType == .annual);
+    final monthly = offerings?.packages.firstWhereOrNull((p) => p.periodType == .monthly);
+    if (annual == null || monthly == null) return null;
+    final monthlyPrice = monthly.price;
+    final annualPrice = annual.price;
+
+    final savings = (monthlyPrice * 12) - annualPrice;
+
+    if (savings <= 0) return 0;
+
+    return savings;
+  }
 }

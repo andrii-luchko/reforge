@@ -21,7 +21,7 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
       case SubscriptionPeriodType.custom:
         return 'Custom';
       case SubscriptionPeriodType.lifetime:
-        return 'Lifetime';
+        return 'Foundry Member Pass';
       case SubscriptionPeriodType.annual:
         return 'Yearly';
       case SubscriptionPeriodType.sixMonth:
@@ -93,6 +93,29 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
         return null;
       case SubscriptionPeriodType.weekly:
         return null;
+    }
+  }
+
+  String description(Translations t, String savings) {
+    switch (this) {
+      case SubscriptionPeriodType.unknown:
+      case SubscriptionPeriodType.custom:
+        return '';
+      case SubscriptionPeriodType.lifetime:
+        return 'Lifetime access to all features, all factions, and exclusive status.';
+      case SubscriptionPeriodType.annual:
+        // return 'Save $savings annually compared to monthly billing. Full access to all features and all factions.';
+        return 'Save more than 40% compared to the monthly plan. Full access to all features and all factions.';
+      case SubscriptionPeriodType.sixMonth:
+        return '';
+      case SubscriptionPeriodType.threeMonth:
+        return '';
+      case SubscriptionPeriodType.twoMonth:
+        return '';
+      case SubscriptionPeriodType.monthly:
+        return 'Unlimited access to all premium features and exclusive content. No limits, just results.';
+      case SubscriptionPeriodType.weekly:
+        return '';
     }
   }
 }

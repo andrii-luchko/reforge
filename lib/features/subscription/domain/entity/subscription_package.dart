@@ -61,6 +61,27 @@ class SubscriptionPackage {
       return '$code $amount';
     }
   }
+
+  String formattedPrice(double amount) {
+    final code = trialInfo?.currencyCode ?? currencyCode;
+
+    try {
+      final formatter = NumberFormat.simpleCurrency(name: code);
+
+      final symbol = formatter.currencySymbol;
+
+      final numberFormatter = NumberFormat.decimalPattern()
+        ..minimumFractionDigits = 2
+        ..maximumFractionDigits = 2;
+
+      final formattedNumber = numberFormatter.format(amount);
+
+      return '$symbol\u00A0$formattedNumber';
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
+      return '$code $amount';
+    }
+  }
 }
 
 extension SubscriptionPackagePlaceholder on SubscriptionPackage {
