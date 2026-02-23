@@ -82,4 +82,15 @@ extension FactionExtension on Faction {
         return Assets.images.png.factionSeiren.path;
     }
   }
+
+  String rankCardAsset() {
+    switch (this) {
+      case Faction.gakki:
+        return Assets.images.png.gakkiRankCard.path;
+      case Faction.gyohyo:
+        return Assets.images.png.gyohyoRankCard.path;
+      case Faction.seiren:
+        return Assets.images.png.seirenRankCard.path;
+    }
+  }
 }

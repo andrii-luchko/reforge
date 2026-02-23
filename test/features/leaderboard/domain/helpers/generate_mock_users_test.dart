@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
+
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
 
 void main() {
@@ -15,7 +16,7 @@ void main() {
         expect(user.rank, inInclusiveRange(1, 10));
         expect(user.username, isNotEmpty);
         expect(user.xp, greaterThanOrEqualTo(0));
-        expect(user, isA<LeaderboardUserModel>());
+        expect(user, isA<LeaderboardUserEntity>());
       }
     });
 

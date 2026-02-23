@@ -11,6 +11,7 @@ import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
@@ -94,7 +95,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           child: Skeleton.replace(
                             replacement: const AvatarCardShimmer(),
                             child: AvatarRankCard(
-                              rank: RankEntity.mockWith(context.t),
+                              rank: context.read<HomeCubit>().state.rank ?? RankEntity.mock(),
                             ),
                           ),
                         ),

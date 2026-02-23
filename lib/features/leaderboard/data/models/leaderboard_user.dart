@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'leaderboard_user.freezed.dart';
@@ -12,9 +12,8 @@ sealed class LeaderboardUser with _$LeaderboardUser {
     required String role,
     required int rank,
     required Progress progress,
-
     String? email,
-    String? name,
+    @JsonKey(name: 'username') String? name,
     String? avatarUrl,
   }) = _LeaderboardUser;
 
@@ -27,7 +26,7 @@ sealed class CurrentUserRank with _$CurrentUserRank {
     required int userId,
     required int rank,
     required Progress progress,
-    String? name,
+    @JsonKey(name: 'username') String? name,
     String? avatarUrl,
   }) = _CurrentUserRank;
 
@@ -47,10 +46,10 @@ sealed class Progress with _$Progress {
 }
 
 extension LeaderboardUserX on LeaderboardUser {
-  LeaderboardUserModel toDomain() {
+  LeaderboardUserEntity toDomain() {
     final username = name ?? '${t.home.header.default_username} #${id.toString().padLeft(4, '0')}';
 
-    return LeaderboardUserModel(
+    return LeaderboardUserEntity(
       rank: rank,
 
       username: username,
@@ -61,10 +60,10 @@ extension LeaderboardUserX on LeaderboardUser {
 }
 
 extension CurrentUserRankX on CurrentUserRank {
-  LeaderboardUserModel toDomain() {
+  LeaderboardUserEntity toDomain() {
     final username = name ?? 'Me';
 
-    return LeaderboardUserModel(
+    return LeaderboardUserEntity(
       rank: rank,
       username: username,
       avatarUrl: avatarUrl,

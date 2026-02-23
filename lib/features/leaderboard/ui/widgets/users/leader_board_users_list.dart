@@ -3,7 +3,8 @@ import 'package:gradient_borders/gradient_borders.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
+
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/xp_tag.dart';
@@ -15,7 +16,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 class LeaderBoardUsersList extends StatelessWidget {
   const LeaderBoardUsersList({required this.users, super.key});
 
-  final List<LeaderboardUserModel> users;
+  final List<LeaderboardUserEntity> users;
   @override
   Widget build(BuildContext context) {
     return users.isEmpty
@@ -45,7 +46,7 @@ class LeaderBoardUsersList extends StatelessWidget {
 class LeaderboardUserListTile extends StatelessWidget {
   const LeaderboardUserListTile({required this.user, super.key});
 
-  final LeaderboardUserModel user;
+  final LeaderboardUserEntity user;
 
   @override
   Widget build(BuildContext context) {

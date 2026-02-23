@@ -1,5 +1,3 @@
-//import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
@@ -26,7 +24,7 @@ class _RootPageState extends State<RootPage> {
       floatingActionButtonLocation: .centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await di.getIt<FcmNotificationService>().sendDefaultNotification();
+          await di.getIt<FcmNotificationService>().sendTestNotification();
           // FirebaseMessaging.instance
           //     .getToken()
           //     .then((token) {

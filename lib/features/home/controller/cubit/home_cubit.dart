@@ -12,7 +12,6 @@ import 'package:reforge/features/home/data/repository/home_repository.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
-import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'home_state.dart';
@@ -81,10 +80,11 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   RankEntity _createRank(OnboardedUser? user, UserStats stats) {
+    final faction = user?.mainFaction ?? Faction.gakki;
     return RankEntity(
-      imageUrl: Assets.images.png.avatar.path,
+      imageUrl: faction.rankCardAsset(),
       rankName: t.tiers.intermediate,
-      faction: user?.mainFaction ?? Faction.gakki,
+      faction: faction,
       lvl: stats.level,
       xp: stats.currentXp,
       maxXp: stats.totalXp,

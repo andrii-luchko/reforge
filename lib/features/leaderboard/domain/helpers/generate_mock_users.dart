@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
 
-List<LeaderboardUserModel> generateMockUsers() {
+List<LeaderboardUserEntity> generateMockUsers() {
   final random = Random();
 
   final prefixes = [
@@ -60,7 +60,7 @@ List<LeaderboardUserModel> generateMockUsers() {
       avatar = 'https://i.pravatar.cc/150?img=$imgId';
     }
 
-    return LeaderboardUserModel(
+    return LeaderboardUserEntity(
       rank: rank,
       username: name,
       avatarUrl: avatar,
