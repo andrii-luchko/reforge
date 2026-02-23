@@ -121,32 +121,36 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<void> deleteUser() async {
-    final currentState = state;
-    if (currentState is! Loaded) return;
-    emit(const UserState.loading());
-    final result = await _userRepository.deleteUser();
+    if (state case final Loaded currentState) {
+      final user = currentState.user;
 
-    switch (result) {
-      case Success():
-        emit(const UserState.deleted());
-      case ErrorR(error: final error):
-        emit(UserState.error(error.toString()));
-        emit(currentState);
+      emit(UserState.updating(user));
+      final result = await _userRepository.deleteUser();
+
+      switch (result) {
+        case Success():
+          emit(const UserState.deleted());
+        case ErrorR(error: final error):
+          emit(UserState.error(error.toString()));
+          emit(UserState.loaded(user));
+      }
     }
   }
 
   Future<void> deleteUserById() async {
-    final currentState = state;
-    if (currentState is! Loaded) return;
-    emit(const UserState.loading());
-    final result = await _userRepository.deleteUserById(currentState.user.id);
+    if (state case final Loaded currentState) {
+      final user = currentState.user;
 
-    switch (result) {
-      case Success():
-        emit(const UserState.deleted());
-      case ErrorR(error: final error):
-        emit(UserState.error(error.toString()));
-        emit(currentState);
+      emit(UserState.updating(user));
+      final result = await _userRepository.deleteUserById(user.id);
+
+      switch (result) {
+        case Success():
+          emit(const UserState.deleted());
+        case ErrorR(error: final error):
+          emit(UserState.error(error.toString()));
+          emit(UserState.loaded(user));
+      }
     }
   }
 

@@ -115,7 +115,7 @@ void main() {
       seed: () => UserState.loaded(testUser),
       act: (cubit) => cubit.deleteUser(),
       expect: () => [
-        isA<UserState>().having((s) => s.maybeMap(loading: (_) => true, orElse: () => false), 'loading', true),
+        isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
         predicate<UserState>(_isDeleted),
       ],
     );
@@ -131,7 +131,7 @@ void main() {
       seed: () => UserState.loaded(testUser),
       act: (cubit) => cubit.deleteUser(),
       expect: () => [
-        isA<UserState>().having((s) => s.maybeMap(loading: (_) => true, orElse: () => false), 'loading', true),
+        isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
         predicate<UserState>(_isError),
         predicate<UserState>(_isLoaded),
       ],
