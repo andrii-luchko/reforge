@@ -74,7 +74,10 @@ dependencies:
 
   path_provider: ^2.1.5
   image_gallery_saver_plus: ^4.0.1
+
   cached_network_image: ^3.4.1
+  cached_network_svg_image: ^2.0.0
+  
   croppy: ^1.4.1
   video_player: ^2.10.1
   youtube_player_flutter: ^9.1.3

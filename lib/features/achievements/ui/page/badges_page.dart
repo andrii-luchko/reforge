@@ -39,7 +39,6 @@ class BadgesPage extends StatelessWidget {
                     await cubit.loadBadges(forceRefresh: true);
                   },
                   child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
                     slivers: [
                       SliverPadding(
                         padding: horizontalPadding,

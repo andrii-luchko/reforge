@@ -11,13 +11,14 @@ class BadgeCard extends StatelessWidget {
   final BadgeEntity badge;
   @override
   Widget build(BuildContext context) {
-    final image = badge.isLocked
-        ? BadgeImage.asset(
-            asset: badge.imageUrl,
+    final image = badge.imageUrl.isNotEmpty
+        ? BadgeImage.network(
+            url: badge.imageUrl,
           )
         : BadgeImage.asset(
             asset: Assets.images.png.lock.path,
           );
+
     return Column(
       spacing: 5,
       mainAxisSize: .min,

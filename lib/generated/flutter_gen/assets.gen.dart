@@ -263,6 +263,9 @@ class $AssetsImagesPngGen {
 class $AssetsImagesSvgGen {
   const $AssetsImagesSvgGen();
 
+  /// File path: assets/images/svg/lock.svg
+  String get lock => 'assets/images/svg/lock.svg';
+
   /// File path: assets/images/svg/logo.svg
   String get logo => 'assets/images/svg/logo.svg';
 
@@ -279,7 +282,7 @@ class $AssetsImagesSvgGen {
   String get trophy => 'assets/images/svg/trophy.svg';
 
   /// List of all assets
-  List<String> get values => [logo, logoAndName, logoSplash, rankCard, trophy];
+  List<String> get values => [lock, logo, logoAndName, logoSplash, rankCard, trophy];
 }
 
 class Assets {

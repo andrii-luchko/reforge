@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_svg_image/cached_network_svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -6,11 +7,17 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 
 class AppCachedNetImage extends StatelessWidget {
-  const AppCachedNetImage({required this.imageUrl, this.fit = BoxFit.cover, this.errorWidget, super.key});
+  const AppCachedNetImage({
+    required this.imageUrl,
+    this.fit = BoxFit.cover,
+    this.errorWidget,
+    super.key,
+  });
 
   final String imageUrl;
   final BoxFit fit;
   final Widget? errorWidget;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
@@ -28,6 +35,42 @@ class AppCachedNetImage extends StatelessWidget {
         ),
       ),
       errorWidget: (context, url, error) => errorWidget ?? const AppImageErrorWidget(),
+    );
+  }
+}
+
+class AppCachedNetSVGImage extends StatelessWidget {
+  const AppCachedNetSVGImage({
+    required this.imageUrl,
+    this.fit = BoxFit.cover,
+    this.errorWidget,
+    super.key,
+  });
+
+  final String imageUrl;
+  final BoxFit fit;
+  final Widget? errorWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return CachedNetworkSVGImage(
+      imageUrl,
+      fit: fit,
+      colorFilter: const ColorFilter.mode(
+        Colors.transparent,
+        BlendMode.srcOver,
+      ),
+      placeholderBuilder: (context) => ColoredBox(
+        color: appTheme.beige200,
+        child: Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(appTheme.beige600),
+          ),
+        ),
+      ),
+      errorWidget: errorWidget ?? const AppImageErrorWidget(),
     );
   }
 }
