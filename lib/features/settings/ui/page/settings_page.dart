@@ -13,6 +13,7 @@ import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/data/services/system_info_services.dart';
@@ -232,10 +233,20 @@ class SettingsGroup extends StatelessWidget {
                   child: SettingsImagePicker(
                     imageUrl: user.avatarUrl,
                     onPressed: () async {
-                      final file = await ImagePickerService.pickAndCrop(context);
+                      final pickedData = await ImagePickerService.pickAndCrop(context);
 
-                      logger.d('file  ${file != null}');
+                      if (pickedData == null) return;
 
+                      logger.d(
+                        'picker option: ${pickedData.option}, hasFile: ${pickedData.file != null}',
+                      );
+
+                      if (pickedData.option == PickerOption.deletePhoto) {
+                        await userCubit.deleteUserAvatar();
+                        return;
+                      }
+
+                      final file = pickedData.file;
                       if (file != null) {
                         return userCubit.uploadUserAvatar(file);
                       }

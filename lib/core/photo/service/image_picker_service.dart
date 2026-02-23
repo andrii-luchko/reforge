@@ -5,23 +5,34 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 
+typedef PickedData = ({PickerOption option, File? file});
+
 class ImagePickerService {
-  static Future<File?> pickAndCrop(BuildContext context) async {
-    final originalFile = await _showSourcePicker(context);
-    if (originalFile == null) return null;
+  static Future<PickedData?> pickAndCrop(BuildContext context) async {
+    final pickedData = await _showSourcePicker(context);
+    if (pickedData == null) return null;
 
-    if (!context.mounted) return originalFile;
+    if (!context.mounted) return pickedData;
 
-    return _cropImage(context, originalFile);
+    final option = pickedData.option;
+    final file = pickedData.file;
+
+    if (file == null || option == PickerOption.deletePhoto) {
+      return pickedData;
+    }
+
+    final croppedFile = await _cropImage(context, file);
+    return (option: option, file: croppedFile);
   }
 
-  static Future<File?> _showSourcePicker(BuildContext context) async {
+  static Future<PickedData?> _showSourcePicker(BuildContext context) async {
     final picker = ImagePicker();
-    final result = await showModalBottomSheet<dynamic>(
+    final result = await showModalBottomSheet<PickerOption>(
       context: context,
       backgroundColor: context.appTheme.beige900,
       useRootNavigator: true,
@@ -40,13 +51,13 @@ class ImagePickerService {
                 context,
                 title: 'Take photo',
                 iconPath: Assets.images.icons.camera,
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                onTap: () => Navigator.pop(ctx, PickerOption.takePhoto),
               ),
               _buildPickerItem(
                 context,
                 title: 'Choose photo',
                 iconPath: Assets.images.icons.gallery,
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                onTap: () => Navigator.pop(ctx, PickerOption.selectPhoto),
               ),
               const SizedBox(height: 12),
               _buildPickerItem(
@@ -54,7 +65,7 @@ class ImagePickerService {
                 title: 'Delete photo',
                 iconPath: Assets.images.icons.trash,
                 isDestructive: true,
-                onTap: () => Navigator.pop(ctx, 'delete'),
+                onTap: () => Navigator.pop(ctx, PickerOption.deletePhoto),
               ),
             ],
           ),
@@ -62,18 +73,21 @@ class ImagePickerService {
       ),
     );
 
-    if (result is ImageSource) {
-      final file = await picker.pickImage(
-        source: result,
-        requestFullMetadata: false,
-        imageQuality: 90,
-      );
-      return file != null ? File(file.path) : null;
-    } else if (result == 'delete') {
-      return null;
-    }
+    if (result == null) return null;
 
-    return null;
+    switch (result) {
+      case PickerOption.deletePhoto:
+        return (option: PickerOption.deletePhoto, file: null);
+      case PickerOption.takePhoto:
+      case PickerOption.selectPhoto:
+        final source = result == PickerOption.takePhoto ? ImageSource.camera : ImageSource.gallery;
+        final file = await picker.pickImage(
+          source: source,
+          requestFullMetadata: false,
+          imageQuality: 90,
+        );
+        return (option: result, file: file != null ? File(file.path) : null);
+    }
   }
 
   // ignore: avoid_returning_widgets

@@ -9,7 +9,7 @@ extension CustomToast on Toastification {
   ToastificationItem showNotificationToast(NotificationEntity notification) {
     return toastification.showCustom(
       autoCloseDuration: const Duration(seconds: 5),
-      alignment: Alignment.topRight,
+      alignment: Alignment.topCenter,
       dismissDirection: DismissDirection.none,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
@@ -17,12 +17,10 @@ extension CustomToast on Toastification {
       builder: (context, item) {
         return Align(
           alignment: item.alignment,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: GestureDetector(
-              onTap: () => toastification.dismiss(item),
-              child: NotificationListTile(notification: notification),
-            ),
+          child: GestureDetector(
+            onTap: () => toastification.dismiss(item),
+            onHorizontalDragStart: (details) => toastification.dismiss(item),
+            child: NotificationListTile(notification: notification),
           ),
         );
       },

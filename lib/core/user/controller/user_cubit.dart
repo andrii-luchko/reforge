@@ -165,21 +165,7 @@ class UserCubit extends Cubit<UserState> {
 
       final result = await _userRepository.updateUser(request);
 
-      switch (result) {
-        case Success(value: final updatedUser):
-          await _userSessionService.saveUser(updatedUser);
-          if (updatedUser case final OnboardedUser onboarded) {
-            unawaited(_setUserAnalyticsProperties(onboarded));
-          }
-          emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
-          return result;
-
-        case ErrorR(error: final error):
-          emit(UserState.error(error.toString()));
-
-          emit(UserState.loaded(oldUser));
-          return result;
-      }
+      await _updateUser(result, oldUser);
     }
     return Result.error(Exception('User not loaded'));
   }
@@ -207,6 +193,24 @@ class UserCubit extends Cubit<UserState> {
     return true;
   }
 
+  Future<Result<User>> _updateUser(Result<User> result, User oldUser) async {
+    switch (result) {
+      case Success(value: final updatedUser):
+        await _userSessionService.saveUser(updatedUser);
+        if (updatedUser case final OnboardedUser onboarded) {
+          unawaited(_setUserAnalyticsProperties(onboarded));
+        }
+        emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
+        return result;
+
+      case ErrorR(error: final error):
+        emit(UserState.error(error.toString()));
+
+        emit(UserState.loaded(oldUser));
+        return result;
+    }
+  }
+
   Future<void> uploadUserAvatar(File file) async {
     final currentState = state;
 
@@ -220,6 +224,10 @@ class UserCubit extends Cubit<UserState> {
         emit(UserState.error(error.toString()));
         emit(currentState);
     }
+  }
+
+  Future<void> deleteUserAvatar() async {
+    await updateProfile(const PatchProfileRequest(avatarUrl: 'undefined/bench-1rm-1.png'));
   }
 
   Future<Result<User>> updateEmail(String newEmail) async {

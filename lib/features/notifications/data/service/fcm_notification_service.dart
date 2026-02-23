@@ -57,6 +57,7 @@ class FcmNotificationService {
   }
 
   Future<void> sendTestNotification() async {
+    await Future.delayed(Duration(seconds: 1));
     await _repository.sendTestNotification();
   }
 

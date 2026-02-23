@@ -51,7 +51,6 @@ class SunRaysImageContainer extends StatelessWidget {
             height: height,
             width: width,
             child: GlassContainer(
-              padding: const EdgeInsets.all(16),
               child: ClipRRect(borderRadius: BorderRadiusGeometry.circular(20), child: _buildImage()),
             ),
           ),
@@ -67,7 +66,7 @@ class SunRaysImageContainer extends StatelessWidget {
         fit: BoxFit.contain,
       );
     } else {
-      return AppCachedNetImage(
+      return AppCachedNetSVGImage(
         imageUrl: _path,
         errorWidget: const Icon(
           Icons.image_not_supported_rounded,
