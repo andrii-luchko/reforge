@@ -10,6 +10,7 @@ class UserStats {
     required this.activeDays,
     required this.totalDays,
     required this.badgeName,
+    required this.badgeImageUrl,
   });
 
   int level;
@@ -22,6 +23,7 @@ class UserStats {
   int totalDays;
 
   String? badgeName;
+  String? badgeImageUrl;
 
   int get currentXp => (totalXp - xpToNextLevel).clamp(0, totalXp);
 }
@@ -50,6 +52,7 @@ extension UserStatsX on UserStats {
       activeDays: activeDays,
       totalDays: totalDays,
       badgeName: badgeName,
+      badgeImageUrl: null,
     );
   }
 }

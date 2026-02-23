@@ -58,10 +58,6 @@ class AppCachedNetSVGImage extends StatelessWidget {
     return CachedNetworkSVGImage(
       imageUrl,
       fit: fit,
-      colorFilter: const ColorFilter.mode(
-        Colors.transparent,
-        BlendMode.srcOver,
-      ),
       placeholderBuilder: (context) => ColoredBox(
         color: appTheme.beige200,
         child: Center(

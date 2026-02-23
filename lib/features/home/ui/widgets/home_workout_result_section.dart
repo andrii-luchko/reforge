@@ -22,6 +22,7 @@ class HomeWorkoutResultSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badgeImage = stats.badgeImageUrl ?? Assets.images.icons.lock;
     return SliverSkeletonizer(
       enabled: isLoading,
       child: SliverMainAxisGroup(
@@ -31,7 +32,7 @@ class HomeWorkoutResultSection extends StatelessWidget {
             sliver: SliverToBoxAdapter(
               child: BadgeListTile(
                 leadingIcon: AppSvgListTileIcon(
-                  asset: Assets.images.icons.lock,
+                  asset: badgeImage,
                   color: context.appTheme.beige100,
                 ),
                 title: stats.badgeName ?? context.t.home.badge.no_badge_yet,

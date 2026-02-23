@@ -30,6 +30,7 @@ sealed class UserStatsDataDto with _$UserStatsDataDto {
       totalWorkoutsDuration: totalWorkoutsDuration,
       workoutsCount: workoutsCount,
       badgeName: lastEarnedBadge?.milestone.name,
+      badgeImageUrl: lastEarnedBadge?.iconUrl,
     );
   }
 }

@@ -48,7 +48,10 @@ class BadgeImage extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: _buildImage(),
+              child: Padding(
+                padding: const EdgeInsets.all(1),
+                child: _buildImage(),
+              ),
             ),
           ),
         ),
@@ -67,9 +70,6 @@ class BadgeImage extends StatelessWidget {
         errorWidget: const Icon(
           Icons.image_not_supported_rounded,
         ),
-
-        // errorWidget: Image.asset(Assets.images.png.icon1024x1024.path),
-        // fit: BoxFit.contain,
       );
     }
   }
