@@ -33,7 +33,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
 @freezed
 sealed class StaticDataDTO with _$StaticDataDTO {
   const factory StaticDataDTO({
-    @Default([]) List<Tier> tiers,
+    @JsonKey(name: 'tier') @Default([]) List<Tier> tiers,
   }) = _StaticDataDTO;
 
   factory StaticDataDTO.fromJson(Map<String, dynamic> json) => _$StaticDataDTOFromJson(json);

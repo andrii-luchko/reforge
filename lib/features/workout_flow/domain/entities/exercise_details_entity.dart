@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 
@@ -31,4 +32,9 @@ class ExerciseDetailsEntity {
   final String? videoInstructionUrl;
   final String? thumbnailInstructionUrl;
   final Map<String, String> instructionsSteps;
+
+  @override
+  String toString() {
+    return 'ExerciseDetailsEntity(id: $id, name: $name, description: $description, key: $key, metrics: $metrics, isTiered: $isTiered, tiers: $tiers, videoInstructionUrl: $videoInstructionUrl, thumbnailInstructionUrl: $thumbnailInstructionUrl, instructionsSteps: $instructionsSteps)';
+  }
 }

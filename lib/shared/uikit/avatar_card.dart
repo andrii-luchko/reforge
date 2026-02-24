@@ -45,7 +45,7 @@ class AvatarRankCard extends StatelessWidget {
               ),
 
               Positioned(
-                top: h * 0.04,
+                top: h * 0.02,
                 right: w * 0.02,
                 child: XpIndicatorWidget(
                   height: h * 0.4,

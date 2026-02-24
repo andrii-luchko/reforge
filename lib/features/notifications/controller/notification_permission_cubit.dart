@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/features/notifications/data/repository/notification_repository.dart';
 import 'package:reforge/features/notifications/domain/enum/notification_permission_status.dart';
@@ -15,8 +14,7 @@ part 'notification_permission_state.dart';
 
 @injectable
 class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
-  NotificationPermissionCubit(this._repository, this._authCubit)
-      : super(const NotificationPermissionState.checking()) {
+  NotificationPermissionCubit(this._repository, this._authCubit) : super(const NotificationPermissionState.checking()) {
     unawaited(checkPermission());
     _authSubscription = _authCubit.stream.listen(_onAuthStateChanged);
   }
@@ -95,13 +93,6 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
   Future<void> saveToken(String token) async {
     await _repository.saveFcmToken(token);
     if (isClosed) return;
-    final currentState = state;
-    if (currentState case _PermissionGranted()) {
-      // Token already in state, saveToken is for backend - mock logs
-      if (kDebugMode) {
-        logger.d('FCM token saved (mock): $token');
-      }
-    }
   }
 
   @override

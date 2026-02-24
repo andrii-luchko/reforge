@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:reforge/app/utils/extensions/string_extensions.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
@@ -59,14 +60,17 @@ class _DynamicWorkoutFormState extends State<DynamicWorkoutForm> {
     return Column(
       children: [
         if (widget.isTiered && widget.tiers.isNotEmpty)
-          TierSection(
-            tiers: widget.tiers,
-            controller: _controller,
-            initialTier: widget.selectedTier,
-            onTearChanged: (value) {
-              _controller.text = value.title;
-              widget.onTierChanged(value);
-            },
+          Padding(
+            padding: const .only(bottom: 8),
+            child: TierSection(
+              tiers: widget.tiers,
+              controller: _controller,
+              initialTier: widget.selectedTier,
+              onTearChanged: (value) {
+                _controller.text = value.title.toCapitalized();
+                widget.onTierChanged(value);
+              },
+            ),
           ),
 
         Padding(

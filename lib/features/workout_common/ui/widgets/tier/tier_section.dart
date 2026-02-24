@@ -21,7 +21,7 @@ class TierSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 8,
+      spacing: 12,
       children: [
         TierSelectionField(
           controller: controller,

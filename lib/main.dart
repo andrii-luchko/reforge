@@ -84,7 +84,11 @@ class App extends StatelessWidget {
         BlocProvider(create: (_) => di.getIt<HomeCubit>()),
 
         BlocProvider(create: (_) => di.getIt<CalendarCubit>()),
-        BlocProvider(create: (_) => di.getIt<SubscriptionCubit>()),
+        BlocProvider(
+          create: (_) => di.getIt<SubscriptionCubit>(),
+
+          lazy: false,
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

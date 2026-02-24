@@ -154,8 +154,6 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         transformError: _transformRevenueCatError,
       );
 
-      logger.d('offerings: $offerings');
-
       final current = offerings.current;
       if (current == null || current.availablePackages.isEmpty) {
         return const Result.success(SubscriptionOfferings(packages: []));
@@ -230,6 +228,40 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         transformError: _transformRevenueCatError,
       );
       return Result.success(_mapCustomerInfo(info, packages: packages));
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<void>> login(int id) async {
+    try {
+      // final user = await Purchases.getCustomerInfo();
+
+      // if (user.originalAppUserId == id.toString()) return const Result.success(null);
+
+      final info = await makeRequest(
+        () => Purchases.logIn(id.toString()),
+        label: 'login',
+        transformError: _transformRevenueCatError,
+      );
+
+      logger.d('revenueCat loginreuslt: ${info.created}');
+      return const Result.success(null);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<void>> logout() async {
+    try {
+      await makeRequest(
+        Purchases.logOut,
+        label: 'login',
+        transformError: _transformRevenueCatError,
+      );
+      return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
     }

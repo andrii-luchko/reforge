@@ -27,14 +27,6 @@ class _RootPageState extends State<RootPage> {
         child: FloatingActionButton(
           onPressed: () async {
             await di.getIt<FcmNotificationService>().sendTestNotification();
-            // FirebaseMessaging.instance
-            //     .getToken()
-            //     .then((token) {
-            //       debugPrint('FCM Token: $token');
-            //     })
-            //     .catchError((error) {
-            //       debugPrint('Error fetching FCM token: $error');
-            //     });
           },
           child: const Icon(
             Icons.notification_add_outlined,

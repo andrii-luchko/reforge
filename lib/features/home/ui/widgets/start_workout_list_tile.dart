@@ -9,8 +9,15 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_svg_list_tile_icon.dart';
 import 'package:reforge/shared/uikit/app_list_tile.dart';
 
-class StartWorkoutListTile extends StatelessWidget {
+class StartWorkoutListTile extends StatefulWidget {
   const StartWorkoutListTile({super.key});
+
+  @override
+  State<StartWorkoutListTile> createState() => _StartWorkoutListTileState();
+}
+
+class _StartWorkoutListTileState extends State<StartWorkoutListTile> {
+  bool _isProcessing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,14 +28,22 @@ class StartWorkoutListTile extends StatelessWidget {
       ),
       title: context.t.home.start_workout.title,
       subtitle: context.t.home.start_workout.subtitle,
-      onTap: () async {
-        await context.read<UserCubit>().refreshUser();
-
-        if (context.mounted) {
-          context.read<HomeCubit>().onStartWorkoutTap();
-          await const WorkoutDetailsPageRoute().push<void>(context);
-        }
-      },
+      onTap: _isProcessing ? null : _handleTap,
     );
+  }
+
+  Future<void> _handleTap() async {
+    setState(() => _isProcessing = true);
+
+    try {
+      await context.read<UserCubit>().refreshUser();
+
+      if (mounted) {
+        context.read<HomeCubit>().onStartWorkoutTap();
+
+        await const WorkoutDetailsPageRoute().push<void>(context);
+      }
+    } finally {}
+    setState(() => _isProcessing = false);
   }
 }
