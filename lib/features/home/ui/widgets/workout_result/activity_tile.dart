@@ -31,7 +31,7 @@ class ActivityTile extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          AppSvgListTileIcon(
+          AppSvgListTileIcon.asset(
             asset: Assets.images.icons.calendar2,
             color: appTheme.beige100,
           ),

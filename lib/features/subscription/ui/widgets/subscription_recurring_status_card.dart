@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_manage_button.dart';
@@ -46,12 +47,13 @@ class SubscriptionRecurringStatusCard extends StatelessWidget {
               style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
             ),
             RisingAuraEffect(
-              child: AbsorbPointer(
-                child: SubscriptionCard(
-                  package: currentPackage,
-                  isSelected: true,
-                  margin: EdgeInsets.zero,
-                ),
+              child: SubscriptionCard(
+                package: currentPackage,
+                isSelected: true,
+                margin: EdgeInsets.zero,
+                onTap: () {
+                  logger.d(currentPackage);
+                },
               ),
             ),
 

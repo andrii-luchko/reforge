@@ -1,3 +1,5 @@
+// ignore_for_file: always_put_required_named_parameters_first
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 
@@ -10,7 +12,7 @@ sealed class WorkoutSession with _$WorkoutSession {
     required int id,
     required int userId,
     required int workoutProgramDayId,
-    required int exerciseTypeId,
+    int? exerciseTypeId,
     required int duration,
     required WorkoutSessionStatus status,
     required int totalXpEarned,

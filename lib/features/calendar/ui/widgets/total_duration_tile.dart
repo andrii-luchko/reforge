@@ -27,7 +27,7 @@ class TotalDurationTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          AppSvgListTileIcon(
+          AppSvgListTileIcon.asset(
             asset: Assets.images.icons.timer,
             color: appTheme.beige100,
           ),

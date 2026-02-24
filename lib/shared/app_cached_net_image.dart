@@ -11,12 +11,16 @@ class AppCachedNetImage extends StatelessWidget {
     required this.imageUrl,
     this.fit = BoxFit.cover,
     this.errorWidget,
+    this.height,
+    this.width,
     super.key,
   });
 
   final String imageUrl;
   final BoxFit fit;
   final Widget? errorWidget;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +29,8 @@ class AppCachedNetImage extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
+      height: height,
+      width: width,
       progressIndicatorBuilder: (context, url, progress) => ColoredBox(
         color: appTheme.beige200,
         child: Center(
@@ -44,12 +50,16 @@ class AppCachedNetSVGImage extends StatelessWidget {
     required this.imageUrl,
     this.fit = BoxFit.cover,
     this.errorWidget,
+    this.height,
+    this.width,
     super.key,
   });
 
   final String imageUrl;
   final BoxFit fit;
   final Widget? errorWidget;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +68,9 @@ class AppCachedNetSVGImage extends StatelessWidget {
     return CachedNetworkSVGImage(
       imageUrl,
       fit: fit,
+      height: height,
+      width: width,
+
       placeholderBuilder: (context) => ColoredBox(
         color: appTheme.beige200,
         child: Center(

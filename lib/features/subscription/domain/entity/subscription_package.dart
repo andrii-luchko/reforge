@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:intl/intl.dart';
+
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 
 /// Trial/intro offer info for display.
@@ -81,6 +83,11 @@ class SubscriptionPackage {
     } catch (e) {
       return '$code $amount';
     }
+  }
+
+  @override
+  String toString() {
+    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier)';
   }
 }
 

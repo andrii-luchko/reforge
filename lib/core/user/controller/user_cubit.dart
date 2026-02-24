@@ -43,6 +43,7 @@ class UserCubit extends Cubit<UserState> {
       authenticated: (_) => _loadUserProfile(),
       unauthenticated: () {
         unawaited(_analytics.setUserId(null));
+        unawaited(_userSessionService.clearUser());
         // Clear user data on logout
         emit(const UserState.initial());
       },
@@ -113,6 +114,7 @@ class UserCubit extends Cubit<UserState> {
 
     switch (result) {
       case Success(value: final user):
+        await _userSessionService.saveUser(user);
         emit(UserState.loaded(user));
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
@@ -130,6 +132,7 @@ class UserCubit extends Cubit<UserState> {
       switch (result) {
         case Success():
           emit(const UserState.deleted());
+          await _userSessionService.clearUser();
         case ErrorR(error: final error):
           emit(UserState.error(error.toString()));
           emit(UserState.loaded(user));
@@ -147,6 +150,7 @@ class UserCubit extends Cubit<UserState> {
       switch (result) {
         case Success():
           emit(const UserState.deleted());
+          await _userSessionService.clearUser();
         case ErrorR(error: final error):
           emit(UserState.error(error.toString()));
           emit(UserState.loaded(user));

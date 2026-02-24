@@ -20,7 +20,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
     @Default([]) List<String> metrics,
 
     @Default(false) bool isTiered,
-    @Default([]) List<Tier> tiers,
+    StaticDataDTO? staticData,
 
     String? videoInstructionUrl,
     String? thumbnailInstructionUrl,
@@ -28,6 +28,15 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
   }) = _ExerciseDetailsDTO;
 
   factory ExerciseDetailsDTO.fromJson(Map<String, dynamic> json) => _$ExerciseDetailsDTOFromJson(json);
+}
+
+@freezed
+sealed class StaticDataDTO with _$StaticDataDTO {
+  const factory StaticDataDTO({
+    @Default([]) List<Tier> tiers,
+  }) = _StaticDataDTO;
+
+  factory StaticDataDTO.fromJson(Map<String, dynamic> json) => _$StaticDataDTOFromJson(json);
 }
 
 extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
@@ -40,7 +49,7 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
 
       metrics: metrics.map(_mapStringToMetric).whereType<WorkoutMetric>().toList(),
       isTiered: isTiered,
-      tiers: tiers,
+      tiers: staticData?.tiers ?? [],
       videoInstructionUrl: videoInstructionUrl,
       thumbnailInstructionUrl: thumbnailInstructionUrl,
       instructionsSteps: instructionsSteps,

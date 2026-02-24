@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_match_file_name
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
@@ -67,6 +68,9 @@ class TrainingSessionRepositoryImpl with RepositoryErrorHandler implements Train
         () => _apiClient.starWorkoutSession(StartWorkoutSessionRequest(workoutProgramDayId: programId)),
         label: 'startWorkoutSession',
       );
+
+      logger.d(response);
+
       return Result.success(response.data);
     } on Exception catch (e) {
       return Result.error(e);
