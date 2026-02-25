@@ -14,7 +14,8 @@ class SubscriptionCard extends StatelessWidget {
     required this.isSelected,
     this.onTap,
     this.isCurrentPlan = false,
-    this.margin = const EdgeInsets.only(bottom: 12),
+    this.margin = const EdgeInsets.only(bottom: 16),
+    this.annualSavings,
     super.key,
   });
 
@@ -24,12 +25,15 @@ class SubscriptionCard extends StatelessWidget {
   final bool isCurrentPlan;
   final EdgeInsetsGeometry? margin;
 
-  static const String _description = 'Unlock all features and get exclusive content with our premium subscription.';
+  final double? annualSavings;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     final tag = isCurrentPlan ? t.subscription.currentPlan : package.periodType.displayTag(t);
+
+    final formattedAnnualSavings = annualSavings == null ? '' : package.formattedPrice(annualSavings!);
+
     return PressableAnimation(
       scaleAmount: 0.98,
       onTap: isCurrentPlan ? () {} : onTap,
@@ -55,7 +59,7 @@ class SubscriptionCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      package.title,
+                      package.periodType.displayName(t),
                       style: subheadH3Medium.copyWith(color: appTheme.beige100),
                     ),
                     const Spacer(),
@@ -71,18 +75,18 @@ class SubscriptionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
-                        _description,
+                        package.periodType.description(t, formattedAnnualSavings),
                         style: subheadH6Regular.copyWith(color: appTheme.beige700),
                       ),
                     ),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 12),
                     Text(
                       package.periodType.displayPeriod(t),
                       style: subheadH6Regular.copyWith(color: appTheme.beige700),
@@ -94,7 +98,7 @@ class SubscriptionCard extends StatelessWidget {
           ),
           if (tag != null)
             Positioned(
-              top: -20,
+              top: -23,
               left: 20,
               child: AppTag(
                 text: tag,

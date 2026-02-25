@@ -43,9 +43,12 @@ class AchievementShareContent extends StatelessWidget {
           ),
 
         const SizedBox(height: 16),
-        CenteredTitleSection(
-          title: title,
-          subtitle: description,
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: CenteredTitleSection(
+            title: title,
+            subtitle: description,
+          ),
         ),
         const SizedBox(height: 16),
       ],

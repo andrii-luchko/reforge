@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
@@ -38,7 +39,10 @@ class AchievementsRepositoryImpl with RepositoryErrorHandler implements Achievem
         () async {
           final result = await _apiClient.getUserAttributes();
 
-          final mappedList = result.data.map((attribute) => attribute.toDomain()).toList();
+          final mappedList = result.data
+              .map((attribute) => attribute.toDomain())
+              .sorted((a, b) => a.attribute.index.compareTo(b.attribute.index))
+              .toList();
           return mappedList;
         },
         label: 'getUserAttributes',

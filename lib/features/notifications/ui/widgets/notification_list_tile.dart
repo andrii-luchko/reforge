@@ -26,7 +26,7 @@ class NotificationListTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Skeleton.leaf(child: AppSvgListTileIcon(asset: notification.type.iconAsset)),
+          Skeleton.leaf(child: AppSvgListTileIcon.asset(asset: notification.type.iconAsset)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

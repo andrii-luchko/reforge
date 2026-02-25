@@ -1,13 +1,29 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/workout_details_body.dart';
+import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 
-class WorkoutDetailsPage extends StatelessWidget {
+class WorkoutDetailsPage extends StatefulWidget {
   const WorkoutDetailsPage({super.key});
+
+  @override
+  State<WorkoutDetailsPage> createState() => _WorkoutDetailsPageState();
+}
+
+class _WorkoutDetailsPageState extends State<WorkoutDetailsPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    unawaited(context.read<WorkoutFlowCubit>().init());
+  }
 
   @override
   Widget build(BuildContext context) {

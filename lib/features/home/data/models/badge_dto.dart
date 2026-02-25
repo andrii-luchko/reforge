@@ -14,13 +14,15 @@ sealed class BadgeDto with _$BadgeDto {
     required int tier,
     required String key,
     required DateTime createdAt,
+    required DateTime updatedAt,
     required MilestoneDto milestone,
+    String? iconUrl,
   }) = _BadgeDto;
 
   factory BadgeDto.fromJson(Map<String, dynamic> json) => _$BadgeDtoFromJson(json);
 
   BadgeEntity toDomain() {
-    return BadgeEntity(imageUrl: '', title: milestone.name, isLocked: false);
+    return BadgeEntity(imageUrl: iconUrl ?? '', title: milestone.name, isLocked: false);
   }
 }
 
@@ -31,6 +33,9 @@ sealed class MilestoneDto with _$MilestoneDto {
     required String name,
     required String key,
     required String exerciseMetric,
+    String? iconUrlKey,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) = _MilestoneDto;
 
   factory MilestoneDto.fromJson(Map<String, dynamic> json) => _$MilestoneDtoFromJson(json);

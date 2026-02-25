@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
@@ -17,11 +19,24 @@ part 'subscription_state.dart';
 
 @injectable
 class SubscriptionCubit extends Cubit<SubscriptionState> {
-  SubscriptionCubit(this._repository) : super(const SubscriptionState()) {
+  SubscriptionCubit(this._repository, this._userCubit) : super(const SubscriptionState()) {
     unawaited(loadOfferings());
+
+    _userSubscription = _userCubit.stream.listen(_onUserChanges);
   }
 
   final domain.SubscriptionRepository _repository;
+  final UserCubit _userCubit;
+  StreamSubscription<UserState>? _userSubscription;
+
+  Future<void> _onUserChanges(UserState state) async {
+    await state.maybeMap(
+      loaded: (value) => _repository.login(value.user.id),
+      initial: (value) => _repository.logout(),
+      deleted: (value) => _repository.logout(),
+      orElse: () {},
+    );
+  }
 
   Future<void> loadOfferings() async {
     emit(state.copyWith(isLoading: true, error: null));
@@ -132,5 +147,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
           ),
         );
     }
+  }
+
+  @override
+  Future<void> close() {
+    unawaited(_userSubscription?.cancel());
+    return super.close();
   }
 }

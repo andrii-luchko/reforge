@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class WorkoutDoneButton extends StatelessWidget {
@@ -55,11 +56,9 @@ class WorkoutDoneButton extends StatelessWidget {
 
         clipBehavior: Clip.hardEdge,
         color: Colors.transparent,
-        child: InkWell(
+        child: PressableAnimation(
+          scaleAmount: 0.99,
           onTap: onTap,
-          splashFactory: InkSparkle.splashFactory,
-          splashColor: appTheme.orange100.withValues(alpha: 0.1),
-          highlightColor: appTheme.orange100.withValues(alpha: 0.1),
           child: AnimatedContainer(
             duration: Durations.medium2,
             constraints: appTheme.workoutContainerConstrains,

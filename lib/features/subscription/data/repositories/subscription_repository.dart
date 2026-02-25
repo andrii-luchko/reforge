@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
@@ -152,6 +153,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'getOfferings',
         transformError: _transformRevenueCatError,
       );
+
       final current = offerings.current;
       if (current == null || current.availablePackages.isEmpty) {
         return const Result.success(SubscriptionOfferings(packages: []));
@@ -226,6 +228,43 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         transformError: _transformRevenueCatError,
       );
       return Result.success(_mapCustomerInfo(info, packages: packages));
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<void>> login(int id) async {
+    try {
+      final user = await Purchases.getCustomerInfo();
+      logger.d('${user.originalAppUserId} ==  $id: ${user.originalAppUserId == id.toString()}');
+      if (user.originalAppUserId == id.toString()) {
+        logger.d('revenueCat loginResult: same id, already up to date ');
+        return const Result.success(null);
+      }
+
+      final info = await makeRequest(
+        () => Purchases.logIn(id.toString()),
+        label: 'login',
+        transformError: _transformRevenueCatError,
+      );
+
+      logger.d('revenueCat loginResult: ${info.created}');
+      return const Result.success(null);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<void>> logout() async {
+    try {
+      await makeRequest(
+        Purchases.logOut,
+        label: 'login',
+        transformError: _transformRevenueCatError,
+      );
+      return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
     }

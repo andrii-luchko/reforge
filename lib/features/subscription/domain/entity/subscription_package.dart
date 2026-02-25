@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 
 /// Trial/intro offer info for display.
@@ -60,6 +61,32 @@ class SubscriptionPackage {
     } catch (e) {
       return '$code $amount';
     }
+  }
+
+  String formattedPrice(double amount) {
+    final code = trialInfo?.currencyCode ?? currencyCode;
+
+    try {
+      final formatter = NumberFormat.simpleCurrency(name: code);
+
+      final symbol = formatter.currencySymbol;
+
+      final numberFormatter = NumberFormat.decimalPattern()
+        ..minimumFractionDigits = 2
+        ..maximumFractionDigits = 2;
+
+      final formattedNumber = numberFormatter.format(amount);
+
+      return '$symbol\u00A0$formattedNumber';
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
+      return '$code $amount';
+    }
+  }
+
+  @override
+  String toString() {
+    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier)';
   }
 }
 

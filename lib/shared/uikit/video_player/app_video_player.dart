@@ -8,8 +8,14 @@ import 'package:reforge/shared/uikit/video_player/mixin/video_controls_mixin.dar
 import 'package:reforge/shared/uikit/video_player/video_controllers.dart';
 import 'package:reforge/shared/uikit/video_player/video_unavailable.dart';
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class AppVideoPlayer extends StatefulWidget {
+bool _isYoutubeUrl(String? url) {
+  if (url == null || url.isEmpty) return false;
+  return url.contains('youtube.com') || url.contains('youtu.be');
+}
+
+class AppVideoPlayer extends StatelessWidget {
   const AppVideoPlayer({
     required this.videoUrl,
     super.key,
@@ -18,10 +24,147 @@ class AppVideoPlayer extends StatefulWidget {
   final String? videoUrl;
 
   @override
-  State<AppVideoPlayer> createState() => _AppVideoPlayerState();
+  Widget build(BuildContext context) {
+    if (videoUrl == null || videoUrl!.isEmpty) {
+      return const _VideoPlayerWrapper(
+        child: VideoUnavailableWidget(),
+      );
+    }
+
+    if (_isYoutubeUrl(videoUrl)) {
+      return _YoutubeVideoPlayer(videoUrl: videoUrl!);
+    }
+
+    return _NativeVideoPlayer(videoUrl: videoUrl!);
+  }
 }
 
-class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControlsMixin {
+class _VideoPlayerWrapper extends StatelessWidget {
+  const _VideoPlayerWrapper({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: appTheme.beige900,
+          border: Border.all(color: appTheme.strokeCard),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _YoutubeVideoPlayer extends StatefulWidget {
+  const _YoutubeVideoPlayer({required this.videoUrl});
+
+  final String videoUrl;
+
+  @override
+  State<_YoutubeVideoPlayer> createState() => _YoutubeVideoPlayerState();
+}
+
+class _YoutubeVideoPlayerState extends State<_YoutubeVideoPlayer> {
+  YoutubePlayerController? _controller;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final videoId = YoutubePlayer.convertUrlToId(widget.videoUrl);
+    if (videoId == null || videoId.isEmpty) {
+      setState(() => _hasError = true);
+      return;
+    }
+
+    _controller = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        autoPlay: false,
+        controlsVisibleAtStart: true,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return const _VideoPlayerWrapper(
+        child: VideoUnavailableWidget(),
+      );
+    }
+
+    if (_controller == null) {
+      return const _VideoPlayerWrapper(
+        child: Center(
+          child: CircularProgressIndicator.adaptive(),
+        ),
+      );
+    }
+
+    final appTheme = context.appTheme;
+    final progressColors = ProgressBarColors(
+      playedColor: appTheme.orange300,
+      bufferedColor: appTheme.beige200,
+      backgroundColor: appTheme.beige100,
+      handleColor: appTheme.orange300,
+    );
+
+    return _VideoPlayerWrapper(
+      child: YoutubePlayerBuilder(
+        onExitFullScreen: () {
+          unawaited(
+            SystemChrome.setPreferredOrientations([
+              DeviceOrientation.portraitUp,
+            ]),
+          );
+          unawaited(SystemChrome.restoreSystemUIOverlays());
+        },
+        player: YoutubePlayer(
+          controller: _controller!,
+          progressColors: progressColors,
+          bottomActions: [
+            const SizedBox(width: 14),
+            const CurrentPosition(),
+            const SizedBox(width: 8),
+            ProgressBar(isExpanded: true, colors: progressColors),
+            const RemainingDuration(),
+            FullScreenButton(color: appTheme.beige100),
+          ],
+        ),
+        builder: (context, player) => player,
+      ),
+    );
+  }
+}
+
+class _NativeVideoPlayer extends StatefulWidget {
+  const _NativeVideoPlayer({required this.videoUrl});
+
+  final String videoUrl;
+
+  @override
+  State<_NativeVideoPlayer> createState() => _NativeVideoPlayerState();
+}
+
+class _NativeVideoPlayerState extends State<_NativeVideoPlayer> with VideoPlayerControlsMixin {
   VideoPlayerController? _controller;
 
   bool _hasError = false;
@@ -33,10 +176,10 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControl
   void initState() {
     super.initState();
 
-    if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
+    if (widget.videoUrl.isNotEmpty) {
       _controller =
           VideoPlayerController.networkUrl(
-              Uri.parse(widget.videoUrl!),
+              Uri.parse(widget.videoUrl),
               videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
             )
             ..initialize()
@@ -80,7 +223,11 @@ class _AppVideoPlayerState extends State<AppVideoPlayer> with VideoPlayerControl
         )
         // ignore: discarded_futures
         .then((_) {
-          unawaited(SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]));
+          unawaited(
+            SystemChrome.setPreferredOrientations([
+              DeviceOrientation.portraitUp,
+            ]),
+          );
           unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
         });
   }

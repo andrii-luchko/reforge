@@ -28,6 +28,7 @@ Future<void> configureDependencies() async {
 }
 
 Future<void> initializeRevenueCat() async {
+  //TODO(Masayoshi): Change to real configuration
   const androidApiKey = Env.revenuecatApiKeyGoogle;
   const iosApiKey = Env.revenuecatApiKeyApple;
 

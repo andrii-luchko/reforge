@@ -7,7 +7,6 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
 import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -42,9 +41,7 @@ class MeasurementPage extends StatelessWidget {
   }
 
   Future<void> onSave(MeasurementSystem value, UserCubit cubit) async {
-    final result = await cubit.updateProfile(
-      PatchProfileRequest(measurementSystem: value),
-    );
+    final result = await cubit.updateMeasurementSystem(value);
 
     if (result case ErrorR(error: final e)) {
       throw e;

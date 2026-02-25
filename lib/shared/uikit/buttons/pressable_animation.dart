@@ -5,11 +5,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class PressableAnimation extends StatefulWidget {
-  const PressableAnimation({required this.child, this.onTap, this.scaleAmount = 0.95, super.key});
+  const PressableAnimation({
+    required this.child,
+    this.onTap,
+    this.scaleAmount = 0.95,
+    this.enabledFeedback = true,
+    super.key,
+  });
 
   final Widget child;
   final VoidCallback? onTap;
   final double scaleAmount;
+  final bool enabledFeedback;
+
   @override
   State<PressableAnimation> createState() => _PressableAnimationState();
 }
@@ -21,7 +29,7 @@ class _PressableAnimationState extends State<PressableAnimation> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) {
-        if (widget.onTap != null) {
+        if (widget.onTap != null && widget.enabledFeedback) {
           unawaited(HapticFeedback.lightImpact());
         }
         setState(() => _isPressed = true);

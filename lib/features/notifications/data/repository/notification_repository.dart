@@ -137,7 +137,6 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
         _firebaseMessaging.getToken,
         label: 'getFcmToken',
       );
-      logger.d('FCM token: $token');
       return Result.success(token);
     } on Exception catch (e) {
       return Result.error(e);
@@ -156,8 +155,6 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
         token: token,
         deviceType: Platform.isAndroid ? DeviceType.android : DeviceType.ios,
       );
-
-      logger.d('Registering FCM token with request: ${request.toJson()}');
 
       await makeRequest(
         () => _apiClient.registerToken(request),

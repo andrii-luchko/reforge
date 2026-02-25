@@ -5,7 +5,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
+
 part 'users_leaderboard_state.dart';
 part 'users_leaderboard_cubit.freezed.dart';
 

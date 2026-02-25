@@ -8,6 +8,7 @@ import 'package:reforge/features/subscription/domain/entity/subscription_offerin
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
+import '../../../core/user/mocks/mock_user_cubit.dart';
 import '../mocks/mock_subscription_repository.dart';
 
 SubscriptionPackage createTestPackage({
@@ -47,13 +48,14 @@ SubscriptionEntity createTestSubscription({bool isActive = true}) {
 
 void main() {
   late MockSubscriptionRepository mockRepository;
-
+  late MockUserCubit mockUserCubit;
   setUpAll(() {
     registerFallbackValue(createTestPackage());
   });
 
   setUp(() {
     mockRepository = MockSubscriptionRepository();
+    mockUserCubit = MockUserCubit();
   });
 
   group('SubscriptionCubit', () {
@@ -67,7 +69,7 @@ void main() {
           when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         act: (cubit) => cubit.loadOfferings(),
         expect: () => [
@@ -89,7 +91,7 @@ void main() {
           when(() => mockRepository.getOfferings()).thenAnswer(
             (_) async => Result.error(Exception('Network error')),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         act: (cubit) => cubit.loadOfferings(),
         expect: () => [
@@ -109,7 +111,7 @@ void main() {
           when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.error(Exception('Not found')),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         act: (cubit) => cubit.loadOfferings(),
         expect: () => [
@@ -137,7 +139,7 @@ void main() {
           when(() => mockRepository.getOfferings()).thenAnswer(
             (_) async => Result.error(Exception('')),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => const SubscriptionState(),
         act: (cubit) => cubit.purchase(createTestPackage()),
@@ -156,7 +158,7 @@ void main() {
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.purchase(createTestPackage()),
@@ -186,7 +188,7 @@ void main() {
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => const Result.error(PurchaseCancelledException()),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.purchase(createTestPackage()),
@@ -216,7 +218,7 @@ void main() {
           when(() => mockRepository.purchasePackage(any())).thenAnswer(
             (_) async => Result.error(Exception('Payment failed')),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.purchase(createTestPackage()),
@@ -245,7 +247,7 @@ void main() {
           when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.success(createTestSubscription()),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.checkSubscriptionStatus(),
@@ -267,7 +269,7 @@ void main() {
           when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
             (_) async => Result.error(Exception('Error')),
           );
-          return SubscriptionCubit(mockRepository);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
         },
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.checkSubscriptionStatus(),

@@ -5,9 +5,9 @@ sealed class UsersLeaderboardState with _$UsersLeaderboardState {
   const UsersLeaderboardState._();
 
   const factory UsersLeaderboardState({
-    @Default([]) List<LeaderboardUserModel> currentUsersList,
+    @Default([]) List<LeaderboardUserEntity> currentUsersList,
 
-    LeaderboardUserModel? currentUser,
+    LeaderboardUserEntity? currentUser,
 
     @Default(false) bool isLoading,
     @Default(false) bool isPaginationLoading,

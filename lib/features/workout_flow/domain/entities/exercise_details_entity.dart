@@ -31,4 +31,9 @@ class ExerciseDetailsEntity {
   final String? videoInstructionUrl;
   final String? thumbnailInstructionUrl;
   final Map<String, String> instructionsSteps;
+
+  @override
+  String toString() {
+    return 'ExerciseDetailsEntity(id: $id, name: $name, description: $description, key: $key, metrics: $metrics, isTiered: $isTiered, tiers: $tiers, videoInstructionUrl: $videoInstructionUrl, thumbnailInstructionUrl: $thumbnailInstructionUrl, instructionsSteps: $instructionsSteps)';
+  }
 }

@@ -31,7 +31,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         if (tokens != null) {
           emit(AuthState.authenticated(tokens: tokens));
-          logger.d('Tokens found during initialization: $tokens');
+          // logger.d('Tokens found during initialization: $tokens');
         } else {
           emit(const AuthState.unauthenticated());
         }

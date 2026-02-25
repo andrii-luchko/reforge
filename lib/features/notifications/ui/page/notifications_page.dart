@@ -123,7 +123,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ),
                         loaded: (notifications, hasMore, isLoadingMore, error) => SliverMainAxisGroup(
                           slivers: [
-                            _buildNotificationList(notifications: notifications),
+                            NotificationListSection(
+                              notifications: notifications,
+                              onClearAll: _cubit.clearAllNotifications,
+                              onNotificationClear: _cubit.clearNotification,
+                            ),
                             if (isLoadingMore)
                               const SliverPadding(
                                 padding: EdgeInsets.symmetric(vertical: 24),
@@ -146,19 +150,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationList({
-    required List<NotificationEntity> notifications,
-  }) {
-    return SliverSkeletonizer(
-      enabled: false,
-      child: NotificationListSection(
-        notifications: notifications,
-        onClearAll: _cubit.clearAllNotifications,
-        onNotificationClear: _cubit.clearNotification,
       ),
     );
   }

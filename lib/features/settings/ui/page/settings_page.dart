@@ -2,20 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/settings/data/services/system_info_services.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
-import 'package:reforge/features/settings/ui/helpers/settings_navigation.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_image_piker.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_tile.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -229,10 +233,19 @@ class SettingsGroup extends StatelessWidget {
                   child: SettingsImagePicker(
                     imageUrl: user.avatarUrl,
                     onPressed: () async {
-                      final file = await ImagePickerService.pickAndCrop(context);
+                      final pickedData = await ImagePickerService.pickAndCrop(context);
+                      if (pickedData == null) return;
 
-                      logger.d('file  ${file != null}');
+                      logger.d(
+                        'picker option: ${pickedData.option}, hasFile: ${pickedData.file != null}',
+                      );
 
+                      if (pickedData.option == PickerOption.deletePhoto) {
+                        await userCubit.deleteUserAvatar();
+                        return;
+                      }
+
+                      final file = pickedData.file;
                       if (file != null) {
                         return userCubit.uploadUserAvatar(file);
                       }
@@ -246,7 +259,9 @@ class SettingsGroup extends StatelessWidget {
                 title: setting.title(t),
                 text: setting.getDisplayValue(user, t),
                 onPressed: () async {
-                  SettingsNavigation.open(context, setting, user);
+                  if (setting.route != null) {
+                    setting.push(context);
+                  }
                 },
               );
             },
@@ -278,15 +293,41 @@ class SettingsGroup extends StatelessWidget {
                 title: setting.title(t),
                 text: setting.getDisplayValue(user, t),
                 onPressed: () async {
-                  SettingsNavigation.open(context, setting, user);
+                  if (setting == WorkoutSettings.privacy) {
+                    unawaited(LaunchUrl.launchAppLink(Env.privacyPolicyUrl));
+                  }
+                  if (setting == WorkoutSettings.termsAndConditions) {
+                    unawaited(LaunchUrl.launchAppLink(Env.termsOfUseUrl));
+                  }
+                  if (setting.route != null) {
+                    setting.push(context);
+                  }
                 },
               );
             },
             separatorBuilder: (context, index) => const SizedBox(height: 12),
           ),
         ),
+
+        const SliverPadding(padding: .all(16), sliver: AppVersionWidget()),
         const SliverPadding(padding: .only(bottom: 32)),
       ],
+    );
+  }
+}
+
+class AppVersionWidget extends StatelessWidget {
+  const AppVersionWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final appVersion = di.getIt<SystemInfoServiceI>().appVersion;
+    return SliverToBoxAdapter(
+      child: Text(
+        'App Version: $appVersion',
+        textAlign: .center,
+        style: subheadH5Medium.copyWith(color: context.appTheme.beige700),
+      ),
     );
   }
 }

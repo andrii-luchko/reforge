@@ -1,14 +1,14 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/app/utils/helpers/meta_data.dart';
 import 'package:reforge/features/leaderboard/data/models/leaderboard_user.dart';
-import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_model.dart';
+import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
 
 part 'leaderboard_users_response.freezed.dart';
 part 'leaderboard_users_response.g.dart';
 
 typedef MappedLeaderboardData = ({
-  LeaderboardUserModel currentUser,
-  List<LeaderboardUserModel> usersList,
+  LeaderboardUserEntity currentUser,
+  List<LeaderboardUserEntity> usersList,
   int totalPages,
 });
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:reforge/app/theme/app_theme.dart';
 
 import 'package:reforge/shared/app_cached_net_image.dart';
@@ -20,6 +21,7 @@ class BadgeImage extends StatelessWidget {
 
   final String _path;
   final bool _isAsset;
+
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(11);
@@ -47,8 +49,7 @@ class BadgeImage extends StatelessWidget {
             ),
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(12),
-
+                padding: const EdgeInsets.all(1),
                 child: _buildImage(),
               ),
             ),
@@ -62,16 +63,13 @@ class BadgeImage extends StatelessWidget {
     if (_isAsset) {
       return Image.asset(
         _path,
-        fit: BoxFit.contain,
       );
     } else {
-      return AppCachedNetImage(
+      return AppCachedNetSVGImage(
         imageUrl: _path,
         errorWidget: const Icon(
           Icons.image_not_supported_rounded,
         ),
-        // errorWidget: Image.asset(Assets.images.png.icon1024x1024.path),
-        // fit: BoxFit.contain,
       );
     }
   }

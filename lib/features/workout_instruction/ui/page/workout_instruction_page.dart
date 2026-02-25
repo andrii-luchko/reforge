@@ -1,14 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_common/ui/widgets/app_tags_list_view.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_instruction/ui/widgets/exercise_description_section.dart';
 import 'package:reforge/features/workout_instruction/ui/widgets/instruction_section.dart';
 import 'package:reforge/features/workout_instruction/ui/widgets/video_section.dart';
-import 'package:reforge/shared/uikit/app_app_bar.dart';
+import 'package:reforge/shared/default_sliver_app_bar.dart';
+
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
@@ -20,26 +19,14 @@ class WorkoutInstructionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       extendBody: true,
 
-      appBar: AppAppBar(
-        onPressed: Navigator.of(context).pop,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Text(
-              name,
-              style: subheadH1Medium.copyWith(color: appTheme.beige100),
-            ),
-          ),
-        ],
-      ),
       body: DefaultBackground(
         body: WorkoutInstructionBody(
+          name: name,
           workoutId: workoutId,
         ),
       ),
@@ -49,10 +36,12 @@ class WorkoutInstructionPage extends StatelessWidget {
 
 class WorkoutInstructionBody extends StatelessWidget {
   const WorkoutInstructionBody({
+    required this.name,
     required this.workoutId,
     super.key,
   });
 
+  final String name;
   final int workoutId;
 
   @override
@@ -68,33 +57,43 @@ class WorkoutInstructionBody extends StatelessWidget {
         if (programDay == null || exercise == null) {
           return const ScreenLoadingIndicator();
         }
-
         return SafeArea(
+          top: false,
           bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: .start,
-                children: [
-                  VideoSection(
+          child: CustomScrollView(
+            slivers: [
+              DefaultSliverAppBar(onPressed: Navigator.of(context).pop, title: name),
+              SliverPadding(
+                padding: const .symmetric(horizontal: 16, vertical: 16),
+                sliver: SliverToBoxAdapter(
+                  child: VideoSection(
                     videoUrl: exercise.videoInstructionUrl,
                   ),
-                  const SizedBox(height: 16),
-
-                  const AppTagsListView(tags: []),
-
-                  const SizedBox(height: 32),
-                  ExerciseDescriptionSection(
+                ),
+              ),
+              const SliverPadding(
+                padding: .symmetric(horizontal: 16, vertical: 16),
+                sliver: SliverToBoxAdapter(
+                  child: AppTagsListView(tags: []),
+                ),
+              ),
+              SliverPadding(
+                padding: const .symmetric(horizontal: 16),
+                sliver: SliverToBoxAdapter(
+                  child: ExerciseDescriptionSection(
                     description: exercise.description,
                   ),
-                  const SizedBox(height: 32),
-                  InstructionSection(
+                ),
+              ),
+              SliverPadding(
+                padding: const .symmetric(horizontal: 16, vertical: 16),
+                sliver: SliverToBoxAdapter(
+                  child: InstructionSection(
                     steps: exercise.instructionsSteps,
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },

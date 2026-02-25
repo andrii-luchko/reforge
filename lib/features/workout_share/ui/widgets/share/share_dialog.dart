@@ -59,6 +59,7 @@ class _ShareDialogContent extends StatefulWidget {
 class _ShareDialogContentState extends State<_ShareDialogContent> {
   final GlobalKey _contentKey = GlobalKey();
   bool _isLoading = false;
+  bool _isSaved = false;
 
   Future<void> _performAction(Future<void> Function() action) async {
     if (_isLoading) return;
@@ -122,13 +123,18 @@ class _ShareDialogContentState extends State<_ShareDialogContent> {
                     Expanded(
                       child: PrimaryButton(
                         text: t.workout_share.save,
-                        onPressed: () => _performAction(() async {
-                          final saved = await widget.controller.captureAndSaveToGallery(_contentKey);
+                        onPressed: _isSaved
+                            ? null
+                            : () => _performAction(() async {
+                                final saved = await widget.controller.captureAndSaveToGallery(_contentKey);
 
-                          if (saved) {
-                            toastification.showSimpleToast(t.workout_share.saved);
-                          }
-                        }),
+                                if (saved) {
+                                  toastification.showSimpleToast(t.workout_share.saved);
+                                  setState(() {
+                                    _isSaved = true;
+                                  });
+                                }
+                              }),
                       ),
                     ),
                   ],

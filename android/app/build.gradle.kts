@@ -33,7 +33,7 @@ android {
     defaultConfig {
         applicationId = "com.reforgestudios.reforge"
         minSdk = flutter.minSdkVersion
-        targetSdk = 34
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -49,6 +49,13 @@ android {
 
     buildTypes {
         release {
+        isMinifyEnabled = true
+        isShrinkResources = true 
+        
+        proguardFiles(
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            "proguard-rules.pro"
+        )
             signingConfig = signingConfigs.getByName("release")
         }
     }

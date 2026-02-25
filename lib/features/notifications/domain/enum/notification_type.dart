@@ -28,40 +28,47 @@ enum NotificationType {
       unknown => Assets.images.icons.bell,
     };
   }
+
+  static NotificationType fromJson(String json) {
+    return NotificationType.values.firstWhere(
+      (e) => e.name == json,
+      orElse: () => NotificationType.unknown,
+    );
+  }
 }
 
 extension NotificationTypeExtension on NotificationType {
   String title(Translations t) {
     switch (this) {
       case NotificationType.plateUnlocked:
-        return 'New Plate Unlocked';
+        return 'New Plate Unlocked!';
       case NotificationType.xpSummary:
-        return 'XP Summary';
+        return 'Weekly Gains Summary';
       case NotificationType.rankUpdate:
-        return 'Rank Progress Update';
+        return 'Rank Level Up!';
       case NotificationType.weeklyWinner:
-        return 'Weekly Faction Winner';
+        return 'Weekly Champion!';
       case NotificationType.paymentFailed:
-        return 'Payment Failed';
+        return 'Subscription Issue';
       case NotificationType.unknown:
-        return t.notifications.defaultTitle;
+        return 'New Update';
     }
   }
 
   String description(Translations t) {
     switch (this) {
       case NotificationType.plateUnlocked:
-        return 'New Plate Unlocked';
+        return 'Incredible! You’ve earned a new plate. Check out your updated collection in the profile.';
       case NotificationType.xpSummary:
-        return 'XP Summary';
+        return 'Your weekly effort in numbers. See how much XP you’ve racked up this week!';
       case NotificationType.rankUpdate:
-        return 'Rank Progress Update';
+        return 'Witness the fitness! You’ve just reached a new rank. Keep pushing to the next level.';
       case NotificationType.weeklyWinner:
-        return 'Weekly Faction Winner';
+        return 'You crushed the competition and took the top spot this week. Legend!';
       case NotificationType.paymentFailed:
-        return 'Payment Failed';
+        return 'We couldn’t process your payment. Update your billing info to keep your streak alive.';
       case NotificationType.unknown:
-        return t.notifications.defaultTitle;
+        return 'Something new is happening in Reforge. Open the app to check it out.';
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 
 class RadioButtonOption extends StatelessWidget {
   const RadioButtonOption({
@@ -24,7 +25,9 @@ class RadioButtonOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
-    return GestureDetector(
+    return PressableAnimation(
+      scaleAmount: 0.99,
+      enabledFeedback: false,
       onTap: () {
         onTap();
         unawaited(HapticFeedback.selectionClick());

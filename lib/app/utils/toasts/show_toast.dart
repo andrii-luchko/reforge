@@ -6,21 +6,28 @@ import 'package:reforge/shared/uikit/toasts/app_simple_toast.dart';
 import 'package:toastification/toastification.dart';
 
 extension CustomToast on Toastification {
-  ToastificationItem showNotificationToast(NotificationEntity notification) {
+  ToastificationItem showNotificationToast(
+    NotificationEntity notification,
+    VoidCallback onNotificationPressed,
+  ) {
     return toastification.showCustom(
       autoCloseDuration: const Duration(seconds: 5),
-      alignment: Alignment.topRight,
+      alignment: Alignment.topCenter,
       dismissDirection: DismissDirection.none,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
       },
       builder: (context, item) {
-        return Align(
-          alignment: item.alignment,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Align(
+            alignment: item.alignment,
             child: GestureDetector(
-              onTap: () => toastification.dismiss(item),
+              onTap: () {
+                toastification.dismiss(item);
+                onNotificationPressed();
+              },
+              onHorizontalDragStart: (details) => toastification.dismiss(item),
               child: NotificationListTile(notification: notification),
             ),
           ),

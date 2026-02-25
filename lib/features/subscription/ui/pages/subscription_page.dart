@@ -21,6 +21,7 @@ class SubscriptionPage extends StatelessWidget {
         return BaseSettingsEditPage(
           title: WorkoutSettings.subscription.title(t),
           body: const SubscriptionsContent(),
+          showBottomPadding: false,
           onRefresh: () => context.read<SubscriptionCubit>().loadOfferings(),
           overlay: state.isPurchasing ? const ScreenLoadingIndicator() : null,
         );

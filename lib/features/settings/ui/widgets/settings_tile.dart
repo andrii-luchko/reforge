@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SettingTile extends StatelessWidget {
@@ -17,9 +18,9 @@ class SettingTile extends StatelessWidget {
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(20);
     return Skeleton.leaf(
-      child: InkWell(
+      child: PressableAnimation(
+        scaleAmount: 0.99,
         onTap: onPressed,
-        borderRadius: borderRadius,
         child: Container(
           padding: const .all(16),
           decoration: BoxDecoration(

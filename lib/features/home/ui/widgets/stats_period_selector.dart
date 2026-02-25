@@ -76,7 +76,7 @@ class StatsPeriodSelector extends StatelessWidget {
       children: StatsPeriod.values.map((period) {
         final isSelected = selectedPeriod == period;
 
-        return InkWell(
+        return GestureDetector(
           onTap: () {
             onChanged(period);
             onClose();

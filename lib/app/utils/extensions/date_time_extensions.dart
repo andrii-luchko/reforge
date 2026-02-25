@@ -17,6 +17,10 @@ extension DateTimeFormatting on DateTime {
     return DateFormat('yyyy-MM').format(this);
   }
 
+  String get shortMonthName => DateFormat.MMM().format(this);
+
+  String get fullMonthName => DateFormat.MMMM().format(this);
+
   String toNotificationTime() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

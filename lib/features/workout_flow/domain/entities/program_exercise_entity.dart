@@ -14,4 +14,9 @@ class ProgramExerciseEntity {
   final int sets;
   final int order;
   final ExerciseDetailsEntity exerciseDetails;
+
+  @override
+  String toString() {
+    return 'ProgramExerciseEntity(id: $id, programDayId: $programDayId, sets: $sets, order: $order, exerciseDetails: $exerciseDetails)';
+  }
 }

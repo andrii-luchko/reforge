@@ -1,5 +1,5 @@
-class LeaderboardUserModel {
-  const LeaderboardUserModel({
+class LeaderboardUserEntity {
+  const LeaderboardUserEntity({
     required this.rank,
     required this.username,
     required this.avatarUrl,
@@ -13,6 +13,6 @@ class LeaderboardUserModel {
 
   @override
   String toString() {
-    return 'LeaderboardUserModel(rank: $rank, username: $username, avatarUrl: $avatarUrl, xp: $xp)';
+    return 'LeaderboardUserEntity(rank: $rank, username: $username, avatarUrl: $avatarUrl, xp: $xp)';
   }
 }

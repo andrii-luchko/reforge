@@ -63,6 +63,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/cup.svg
   String get cup => 'assets/images/icons/cup.svg';
 
+  /// File path: assets/images/icons/document.svg
+  String get document => 'assets/images/icons/document.svg';
+
   /// File path: assets/images/icons/dumbbell.svg
   String get dumbbell => 'assets/images/icons/dumbbell.svg';
 
@@ -149,6 +152,7 @@ class $AssetsImagesIconsGen {
     check,
     computing,
     cup,
+    document,
     dumbbell,
     eye,
     eyeSlash,
@@ -200,11 +204,17 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/foreground-512x512.png
   AssetGenImage get foreground512x512 => const AssetGenImage('assets/images/png/foreground-512x512.png');
 
+  /// File path: assets/images/png/gakki_rank_card.jpg
+  AssetGenImage get gakkiRankCard => const AssetGenImage('assets/images/png/gakki_rank_card.jpg');
+
   /// File path: assets/images/png/gold_envelope.png
   AssetGenImage get goldEnvelope => const AssetGenImage('assets/images/png/gold_envelope.png');
 
   /// File path: assets/images/png/gold_envelope_plus.png
   AssetGenImage get goldEnvelopePlus => const AssetGenImage('assets/images/png/gold_envelope_plus.png');
+
+  /// File path: assets/images/png/gyohyo_rank_card.jpg
+  AssetGenImage get gyohyoRankCard => const AssetGenImage('assets/images/png/gyohyo_rank_card.jpg');
 
   /// File path: assets/images/png/icon-1024x1024.png
   AssetGenImage get icon1024x1024 => const AssetGenImage('assets/images/png/icon-1024x1024.png');
@@ -214,6 +224,9 @@ class $AssetsImagesPngGen {
 
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
+
+  /// File path: assets/images/png/seiren_rank_card.jpg
+  AssetGenImage get seirenRankCard => const AssetGenImage('assets/images/png/seiren_rank_card.jpg');
 
   /// File path: assets/images/png/shader_noise.png
   AssetGenImage get shaderNoise => const AssetGenImage('assets/images/png/shader_noise.png');
@@ -233,11 +246,14 @@ class $AssetsImagesPngGen {
     factionSeiren,
     factions,
     foreground512x512,
+    gakkiRankCard,
     goldEnvelope,
     goldEnvelopePlus,
+    gyohyoRankCard,
     icon1024x1024,
     lock,
     noiseAndTexture,
+    seirenRankCard,
     shaderNoise,
     smoke,
     splashLogo,
@@ -246,6 +262,9 @@ class $AssetsImagesPngGen {
 
 class $AssetsImagesSvgGen {
   const $AssetsImagesSvgGen();
+
+  /// File path: assets/images/svg/lock.svg
+  String get lock => 'assets/images/svg/lock.svg';
 
   /// File path: assets/images/svg/logo.svg
   String get logo => 'assets/images/svg/logo.svg';
@@ -263,7 +282,7 @@ class $AssetsImagesSvgGen {
   String get trophy => 'assets/images/svg/trophy.svg';
 
   /// List of all assets
-  List<String> get values => [logo, logoAndName, logoSplash, rankCard, trophy];
+  List<String> get values => [lock, logo, logoAndName, logoSplash, rankCard, trophy];
 }
 
 class Assets {

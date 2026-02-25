@@ -6,6 +6,7 @@ part 'register_tokens_request.g.dart';
 
 @freezed
 sealed class RegisterFcmTokensRequestDto with _$RegisterFcmTokensRequestDto {
+  const RegisterFcmTokensRequestDto._();
   const factory RegisterFcmTokensRequestDto({
     required String token,
     required DeviceType deviceType,

@@ -11,7 +11,6 @@ import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/ui/widgets/faction_selector.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -35,11 +34,8 @@ class ChangeFactionPage extends StatelessWidget {
         return GenericValidationCubit<List<Faction>>(
           initialValue: initialFactions,
           validator: (value) {
-            // if (value.isEmpty) {
-            //   return 'You need to select at least one Faction';
-            // }
-            if (value.length < 2) {
-              return t.settings.selectAtLeast2Factions;
+            if (value.isEmpty) {
+              return t.settings.factionsEmpty;
             }
             return null;
           },
@@ -60,15 +56,14 @@ class ChangeFactionPage extends StatelessWidget {
     Result<User> result;
 
     if (factions.length == 1) {
-      result = await cubit.updateProfile(
-        PatchProfileRequest(
-          mainFaction: factions.first.id,
-          secondFaction: 0,
-        ),
+      result = await cubit.updateFactions(
+        mainFaction: factions.first.id,
+        secondFaction: null,
       );
     } else {
-      result = await cubit.updateProfile(
-        PatchProfileRequest(mainFaction: factions.first.id, secondFaction: factions[1].id),
+      result = await cubit.updateFactions(
+        mainFaction: factions.first.id,
+        secondFaction: factions[1].id,
       );
     }
 

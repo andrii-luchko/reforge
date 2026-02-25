@@ -4,12 +4,10 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 
 abstract interface class UserRemoteDataSource {
   Future<User> getCurrentUser();
   Future<User> updateProfile(UpdateProfileRequest request);
-  Future<User> patchUser(PatchProfileRequest request);
   Future<void> deleteUser();
   Future<void> deleteUserById(int id);
   Future<String> uploadUserAvatar(File file);
@@ -36,13 +34,6 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<User> patchUser(PatchProfileRequest request) async {
-    final response = await _apiClient.updateCurrentUser(request);
-
-    return response.data;
-  }
-
-  @override
   Future<void> deleteUser() async {
     await _apiClient.deleteUser();
   }
@@ -61,8 +52,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
   @override
   Future<User> updateUserEmail(String email, int userId) async {
-    final request = PatchProfileRequest(emailAddress: email);
-    final response = await _apiClient.updateCurrentUserEmail(userId, request);
+    final response = await _apiClient.updateCurrentUserEmail(userId, email);
     return response.data;
   }
 }
