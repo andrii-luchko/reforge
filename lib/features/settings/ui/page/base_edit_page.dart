@@ -13,6 +13,7 @@ class BaseSettingsEditPage extends StatelessWidget {
     required this.body,
     this.onRefresh,
     this.overlay,
+    this.showBottomPadding = true,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class BaseSettingsEditPage extends StatelessWidget {
   final Widget body;
   final Future<void> Function()? onRefresh;
   final Widget? overlay;
+  final bool showBottomPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,6 @@ class BaseSettingsEditPage extends StatelessWidget {
           padding: DefaultSliverAppBar.horizontalPadding,
           sliver: body,
         ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 2)),
       ],
     );
 
@@ -61,6 +62,8 @@ class BaseSettingsEditPage extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       body: DefaultBackground(
         body: SafeArea(
+          top: false,
+          bottom: showBottomPadding,
           child: bodyContent,
         ),
         additionalAnimationsBehind: const [ParticlesWidget()],

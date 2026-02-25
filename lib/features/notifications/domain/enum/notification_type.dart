@@ -28,6 +28,13 @@ enum NotificationType {
       unknown => Assets.images.icons.bell,
     };
   }
+
+  static NotificationType fromJson(String json) {
+    return NotificationType.values.firstWhere(
+      (e) => e.name == json,
+      orElse: () => NotificationType.unknown,
+    );
+  }
 }
 
 extension NotificationTypeExtension on NotificationType {

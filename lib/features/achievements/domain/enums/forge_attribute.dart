@@ -1,6 +1,12 @@
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-enum ForgeAttribute { kobo, kozuchi, sensho, kobokai, kannuki }
+enum ForgeAttribute {
+  kobo,
+  kannuki,
+  kozuchi,
+  sensho,
+  kobokai,
+}
 
 extension ForgeAttributeX on ForgeAttribute {
   String title(Translations t) {

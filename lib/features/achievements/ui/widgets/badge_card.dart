@@ -11,7 +11,7 @@ class BadgeCard extends StatelessWidget {
   final BadgeEntity badge;
   @override
   Widget build(BuildContext context) {
-    final image = badge.imageUrl.isNotEmpty
+    final image = !badge.isLocked
         ? BadgeImage.network(
             url: badge.imageUrl,
           )

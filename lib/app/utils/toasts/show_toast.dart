@@ -15,12 +15,15 @@ extension CustomToast on Toastification {
         return FadeTransition(opacity: animation, child: child);
       },
       builder: (context, item) {
-        return Align(
-          alignment: item.alignment,
-          child: GestureDetector(
-            onTap: () => toastification.dismiss(item),
-            onHorizontalDragStart: (details) => toastification.dismiss(item),
-            child: NotificationListTile(notification: notification),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Align(
+            alignment: item.alignment,
+            child: GestureDetector(
+              onTap: () => toastification.dismiss(item),
+              onHorizontalDragStart: (details) => toastification.dismiss(item),
+              child: NotificationListTile(notification: notification),
+            ),
           ),
         );
       },

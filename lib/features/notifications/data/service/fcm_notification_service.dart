@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/notifications/data/mapper/remote_notification_mapper.dart';
 import 'package:reforge/features/notifications/data/models/notification_model_dto.dart';
 import 'package:reforge/features/notifications/data/repository/notification_repository.dart';
+import 'package:reforge/features/notifications/domain/enum/notification_type.dart';
 import 'package:toastification/toastification.dart';
 
 @singleton
@@ -42,17 +43,22 @@ class FcmNotificationService {
     final data = message.data;
     final notification = message.notification;
     if (notification != null) {
-      _tryParseData(data);
-      // Could navigate to notifications page, etc.
+      final type = _tryParseData(data);
+
+      if (type == NotificationType.paymentFailed) {}
     }
   }
 
-  void _tryParseData(Map<String, dynamic> data) {
+  NotificationType _tryParseData(Map<String, dynamic> data) {
     try {
-      logger.d(NotificationModelDto.fromJson(data));
+      final notificationType = NotificationType.fromJson(data['type'].toString());
+      logger.d('notificationType $notificationType');
+
+      return notificationType;
       // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       logger.d(e);
+      return NotificationType.unknown;
     }
   }
 
