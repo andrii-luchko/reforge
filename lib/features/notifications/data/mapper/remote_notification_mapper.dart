@@ -4,13 +4,13 @@ import 'package:reforge/features/notifications/domain/enum/notification_type.dar
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 extension RemoteNotificationMapper on RemoteNotification {
-  NotificationEntity toNotificationEntity() {
+  NotificationEntity toNotificationEntity(NotificationType type) {
     return NotificationEntity(
       id: Object.hashAll([title, body, DateTime.now().millisecondsSinceEpoch]),
       title: title ?? t.notifications.defaultTitle,
       subtitle: body ?? '',
       date: DateTime.now(),
-      type: NotificationType.unknown,
+      type: type,
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
@@ -19,7 +20,6 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/data/services/system_info_services.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
-import 'package:reforge/features/settings/ui/helpers/settings_navigation.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_image_piker.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_tile.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -259,7 +259,9 @@ class SettingsGroup extends StatelessWidget {
                 title: setting.title(t),
                 text: setting.getDisplayValue(user, t),
                 onPressed: () async {
-                  SettingsNavigation.open(context, setting, user);
+                  if (setting.route != null) {
+                    setting.push(context);
+                  }
                 },
               );
             },
@@ -291,14 +293,15 @@ class SettingsGroup extends StatelessWidget {
                 title: setting.title(t),
                 text: setting.getDisplayValue(user, t),
                 onPressed: () async {
-                  if (setting == .privacy) {
+                  if (setting == WorkoutSettings.privacy) {
                     unawaited(LaunchUrl.launchAppLink(Env.privacyPolicyUrl));
                   }
-                  if (setting == .termsAndConditions) {
+                  if (setting == WorkoutSettings.termsAndConditions) {
                     unawaited(LaunchUrl.launchAppLink(Env.termsOfUseUrl));
                   }
-
-                  SettingsNavigation.open(context, setting, user);
+                  if (setting.route != null) {
+                    setting.push(context);
+                  }
                 },
               );
             },

@@ -1,4 +1,6 @@
 // ignore_for_file: prefer_match_file_name
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +8,10 @@ import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/root/ui/page/root_page.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
 import 'package:reforge/features/achievements/ui/page/badges_page.dart';
 import 'package:reforge/features/achievements/ui/page/ranks_page.dart';
@@ -35,8 +39,20 @@ import 'package:reforge/features/lore/ui/page/lore_page.dart';
 import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
+import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
+import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
+import 'package:reforge/features/settings/ui/helpers/settings_navigation.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/change_faction_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/date_of_birth_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/email_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/height_and_weight_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/measurement_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/name_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/notification_content.dart';
+import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
+import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_achievement_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_shell.dart';
@@ -195,7 +211,22 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
     ),
     // 5. Settings
     TypedStatefulShellBranch<SettingsBranch>(
-      routes: [TypedGoRoute<SettingsPageRoute>(path: '/settings')],
+      routes: [
+        TypedGoRoute<SettingsPageRoute>(
+          path: '/settings',
+          routes: [
+            TypedGoRoute<SettingsNamePageRoute>(path: 'name'),
+            TypedGoRoute<SettingsEmailPageRoute>(path: 'email'),
+            TypedGoRoute<SettingsDateOfBirthPageRoute>(path: 'date-of-birth'),
+            TypedGoRoute<SettingsHeightAndWeightPageRoute>(path: 'height-and-weight'),
+            TypedGoRoute<SettingsWorkoutDaysPageRoute>(path: 'workout-days'),
+            TypedGoRoute<SettingsFactionPageRoute>(path: 'faction'),
+            TypedGoRoute<SettingsMeasurementPageRoute>(path: 'measurement'),
+            TypedGoRoute<SettingsNotificationPageRoute>(path: 'notifications'),
+            TypedGoRoute<SettingsSubscriptionPageRoute>(path: 'subscription'),
+          ],
+        ),
+      ],
     ),
   ],
 )
@@ -313,6 +344,195 @@ class SettingsPageRoute extends GoRouteData with $SettingsPageRoute {
   Widget build(BuildContext context, GoRouterState state) {
     return const SettingsPage();
   }
+}
+
+class SettingsNamePageRoute extends GoRouteData with $SettingsNamePageRoute {
+  const SettingsNamePageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(ProfileSettings.name),
+      child: NamePage(name: onboarded.userName),
+    );
+  }
+}
+
+class SettingsEmailPageRoute extends GoRouteData with $SettingsEmailPageRoute {
+  const SettingsEmailPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(ProfileSettings.email),
+      child: EmailPage(initialEmail: onboarded.email),
+    );
+  }
+}
+
+class SettingsDateOfBirthPageRoute extends GoRouteData with $SettingsDateOfBirthPageRoute {
+  const SettingsDateOfBirthPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(ProfileSettings.dateOfBirth),
+      child: DateOfBirthPage(dateOfBirth: onboarded.birthDate),
+    );
+  }
+}
+
+class SettingsHeightAndWeightPageRoute extends GoRouteData with $SettingsHeightAndWeightPageRoute {
+  const SettingsHeightAndWeightPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(ProfileSettings.heightAndWeight),
+      child: HeightAndWeightPage(
+        weight: onboarded.displayedWeight,
+        system: onboarded.measurementSystem,
+      ),
+    );
+  }
+}
+
+class SettingsWorkoutDaysPageRoute extends GoRouteData with $SettingsWorkoutDaysPageRoute {
+  const SettingsWorkoutDaysPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(WorkoutSettings.workoutDays),
+      child: WorkoutDaysPage(
+        workoutsPerWeek: onboarded.workoutsPerWeek,
+        specificWeekDays: onboarded.specificWeekDays,
+      ),
+    );
+  }
+}
+
+class SettingsFactionPageRoute extends GoRouteData with $SettingsFactionPageRoute {
+  const SettingsFactionPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(WorkoutSettings.faction),
+      child: ChangeFactionPage(initialFactions: onboarded.factionsList),
+    );
+  }
+}
+
+class SettingsMeasurementPageRoute extends GoRouteData with $SettingsMeasurementPageRoute {
+  const SettingsMeasurementPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final user = context.read<UserCubit>().state.userOrNull;
+    final onboarded = user is OnboardedUser ? user : null;
+    if (onboarded == null) {
+      return const _SettingsRedirectToSettings();
+    }
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(WorkoutSettings.measureSystem),
+      child: MeasurementPage(system: onboarded.measurementSystem),
+    );
+  }
+}
+
+class SettingsNotificationPageRoute extends GoRouteData with $SettingsNotificationPageRoute {
+  const SettingsNotificationPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(WorkoutSettings.notification),
+      child: const SettingsNotificationPage(),
+    );
+  }
+}
+
+class SettingsSubscriptionPageRoute extends GoRouteData with $SettingsSubscriptionPageRoute {
+  const SettingsSubscriptionPageRoute();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return SettingsScreenWithAnalytics(
+      event: SettingsNavigation.eventFor(WorkoutSettings.subscription),
+      child: const SubscriptionPage(),
+    );
+  }
+}
+
+class _SettingsRedirectToSettings extends StatefulWidget {
+  const _SettingsRedirectToSettings();
+
+  @override
+  State<_SettingsRedirectToSettings> createState() => _SettingsRedirectToSettingsState();
+}
+
+class _SettingsRedirectToSettingsState extends State<_SettingsRedirectToSettings> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.go(const SettingsPageRoute().location);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 @TypedGoRoute<CalendarPageRoute>(path: '/calendar')
@@ -534,5 +754,38 @@ class WorkoutSummaryPageRoute extends GoRouteData with $WorkoutSummaryPageRoute 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const WorkoutSummaryPage();
+  }
+}
+
+// Extension: setting → route (nullable) and push; used from settings_page.
+extension ProfileSettingsRouteX on ProfileSettings {
+  GoRouteData? get route => switch (this) {
+        ProfileSettings.name => const SettingsNamePageRoute(),
+        ProfileSettings.email => const SettingsEmailPageRoute(),
+        ProfileSettings.dateOfBirth => const SettingsDateOfBirthPageRoute(),
+        ProfileSettings.heightAndWeight => const SettingsHeightAndWeightPageRoute(),
+        ProfileSettings.image => null,
+      };
+
+  void push(BuildContext context) {
+    final r = route;
+    if (r != null) unawaited(context.push(r.location));
+  }
+}
+
+extension WorkoutSettingsRouteX on WorkoutSettings {
+  GoRouteData? get route => switch (this) {
+        WorkoutSettings.workoutDays => const SettingsWorkoutDaysPageRoute(),
+        WorkoutSettings.faction => const SettingsFactionPageRoute(),
+        WorkoutSettings.measureSystem => const SettingsMeasurementPageRoute(),
+        WorkoutSettings.notification => const SettingsNotificationPageRoute(),
+        WorkoutSettings.subscription => const SettingsSubscriptionPageRoute(),
+        WorkoutSettings.privacy => null,
+        WorkoutSettings.termsAndConditions => null,
+      };
+
+  void push(BuildContext context) {
+    final r = route;
+    if (r != null) unawaited(context.push(r.location));
   }
 }
