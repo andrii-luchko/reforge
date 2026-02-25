@@ -234,7 +234,6 @@ class SettingsGroup extends StatelessWidget {
                     imageUrl: user.avatarUrl,
                     onPressed: () async {
                       final pickedData = await ImagePickerService.pickAndCrop(context);
-
                       if (pickedData == null) return;
 
                       logger.d(

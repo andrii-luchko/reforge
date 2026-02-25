@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/data/datasources/user_local_datasource.dart';
@@ -55,6 +56,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   @override
   Future<Result<User>> updateUser(requests.PatchProfileRequest request) async {
     try {
+      logger.d(request);
       final updatedUser = await makeRequest(
         () => _remoteDataSource.patchUser(request),
         label: 'updateUser',

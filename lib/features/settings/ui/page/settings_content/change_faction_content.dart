@@ -35,11 +35,8 @@ class ChangeFactionPage extends StatelessWidget {
         return GenericValidationCubit<List<Faction>>(
           initialValue: initialFactions,
           validator: (value) {
-            // if (value.isEmpty) {
-            //   return 'You need to select at least one Faction';
-            // }
-            if (value.length < 2) {
-              return t.settings.selectAtLeast2Factions;
+            if (value.isEmpty) {
+              return t.settings.factionsEmpty;
             }
             return null;
           },
@@ -63,7 +60,7 @@ class ChangeFactionPage extends StatelessWidget {
       result = await cubit.updateProfile(
         PatchProfileRequest(
           mainFaction: factions.first.id,
-          secondFaction: 0,
+          secondFaction: null,
         ),
       );
     } else {

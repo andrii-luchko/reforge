@@ -236,9 +236,12 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<void>> login(int id) async {
     try {
-      // final user = await Purchases.getCustomerInfo();
-
-      // if (user.originalAppUserId == id.toString()) return const Result.success(null);
+      final user = await Purchases.getCustomerInfo();
+      logger.d('${user.originalAppUserId} ==  $id: ${user.originalAppUserId == id.toString()}');
+      if (user.originalAppUserId == id.toString()) {
+        logger.d('revenueCat loginResult: same id, already up to date ');
+        return const Result.success(null);
+      }
 
       final info = await makeRequest(
         () => Purchases.logIn(id.toString()),
@@ -246,7 +249,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         transformError: _transformRevenueCatError,
       );
 
-      logger.d('revenueCat loginreuslt: ${info.created}');
+      logger.d('revenueCat loginResult: ${info.created}');
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
