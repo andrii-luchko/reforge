@@ -1,7 +1,6 @@
 // ignore_for_file: no_empty_block
 import 'dart:async';
 import 'dart:io';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -15,7 +14,8 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/settings/domain/repositories/profile_repository.dart';
 
 part 'user_cubit.freezed.dart';
 part 'user_state.dart';
@@ -25,6 +25,7 @@ class UserCubit extends Cubit<UserState> {
   UserCubit(
     this._authCubit,
     this._userRepository,
+    this._profileRepository,
     this._userSessionService,
     this._analytics,
   ) : super(const UserState.loading()) {
@@ -34,6 +35,7 @@ class UserCubit extends Cubit<UserState> {
 
   final AuthCubit _authCubit;
   final UserRepository _userRepository;
+  final ProfileRepository _profileRepository;
   final UserSessionService _userSessionService;
   final AnalyticsService _analytics;
   StreamSubscription<AuthState>? _authSubscription;
@@ -158,43 +160,93 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<Result<User>> updateProfile(PatchProfileRequest request) async {
+  Future<Result<User>> updateUsername(String username) async {
     if (state case final Loaded currentState) {
       final oldUser = currentState.user;
-
-      if (_isSameData(oldUser, request)) {
-        return Result.success(oldUser);
-      }
       emit(UserState.updating(oldUser));
-
-      final result = await _userRepository.updateUser(request);
-
-      await _updateUser(result, oldUser);
+      final result = await _profileRepository.updateUsername(username);
+      return _updateUser(result, oldUser);
     }
     return Result.error(Exception('User not loaded'));
   }
 
-  bool _isSameData(User user, PatchProfileRequest request) {
-    if (user is! OnboardedUser) return false;
-
-    if (request.username != null && user.userName != request.username) return false;
-    if (request.avatarUrl != null && user.avatarUrl != request.avatarUrl) return false;
-    if (request.mainFaction != null && user.factionId != request.mainFaction) return false;
-    if (request.secondFaction != null && user.secondaryFactionId != request.secondFaction) return false;
-    if (request.dateOfBirth != null && !DateUtils.isSameDay(user.birthDate, request.dateOfBirth)) return false;
-    if (request.measurementSystem != null && user.measurementSystem != request.measurementSystem) return false;
-    if (request.workoutDaysPerWeek != null && user.workoutsPerWeek != request.workoutDaysPerWeek) return false;
-
-    if (request.specificWorkoutDays != null) {
-      const listEquals = ListEquality();
-      if (!listEquals.equals(user.specificDays, request.specificWorkoutDays)) return false;
+  Future<Result<User>> updateAvatarURL(String avatarUrl) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateAvatar(avatarUrl);
+      return _updateUser(result, oldUser);
     }
+    return Result.error(Exception('User not loaded'));
+  }
 
-    if (request.bodyWeight != null && user.bodyWeight?.round() != request.bodyWeight) return false;
-    if (request.remindersEnabled != null && user.remindersEnabled != request.remindersEnabled) return false;
-    if (request.announcementsEnabled != null && user.announcementsEnabled != request.announcementsEnabled) return false;
+  Future<Result<User>> updateFactions({int? mainFaction, int? secondFaction}) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateFactions(
+        mainFaction: mainFaction,
+        secondFaction: secondFaction,
+      );
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
+  }
 
-    return true;
+  Future<Result<User>> updateBirthDate(DateTime birthDate) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateBirthDate(birthDate);
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
+  }
+
+  Future<Result<User>> updateMeasurementSystem(MeasurementSystem measurementSystem) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateMeasurementSystem(measurementSystem);
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
+  }
+
+  Future<Result<User>> updateWorkoutDays({int? workoutsPerWeek, List<int>? specificDays}) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateWorkoutDays(
+        workoutsPerWeek: workoutsPerWeek,
+        specificDays: specificDays,
+      );
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
+  }
+
+  Future<Result<User>> updateBodyWeight(int bodyWeight) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateBodyWeight(bodyWeight);
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
+  }
+
+  Future<Result<User>> updateNotificationSettings({bool? remindersEnabled, bool? announcementsEnabled}) async {
+    if (state case final Loaded currentState) {
+      final oldUser = currentState.user;
+      emit(UserState.updating(oldUser));
+      final result = await _profileRepository.updateNotificationSettings(
+        remindersEnabled: remindersEnabled,
+        announcementsEnabled: announcementsEnabled,
+      );
+      return _updateUser(result, oldUser);
+    }
+    return Result.error(Exception('User not loaded'));
   }
 
   Future<Result<User>> _updateUser(Result<User> result, User oldUser) async {
@@ -223,7 +275,7 @@ class UserCubit extends Cubit<UserState> {
     switch (result) {
       case Success(value: final url):
         logger.d(result);
-        await updateProfile(PatchProfileRequest(avatarUrl: url));
+        await updateAvatarURL(url);
       case ErrorR(error: final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
@@ -231,7 +283,7 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<void> deleteUserAvatar() async {
-    await updateProfile(const PatchProfileRequest(avatarUrl: 'undefined/bench-1rm-1.png'));
+    await updateAvatarURL('undefined/bench-1rm-1.png');
   }
 
   Future<Result<User>> updateEmail(String newEmail) async {

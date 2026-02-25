@@ -5,7 +5,6 @@ import 'package:reforge/app/utils/validators/name_validator.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
 import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -38,9 +37,8 @@ class NamePage extends StatelessWidget {
   }
 
   Future<void> onSave(String? value, UserCubit cubit) async {
-    final result = await cubit.updateProfile(
-      PatchProfileRequest(username: value),
-    );
+    if (value == null) return;
+    final result = await cubit.updateUsername(value);
     if (result case ErrorR(error: final e)) {
       throw e;
     }

@@ -24,7 +24,7 @@ import 'package:reforge/features/notifications/data/models/notification_model_dt
 import 'package:reforge/features/notifications/data/models/notification_test_request.dart';
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
+import 'package:reforge/features/settings/data/request/profile_requests.dart';
 import 'package:reforge/features/workout_common/models/complete_set_request.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
@@ -73,10 +73,31 @@ abstract class ApiClient {
   Future<BaseResponse<User>> getCurrentUser();
 
   @PATCH('/users/me')
-  Future<BaseResponse<User>> updateCurrentUser(@Body() PatchProfileRequest request);
+  Future<BaseResponse<User>> updateUsername(@BodyExtra('username') String username);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateAvatar(@BodyExtra('avatarUrl') String avatarUrl);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateFactions(@Body() UpdateFactionsRequest request);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateBirthDate(@BodyExtra('birthDate') String birthDate);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateMeasurementSystem(@Body() UpdateMeasurementSystemRequest request);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateWorkoutDays(@Body() UpdateWorkoutDaysRequest request);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateBodyWeight(@BodyExtra('bodyweight') int bodyWeight);
+
+  @PATCH('/users/me')
+  Future<BaseResponse<User>> updateNotificationSettings(@Body() UpdateNotificationsRequest request);
 
   @PATCH('/users/{id}/email')
-  Future<BaseResponse<User>> updateCurrentUserEmail(@Path('id') int id, @Body() PatchProfileRequest request);
+  Future<BaseResponse<User>> updateCurrentUserEmail(@Path('id') int id, @BodyExtra('email') String email);
 
   @DELETE('/users/me')
   Future<void> deleteUser();

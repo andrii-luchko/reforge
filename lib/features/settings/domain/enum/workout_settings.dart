@@ -39,7 +39,7 @@ extension WorkoutSettingsX on WorkoutSettings {
         user.secondaryFaction?.title(t),
       ].whereType<String>().where((s) => s.isNotEmpty).join(', '),
       WorkoutSettings.notification => null,
-      WorkoutSettings.measureSystem => user.measurementSystem.weightSymbol(t),
+      WorkoutSettings.measureSystem => user.measurementSystem.title(t),
       WorkoutSettings.workoutDays => t.settings.daysPerWeek(count: user.workoutsPerWeek),
       WorkoutSettings.privacy => null,
       WorkoutSettings.termsAndConditions => null,

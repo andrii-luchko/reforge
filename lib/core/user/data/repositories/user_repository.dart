@@ -2,14 +2,12 @@ import 'dart:io';
 
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/data/datasources/user_local_datasource.dart';
 import 'package:reforge/core/user/data/datasources/user_remote_datasource.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart' as requests;
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart' as requests;
 
 @Injectable(as: UserRepository)
 class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
@@ -45,21 +43,6 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
       final updatedUser = await makeRequest(
         () => _remoteDataSource.updateProfile(request),
         label: 'updateProfile',
-      );
-      await _localDataSource.saveUser(updatedUser);
-      return Result.success(updatedUser);
-    } on Exception catch (e) {
-      return Result.error(e);
-    }
-  }
-
-  @override
-  Future<Result<User>> updateUser(requests.PatchProfileRequest request) async {
-    try {
-      logger.d(request);
-      final updatedUser = await makeRequest(
-        () => _remoteDataSource.patchUser(request),
-        label: 'updateUser',
       );
       await _localDataSource.saveUser(updatedUser);
       return Result.success(updatedUser);

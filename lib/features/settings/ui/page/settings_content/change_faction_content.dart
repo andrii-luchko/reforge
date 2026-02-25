@@ -11,7 +11,6 @@ import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/ui/widgets/faction_selector.dart';
-import 'package:reforge/features/settings/data/request/patch_profile_request.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -57,15 +56,14 @@ class ChangeFactionPage extends StatelessWidget {
     Result<User> result;
 
     if (factions.length == 1) {
-      result = await cubit.updateProfile(
-        PatchProfileRequest(
-          mainFaction: factions.first.id,
-          secondFaction: null,
-        ),
+      result = await cubit.updateFactions(
+        mainFaction: factions.first.id,
+        secondFaction: null,
       );
     } else {
-      result = await cubit.updateProfile(
-        PatchProfileRequest(mainFaction: factions.first.id, secondFaction: factions[1].id),
+      result = await cubit.updateFactions(
+        mainFaction: factions.first.id,
+        secondFaction: factions[1].id,
       );
     }
 
