@@ -52,6 +52,7 @@ import 'package:reforge/features/settings/ui/page/settings_content/notification_
 import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
+import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_achievement_page.dart';
@@ -748,6 +749,16 @@ class WorkoutAchievementPageRoute extends GoRouteData with $WorkoutAchievementPa
   }
 }
 
+@TypedGoRoute<PayWallPageRoute>(path: '/paywall')
+class PayWallPageRoute extends GoRouteData with $PayWallPageRoute {
+  const PayWallPageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const PaywallPage();
+  }
+}
+
 class WorkoutSummaryPageRoute extends GoRouteData with $WorkoutSummaryPageRoute {
   const WorkoutSummaryPageRoute();
 
@@ -760,12 +771,12 @@ class WorkoutSummaryPageRoute extends GoRouteData with $WorkoutSummaryPageRoute 
 // Extension: setting → route (nullable) and push; used from settings_page.
 extension ProfileSettingsRouteX on ProfileSettings {
   GoRouteData? get route => switch (this) {
-        ProfileSettings.name => const SettingsNamePageRoute(),
-        ProfileSettings.email => const SettingsEmailPageRoute(),
-        ProfileSettings.dateOfBirth => const SettingsDateOfBirthPageRoute(),
-        ProfileSettings.heightAndWeight => const SettingsHeightAndWeightPageRoute(),
-        ProfileSettings.image => null,
-      };
+    ProfileSettings.name => const SettingsNamePageRoute(),
+    ProfileSettings.email => const SettingsEmailPageRoute(),
+    ProfileSettings.dateOfBirth => const SettingsDateOfBirthPageRoute(),
+    ProfileSettings.heightAndWeight => const SettingsHeightAndWeightPageRoute(),
+    ProfileSettings.image => null,
+  };
 
   void push(BuildContext context) {
     final r = route;
@@ -775,14 +786,14 @@ extension ProfileSettingsRouteX on ProfileSettings {
 
 extension WorkoutSettingsRouteX on WorkoutSettings {
   GoRouteData? get route => switch (this) {
-        WorkoutSettings.workoutDays => const SettingsWorkoutDaysPageRoute(),
-        WorkoutSettings.faction => const SettingsFactionPageRoute(),
-        WorkoutSettings.measureSystem => const SettingsMeasurementPageRoute(),
-        WorkoutSettings.notification => const SettingsNotificationPageRoute(),
-        WorkoutSettings.subscription => const SettingsSubscriptionPageRoute(),
-        WorkoutSettings.privacy => null,
-        WorkoutSettings.termsAndConditions => null,
-      };
+    WorkoutSettings.workoutDays => const SettingsWorkoutDaysPageRoute(),
+    WorkoutSettings.faction => const SettingsFactionPageRoute(),
+    WorkoutSettings.measureSystem => const SettingsMeasurementPageRoute(),
+    WorkoutSettings.notification => const SettingsNotificationPageRoute(),
+    WorkoutSettings.subscription => const SettingsSubscriptionPageRoute(),
+    WorkoutSettings.privacy => null,
+    WorkoutSettings.termsAndConditions => null,
+  };
 
   void push(BuildContext context) {
     final r = route;

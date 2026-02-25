@@ -63,9 +63,11 @@ class HomeCubit extends Cubit<HomeState> {
         );
 
       case ErrorR(error: final error):
+        final rank = _createRank(state.user);
         emit(
           state.copyWith(
             error: error.toString(),
+            rank: rank,
             isStatsLoading: false,
           ),
         );
@@ -79,16 +81,21 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  RankEntity _createRank(OnboardedUser? user, UserStats stats) {
+  RankEntity _createRank(OnboardedUser? user, [UserStats? stats]) {
     final faction = user?.mainFaction ?? Faction.gakki;
-    return RankEntity(
-      imageUrl: faction.rankCardAsset(),
-      rankName: t.tiers.intermediate,
-      faction: faction,
-      lvl: stats.level,
-      xp: stats.currentXp,
-      maxXp: stats.totalXp,
-    );
+
+    if (stats != null) {
+      return RankEntity(
+        imageUrl: faction.rankCardAsset(),
+        rankName: t.tiers.intermediate,
+        faction: faction,
+        lvl: stats.level,
+        xp: stats.currentXp,
+        maxXp: stats.totalXp,
+      );
+    } else {
+      return RankEntity.mock(faction);
+    }
   }
 
   void changePeriod(StatsPeriod period) {
