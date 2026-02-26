@@ -73,6 +73,24 @@
             "gyohyo_description": "The path of Stamina",
             "serien_description": "The path of Agility"
         },
+        "durations": {
+            "day": {
+                "one": "$n day",
+                "other": "$n days"
+            },
+            "week": {
+                "one": "$n week",
+                "other": "$n weeks"
+            },
+            "month": {
+                "one": "$n month",
+                "other": "$n months"
+            },
+            "year": {
+                "one": "$n year",
+                "other": "$n years"
+            }
+        },
         "back_button": "Back",
         "next_button": "Next",
         "submit_button": "Submit",

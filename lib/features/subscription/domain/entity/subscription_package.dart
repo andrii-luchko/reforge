@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 
 /// Trial/intro offer info for display.
@@ -7,13 +6,13 @@ class SubscriptionTrialInfo {
   const SubscriptionTrialInfo({
     this.price,
     this.priceString,
-    this.period,
+    this.periodParsed,
     this.currencyCode,
   });
 
   final double? price;
   final String? priceString;
-  final String? period;
+  final String? periodParsed;
   final String? currencyCode;
 }
 
@@ -42,8 +41,8 @@ class SubscriptionPackage {
   final String? productIdentifier;
 
   String get displayPrice {
-    final code = trialInfo?.currencyCode ?? currencyCode;
-    final amount = trialInfo?.price ?? price;
+    final code = currencyCode;
+    final amount = price;
 
     try {
       final formatter = NumberFormat.simpleCurrency(name: code);

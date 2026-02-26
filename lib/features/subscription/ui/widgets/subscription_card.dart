@@ -65,7 +65,7 @@ class SubscriptionCard extends StatelessWidget {
                     const Spacer(),
                     if (package.trialInfo != null)
                       Text(
-                        '(after ${package.trialInfo?.period ?? '14'})',
+                        '(after ${package.trialInfo?.periodParsed ?? '14'})',
                         style: subheadH8Semibold.copyWith(color: appTheme.beige700),
                       ),
                     if (package.trialInfo != null) const SizedBox(width: 8),
