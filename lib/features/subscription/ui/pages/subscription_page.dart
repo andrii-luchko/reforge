@@ -22,7 +22,11 @@ class SubscriptionPage extends StatelessWidget {
           title: WorkoutSettings.subscription.title(t),
           body: const SubscriptionsContent(),
           showBottomPadding: false,
-          onRefresh: () => context.read<SubscriptionCubit>().loadOfferings(),
+          onRefresh: () async {
+            final cubit = context.read<SubscriptionCubit>();
+            await cubit.loadOfferings();
+            await cubit.checkSubscriptionStatus();
+          },
           overlay: state.isPurchasing ? const ScreenLoadingIndicator() : null,
         );
       },

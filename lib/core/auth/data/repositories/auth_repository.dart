@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/datasources/auth_local_datasource.dart';
 import 'package:reforge/core/auth/data/datasources/auth_providers_datasource.dart';
 import 'package:reforge/core/auth/data/datasources/auth_remote_datasource.dart';
@@ -193,6 +194,7 @@ class AuthRepositoryImpl with RepositoryErrorHandler implements AuthRepository {
       if (e.code == AuthorizationErrorCode.canceled) {
         return const Result.error(AuthCanceledException());
       }
+      logger.d(e);
       return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);

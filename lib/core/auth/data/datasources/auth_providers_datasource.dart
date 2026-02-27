@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -27,6 +28,10 @@ class AuthProvidersDatasourceImpl implements AuthProvidersDatasource {
         AppleIDAuthorizationScopes.email,
         AppleIDAuthorizationScopes.fullName,
       ],
+      webAuthenticationOptions: WebAuthenticationOptions(
+        clientId: Env.appleAuthServiceID,
+        redirectUri: Uri.parse(Env.appleAuthServiceURL),
+      ),
     );
 
     logger.d(credential);

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_manage_button.dart';
@@ -25,8 +24,11 @@ class SubscriptionRecurringStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateText = expirationDate != null ? expirationDate!.toDateTimeString() : '—';
 
-    return ColoredBox(
-      color: context.appTheme.beige900,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: context.appTheme.beige900,
+      ),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -47,13 +49,12 @@ class SubscriptionRecurringStatusCard extends StatelessWidget {
               style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
             ),
             RisingAuraEffect(
-              child: SubscriptionCard(
-                package: currentPackage,
-                isSelected: true,
-                margin: EdgeInsets.zero,
-                onTap: () {
-                  logger.d(currentPackage);
-                },
+              child: AbsorbPointer(
+                child: SubscriptionCard(
+                  package: currentPackage,
+                  isSelected: true,
+                  margin: EdgeInsets.zero,
+                ),
               ),
             ),
 

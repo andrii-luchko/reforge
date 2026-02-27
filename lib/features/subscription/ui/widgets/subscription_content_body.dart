@@ -82,6 +82,8 @@ class SubscriptionContentBody extends StatelessWidget {
               onRestorePurchases: onRestorePurchases,
             ),
           ),
+
+          const SliverPadding(padding: .only(bottom: 24)),
         ],
       );
     }
