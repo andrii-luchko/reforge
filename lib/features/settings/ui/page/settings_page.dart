@@ -162,7 +162,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           if (delete && context.mounted) {
                             final userCubit = context.read<UserCubit>();
-                            await userCubit.deleteUser();
+                            await userCubit.deleteUserById();
+
+                            if (context.mounted) {
+                              await context.read<AuthCubit>().signOut();
+                            }
                           }
                         },
                       ),
