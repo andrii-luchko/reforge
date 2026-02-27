@@ -39,8 +39,12 @@ mixin RepositoryErrorHandler {
         return t.errors.connection_timeout;
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
+        final statusMessage = e.response?.statusMessage;
         if (statusCode == 401) return t.errors.unauthorized;
-        return t.errors.server_error(statusCode: statusCode ?? 0);
+        final base = t.errors.server_error(statusCode: statusCode ?? 0);
+        return statusMessage != null && statusMessage.isNotEmpty
+            ? '$base. $statusMessage'
+            : base;
 
       case DioExceptionType.cancel:
         return t.errors.request_cancelled;

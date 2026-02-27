@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
@@ -25,6 +26,9 @@ class AuthCubit extends Cubit<AuthState> {
   final domain.AuthRepository _authRepository;
   final AnalyticsService _analytics;
 
+  String _errorMessage(Exception e) =>
+      e is AppException ? e.message : e.toString();
+
   Future<void> _initialize() async {
     final result = await _authRepository.getTokens();
     switch (result) {
@@ -37,7 +41,7 @@ class AuthCubit extends Cubit<AuthState> {
           emit(const AuthState.unauthenticated());
         }
       case ErrorR(error: final error):
-        emit(AuthState.error('get tokens failed: $error'));
+        emit(AuthState.error(_errorMessage(error)));
     }
   }
 
@@ -51,7 +55,7 @@ class AuthCubit extends Cubit<AuthState> {
         unawaited(_analytics.logLogin(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
-        emit(AuthState.error('Sign in failed: $error'));
+        emit(AuthState.error(_errorMessage(error)));
     }
   }
 
@@ -65,7 +69,7 @@ class AuthCubit extends Cubit<AuthState> {
         unawaited(_analytics.logSignUp(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
       case ErrorR(error: final error):
-        emit(AuthState.error('Sign up failed: $error'));
+        emit(AuthState.error(_errorMessage(error)));
     }
   }
 
@@ -83,7 +87,7 @@ class AuthCubit extends Cubit<AuthState> {
           emit(const AuthState.unauthenticated());
         } else {
           logger.d(error);
-          emit(AuthState.error('Sign up failed: $error'));
+          emit(AuthState.error(_errorMessage(error)));
         }
     }
   }
@@ -101,7 +105,7 @@ class AuthCubit extends Cubit<AuthState> {
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
-          emit(AuthState.error('Sign up failed: $error'));
+          emit(AuthState.error(_errorMessage(error)));
         }
     }
   }
@@ -119,7 +123,7 @@ class AuthCubit extends Cubit<AuthState> {
         unawaited(_analytics.setUserId(null));
         emit(const AuthState.unauthenticated());
       case ErrorR(error: final error):
-        emit(AuthState.error('Sign up failed: $error'));
+        emit(AuthState.error(_errorMessage(error)));
         emit(currentState);
     }
   }
