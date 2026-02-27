@@ -15,8 +15,16 @@ mixin RepositoryErrorHandler {
     try {
       return await request();
     } on DioException catch (e, stackTrace) {
+      if (transformError != null) {
+        final transformed = transformError(e, stackTrace);
+        if (transformed != null) {
+          _logError(label, e, stackTrace);
+          throw transformed;
+        }
+      }
       final userMessage = _toUserMessage(e);
       _logError(label, e, stackTrace);
+
       throw AppException(userMessage);
     } catch (e, stackTrace) {
       if (transformError != null) {
@@ -42,9 +50,7 @@ mixin RepositoryErrorHandler {
         final statusMessage = e.response?.statusMessage;
         if (statusCode == 401) return t.errors.unauthorized;
         final base = t.errors.server_error(statusCode: statusCode ?? 0);
-        return statusMessage != null && statusMessage.isNotEmpty
-            ? '$base. $statusMessage'
-            : base;
+        return statusMessage != null && statusMessage.isNotEmpty ? '$base. $statusMessage' : base;
 
       case DioExceptionType.cancel:
         return t.errors.request_cancelled;
