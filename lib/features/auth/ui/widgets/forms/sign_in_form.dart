@@ -43,104 +43,106 @@ class _SignInFormState extends State<SignInForm> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         state.maybeMap(
-          error: (value) => toastification.showErrorToast(value.toString(), context),
+          error: (state) => toastification.showErrorToast(state.message, context),
           // ignore: no_empty_block
           orElse: () {},
         );
       },
-      child: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.13,
-          ),
-          CenteredTitleSection(
-            title: t.signin.title,
-            subtitle: t.signin.subtitle,
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: BlocSelector<AuthValidationCubit, AuthValidationState, String?>(
-              selector: (state) => state.emailError,
-              builder: (context, emailError) {
-                return LabeledAppTextField(
-                  label: t.common.email_label,
-                  field: AppTextField(
-                    errorText: emailError,
-                    hintText: t.common.email_hint,
-                    controller: _emailController,
-                    onChanged: cubit.emailChanged,
-                  ),
-                );
-              },
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.13,
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: BlocSelector<AuthValidationCubit, AuthValidationState, String?>(
-              selector: (state) => state.passwordError,
-              builder: (context, passwordError) {
-                return LabeledAppTextField(
-                  label: t.common.password_label,
-                  field: AppTextField.password(
-                    errorText: passwordError,
-                    hintText: t.common.password_hint,
-                    controller: _passwordController,
-                    onChanged: cubit.passwordChanged,
-                  ),
-                );
-              },
+            CenteredTitleSection(
+              title: t.signin.title,
+              subtitle: t.signin.subtitle,
             ),
-          ),
 
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: ThirtyButton(
-                text: t.signin.forgot_password_button,
-                // ignore: inference_failure_on_function_invocation
-                onPressed: () => const ForgotPasswordEmailPageRoute().push(context),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: BlocSelector<AuthValidationCubit, AuthValidationState, String?>(
+                selector: (state) => state.emailError,
+                builder: (context, emailError) {
+                  return LabeledAppTextField(
+                    label: t.common.email_label,
+                    field: AppTextField(
+                      errorText: emailError,
+                      hintText: t.common.email_hint,
+                      controller: _emailController,
+                      onChanged: cubit.emailChanged,
+                    ),
+                  );
+                },
               ),
             ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.only(top: 56),
-            child: BlocSelector<AuthValidationCubit, AuthValidationState, bool>(
-              selector: (state) => state.canSubmit,
-              builder: (context, canSubmit) {
-                return PrimaryButton(
-                  text: t.signin.submit_button,
-                  onPressed: canSubmit
-                      ? () async {
-                          await context.read<AuthCubit>().signIn(
-                            email: _emailController.text,
-                            password: _passwordController.text,
-                          );
-                        }
-                      : null,
-                );
-              },
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: BlocSelector<AuthValidationCubit, AuthValidationState, String?>(
+                selector: (state) => state.passwordError,
+                builder: (context, passwordError) {
+                  return LabeledAppTextField(
+                    label: t.common.password_label,
+                    field: AppTextField.password(
+                      errorText: passwordError,
+                      hintText: t.common.password_hint,
+                      controller: _passwordController,
+                      onChanged: cubit.passwordChanged,
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          AuthRedirectText(
-            part1: t.signin.footer_text_part1,
-            part2: t.signin.footer_text_part2,
 
-            onTap: () => const SignUpPageRoute().go(context),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: TitledDivider(
-              title: t.signin.divider_text,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ThirtyButton(
+                  text: t.signin.forgot_password_button,
+                  // ignore: inference_failure_on_function_invocation
+                  onPressed: () => const ForgotPasswordEmailPageRoute().push(context),
+                ),
+              ),
             ),
-          ),
 
-          const Padding(padding: EdgeInsets.only(top: 32), child: AuthProvidersButtons()),
-        ],
+            Padding(
+              padding: const EdgeInsets.only(top: 56),
+              child: BlocSelector<AuthValidationCubit, AuthValidationState, bool>(
+                selector: (state) => state.canSubmit,
+                builder: (context, canSubmit) {
+                  return PrimaryButton(
+                    text: t.signin.submit_button,
+                    onPressed: canSubmit
+                        ? () async {
+                            await context.read<AuthCubit>().signIn(
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                            );
+                          }
+                        : null,
+                  );
+                },
+              ),
+            ),
+            AuthRedirectText(
+              part1: t.signin.footer_text_part1,
+              part2: t.signin.footer_text_part2,
+
+              onTap: () => const SignUpPageRoute().go(context),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: TitledDivider(
+                title: t.signin.divider_text,
+              ),
+            ),
+
+            const Padding(padding: EdgeInsets.only(top: 32), child: AuthProvidersButtons()),
+          ],
+        ),
       ),
     );
   }

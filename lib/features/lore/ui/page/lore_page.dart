@@ -96,9 +96,9 @@ class _LoreBodyState extends State<LoreBody> {
         },
         child: RefreshIndicator(
           onRefresh: () async {
-          context.read<LoreCubit>().onRefresh();
-          await context.read<LoreCubit>().loadLore();
-        },
+            context.read<LoreCubit>().onRefresh();
+            await context.read<LoreCubit>().loadLore();
+          },
           child: BlocBuilder<LoreCubit, LoreState>(
             builder: (context, state) {
               final displayedItems = state.isLoading && state.items.isEmpty ? _skeletonPlaceholders() : state.items;
@@ -107,6 +107,7 @@ class _LoreBodyState extends State<LoreBody> {
               return Skeletonizer(
                 enabled: state.isLoading && state.items.isEmpty,
                 child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   controller: _scrollController,
                   slivers: [
                     SliverPadding(
@@ -186,7 +187,7 @@ class PlatesList extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = plates[index];
               if (item.id < 0) {
-                return const LoreCardShimmer().animateEntrance();
+                return const LoreCardShimmer();
               }
               return Skeleton.replace(
                 replacement: const LoreCardShimmer(),
@@ -194,8 +195,8 @@ class PlatesList extends StatelessWidget {
                   model: item,
                   loadingDetailId: loadingDetailId,
                   onTap: () => context.read<LoreCubit>().loadPlateDetail(item.id),
-                ),
-              ).animateEntrance();
+                ).animateEntrance(),
+              );
             },
             separatorBuilder: (context, index) => const SizedBox(height: 8),
           );

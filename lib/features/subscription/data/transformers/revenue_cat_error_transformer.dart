@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
@@ -21,11 +22,11 @@ String _revenueCatToUserMessage(PurchasesErrorCode code) {
   }
 }
 
-Exception? transformRevenueCatError(Object error, StackTrace _) {
+AppException? transformRevenueCatError(Object error, StackTrace _) {
   if (error is! PlatformException) return null;
   final code = PurchasesErrorHelper.getErrorCode(error);
   if (code == PurchasesErrorCode.purchaseCancelledError) {
     return const PurchaseCancelledException();
   }
-  return Exception(_revenueCatToUserMessage(code));
+  return AppException(_revenueCatToUserMessage(code));
 }

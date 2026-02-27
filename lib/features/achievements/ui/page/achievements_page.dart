@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
@@ -48,8 +49,9 @@ class _AchievementsPageState extends State<AchievementsPage> {
           top: false,
           child: BlocBuilder<AchievementsCubit, AchievementsState>(
             builder: (context, state) {
+              final isLoading = state.isLoading;
               return Skeletonizer(
-                enabled: state.isLoading,
+                enabled: isLoading,
                 child: RefreshIndicator(
                   onRefresh: () async {
                     _cubit.onRefresh();
@@ -96,7 +98,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                             replacement: const AvatarCardShimmer(),
                             child: AvatarRankCard(
                               rank: context.read<HomeCubit>().state.rank ?? RankEntity.mock(),
-                            ),
+                            ).animateEntrance(),
                           ),
                         ),
                       ),
@@ -106,7 +108,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           child: Skeleton.leaf(
                             child: AttributeSystemSection(
                               attributes: state.attributes,
-                            ),
+                            ).animateEntrance(enabled: !isLoading),
                           ),
                         ),
                       ),

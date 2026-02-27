@@ -27,10 +27,9 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadInitialData() async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    await Future.wait([
-      _loadUserData(),
-      loadStatsByPeriod(state.period, isInitial: true),
-    ]);
+    _loadUserData();
+
+    await loadStatsByPeriod(state.period, isInitial: true);
 
     emit(state.copyWith(isLoading: false));
   }
@@ -74,7 +73,7 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  Future<void> _loadUserData() async {
+  void _loadUserData() {
     final userResult = _repository.getUserData();
     if (userResult != null) {
       emit(state.copyWith(user: userResult));
