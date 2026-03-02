@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/date_time_extensions.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_card.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_manage_button.dart';
+
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/rising_aura_effect.dart';
+import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 
 class SubscriptionRecurringStatusCard extends StatelessWidget {
   const SubscriptionRecurringStatusCard({
@@ -58,7 +60,10 @@ class SubscriptionRecurringStatusCard extends StatelessWidget {
               ),
             ),
 
-            if (managementUrl != null) SubscriptionManageButton(managementUrl: managementUrl),
+            SecondaryButton(
+              text: t.subscription.manageSubscription,
+              onPressed: RevenueCatUI.presentCustomerCenter,
+            ),
           ],
         ),
       ),

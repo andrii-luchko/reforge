@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
@@ -7,24 +8,29 @@ import 'package:reforge/features/subscription/domain/entity/subscription_package
 SubscriptionPackage? _findMatchedPackage(
   String? productIdentifier,
   String? productPlanIdentifier,
-  List<SubscriptionPackage> packages,
-) {
+  List<SubscriptionPackage> packages, {
+  String? fallbackRcPackageGroupId,
+}) {
   final purchasedId =
       Platform.isAndroid ? (productPlanIdentifier ?? productIdentifier) : productIdentifier;
-  if (purchasedId == null) return null;
-  try {
-    return packages.firstWhere(
+  if (purchasedId != null) {
+    final byProduct = packages.firstWhereOrNull(
       (p) => p.productIdentifier == purchasedId || p.id == purchasedId,
     );
-    // ignore: avoid_catches_without_on_clauses
-  } catch (_) {
-    return null;
+    if (byProduct != null) return byProduct;
   }
+  if (fallbackRcPackageGroupId != null && fallbackRcPackageGroupId.isNotEmpty) {
+    return packages.firstWhereOrNull(
+      (p) => p.rcPackageGroupId == fallbackRcPackageGroupId,
+    );
+  }
+  return null;
 }
 
 SubscriptionEntity? mapCustomerInfo(
   CustomerInfo info, {
   List<SubscriptionPackage>? packages,
+  String? fallbackRcPackageGroupId,
 }) {
   final active = info.entitlements.active;
   if (active.isEmpty) {
@@ -40,6 +46,7 @@ SubscriptionEntity? mapCustomerInfo(
           first.productIdentifier,
           first.productPlanIdentifier,
           packages,
+          fallbackRcPackageGroupId: fallbackRcPackageGroupId,
         )
       : null;
   return SubscriptionEntity(

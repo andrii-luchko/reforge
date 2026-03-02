@@ -73,6 +73,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<SubscriptionEntity?>> getCurrentSubscription({
     List<SubscriptionPackage>? packages,
+    String? fallbackRcPackageGroupId,
   }) async {
     try {
       final info = await makeRequest(
@@ -80,7 +81,13 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'getCurrentSubscription',
         transformError: transformRevenueCatError,
       );
-      return Result.success(mapCustomerInfo(info, packages: packages));
+      return Result.success(
+        mapCustomerInfo(
+          info,
+          packages: packages,
+          fallbackRcPackageGroupId: fallbackRcPackageGroupId,
+        ),
+      );
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -89,6 +96,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<SubscriptionEntity?>> restorePurchases({
     List<SubscriptionPackage>? packages,
+    String? fallbackRcPackageGroupId,
   }) async {
     try {
       final info = await makeRequest(
@@ -96,7 +104,13 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'restorePurchases',
         transformError: transformRevenueCatError,
       );
-      return Result.success(mapCustomerInfo(info, packages: packages));
+      return Result.success(
+        mapCustomerInfo(
+          info,
+          packages: packages,
+          fallbackRcPackageGroupId: fallbackRcPackageGroupId,
+        ),
+      );
     } on Exception catch (e) {
       return Result.error(e);
     }

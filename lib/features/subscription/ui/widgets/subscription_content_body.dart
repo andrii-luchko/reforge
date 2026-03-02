@@ -51,12 +51,11 @@ class SubscriptionContentBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.hasLifetime) {
-      return const SliverMainAxisGroup(
-        slivers: [
-          SliverToBoxAdapter(
-            child: SubscriptionLifetimeStatusCard(),
-          ),
-        ],
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Align(
+          child: SubscriptionLifetimeStatusCard(),
+        ),
       );
     }
 

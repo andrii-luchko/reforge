@@ -26,6 +26,7 @@ class SubscriptionPackage {
     required this.currencyCode,
     required this.periodType,
     this.productIdentifier,
+    this.rcPackageGroupId,
     this.period,
     this.trialInfo,
   });
@@ -39,6 +40,10 @@ class SubscriptionPackage {
   final String? period;
   final SubscriptionTrialInfo? trialInfo;
   final String? productIdentifier;
+
+  /// Cross-platform package group id (e.g. RC package identifier). Used to match
+  /// subscription from another platform when productIdentifier differs.
+  final String? rcPackageGroupId;
 
   String get displayPrice {
     final code = currencyCode;
@@ -85,7 +90,7 @@ class SubscriptionPackage {
 
   @override
   String toString() {
-    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier)';
+    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier, rcPackageGroupId: $rcPackageGroupId)';
   }
 }
 
@@ -97,5 +102,7 @@ extension SubscriptionPackagePlaceholder on SubscriptionPackage {
     priceString: r'$9.99',
     currencyCode: 'USD',
     periodType: SubscriptionPeriodType.monthly,
+    // ignore: avoid_redundant_argument_values
+    rcPackageGroupId: null,
   );
 }

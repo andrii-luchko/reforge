@@ -63,6 +63,7 @@ SubscriptionPackage mapPackage(Package rcPackage) {
     priceString: product.priceString,
     currencyCode: product.currencyCode,
     productIdentifier: product.identifier,
+    rcPackageGroupId: rcPackage.identifier,
     periodType: periodTypeFromPackageType(rcPackage.packageType),
     period: product.subscriptionPeriod,
     trialInfo: product.introductoryPrice != null
