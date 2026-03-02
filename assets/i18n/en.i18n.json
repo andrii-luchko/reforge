@@ -554,7 +554,9 @@
         "manageSubscription": "Manage subscription",
         "currentPlan": "Current plan",
         "upgrade": "Upgrade",
-        "changePlan": "Change plan"
+        "changePlan": "Change plan",
+        "loadErrorTitle": "Couldn't load subscriptions",
+        "loadErrorSubtitle": "Something went wrong on our end. Please try again."
     },
     "notifications": {
         "pageTitle": "Notifications",

@@ -30,7 +30,7 @@ Future<void> configureDependencies() async {
 Future<void> initializeRevenueCat() async {
   //TODO(Masayoshi): Change to real configuration
   const androidApiKey = Env.revenuecatApiKeyGoogle;
-  const iosApiKey = Env.revenuecatApiKeyApple;
+  const iosApiKey = Env.revenuecatApiKeyTest;
 
   if (androidApiKey == '' || iosApiKey == '') throw Exception('One of the revenucats api keys are null');
 

@@ -1,6 +1,8 @@
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
+import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
@@ -31,9 +33,9 @@ extension WorkoutSettingsX on WorkoutSettings {
     };
   }
 
-  String? getDisplayValue(OnboardedUser user, Translations t) {
+  String? getDisplayValue(OnboardedUser user, Translations t, [SubscriptionEntity? currentSubscription]) {
     return switch (this) {
-      WorkoutSettings.subscription => null,
+      WorkoutSettings.subscription => currentSubscription?.matchedPackage?.periodType.displayName(t),
       WorkoutSettings.faction => [
         user.mainFaction?.title(t),
         user.secondaryFaction?.title(t),

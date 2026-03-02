@@ -52,6 +52,7 @@ import 'package:reforge/features/settings/ui/page/settings_content/notification_
 import 'package:reforge/features/settings/ui/page/settings_content/workout_days_content.dart';
 import 'package:reforge/features/settings/ui/page/settings_page.dart';
 import 'package:reforge/features/splash/ui/pages/splash_page.dart';
+import 'package:reforge/features/subscription/ui/pages/change_plan_page.dart';
 import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
@@ -224,7 +225,12 @@ class QuizPageRoute extends GoRouteData with $QuizPageRoute {
             TypedGoRoute<SettingsFactionPageRoute>(path: 'faction'),
             TypedGoRoute<SettingsMeasurementPageRoute>(path: 'measurement'),
             TypedGoRoute<SettingsNotificationPageRoute>(path: 'notifications'),
-            TypedGoRoute<SettingsSubscriptionPageRoute>(path: 'subscription'),
+            TypedGoRoute<SettingsSubscriptionPageRoute>(
+              path: 'subscription',
+              routes: [
+                TypedGoRoute<ChangePlanPageRoute>(path: 'change-plan'),
+              ],
+            ),
           ],
         ),
       ],
@@ -511,6 +517,15 @@ class SettingsSubscriptionPageRoute extends GoRouteData with $SettingsSubscripti
       event: SettingsNavigation.eventFor(WorkoutSettings.subscription),
       child: const SubscriptionPage(),
     );
+  }
+}
+
+class ChangePlanPageRoute extends GoRouteData with $ChangePlanPageRoute {
+  const ChangePlanPageRoute();
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const ChangePlanPage();
   }
 }
 

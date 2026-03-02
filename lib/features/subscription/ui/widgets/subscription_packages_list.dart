@@ -3,6 +3,8 @@ import 'package:reforge/features/subscription/controllers/subscription_cubit.dar
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list_content.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_packages_skeleton.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionPackagesList extends StatelessWidget {
@@ -28,13 +30,17 @@ class SubscriptionPackagesList extends StatelessWidget {
           : state.offerings != null
           ? SubscriptionPackagesListContent(
               packages: state.hasActiveSubscription && state.currentPackage != null
-                  ? state.offerings!.packages.where((p) => p != state.currentPackage).toList()
+                  ? state.offerings!.packages.where((p) => p.id != state.currentPackage!.id).toList()
                   : state.offerings!.packages,
               selectedPackage: selectedPackage,
               currentPackage: state.currentPackage,
               onPackageSelected: onPackageSelected,
             )
-          : const SliverMainAxisGroup(slivers: []),
+          : SliverEmptyListMessage(
+              title: t.subscription.loadErrorTitle,
+              subtitle: t.subscription.loadErrorSubtitle,
+              icon: Icons.refresh_rounded,
+            ),
     );
   }
 }

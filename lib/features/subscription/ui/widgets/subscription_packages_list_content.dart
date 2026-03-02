@@ -30,7 +30,7 @@ class SubscriptionPackagesListContent extends StatelessWidget {
                 child: SubscriptionCard(
                   package: package,
                   isSelected: selectedPackage?.id == package.id,
-                  isCurrentPlan: package == currentPackage,
+                  isCurrentPlan: currentPackage != null && package.id == currentPackage!.id,
                   onTap: () => onPackageSelected(package),
                   annualSavings: annualSavings,
                 ),
