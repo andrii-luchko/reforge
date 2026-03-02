@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
@@ -39,8 +40,10 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
 
       final stats = result.data.toDomain();
       return Result.success(stats);
-    } on Exception catch (e) {
-      return Result.error(e);
+      // ignore: avoid_catches_without_on_clauses
+    } catch (error, stackTrace) {
+      final exception = error is Exception ? error : AppException(error.toString());
+      return Result.error(exception, stackTrace);
     }
   }
 }

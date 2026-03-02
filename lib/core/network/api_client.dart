@@ -43,24 +43,31 @@ abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
   // Auth endpoints
+  @Extra({'requiresAuth': false})
   @POST('/auth/signin')
   Future<BaseResponse<AuthTokens>> signin(@Body() SignInRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/password-reset/initiate')
   Future<void> initiatePasswordReset(@Body() PasswordResetEmailRequest request);
 
+  @Extra({'requiresAuth': false})
   @GET('/auth/password-reset/validate')
   Future<void> validatePasswordReset(@Queries() PasswordResetValidateTokenRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/password-reset/confirm')
   Future<void> confirmPasswordReset(@Body() PasswordResetConfirmRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/signup')
   Future<BaseResponse<AuthTokens>> signup(@Body() SignUpRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/provider')
   Future<BaseResponse<AuthTokens>> provider(@Body() SignWithProviderRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/refresh')
   Future<BaseResponse<AuthTokens>> refreshToken(
     @Body() RefreshTokenRequest request,

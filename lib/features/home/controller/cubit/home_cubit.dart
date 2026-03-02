@@ -29,9 +29,18 @@ class HomeCubit extends Cubit<HomeState> {
 
     _loadUserData();
 
-    await loadStatsByPeriod(state.period, isInitial: true);
-
-    emit(state.copyWith(isLoading: false));
+    try {
+      await loadStatsByPeriod(state.period, isInitial: true);
+      // ignore: avoid_catches_without_on_clauses
+    } catch (error) {
+      emit(
+        state.copyWith(
+          error: error.toString(),
+        ),
+      );
+    } finally {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {
