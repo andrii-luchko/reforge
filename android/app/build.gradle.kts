@@ -52,11 +52,17 @@ android {
         isMinifyEnabled = true
         isShrinkResources = true 
         
+
+        configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+                nativeSymbolUploadEnabled = true
+            }
+
+      signingConfig = signingConfigs.getByName("release")
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
             "proguard-rules.pro"
         )
-            signingConfig = signingConfigs.getByName("release")
+      
         }
     }
 }
