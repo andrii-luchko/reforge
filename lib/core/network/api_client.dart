@@ -62,7 +62,9 @@ abstract class ApiClient {
   Future<BaseResponse<AuthTokens>> provider(@Body() SignWithProviderRequest request);
 
   @POST('/auth/refresh')
-  Future<BaseResponse<AuthTokens>> refreshToken(@Body() RefreshTokenRequest request);
+  Future<BaseResponse<AuthTokens>> refreshToken(
+    @Body() RefreshTokenRequest request,
+  );
 
   //Quiz
   @POST('/users/profile')

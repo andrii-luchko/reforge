@@ -58,6 +58,7 @@ class ChangeFactionPage extends StatelessWidget {
     if (factions.length == 1) {
       result = await cubit.updateFactions(
         mainFaction: factions.first.id,
+        // ignore: avoid_redundant_argument_values
         secondFaction: null,
       );
     } else {

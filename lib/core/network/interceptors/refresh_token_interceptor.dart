@@ -31,7 +31,15 @@ class RefreshTokenInterceptor extends QueuedInterceptor {
           return handler.reject(err);
         }
 
-        final newTokens = await _remoteDataSource.refreshToken(tokens.refreshToken);
+        final newTokens = await _remoteDataSource
+            .refreshToken(tokens.refreshToken)
+            .timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => throw DioException.receiveTimeout(
+                timeout: const Duration(seconds: 20),
+                requestOptions: err.requestOptions,
+              ),
+            );
         await _localDataSource.saveTokens(newTokens);
 
         final options = err.requestOptions;
