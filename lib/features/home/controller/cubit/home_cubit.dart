@@ -49,7 +49,9 @@ class HomeCubit extends Cubit<HomeState> {
     switch (statsResult) {
       case Success(value: final stats):
         final updatedMap = Map<StatsPeriod, UserStats>.from(state.statsMap);
-        updatedMap[period] = stats;
+        if (stats != null) {
+          updatedMap[period] = stats;
+        }
 
         final rank = _createRank(state.user, stats);
 

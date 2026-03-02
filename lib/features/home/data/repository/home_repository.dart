@@ -9,7 +9,7 @@ import 'package:reforge/features/home/domain/user_stats.dart';
 
 abstract interface class HomeRepository {
   OnboardedUser? getUserData();
-  Future<Result<UserStats>> getUserStats(StatsPeriod period);
+  Future<Result<UserStats?>> getUserStats(StatsPeriod period);
 }
 
 @Injectable(as: HomeRepository)
@@ -28,7 +28,7 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
   }
 
   @override
-  Future<Result<UserStats>> getUserStats(StatsPeriod period) async {
+  Future<Result<UserStats?>> getUserStats(StatsPeriod period) async {
     try {
       final startDate = period.range.start.toUtc().toIso8601String();
       final endDate = period.range.end.toUtc().toIso8601String();

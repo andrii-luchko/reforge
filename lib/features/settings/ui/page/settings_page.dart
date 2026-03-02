@@ -226,6 +226,8 @@ class SettingsGroup extends StatelessWidget {
     final appTheme = context.appTheme;
     final userCubit = context.read<UserCubit>();
     final subscription = context.watch<SubscriptionCubit>().state.currentSubscription;
+    logger.d(subscription ?? '');
+
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
@@ -299,7 +301,10 @@ class SettingsGroup extends StatelessWidget {
             itemCount: WorkoutSettings.values.length,
             itemBuilder: (context, index) {
               final setting = WorkoutSettings.values[index];
-              if (setting == WorkoutSettings.subscription && subscription == null) return const SizedBox.shrink();
+              if (setting == WorkoutSettings.subscription && subscription == null) {
+                return const SizedBox.shrink();
+              }
+
               return SettingTile(
                 assetPath: setting.icon,
                 title: setting.title(t),

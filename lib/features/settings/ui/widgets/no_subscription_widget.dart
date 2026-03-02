@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 
@@ -42,7 +43,7 @@ class NoSubscriptionWidget extends StatelessWidget {
               ),
             ],
           ),
-        ),
+        ).animateEntrance(),
       ),
     );
   }

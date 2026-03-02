@@ -36,6 +36,7 @@ extension WorkoutSettingsX on WorkoutSettings {
   String? getDisplayValue(OnboardedUser user, Translations t, [SubscriptionEntity? currentSubscription]) {
     return switch (this) {
       WorkoutSettings.subscription => currentSubscription?.matchedPackage?.periodType.displayName(t),
+
       WorkoutSettings.faction => [
         user.mainFaction?.title(t),
         user.secondaryFaction?.title(t),

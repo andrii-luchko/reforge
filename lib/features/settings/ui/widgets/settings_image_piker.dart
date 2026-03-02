@@ -18,7 +18,7 @@ class SettingsImagePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final hasImage = imageUrl != null && imageUrl != 'undefined/bench-1rm-1.png';
+    final hasImage = imageUrl != null && imageUrl != 'updatdavatar.com';
     return Column(
       children: [
         CustomPaint(
