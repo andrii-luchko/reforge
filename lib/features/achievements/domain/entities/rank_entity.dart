@@ -7,6 +7,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 class RankEntity {
   RankEntity({
     required this.imageUrl,
+    required this.japanRankName,
     required this.rankName,
     required this.faction,
     required this.lvl,
@@ -15,6 +16,7 @@ class RankEntity {
   });
 
   final String imageUrl;
+  final String japanRankName;
   final String rankName;
   final Faction faction;
   final int lvl;
@@ -31,6 +33,7 @@ class RankEntity {
     final faction = userFaction ?? Faction.gakki;
     return RankEntity(
       imageUrl: faction.rankCardAsset(),
+      japanRankName: translations.home.rank_label,
       rankName: translations.tiers.intermediate,
       faction: faction,
       lvl: 1,

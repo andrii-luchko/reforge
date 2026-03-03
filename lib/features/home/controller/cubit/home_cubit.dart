@@ -93,11 +93,14 @@ class HomeCubit extends Cubit<HomeState> {
 
   RankEntity _createRank(OnboardedUser? user, [UserStats? stats]) {
     final faction = user?.mainFaction ?? Faction.gakki;
+    final japanRankName = user?.japanRank ?? t.home.rank_label;
+    final rankName = user?.rank ?? t.tiers.beginner;
 
     if (stats != null) {
       return RankEntity(
         imageUrl: faction.rankCardAsset(),
-        rankName: t.tiers.intermediate,
+        japanRankName: japanRankName,
+        rankName: rankName,
         faction: faction,
         lvl: stats.level,
         xp: stats.currentXp,

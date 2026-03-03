@@ -37,6 +37,8 @@ sealed class User with _$User {
     @Default(false) @JsonKey(name: 'remindersEnabled') bool remindersEnabled,
     @Default(false) @JsonKey(name: 'announcementsEnabled') bool announcementsEnabled,
 
+    @JsonKey(name: 'rank') String? rank,
+    @JsonKey(name: 'japanRank') String? japanRank,
     @JsonKey(name: 'subscription') UserSubscription? subscription,
   }) = OnboardedUser;
 

@@ -23,10 +23,17 @@ class AchievementsCubit extends Cubit<AchievementsState> {
   final AnalyticsService _analytics;
 
   Future<void> init() async {
-    if (state.attributes.isNotEmpty) return;
-
+    setUserFaction();
     await loadAttributes();
     await loadBadges();
+  }
+
+  void setUserFaction() {
+    final userFaction = _repository.getUserFaction();
+
+    if (userFaction != null) {
+      emit(state.copyWith(selectedFaction: userFaction));
+    }
   }
 
   Future<void> loadAttributes({bool forceRefresh = false}) async {
@@ -98,19 +105,19 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksRefresh));
   }
 
-  Future<void> changeFaction(Faction faction) async {
-    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksFactionChange, {'faction': faction.name}));
-    emit(state.copyWith(selectedFaction: faction));
+  // Future<void> changeFaction(Faction faction) async {
+  //   unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksFactionChange, {'faction': faction.name}));
+  //   emit(state.copyWith(selectedFaction: faction));
 
-    final hasData = state.ranks[faction]?.isNotEmpty ?? false;
+  //   final hasData = state.ranks[faction]?.isNotEmpty ?? false;
 
-    if (!hasData) {
-      await loadRanks();
-    }
-  }
+  //   if (!hasData) {
+  //     await loadRanks();
+  //   }
+  // }
 
   Future<void> loadRanks({bool forceRefresh = false}) async {
-    if (state.isLoading || (state.selectedRanks.isNotEmpty && !forceRefresh)) return;
+    if (state.isLoading || (state.ranks.isNotEmpty && !forceRefresh)) return;
 
     emit(state.copyWith(isLoading: true, error: null));
 
@@ -119,12 +126,9 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     final result = await _repository.getUserRanks(faction);
     switch (result) {
       case Success(value: final newRanks):
-        final updatedRanks = Map<Faction, List<RankEntity>>.from(state.ranks);
-        updatedRanks[faction] = newRanks;
-
         emit(
           state.copyWith(
-            ranks: updatedRanks,
+            ranks: newRanks,
             isLoading: false,
           ),
         );

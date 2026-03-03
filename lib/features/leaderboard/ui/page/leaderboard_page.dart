@@ -8,6 +8,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
@@ -71,9 +72,14 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             children: [
               RefreshIndicator(
                 onRefresh: () async {
+                  final leaderboardCubit = context.read<UsersLeaderboardCubit>();
+                  final immortalForgesCubit = context.read<ImmortalForgesCubit>();
                   unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.leaderboardRefresh));
                   if (_leaderboardModeNotifier.value == LeaderboardMode.users) {
-                    await context.read<UsersLeaderboardCubit>().loadUsers();
+                    await Future.wait([
+                      leaderboardCubit.loadUsers(),
+                      immortalForgesCubit.refresh(),
+                    ]);
                   } else {
                     await context.read<FactionsLeaderboardCubit>().loadFactions();
                   }

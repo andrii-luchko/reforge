@@ -22,6 +22,7 @@ class RanksGenerator {
 
       return RankEntity(
         imageUrl: faction.rankCardAsset(),
+        japanRankName: t.home.rank_label,
         rankName: names[i % names.length],
         faction: faction,
         lvl: level,
