@@ -8,7 +8,6 @@ import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
-import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
@@ -25,33 +24,24 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
   final TrainingSessionRepository _repository;
   final AnalyticsService _analytics;
 
-  Future<void> init() async {
-    //  if (state.programDay != null) return;
-
-    emit(state.copyWith(isLoading: true, programDay: mockProgramDay));
-
-    final currentDay = _repository.getUserCurrentProgramDayId() ?? DateTime.now().weekday;
-
-    final result = await _repository.getWorkoutByDay(currentDay);
-
+  Future<void> _loadProgramDay(int programDayId) async {
+    emit(state.copyWith(isLoading: true));
+    final result = await _repository.getWorkoutByDay(programDayId);
     switch (result) {
       case Success(value: final programDay):
-        emit(
-          state.copyWith(
-            isLoading: false,
-            programDay: programDay,
-            currentExerciseIndex: 0,
-          ),
-        );
+        emit(state.copyWith(isLoading: false, programDay: programDay, currentExerciseIndex: 0));
       case ErrorR(error: final error):
-        emit(
-          state.copyWith(
-            isLoading: false,
-            programDay: null,
-            error: error.toString(),
-          ),
-        );
+        emit(state.copyWith(isLoading: false, programDay: null, error: error.toString()));
     }
+  }
+
+  Future<void> init() async {
+    final currentDay = _repository.getUserCurrentProgramDayId() ?? DateTime.now().weekday;
+    await _loadProgramDay(currentDay);
+  }
+
+  Future<void> initScheduled(int programDayId) async {
+    await _loadProgramDay(programDayId);
   }
 
   Future<void> startWorkout() async {

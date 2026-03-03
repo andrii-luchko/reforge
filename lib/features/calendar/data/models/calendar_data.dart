@@ -33,6 +33,7 @@ sealed class CalendarDayDto with _$CalendarDayDto {
     required bool isCompleted,
     required bool isCanceled,
     required int sessionsCount,
+    required int? scheduledWorkoutDayId,
     required List<int> sessionIds,
   }) = _CalendarDayDto;
 

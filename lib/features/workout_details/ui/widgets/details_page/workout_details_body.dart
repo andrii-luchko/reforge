@@ -11,6 +11,7 @@ import 'package:reforge/features/workout_details/ui/widgets/details_page/exercis
 import 'package:reforge/features/workout_details/ui/widgets/details_page/start_workout_button.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/workout_details_section.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
+import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
 
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -27,7 +28,7 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
           builder: (context, state) {
             final isLoading = state.isLoading;
 
-            final programDay = state.programDay;
+            final programDay = isLoading ? mockProgramDay : state.programDay;
 
             if (programDay == null) {
               return const Center(child: NoWorkoutErrorWidget());
@@ -37,41 +38,36 @@ class WorkoutDetailsBody extends StatelessWidget with WorkoutNavigationMixin {
 
             return Skeletonizer(
               enabled: isLoading,
-              child: RefreshIndicator.adaptive(
-                onRefresh: () async {
-                  await Future.delayed(const Duration(seconds: 2));
-                },
-                child: Column(
-                  mainAxisAlignment: .spaceBetween,
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: .start,
-                          children: [
-                            WorkoutDetailsSection(
-                              title: programDay.name,
-                              chips: const [],
-                            ),
-                            ExerciseSection(
-                              exercises: exercises,
-                            ),
-                          ],
-                        ),
+              child: Column(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: .start,
+                        children: [
+                          WorkoutDetailsSection(
+                            title: programDay.name,
+                            chips: const [],
+                          ),
+                          ExerciseSection(
+                            exercises: exercises,
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: StartWorkoutButton(
-                        onPressed: () async {
-                          unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutDetailsStartClick));
-                          await handleStartWorkout(context);
-                        },
-                      ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: StartWorkoutButton(
+                      onPressed: () async {
+                        unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutDetailsStartClick));
+                        await handleStartWorkout(context);
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },

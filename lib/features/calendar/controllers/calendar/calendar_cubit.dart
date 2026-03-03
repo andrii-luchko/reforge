@@ -31,10 +31,12 @@ class CalendarCubit extends Cubit<CalendarState> {
 
   Future<void> changeMonth(DateTime month, {bool forceRefresh = false}) async {
     final monthNormalized = month.toYearMonth();
-    unawaited(_analytics.logEvent(
-      AnalyticsEvents.calendarMonthChange,
-      {'month': monthNormalized},
-    ));
+    unawaited(
+      _analytics.logEvent(
+        AnalyticsEvents.calendarMonthChange,
+        {'month': monthNormalized},
+      ),
+    );
 
     if (!forceRefresh && state.calendar.containsKey(monthNormalized)) {
       emit(state.copyWith(currentDate: month));
@@ -77,6 +79,10 @@ class CalendarCubit extends Cubit<CalendarState> {
 
   void onTrainingDetailsTap() {
     unawaited(_analytics.logEvent(AnalyticsEvents.calendarTrainingDetailsClick));
+  }
+
+  void onScheduledTrainingDetailsTap() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.scheduledWorkoutDetailsClick));
   }
 
   DayEntity? navigationCheck(DateTime date) {

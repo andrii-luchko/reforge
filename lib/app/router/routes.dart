@@ -59,6 +59,7 @@ import 'package:reforge/features/workout_congratulations/controllers/workout_con
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_achievement_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_shell.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_summary_page.dart';
+import 'package:reforge/features/workout_details/ui/pages/scheduled_workout_details_page.dart';
 import 'package:reforge/features/workout_details/ui/pages/workout_details_page.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
@@ -593,6 +594,7 @@ class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
 @TypedShellRoute<WorkoutShellRoute>(
   routes: [
     TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details'),
+    TypedGoRoute<ScheduledWorkoutDetailsPageRoute>(path: '/scheduled-workout-details'),
     TypedGoRoute<WorkoutInstructionPageRoute>(path: '/workout-instruction'),
     TypedShellRoute<WorkoutQuizShellRoute>(
       routes: [
@@ -638,6 +640,21 @@ class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const WorkoutDetailsPage();
+  }
+}
+
+class ScheduledWorkoutDetailsPageRoute extends GoRouteData with $ScheduledWorkoutDetailsPageRoute {
+  const ScheduledWorkoutDetailsPageRoute({required this.date, required this.scheduledWorkoutDayId});
+
+  final DateTime date;
+  final int scheduledWorkoutDayId;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return ScheduledWorkoutDetailsPage(
+      scheduledWorkoutDayId: scheduledWorkoutDayId,
+      date: date,
+    );
   }
 }
 
