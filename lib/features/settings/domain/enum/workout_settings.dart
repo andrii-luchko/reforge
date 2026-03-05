@@ -28,8 +28,8 @@ extension WorkoutSettingsX on WorkoutSettings {
       WorkoutSettings.notification => t.settings.notifications,
       WorkoutSettings.measureSystem => t.settings.measurement,
       WorkoutSettings.workoutDays => t.settings.workoutDays,
-      WorkoutSettings.privacy => 'Privacy Policy',
-      WorkoutSettings.termsAndConditions => 'Terms and conditions',
+      WorkoutSettings.privacy => t.settings.privacyPolicy,
+      WorkoutSettings.termsAndConditions => t.settings.termsAndConditions,
     };
   }
 

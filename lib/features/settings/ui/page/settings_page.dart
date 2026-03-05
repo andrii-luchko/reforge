@@ -345,7 +345,7 @@ class AppVersionWidget extends StatelessWidget {
     final appVersion = di.getIt<SystemInfoServiceI>().appVersion;
     return SliverToBoxAdapter(
       child: Text(
-        'App Version: $appVersion',
+        t.settings.appVersion(version: appVersion),
         textAlign: .center,
         style: subheadH5Medium.copyWith(color: context.appTheme.beige700),
       ),

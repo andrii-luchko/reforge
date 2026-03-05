@@ -19,8 +19,6 @@ import 'package:toastification/toastification.dart';
 class PaywallView extends StatefulWidget {
   const PaywallView({super.key});
 
-  static const String _title = 'Choose Your Plan and Unlock Full Access';
-
   @override
   State<PaywallView> createState() => _PaywallViewState();
 }
@@ -62,7 +60,7 @@ class _PaywallViewState extends State<PaywallView> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  PaywallView._title,
+                  t.subscription.paywallTitle,
                   style: subheadH1Medium.copyWith(
                     fontSize: 32,
                     color: context.appTheme.beige100,
@@ -156,17 +154,17 @@ class _PaywallViewState extends State<PaywallView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ThirtyButton(
-                    text: 'Restore Purchases',
+                    text: t.subscription.restorePurchases,
                     onPressed: () => context.read<SubscriptionCubit>().restorePurchases(),
                     style: subheadH6Medium,
                   ),
                   ThirtyButton(
-                    text: 'Terms',
+                    text: t.subscription.termsButton,
                     onPressed: () => LaunchUrl.launchAppLink(Env.termsOfUseUrl),
                     style: subheadH6Medium,
                   ),
                   ThirtyButton(
-                    text: 'Privacy',
+                    text: t.subscription.privacyButton,
                     onPressed: () => LaunchUrl.launchAppLink(Env.privacyPolicyUrl),
                     style: subheadH6Medium,
                   ),

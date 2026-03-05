@@ -97,9 +97,9 @@ class _ChangePlanBody extends StatelessWidget {
                       child: SubscriptionPackagesSkeleton(),
                     )
                   : isEmpty
-                  ? const SliverEmptyListMessage(
-                      title: 'Couldn’t load plans',
-                      subtitle: 'We couldn’t load subscription plans. Pull down to refresh or try again later.',
+                  ? SliverEmptyListMessage(
+                      title: t.subscription.loadPlansErrorTitle,
+                      subtitle: t.subscription.loadPlansErrorSubtitle,
                       icon: Icons.refresh_rounded,
                     )
                   : SliverMainAxisGroup(
@@ -108,7 +108,7 @@ class _ChangePlanBody extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              'Choose a different plan. Your change will take effect as described in the plan details.',
+                              t.subscription.changePlanDescription,
                               style: subheadH1Medium.copyWith(
                                 fontSize: 32,
                                 color: context.appTheme.beige100,

@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 
 class NoSubscriptionWidget extends StatelessWidget {
@@ -26,19 +27,19 @@ class NoSubscriptionWidget extends StatelessWidget {
 
               children: [
                 Text(
-                  'Upgrade your subscription',
+                  t.settings.upgradeSubscriptionTitle,
                   style: subheadH3Medium.copyWith(color: appTheme.beige100),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Upgrade your plan to unlock full access to all factions, advanced training modules, and exclusive rewards.',
+                  t.settings.upgradeSubscriptionSubtitle,
                   style: subheadH5Medium.copyWith(color: appTheme.beige700),
                 ),
 
                 const SizedBox(height: 16),
 
                 PrimaryButton(
-                  text: 'See all Plans',
+                  text: t.settings.seeAllPlans,
                   onPressed: () {
                     WorkoutSettings.subscription.push(context);
                   },

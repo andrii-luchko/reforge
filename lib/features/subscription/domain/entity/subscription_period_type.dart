@@ -17,46 +17,46 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
   String displayName(Translations t) {
     switch (this) {
       case SubscriptionPeriodType.unknown:
-        return 'Unknown';
+        return t.subscription.periodType.unknown;
       case SubscriptionPeriodType.custom:
-        return 'Custom';
+        return t.subscription.periodType.custom;
       case SubscriptionPeriodType.lifetime:
-        return 'Foundry Member Pass';
+        return t.subscription.periodType.lifetime;
       case SubscriptionPeriodType.annual:
-        return 'Yearly';
+        return t.subscription.periodType.yearly;
       case SubscriptionPeriodType.sixMonth:
-        return '6 Months';
+        return t.subscription.periodType.sixMonths;
       case SubscriptionPeriodType.threeMonth:
-        return '3 Months';
+        return t.subscription.periodType.threeMonths;
       case SubscriptionPeriodType.twoMonth:
-        return '2 Months';
+        return t.subscription.periodType.twoMonths;
       case SubscriptionPeriodType.monthly:
-        return 'Monthly';
+        return t.subscription.periodType.monthly;
       case SubscriptionPeriodType.weekly:
-        return 'Weekly';
+        return t.subscription.periodType.weekly;
     }
   }
 
   String displayPeriod(Translations t) {
     switch (this) {
       case SubscriptionPeriodType.unknown:
-        return '/ unknown';
+        return t.subscription.periodType.perUnknown;
       case SubscriptionPeriodType.custom:
-        return '/ custom';
+        return t.subscription.periodType.perCustom;
       case SubscriptionPeriodType.lifetime:
-        return '/ one time';
+        return t.subscription.periodType.perOneTime;
       case SubscriptionPeriodType.annual:
-        return '/ year';
+        return t.subscription.periodType.perYear;
       case SubscriptionPeriodType.sixMonth:
-        return '/ 6 months';
+        return t.subscription.periodType.perSixMonths;
       case SubscriptionPeriodType.threeMonth:
-        return '/ 3 months';
+        return t.subscription.periodType.perThreeMonths;
       case SubscriptionPeriodType.twoMonth:
-        return '/ 2 months';
+        return t.subscription.periodType.perTwoMonths;
       case SubscriptionPeriodType.monthly:
-        return '/ month';
+        return t.subscription.periodType.perMonth;
       case SubscriptionPeriodType.weekly:
-        return '/ week';
+        return t.subscription.periodType.perWeek;
     }
   }
 
@@ -80,9 +80,9 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
       case SubscriptionPeriodType.custom:
         return null;
       case SubscriptionPeriodType.lifetime:
-        return 'Limited time offer!';
+        return t.subscription.periodType.limitedTimeOffer;
       case SubscriptionPeriodType.annual:
-        return 'Best offer';
+        return t.subscription.periodType.bestOffer;
       case SubscriptionPeriodType.sixMonth:
         return null;
       case SubscriptionPeriodType.threeMonth:
@@ -102,10 +102,9 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
       case SubscriptionPeriodType.custom:
         return '';
       case SubscriptionPeriodType.lifetime:
-        return 'Lifetime access to all features, all factions, and exclusive status.';
+        return t.subscription.periodType.descriptionLifetime;
       case SubscriptionPeriodType.annual:
-        // return 'Save $savings annually compared to monthly billing. Full access to all features and all factions.';
-        return 'Save more than 40% compared to the monthly plan. Full access to all features and all factions.';
+        return t.subscription.periodType.descriptionAnnual;
       case SubscriptionPeriodType.sixMonth:
         return '';
       case SubscriptionPeriodType.threeMonth:
@@ -113,7 +112,7 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
       case SubscriptionPeriodType.twoMonth:
         return '';
       case SubscriptionPeriodType.monthly:
-        return 'Unlimited access to all premium features and exclusive content. No limits, just results.';
+        return t.subscription.periodType.descriptionMonthly;
       case SubscriptionPeriodType.weekly:
         return '';
     }

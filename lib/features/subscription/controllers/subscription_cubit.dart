@@ -14,6 +14,7 @@ import 'package:reforge/features/subscription/domain/entity/subscription_package
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/features/subscription/domain/repositories/subscription_repository.dart' as domain;
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'subscription_cubit.freezed.dart';
 part 'subscription_state.dart';
@@ -78,7 +79,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       case ErrorR(error: final error):
         emit(
           state.copyWith(
-            error: 'Failed to load offerings: $error',
+            error: t.subscription.loadOfferingsError(error: error.toString()),
             isLoading: false,
           ),
         );
@@ -109,7 +110,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         } else {
           emit(
             state.copyWith(
-              error: 'Purchase failed: $error',
+              error: t.subscription.purchaseFailed(error: error.toString()),
               isPurchasing: false,
             ),
           );
@@ -158,7 +159,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       case ErrorR(error: final error):
         emit(
           state.copyWith(
-            error: 'Restore failed: $error',
+            error: t.subscription.restoreFailed(error: error.toString()),
             isPurchasing: false,
           ),
         );
