@@ -172,6 +172,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                             ],
                           ),
                           child: RisingAuraEffect(
+                            enabled: state.isWorthy,
+                            autoStopDuration: const Duration(minutes: 5),
                             child: LeaderboardUserListTile(user: state.currentUser!),
                           ),
                         ),

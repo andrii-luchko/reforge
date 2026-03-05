@@ -19,11 +19,15 @@ class RankEntity {
   final String japanRankName;
   final String rankName;
   final Faction faction;
-  final int lvl;
-  final int xp;
-  final int maxXp;
+  final int? lvl;
+  final int? xp;
+  final int? maxXp;
 
-  double get progress => (xp / maxXp).clamp(0, 1);
+  double? get progress {
+    if (xp == null || maxXp == null || maxXp == 0) return null;
+
+    return (xp! / maxXp!).clamp(0.0, 1.0);
+  }
 
   factory RankEntity.mock([Faction? userFaction]) {
     return RankEntity.mockWith(t, userFaction);

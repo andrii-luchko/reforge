@@ -4,10 +4,15 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
+
 import 'package:reforge/features/achievements/domain/mock/generate_ranks.dart';
 import 'package:reforge/features/achievements/ui/widgets/deep_stack_scroll.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/empty_list_message.dart';
+import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -19,6 +24,8 @@ class RanksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<AchievementsCubit>();
+    final homeRank = context.watch<HomeCubit>().state.rank;
+
     final appTheme = context.appTheme;
 
     const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
@@ -31,10 +38,16 @@ class RanksPage extends StatelessWidget {
           bottom: false,
           child: BlocBuilder<AchievementsCubit, AchievementsState>(
             builder: (context, state) {
-              final displayRanks = (state.isLoading)
+              final displayRanks = (state.selectedRanks.isEmpty && state.isLoading)
                   ? RanksGenerator.generateRanks(state.selectedFaction)
-                  : state.ranks;
+                  : state.selectedRanks;
 
+              final ranksWithProgress = cubit.mergeRanksWithCurrentProgress(
+                backendRanks: displayRanks,
+                currentRank: homeRank,
+              );
+
+              final isEmpty = displayRanks.isEmpty && !state.isLoading;
               return Skeletonizer(
                 enabled: state.isLoading,
                 child: RefreshIndicator(
@@ -71,52 +84,61 @@ class RanksPage extends StatelessWidget {
                         ),
                       ),
 
-                      // const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 32)),
 
-                      // SliverPadding(
-                      //   padding: horizontalPadding.copyWith(bottom: 16),
-                      //   sliver: SliverToBoxAdapter(
-                      //     child: Column(
-                      //       crossAxisAlignment: .start,
-                      //       spacing: 16,
-                      //       children: [
-                      //         Text(t.achievements.rankFaction, style: subheadH2Medium.copyWith(color: appTheme.beige100)),
-
-                      //         Skeleton.leaf(
-                      //           child: MultiOptionSwitcher<Faction>(
-                      //             selectedValue: state.selectedFaction,
-                      //             values: Faction.values,
-                      //             labelBuilder: (d) => d.title(t),
-                      //             onSelected: cubit.changeFaction,
-                      //             borderRadius: BorderRadius.circular(50),
-                      //             padding: const EdgeInsets.all(3),
-                      //             itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
-                      //           ),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
                       SliverPadding(
-                        padding: horizontalPadding.copyWith(bottom: 32),
-                        sliver: SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: displayRanks.isEmpty && !state.isLoading
-                              ? Center(child: Text(t.achievements.noRanksFound))
-                              : DeepStackScroll(
-                                  children: displayRanks
-                                      .map(
-                                        (rank) => Skeleton.replace(
-                                          width: 358,
-                                          height: 484,
-                                          replacement: const AvatarCardShimmer(),
-                                          child: AvatarRankCard(rank: rank).animateEntrance(),
-                                        ),
-                                      )
-                                      .toList(),
+                        padding: horizontalPadding,
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: .start,
+                            spacing: 16,
+                            children: [
+                              Text(
+                                t.achievements.rankFaction,
+                                style: subheadH2Medium.copyWith(color: appTheme.beige100),
+                              ),
+
+                              Skeleton.leaf(
+                                child: MultiOptionSwitcher<Faction>(
+                                  selectedValue: state.selectedFaction,
+                                  values: Faction.values,
+                                  labelBuilder: (d) => d.title(t),
+                                  onSelected: cubit.changeFaction,
+                                  borderRadius: BorderRadius.circular(50),
+                                  padding: const EdgeInsets.all(3),
+                                  itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
                                 ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
+
+                      if (isEmpty)
+                        SliverEmptyListMessage(
+                          title: t.achievements.noRanksFound,
+                          subtitle: t.achievements.noRanksFoundSubtitle,
+                          icon: Icons.military_tech_outlined,
+                        )
+                      else
+                        SliverPadding(
+                          padding: horizontalPadding.copyWith(bottom: 32),
+                          sliver: SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: DeepStackScroll(
+                              children: ranksWithProgress
+                                  .map(
+                                    (rank) => Skeleton.replace(
+                                      width: 358,
+                                      height: 484,
+                                      replacement: const AvatarCardShimmer(),
+                                      child: AvatarRankCard(rank: rank).animateEntrance(),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

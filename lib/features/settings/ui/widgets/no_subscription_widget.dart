@@ -16,34 +16,37 @@ class NoSubscriptionWidget extends StatelessWidget {
       padding: const .only(bottom: 32, left: 16, right: 16),
       sliver: SliverToBoxAdapter(
         child: Container(
-          padding: const .all(16),
-          decoration: BoxDecoration(gradient: appTheme.cardNavigation, borderRadius: BorderRadius.circular(20)),
+          decoration: BoxDecoration(color: appTheme.beige900, borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            padding: const .all(16),
+            decoration: BoxDecoration(gradient: appTheme.cardNavigation, borderRadius: BorderRadius.circular(20)),
 
-          child: Column(
-            crossAxisAlignment: .start,
+            child: Column(
+              crossAxisAlignment: .start,
 
-            children: [
-              Text(
-                'Upgrade your subscription',
-                style: subheadH3Medium.copyWith(color: appTheme.beige100),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Upgrade your plan to unlock full access to all factions, advanced training modules, and exclusive rewards.',
-                style: subheadH5Medium.copyWith(color: appTheme.beige700),
-              ),
+              children: [
+                Text(
+                  'Upgrade your subscription',
+                  style: subheadH3Medium.copyWith(color: appTheme.beige100),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Upgrade your plan to unlock full access to all factions, advanced training modules, and exclusive rewards.',
+                  style: subheadH5Medium.copyWith(color: appTheme.beige700),
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              PrimaryButton(
-                text: 'See all Plans',
-                onPressed: () {
-                  WorkoutSettings.subscription.push(context);
-                },
-              ),
-            ],
-          ),
-        ).animateEntrance(),
+                PrimaryButton(
+                  text: 'See all Plans',
+                  onPressed: () {
+                    WorkoutSettings.subscription.push(context);
+                  },
+                ),
+              ],
+            ),
+          ).animateEntrance(),
+        ),
       ),
     );
   }

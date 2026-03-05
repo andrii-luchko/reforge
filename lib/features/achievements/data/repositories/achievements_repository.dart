@@ -5,10 +5,10 @@ import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
+import 'package:reforge/features/achievements/data/enum/rank_status.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
-import 'package:reforge/features/achievements/domain/mock/generate_ranks.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
 abstract interface class AchievementsRepository {
@@ -75,9 +75,19 @@ class AchievementsRepositoryImpl with RepositoryErrorHandler implements Achievem
   @override
   Future<Result<List<RankEntity>>> getUserRanks(Faction faction) async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      final result = await makeRequest(
+        () async {
+          final result = await _apiClient.getUserRanks(faction.name);
 
-      return Result.success(RanksGenerator.generateRanks(faction));
+          final mappedList = result.data.progression
+              .where((v) => v.status != RankStatus.locked)
+              .map((e) => e.toDomain(faction));
+          return mappedList.toList();
+        },
+        label: 'getUserBadges',
+      );
+
+      return Result.success(result);
     } on Exception catch (e) {
       return Result.error(e);
     }

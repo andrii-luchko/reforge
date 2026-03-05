@@ -61,10 +61,14 @@ extension LeaderboardUserX on LeaderboardUser {
 
 extension CurrentUserRankX on CurrentUserRank {
   LeaderboardUserEntity toDomain() {
-    final username = name ?? 'Me';
+    final username = name ?? '';
+
+    //TODO(Masayoshl): as soon as backend fix current user rank change it here
+
+    final realRank = (rank - 1).clamp(1, rank);
 
     return LeaderboardUserEntity(
-      rank: rank,
+      rank: realRank,
       username: username,
       avatarUrl: avatarUrl,
       xp: progress.totalXp.toInt(),

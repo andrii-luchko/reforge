@@ -18,4 +18,6 @@ sealed class UsersLeaderboardState with _$UsersLeaderboardState {
     String? paginationError,
     String? error,
   }) = _UsersLeaderboardState;
+
+  bool get isWorthy => (currentUser?.rank ?? 100000) <= 3;
 }

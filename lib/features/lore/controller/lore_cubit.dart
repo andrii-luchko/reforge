@@ -116,6 +116,7 @@ class LoreCubit extends Cubit<LoreState> {
           if (item.id == id) return detail;
           return item;
         }).toList();
+
         emit(state.copyWith(items: updatedItems));
 
       case ErrorR(error: final error):

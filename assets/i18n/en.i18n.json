@@ -377,6 +377,7 @@
             "noLeaders": "No leaders in $faction yet",
             "beFirst": "Be the first to claim the title!"
         },
+        "currentUserLabel": "Me",
         "xpLabel": "XP"
     },
     "errors": {
@@ -460,6 +461,7 @@
         "ranks": "Ranks",
         "rankFaction": "Rank faction",
         "noRanksFound": "No ranks found",
+        "noRanksFoundSubtitle": "It looks like you have no attributes yet.",
         "badgesList": "Badges list",
         "itemsCount": "$unlocked/$total items",
         "noBadgesFound": "No Badges Found",
@@ -496,6 +498,11 @@
                 "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
             }
         }
+
+
+       
+  
+       
     },
     "workout_tiers": {
         "beginner": "Beginner",

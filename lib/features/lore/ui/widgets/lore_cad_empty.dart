@@ -3,8 +3,8 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
-class LoreEmpty extends StatelessWidget {
-  const LoreEmpty({super.key});
+class LoreCardEmpty extends StatelessWidget {
+  const LoreCardEmpty({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -13,6 +13,7 @@ import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart'
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/achievements/data/models/achievement_badge_dto.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
+import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
@@ -183,6 +184,9 @@ abstract class ApiClient {
 
   @GET('/workout-milestones')
   Future<BaseResponse<List<AchievementBadgeDto>>> getUserBadges();
+
+  @GET('/users/me/rank-info/{faction}')
+  Future<BaseResponse<UserRankData>> getUserRanks(@Path('faction') String faction);
 
   //images
   @POST('/supabase/upload')

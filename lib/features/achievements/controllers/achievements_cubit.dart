@@ -105,19 +105,19 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksRefresh));
   }
 
-  // Future<void> changeFaction(Faction faction) async {
-  //   unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksFactionChange, {'faction': faction.name}));
-  //   emit(state.copyWith(selectedFaction: faction));
+  Future<void> changeFaction(Faction faction) async {
+    unawaited(_analytics.logEvent(AnalyticsEvents.achievementsRanksFactionChange, {'faction': faction.name}));
+    emit(state.copyWith(selectedFaction: faction));
 
-  //   final hasData = state.ranks[faction]?.isNotEmpty ?? false;
+    final hasData = state.ranks[faction]?.isNotEmpty ?? false;
 
-  //   if (!hasData) {
-  //     await loadRanks();
-  //   }
-  // }
+    if (!hasData) {
+      await loadRanks();
+    }
+  }
 
   Future<void> loadRanks({bool forceRefresh = false}) async {
-    if (state.isLoading || (state.ranks.isNotEmpty && !forceRefresh)) return;
+    if (state.isLoading || (state.selectedRanks.isNotEmpty && !forceRefresh)) return;
 
     emit(state.copyWith(isLoading: true, error: null));
 
@@ -126,9 +126,12 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     final result = await _repository.getUserRanks(faction);
     switch (result) {
       case Success(value: final newRanks):
+        final updatedRanks = Map<Faction, List<RankEntity>>.from(state.ranks);
+        updatedRanks[faction] = newRanks;
+
         emit(
           state.copyWith(
-            ranks: newRanks,
+            ranks: updatedRanks,
             isLoading: false,
           ),
         );
@@ -140,5 +143,29 @@ class AchievementsCubit extends Cubit<AchievementsState> {
           ),
         );
     }
+  }
+
+  List<RankEntity> mergeRanksWithCurrentProgress({
+    required List<RankEntity> backendRanks,
+    RankEntity? currentRank,
+  }) {
+    if (currentRank == null) return backendRanks;
+
+    return backendRanks.map((rank) {
+      final sameFaction = rank.faction == currentRank.faction;
+      final sameName = rank.rankName == currentRank.rankName;
+
+      if (!sameFaction || !sameName) return rank;
+
+      return RankEntity(
+        imageUrl: rank.imageUrl,
+        japanRankName: rank.japanRankName,
+        rankName: rank.rankName,
+        faction: rank.faction,
+        lvl: currentRank.lvl,
+        xp: currentRank.xp,
+        maxXp: currentRank.maxXp,
+      );
+    }).toList();
   }
 }

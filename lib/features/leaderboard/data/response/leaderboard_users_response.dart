@@ -1,7 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/app/utils/helpers/meta_data.dart';
 import 'package:reforge/features/leaderboard/data/models/leaderboard_user.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'leaderboard_users_response.freezed.dart';
 part 'leaderboard_users_response.g.dart';
@@ -27,8 +29,15 @@ sealed class LeaderboardResponse with _$LeaderboardResponse {
 extension LeaderboardResponseX on LeaderboardResponse {
   MappedLeaderboardData toDomain() {
     final currentUser = currentUserPosition.toDomain();
+
     final usersList = data.map((user) => user.toDomain()).toList();
 
-    return (currentUser: currentUser, usersList: usersList, totalPages: meta.pagination.total);
+    final currentUserInList = usersList.firstWhereOrNull((element) => element.rank == currentUser.rank) ?? currentUser;
+
+    return (
+      currentUser: currentUserInList.copyWith(username: t.leaderboard.currentUserLabel),
+      usersList: usersList,
+      totalPages: meta.pagination.total,
+    );
   }
 }
