@@ -13,6 +13,7 @@ import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart'
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/features/achievements/data/models/achievement_badge_dto.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
+import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
@@ -43,26 +44,35 @@ abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
   // Auth endpoints
+  @Extra({'requiresAuth': false})
   @POST('/auth/signin')
   Future<BaseResponse<AuthTokens>> signin(@Body() SignInRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/password-reset/initiate')
   Future<void> initiatePasswordReset(@Body() PasswordResetEmailRequest request);
 
+  @Extra({'requiresAuth': false})
   @GET('/auth/password-reset/validate')
   Future<void> validatePasswordReset(@Queries() PasswordResetValidateTokenRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/password-reset/confirm')
   Future<void> confirmPasswordReset(@Body() PasswordResetConfirmRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/signup')
   Future<BaseResponse<AuthTokens>> signup(@Body() SignUpRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/provider')
   Future<BaseResponse<AuthTokens>> provider(@Body() SignWithProviderRequest request);
 
+  @Extra({'requiresAuth': false})
   @POST('/auth/refresh')
-  Future<BaseResponse<AuthTokens>> refreshToken(@Body() RefreshTokenRequest request);
+  Future<BaseResponse<AuthTokens>> refreshToken(
+    @Body() RefreshTokenRequest request,
+  );
 
   //Quiz
   @POST('/users/profile')
@@ -174,6 +184,9 @@ abstract class ApiClient {
 
   @GET('/workout-milestones')
   Future<BaseResponse<List<AchievementBadgeDto>>> getUserBadges();
+
+  @GET('/users/me/rank-info/{faction}')
+  Future<BaseResponse<UserRankData>> getUserRanks(@Path('faction') String faction);
 
   //images
   @POST('/supabase/upload')

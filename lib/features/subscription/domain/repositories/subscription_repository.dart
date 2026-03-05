@@ -10,9 +10,11 @@ abstract interface class SubscriptionRepository {
   Future<Result<SubscriptionEntity?>> purchasePackage(SubscriptionPackage package);
   Future<Result<SubscriptionEntity?>> getCurrentSubscription({
     List<SubscriptionPackage>? packages,
+    String? fallbackRcPackageGroupId,
   });
 
   Future<Result<SubscriptionEntity?>> restorePurchases({
     List<SubscriptionPackage>? packages,
+    String? fallbackRcPackageGroupId,
   });
 }

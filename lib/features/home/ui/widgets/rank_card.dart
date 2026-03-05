@@ -6,12 +6,12 @@ import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 
 class RankCard extends StatelessWidget {
   const RankCard({
-    required this.rank,
-    required this.name,
+    required this.japanRankName,
+    required this.rankName,
     super.key,
   });
-  final String rank;
-  final String name;
+  final String japanRankName;
+  final String rankName;
 
   static const double _cardAspectRatio = 312 / 93;
 
@@ -47,7 +47,7 @@ class RankCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          rank,
+                          japanRankName,
                           style: subheadH4Semibold.copyWith(
                             color: context.appTheme.beige800,
                           ),
@@ -60,7 +60,7 @@ class RankCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          name,
+                          rankName,
                           style: titleH2Regular.copyWith(
                             color: context.appTheme.beige800,
                             fontSize: 100,

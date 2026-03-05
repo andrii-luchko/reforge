@@ -38,11 +38,15 @@ SubscriptionOfferings createTestOfferings({
   );
 }
 
-SubscriptionEntity createTestSubscription({bool isActive = true}) {
+SubscriptionEntity createTestSubscription({
+  bool isActive = true,
+  SubscriptionPackage? matchedPackage,
+}) {
   return SubscriptionEntity(
     isActive: isActive,
     expirationDate: DateTime(2025, 12, 31),
     entitlementId: 'premium',
+    matchedPackage: matchedPackage,
   );
 }
 
@@ -82,6 +86,34 @@ void main() {
                 isNotNull,
               )
               .having((s) => s.isLoading, 'isLoading', false),
+        ],
+      );
+
+      blocTest<SubscriptionCubit, SubscriptionState>(
+        'currentPackage equals matchedPackage from subscription by id',
+        build: () {
+          final package = createTestPackage(id: 'annual', periodType: SubscriptionPeriodType.annual);
+          final offerings = createTestOfferings(
+            packages: [
+              // ignore: avoid_redundant_argument_values
+              createTestPackage(id: 'monthly'),
+              package,
+            ],
+          );
+          when(() => mockRepository.getOfferings()).thenAnswer(
+            (_) async => Result.success(offerings),
+          );
+          when(
+            () => mockRepository.getCurrentSubscription(packages: any(named: 'packages')),
+          ).thenAnswer((_) async => Result.success(createTestSubscription(matchedPackage: package)));
+          return SubscriptionCubit(mockRepository, mockUserCubit);
+        },
+        act: (cubit) => cubit.loadOfferings(),
+        expect: () => [
+          const SubscriptionState(isLoading: true),
+          isA<SubscriptionState>()
+              .having((s) => s.currentPackage?.id, 'currentPackage.id', 'annual')
+              .having((s) => s.hasActiveSubscription, 'hasActiveSubscription', true),
         ],
       );
 

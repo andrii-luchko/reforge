@@ -15,7 +15,6 @@ createTestMappedLeaderboardData({
   const defaultUser = LeaderboardUserEntity(
     rank: 1,
     username: 'TestUser',
-    avatarUrl: null,
     xp: 1000,
   );
   return (
@@ -36,9 +35,9 @@ void main() {
     test('loadUsers Success emits state with users and hasReachedMax', () async {
       final data = createTestMappedLeaderboardData(
         usersList: [
-          const LeaderboardUserEntity(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
+          const LeaderboardUserEntity(rank: 1, username: 'User1', xp: 500),
         ],
-        currentUser: const LeaderboardUserEntity(rank: 1, username: 'User1', avatarUrl: null, xp: 500),
+        currentUser: const LeaderboardUserEntity(rank: 1, username: 'User1', xp: 500),
       );
       when(() => mockRepository.getGlobalUserListPaginated(page: 1)).thenAnswer((_) async => Result.success(data));
 
@@ -66,11 +65,11 @@ void main() {
 
     test('loadNextPage Success appends users and updates page', () async {
       final page1Data = createTestMappedLeaderboardData(
-        usersList: [const LeaderboardUserEntity(rank: 1, username: 'User1', avatarUrl: null, xp: 500)],
+        usersList: [const LeaderboardUserEntity(rank: 1, username: 'User1', xp: 500)],
         totalPages: 2,
       );
       final page2Data = createTestMappedLeaderboardData(
-        usersList: [const LeaderboardUserEntity(rank: 2, username: 'User2', avatarUrl: null, xp: 400)],
+        usersList: [const LeaderboardUserEntity(rank: 2, username: 'User2', xp: 400)],
         totalPages: 2,
       );
       when(() => mockRepository.getGlobalUserListPaginated(page: 1)).thenAnswer((_) async => Result.success(page1Data));

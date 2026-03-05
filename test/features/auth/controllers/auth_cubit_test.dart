@@ -26,6 +26,7 @@ void main() {
   setUp(() {
     mockRepository = MockAuthRepository();
     mockAnalytics = MockAnalyticsService();
+    when(() => mockRepository.clearTokens()).thenAnswer((_) async => const Result.success(null));
     when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
     when(() => mockAnalytics.setUserId(any())).thenAnswer((_) async {});
     when(() => mockAnalytics.setUserProperty(any(), any())).thenAnswer((_) async {});

@@ -15,6 +15,7 @@ class SignUpPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: DefaultBackground(
         body: Positioned.fill(
           child: Padding(

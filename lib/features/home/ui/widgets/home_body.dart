@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
@@ -24,7 +25,8 @@ class HomeBody extends StatelessWidget {
       top: false,
       bottom: false,
       child: BlocConsumer<HomeCubit, HomeState>(
-        listenWhen: (previous, current) => current.error != null,
+        listenWhen: (previous, current) =>
+            current.error != null && previous.error != current.error,
         listener: (context, state) {
           if (state.error != null) {
             toastification.showErrorToast(state.error!, context);
@@ -48,14 +50,14 @@ class HomeBody extends StatelessWidget {
                         replacement: const AvatarCardShimmer(),
                         child: AvatarRankCard(
                           rank: state.rank ?? RankEntity.mockWith(t),
-                        ),
+                        ).animateEntrance(),
                       ),
                     ),
                   ),
                   SliverPadding(
                     padding: horizontalPadding.copyWith(bottom: 16),
-                    sliver: const SliverToBoxAdapter(
-                      child: StartWorkoutListTile(),
+                    sliver: SliverToBoxAdapter(
+                      child: const StartWorkoutListTile().animateEntrance(),
                     ),
                   ),
                   SliverPadding(

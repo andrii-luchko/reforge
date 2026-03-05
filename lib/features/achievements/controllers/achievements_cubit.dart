@@ -23,10 +23,17 @@ class AchievementsCubit extends Cubit<AchievementsState> {
   final AnalyticsService _analytics;
 
   Future<void> init() async {
-    if (state.attributes.isNotEmpty) return;
-
+    setUserFaction();
     await loadAttributes();
     await loadBadges();
+  }
+
+  void setUserFaction() {
+    final userFaction = _repository.getUserFaction();
+
+    if (userFaction != null) {
+      emit(state.copyWith(selectedFaction: userFaction));
+    }
   }
 
   Future<void> loadAttributes({bool forceRefresh = false}) async {
@@ -136,5 +143,29 @@ class AchievementsCubit extends Cubit<AchievementsState> {
           ),
         );
     }
+  }
+
+  List<RankEntity> mergeRanksWithCurrentProgress({
+    required List<RankEntity> backendRanks,
+    RankEntity? currentRank,
+  }) {
+    if (currentRank == null) return backendRanks;
+
+    return backendRanks.map((rank) {
+      final sameFaction = rank.faction == currentRank.faction;
+      final sameName = rank.rankName == currentRank.rankName;
+
+      if (!sameFaction || !sameName) return rank;
+
+      return RankEntity(
+        imageUrl: rank.imageUrl,
+        japanRankName: rank.japanRankName,
+        rankName: rank.rankName,
+        faction: rank.faction,
+        lvl: currentRank.lvl,
+        xp: currentRank.xp,
+        maxXp: currentRank.maxXp,
+      );
+    }).toList();
   }
 }

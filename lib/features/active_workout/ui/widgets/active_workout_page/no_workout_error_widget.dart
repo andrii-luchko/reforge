@@ -28,7 +28,7 @@ class NoWorkoutErrorWidget extends StatelessWidget {
         mainAxisAlignment: .center,
         spacing: 16,
         children: [
-          const Icon(Icons.error, size: 48),
+          const Icon(Icons.error_outline_outlined, size: 48),
 
           Text(
             t.workout.exerciseNotFoundError,

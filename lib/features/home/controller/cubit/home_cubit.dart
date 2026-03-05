@@ -27,12 +27,20 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadInitialData() async {
     emit(state.copyWith(isLoading: true, error: null));
 
-    await Future.wait([
-      _loadUserData(),
-      loadStatsByPeriod(state.period, isInitial: true),
-    ]);
+    _loadUserData();
 
-    emit(state.copyWith(isLoading: false));
+    try {
+      await loadStatsByPeriod(state.period, isInitial: true);
+      // ignore: avoid_catches_without_on_clauses
+    } catch (error) {
+      emit(
+        state.copyWith(
+          error: error.toString(),
+        ),
+      );
+    } finally {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {
@@ -50,7 +58,9 @@ class HomeCubit extends Cubit<HomeState> {
     switch (statsResult) {
       case Success(value: final stats):
         final updatedMap = Map<StatsPeriod, UserStats>.from(state.statsMap);
-        updatedMap[period] = stats;
+        if (stats != null) {
+          updatedMap[period] = stats;
+        }
 
         final rank = _createRank(state.user, stats);
 
@@ -74,7 +84,7 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  Future<void> _loadUserData() async {
+  void _loadUserData() {
     final userResult = _repository.getUserData();
     if (userResult != null) {
       emit(state.copyWith(user: userResult));
@@ -83,11 +93,14 @@ class HomeCubit extends Cubit<HomeState> {
 
   RankEntity _createRank(OnboardedUser? user, [UserStats? stats]) {
     final faction = user?.mainFaction ?? Faction.gakki;
+    final japanRankName = user?.japanRank ?? t.home.rank_label;
+    final rankName = user?.rank ?? t.tiers.beginner;
 
     if (stats != null) {
       return RankEntity(
         imageUrl: faction.rankCardAsset(),
-        rankName: t.tiers.intermediate,
+        japanRankName: japanRankName,
+        rankName: rankName,
         faction: faction,
         lvl: stats.level,
         xp: stats.currentXp,

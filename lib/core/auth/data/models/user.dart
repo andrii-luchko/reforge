@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/constants/week_day.dart';
+import 'package:reforge/core/user/data/models/user_subscription.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
@@ -35,6 +36,10 @@ sealed class User with _$User {
 
     @Default(false) @JsonKey(name: 'remindersEnabled') bool remindersEnabled,
     @Default(false) @JsonKey(name: 'announcementsEnabled') bool announcementsEnabled,
+
+    @JsonKey(name: 'rank') String? rank,
+    @JsonKey(name: 'japanRank') String? japanRank,
+    @JsonKey(name: 'subscription') UserSubscription? subscription,
   }) = OnboardedUser;
 
   factory User.fromJson(Map<String, dynamic> json) {

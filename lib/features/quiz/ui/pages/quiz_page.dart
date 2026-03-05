@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
@@ -5,6 +7,7 @@ import 'package:reforge/app/router/routes.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/quiz/controller/quiz_cubit.dart';
 import 'package:reforge/features/quiz/domain/enums/quiz_steps.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -82,6 +85,7 @@ class QuizForm extends StatelessWidget {
       listener: (context, state) {
         if (!state.isSubmitted) return;
         const PayWallPageRoute().go(context);
+        unawaited(context.read<UserCubit>().refreshUser());
       },
       builder: (context, state) {
         final cubit = context.read<QuizCubit>();

@@ -1,24 +1,28 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/datasources/auth_local_datasource.dart';
 import 'package:reforge/core/auth/data/datasources/auth_providers_datasource.dart';
 import 'package:reforge/core/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:reforge/core/auth/data/enums/auth_providers.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/domain/repositories/auth_repository.dart';
+import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-class AuthCanceledException implements Exception {
+class AuthCanceledException implements AppException {
   const AuthCanceledException();
+
+  @override
+  String get message => '';
 }
 
 @Injectable(as: AuthRepository)
-class AuthRepositoryImpl implements AuthRepository {
+class AuthRepositoryImpl with RepositoryErrorHandler implements AuthRepository {
   AuthRepositoryImpl(
     this.remoteDataSource,
     this.authProvidersDatasource,
@@ -33,27 +37,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<AuthTokens?>> getTokens() async {
     try {
       final localTokens = await localDataSource.getTokens();
-      if (localTokens == null) {
-        return const Result.success(null);
-      } else {
-        final refreshedTokens = await refreshToken(localTokens.refreshToken);
 
-        switch (refreshedTokens) {
-          case Success(value: final value):
-            return Result.success(value);
-          case ErrorR(error: final error):
-            if (error is DioException) {
-              if (error.type == DioExceptionType.connectionTimeout ||
-                  error.type == DioExceptionType.receiveTimeout ||
-                  error.type == DioExceptionType.connectionError ||
-                  error.error is SocketException) {
-                return Result.success(localTokens);
-              }
-            }
-
-            return const Result.success(null);
-        }
-      }
+      return Result.success(localTokens);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -72,8 +57,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthTokens>> signin(String email, String password) async {
     try {
-      final tokens = await remoteDataSource.signin(email, password);
-      await localDataSource.saveTokens(tokens);
+      final tokens = await makeRequest(
+        () async {
+          final t = await remoteDataSource.signin(email, password);
+          await localDataSource.saveTokens(t);
+          return t;
+        },
+        label: 'signin',
+      );
       return Result.success(tokens);
     } on Exception catch (e) {
       return Result.error(e);
@@ -83,8 +74,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<AuthTokens>> signup(String email, String password) async {
     try {
-      final tokens = await remoteDataSource.signup(email, password);
-      await localDataSource.saveTokens(tokens);
+      final tokens = await makeRequest(
+        () async {
+          final t = await remoteDataSource.signup(email, password);
+          await localDataSource.saveTokens(t);
+          return t;
+        },
+        label: 'signup',
+      );
       return Result.success(tokens);
     } on Exception catch (e) {
       return Result.error(e);
@@ -129,14 +126,22 @@ class AuthRepositoryImpl implements AuthRepository {
       if (googleToken == null) {
         return Result.error(Exception('Token is empty'));
       }
-      final tokens = await remoteDataSource.signWithProvider(token: googleToken, provider: AuthProviders.google);
-      await localDataSource.saveTokens(tokens);
+      final tokens = await makeRequest(
+        () async {
+          final t = await remoteDataSource.signWithProvider(
+            token: googleToken,
+            provider: AuthProviders.google,
+          );
+          await localDataSource.saveTokens(t);
+          return t;
+        },
+        label: 'signWithGoogle',
+      );
       return Result.success(tokens);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return const Result.error(AuthCanceledException());
       }
-
       return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);
@@ -150,20 +155,25 @@ class AuthRepositoryImpl implements AuthRepository {
       if (data.token == null) {
         return Result.error(Exception('Token is empty'));
       }
-
-      final tokens = await remoteDataSource.signWithProvider(
-        token: data.token!,
-        provider: AuthProviders.apple,
-        firstName: data.name,
-        lastName: data.surname,
+      final tokens = await makeRequest(
+        () async {
+          final t = await remoteDataSource.signWithProvider(
+            token: data.token!,
+            provider: AuthProviders.apple,
+            firstName: data.name,
+            lastName: data.surname,
+          );
+          await localDataSource.saveTokens(t);
+          return t;
+        },
+        label: 'signWithApple',
       );
-      await localDataSource.saveTokens(tokens);
       return Result.success(tokens);
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         return const Result.error(AuthCanceledException());
       }
-
+      logger.d(e);
       return Result.error(e);
     } on Exception catch (e) {
       return Result.error(e);

@@ -22,6 +22,21 @@ class RefreshTokenInterceptor extends QueuedInterceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
+    final options = err.requestOptions;
+    final path = options.path;
+    final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
+
+    // Do not attempt to refresh for requests that explicitly don't require auth
+    // or for the refresh-token request itself.
+    if (!requiresAuth || path == '/auth/refresh') {
+      if (path == '/auth/refresh') {
+        await _localDataSource.clearTokens();
+        onTokenRefreshFailed();
+      }
+
+      return handler.reject(err);
+    }
+
     if (err.response?.statusCode == 401) {
       try {
         final tokens = await _localDataSource.getTokens();
@@ -31,7 +46,15 @@ class RefreshTokenInterceptor extends QueuedInterceptor {
           return handler.reject(err);
         }
 
-        final newTokens = await _remoteDataSource.refreshToken(tokens.refreshToken);
+        final newTokens = await _remoteDataSource
+            .refreshToken(tokens.refreshToken)
+            .timeout(
+              const Duration(seconds: 20),
+              onTimeout: () => throw DioException.receiveTimeout(
+                timeout: const Duration(seconds: 20),
+                requestOptions: err.requestOptions,
+              ),
+            );
         await _localDataSource.saveTokens(newTokens);
 
         final options = err.requestOptions;
@@ -46,7 +69,6 @@ class RefreshTokenInterceptor extends QueuedInterceptor {
         return handler.reject(err);
       }
     }
-
     handler.next(err);
   }
 }

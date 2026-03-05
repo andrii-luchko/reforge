@@ -23,11 +23,11 @@ class AppListTile extends StatelessWidget {
     final appTheme = context.appTheme;
     final borderRadius = BorderRadius.circular(20);
 
-    return Material(
-      color: appTheme.beige900,
-      borderRadius: borderRadius,
-      child: PressableAnimation(
-        onTap: onTap,
+    return PressableAnimation(
+      onTap: onTap,
+      child: Material(
+        color: appTheme.beige900,
+        borderRadius: borderRadius,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(

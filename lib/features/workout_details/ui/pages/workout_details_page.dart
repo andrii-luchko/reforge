@@ -7,6 +7,7 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/workout_details_body.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/app_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 
@@ -38,7 +39,7 @@ class _WorkoutDetailsPageState extends State<WorkoutDetailsPage> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Text(
-              'Power Builder Routine',
+              t.workout_details.title,
               style: subheadH1Medium.copyWith(color: appTheme.beige100),
             ),
           ),

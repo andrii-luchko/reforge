@@ -24,6 +24,7 @@ DayEntity createTestDayEntity(DateTime date, {List<int> sessionIds = const []}) 
     isCompleted: false,
     isCanceled: false,
     isSpecificDay: true,
+    scheduledWorkoutDayId: null,
     sessionsCount: sessionIds.length,
     sessionIds: sessionIds,
   );

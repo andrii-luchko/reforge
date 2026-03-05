@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 
 /// Trial/intro offer info for display.
@@ -7,13 +6,13 @@ class SubscriptionTrialInfo {
   const SubscriptionTrialInfo({
     this.price,
     this.priceString,
-    this.period,
+    this.periodParsed,
     this.currencyCode,
   });
 
   final double? price;
   final String? priceString;
-  final String? period;
+  final String? periodParsed;
   final String? currencyCode;
 }
 
@@ -27,6 +26,7 @@ class SubscriptionPackage {
     required this.currencyCode,
     required this.periodType,
     this.productIdentifier,
+    this.rcPackageGroupId,
     this.period,
     this.trialInfo,
   });
@@ -41,9 +41,13 @@ class SubscriptionPackage {
   final SubscriptionTrialInfo? trialInfo;
   final String? productIdentifier;
 
+  /// Cross-platform package group id (e.g. RC package identifier). Used to match
+  /// subscription from another platform when productIdentifier differs.
+  final String? rcPackageGroupId;
+
   String get displayPrice {
-    final code = trialInfo?.currencyCode ?? currencyCode;
-    final amount = trialInfo?.price ?? price;
+    final code = currencyCode;
+    final amount = price;
 
     try {
       final formatter = NumberFormat.simpleCurrency(name: code);
@@ -86,7 +90,7 @@ class SubscriptionPackage {
 
   @override
   String toString() {
-    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier)';
+    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier, rcPackageGroupId: $rcPackageGroupId)';
   }
 }
 
@@ -98,5 +102,7 @@ extension SubscriptionPackagePlaceholder on SubscriptionPackage {
     priceString: r'$9.99',
     currencyCode: 'USD',
     periodType: SubscriptionPeriodType.monthly,
+    // ignore: avoid_redundant_argument_values
+    rcPackageGroupId: null,
   );
 }

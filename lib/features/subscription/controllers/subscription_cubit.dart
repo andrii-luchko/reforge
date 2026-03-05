@@ -6,6 +6,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
@@ -13,6 +14,7 @@ import 'package:reforge/features/subscription/domain/entity/subscription_package
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/features/subscription/domain/repositories/subscription_repository.dart' as domain;
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'subscription_cubit.freezed.dart';
 part 'subscription_state.dart';
@@ -20,8 +22,6 @@ part 'subscription_state.dart';
 @injectable
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repository, this._userCubit) : super(const SubscriptionState()) {
-    unawaited(loadOfferings());
-
     _userSubscription = _userCubit.stream.listen(_onUserChanges);
   }
 
@@ -29,9 +29,23 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   final UserCubit _userCubit;
   StreamSubscription<UserState>? _userSubscription;
 
+  /// Cross-platform fallback: when subscription was bought on another platform,
+  /// RC returns different productIdentifier; backend's rcPackageGroupId allows
+  /// matching to the correct package in current platform offerings.
+  String? get _fallbackRcPackageGroupId {
+    final user = _userCubit.state.userOrNull;
+    if (user case OnboardedUser(subscription: final sub?)) {
+      return sub.package.rcPackageGroupId;
+    }
+    return null;
+  }
+
   Future<void> _onUserChanges(UserState state) async {
     await state.maybeMap(
-      loaded: (value) => _repository.login(value.user.id),
+      loaded: (value) async {
+        await _repository.login(value.user.id);
+        await loadOfferings();
+      },
       initial: (value) => _repository.logout(),
       deleted: (value) => _repository.logout(),
       orElse: () {},
@@ -47,6 +61,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       case Success(value: final offerings):
         final subscriptionResult = await _repository.getCurrentSubscription(
           packages: offerings.packages,
+          fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
         );
         switch (subscriptionResult) {
           case Success(value: final sub):
@@ -64,7 +79,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       case ErrorR(error: final error):
         emit(
           state.copyWith(
-            error: 'Failed to load offerings: $error',
+            error: t.subscription.loadOfferingsError(error: error.toString()),
             isLoading: false,
           ),
         );
@@ -95,7 +110,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         } else {
           emit(
             state.copyWith(
-              error: 'Purchase failed: $error',
+              error: t.subscription.purchaseFailed(error: error.toString()),
               isPurchasing: false,
             ),
           );
@@ -110,6 +125,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   Future<void> checkSubscriptionStatus() async {
     final result = await _repository.getCurrentSubscription(
       packages: state.offerings?.packages,
+      fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
     );
 
     switch (result) {
@@ -129,6 +145,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     final result = await _repository.restorePurchases(
       packages: state.offerings!.packages,
+      fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
     );
 
     switch (result) {
@@ -142,7 +159,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       case ErrorR(error: final error):
         emit(
           state.copyWith(
-            error: 'Restore failed: $error',
+            error: t.subscription.restoreFailed(error: error.toString()),
             isPurchasing: false,
           ),
         );

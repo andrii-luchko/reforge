@@ -7,6 +7,7 @@ void main() {
     group('hasSessions', () {
       test('returns true when sessionIds is not empty', () {
         final entity = DayEntity(
+          scheduledWorkoutDayId: null,
           date: DateTime(2025, 1, 15),
           isCompleted: false,
           isCanceled: false,
@@ -19,6 +20,7 @@ void main() {
 
       test('returns false when sessionIds is empty', () {
         final entity = DayEntity(
+          scheduledWorkoutDayId: null,
           date: DateTime(2025, 1, 15),
           isCompleted: false,
           isCanceled: false,
@@ -33,6 +35,7 @@ void main() {
     group('latestSessionId', () {
       test('returns null when sessionIds is empty', () {
         final entity = DayEntity(
+          scheduledWorkoutDayId: null,
           date: DateTime(2025, 1, 15),
           isCompleted: false,
           isCanceled: false,
@@ -46,6 +49,7 @@ void main() {
       test('returns max sessionId when sessionIds has values', () {
         final entity = DayEntity(
           date: DateTime(2025, 1, 15),
+          scheduledWorkoutDayId: null,
           isCompleted: false,
           isCanceled: false,
           isSpecificDay: true,
@@ -58,6 +62,7 @@ void main() {
       test('returns single sessionId when only one', () {
         final entity = DayEntity(
           date: DateTime(2025, 1, 15),
+          scheduledWorkoutDayId: null,
           isCompleted: false,
           isCanceled: false,
           isSpecificDay: true,
@@ -77,6 +82,7 @@ void main() {
           isCompleted: true,
           isCanceled: false,
           sessionsCount: 2,
+          scheduledWorkoutDayId: null,
           sessionIds: [10, 20],
         );
         final entity = DayEntity.fromDto(dto);
@@ -90,6 +96,7 @@ void main() {
 
       test('uses epoch when date string is invalid', () {
         const dto = CalendarDayDto(
+          scheduledWorkoutDayId: null,
           date: 'invalid',
           dayOfWeek: 1,
           isSpecificDay: false,

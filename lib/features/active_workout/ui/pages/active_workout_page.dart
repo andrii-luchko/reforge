@@ -31,114 +31,111 @@ class ActiveWorkoutPage extends StatelessWidget {
         final exerciseDetails = programExercise.exerciseDetails;
         final previousResult = exerciseState.previousResult;
 
-        return PopScope(
-          canPop: false,
-          child: DefaultBackground(
-            body: MultiBlocListener(
-              listeners: [
-                BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
-                  listenWhen: (prev, curr) => !prev.isSubmitted && curr.isSubmitted,
-                  listener: (context, state) async {
-                    final flowCubit = context.read<WorkoutFlowCubit>();
-                    final timerDuration = context.read<TimerCubit>().state.duration;
+        return DefaultBackground(
+          body: MultiBlocListener(
+            listeners: [
+              BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
+                listenWhen: (prev, curr) => !prev.isSubmitted && curr.isSubmitted,
+                listener: (context, state) async {
+                  final flowCubit = context.read<WorkoutFlowCubit>();
+                  final timerDuration = context.read<TimerCubit>().state.duration;
 
-                    await flowCubit.nextExercise(timerDuration);
-                  },
-                ),
-              ],
-              child: Skeletonizer(
-                enabled: exerciseState.isLoading,
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16, bottom: 16),
-                                  child: AppTextField(
-                                    hintText: t.workout.addNotesHint,
-                                    maxLines: null,
-                                    maxLength: 500,
-                                    keyboardType: TextInputType.multiline,
-                                    onChanged: context.read<ActiveExerciseCubit>().setNote,
-                                  ),
+                  await flowCubit.nextExercise(timerDuration);
+                },
+              ),
+            ],
+            child: Skeletonizer(
+              enabled: exerciseState.isLoading,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 16, bottom: 16),
+                                child: AppTextField(
+                                  hintText: t.workout.addNotesHint,
+                                  maxLines: null,
+                                  maxLength: 500,
+                                  keyboardType: TextInputType.multiline,
+                                  onChanged: context.read<ActiveExerciseCubit>().setNote,
                                 ),
-                                WorkoutSection(exercise: exerciseDetails),
+                              ),
+                              WorkoutSection(exercise: exerciseDetails),
+                              const SizedBox(height: 32),
+                              if (previousResult != null) ...[
+                                PreviousExerciseResultListTile(
+                                  result: previousResult,
+                                  system: exerciseState.measureSystem,
+                                ),
                                 const SizedBox(height: 32),
-                                if (previousResult != null) ...[
-                                  PreviousExerciseResultListTile(
-                                    result: previousResult,
-                                    system: exerciseState.measureSystem,
-                                  ),
-                                  const SizedBox(height: 32),
-                                ],
-                                BlocConsumer<ActiveExerciseCubit, ActiveExerciseState>(
-                                  listenWhen: (previous, current) =>
-                                      previous.setValidationError != current.setValidationError,
-                                  listener: (context, state) {
-                                    if (state.setValidationError == null) return;
-                                    toastification.showErrorToast(state.setValidationError!, context);
-                                  },
-                                  builder: (context, state) {
-                                    final cubit = context.read<ActiveExerciseCubit>();
-
-                                    return DynamicWorkoutForm(
-                                      metrics: exerciseDetails.metrics,
-                                      system: state.measureSystem,
-                                      isTiered: exerciseDetails.isTiered,
-                                      tiers: exerciseDetails.tiers,
-
-                                      selectedTier: state.selectedTier,
-
-                                      sets: state.sets,
-                                      onTierChanged: cubit.setTier,
-                                      onAddSet: cubit.addSet,
-                                      onUpdateSet: cubit.updateSet,
-                                      onRemoveSet: cubit.removeSet,
-                                      onDonePressed: cubit.markSetDone,
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
                               ],
-                            ),
+                              BlocConsumer<ActiveExerciseCubit, ActiveExerciseState>(
+                                listenWhen: (previous, current) =>
+                                    previous.setValidationError != current.setValidationError,
+                                listener: (context, state) {
+                                  if (state.setValidationError == null) return;
+                                  toastification.showErrorToast(state.setValidationError!, context);
+                                },
+                                builder: (context, state) {
+                                  final cubit = context.read<ActiveExerciseCubit>();
+
+                                  return DynamicWorkoutForm(
+                                    metrics: exerciseDetails.metrics,
+                                    system: state.measureSystem,
+                                    isTiered: exerciseDetails.isTiered,
+                                    tiers: exerciseDetails.tiers,
+
+                                    selectedTier: state.selectedTier,
+
+                                    sets: state.sets,
+                                    onTierChanged: cubit.setTier,
+                                    onAddSet: cubit.addSet,
+                                    onUpdateSet: cubit.updateSet,
+                                    onRemoveSet: cubit.removeSet,
+                                    onDonePressed: cubit.markSetDone,
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                           ),
                         ),
+                      ),
 
-                        if (exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance)) ...[
-                          const SizedBox(height: 8),
-                          SecondaryButton(
-                            text: t.workout.startRunning,
-                            onPressed: () {
-                              // ignore: discarded_futures
-                              const StartRunningPageRoute().push<void>(context);
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-
+                      if (exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance)) ...[
                         const SizedBox(height: 8),
-                        Skeleton.leaf(
-                          child: PrimaryButton(
-                            text: t.workout.forgeNextMove,
-                            onPressed: () async {
-                              await context.read<ActiveExerciseCubit>().finishExercise();
-                            },
-                          ),
+                        SecondaryButton(
+                          text: t.workout.startRunning,
+                          onPressed: () {
+                            // ignore: discarded_futures
+                            const StartRunningPageRoute().push<void>(context);
+                          },
                         ),
+                        const SizedBox(height: 8),
                       ],
-                    ),
+
+                      const SizedBox(height: 8),
+                      Skeleton.leaf(
+                        child: PrimaryButton(
+                          text: t.workout.forgeNextMove,
+                          onPressed: () async {
+                            await context.read<ActiveExerciseCubit>().finishExercise();
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            loader: const Positioned.fill(child: ActiveWorkoutLoader()),
           ),
+          loader: const Positioned.fill(child: ActiveWorkoutLoader()),
         );
       },
     );

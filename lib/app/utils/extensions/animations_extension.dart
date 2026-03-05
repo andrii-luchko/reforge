@@ -14,7 +14,9 @@ extension AnimationsExtension on Widget {
     Duration? delay,
     bool isSlideUp = true,
     double slideAmount = 0.1,
+    bool enabled = true,
   }) {
+    if (!enabled) return this;
     final staggerDelay = delay ?? (index * 10).ms;
 
     return animate(delay: staggerDelay)
@@ -28,9 +30,5 @@ extension AnimationsExtension on Widget {
           duration: 300.ms,
           curve: Curves.easeOutQuad,
         );
-  }
-
-  Widget animatePress() {
-    return animate(target: 1).scaleXY(end: 0.95, duration: 100.ms, curve: Curves.easeInOut);
   }
 }

@@ -228,6 +228,7 @@ class _WorkoutFrequencyPickerState extends State<WorkoutFrequencyPicker> {
             controller: _numberCountController,
             hintText: t.quiz.steps.workout_frequency.select_days_hint,
             onTap: _specificDaysPortalController.close,
+            heightFactor: 3,
             contentBuilder: (_, _) {
               final initialItem = (widget.daysPerWeek != null && widget.daysPerWeek! >= 3)
                   ? (widget.daysPerWeek! - 3)
@@ -235,6 +236,7 @@ class _WorkoutFrequencyPickerState extends State<WorkoutFrequencyPicker> {
 
               return ValueScrollPicker(
                 initialItem: initialItem,
+                looping: false,
                 onSelectedItemChanged: (index) {
                   final daysCount = index + 3;
                   widget.onDaysPerWeekChanged(daysCount);

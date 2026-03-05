@@ -20,8 +20,10 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/data/services/system_info_services.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
+import 'package:reforge/features/settings/ui/widgets/no_subscription_widget.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_image_piker.dart';
 import 'package:reforge/features/settings/ui/widgets/settings_tile.dart';
+import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
@@ -162,7 +164,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           if (delete && context.mounted) {
                             final userCubit = context.read<UserCubit>();
-                            await userCubit.deleteUser();
+                            await userCubit.deleteUserById();
+
+                            if (context.mounted) {
+                              await context.read<AuthCubit>().signOut();
+                            }
                           }
                         },
                       ),
@@ -219,6 +225,9 @@ class SettingsGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     final userCubit = context.read<UserCubit>();
+    final subscription = context.watch<SubscriptionCubit>().state.currentSubscription;
+    logger.d(subscription ?? '');
+
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
@@ -257,7 +266,10 @@ class SettingsGroup extends StatelessWidget {
               return SettingTile(
                 assetPath: setting.icon,
                 title: setting.title(t),
-                text: setting.getDisplayValue(user, t),
+                text: setting.getDisplayValue(
+                  user,
+                  t,
+                ),
                 onPressed: () async {
                   if (setting.route != null) {
                     setting.push(context);
@@ -269,6 +281,8 @@ class SettingsGroup extends StatelessWidget {
           ),
         ),
         const SliverPadding(padding: .only(bottom: 32)),
+
+        if (subscription == null) const NoSubscriptionWidget(),
 
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -287,11 +301,14 @@ class SettingsGroup extends StatelessWidget {
             itemCount: WorkoutSettings.values.length,
             itemBuilder: (context, index) {
               final setting = WorkoutSettings.values[index];
+              if (setting == WorkoutSettings.subscription && subscription == null) {
+                return const SizedBox.shrink();
+              }
 
               return SettingTile(
                 assetPath: setting.icon,
                 title: setting.title(t),
-                text: setting.getDisplayValue(user, t),
+                text: setting.getDisplayValue(user, t, subscription),
                 onPressed: () async {
                   if (setting == WorkoutSettings.privacy) {
                     unawaited(LaunchUrl.launchAppLink(Env.privacyPolicyUrl));
@@ -305,7 +322,11 @@ class SettingsGroup extends StatelessWidget {
                 },
               );
             },
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) {
+              final setting = WorkoutSettings.values[index];
+              if (setting == WorkoutSettings.subscription && subscription == null) return const SizedBox.shrink();
+              return const SizedBox(height: 12);
+            },
           ),
         ),
 
@@ -324,7 +345,7 @@ class AppVersionWidget extends StatelessWidget {
     final appVersion = di.getIt<SystemInfoServiceI>().appVersion;
     return SliverToBoxAdapter(
       child: Text(
-        'App Version: $appVersion',
+        t.settings.appVersion(version: appVersion),
         textAlign: .center,
         style: subheadH5Medium.copyWith(color: context.appTheme.beige700),
       ),

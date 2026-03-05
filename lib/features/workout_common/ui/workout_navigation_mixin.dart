@@ -22,11 +22,9 @@ mixin WorkoutNavigationMixin {
 
       final currentExercise = flowCubit.state.currentExercise;
       if (currentExercise != null) {
-        unawaited(
-          ActiveWorkoutPageRoute(
-            exerciseId: currentExercise.exerciseDetails.id,
-          ).push(context),
-        );
+        ActiveWorkoutPageRoute(
+          exerciseId: currentExercise.exerciseDetails.id,
+        ).go(context);
       }
     } else {
       unawaited(const WorkoutQuizPageRoute().push(context));

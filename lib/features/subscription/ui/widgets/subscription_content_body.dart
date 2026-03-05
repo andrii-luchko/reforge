@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
@@ -15,6 +16,7 @@ class SubscriptionContentBody extends StatelessWidget {
     required this.onPackageSelected,
     required this.onPurchase,
     required this.onRestorePurchases,
+
     super.key,
   });
 
@@ -27,7 +29,7 @@ class SubscriptionContentBody extends StatelessWidget {
   String _buttonLabel() {
     if (state.hasLifetime) return '';
     if (state.hasActiveSubscription && state.currentPackage != null) {
-      if (selectedPackage == state.currentPackage) {
+      if (selectedPackage != null && selectedPackage!.id == state.currentPackage!.id) {
         return t.subscription.currentPlan;
       }
       return selectedPackage?.periodType.isUpgradeFrom(state.currentPackage!.periodType) ?? false
@@ -41,7 +43,7 @@ class SubscriptionContentBody extends StatelessWidget {
     if (state.hasLifetime) return false;
     if (selectedPackage == null) return false;
     if (state.hasActiveSubscription && state.currentPackage != null) {
-      if (selectedPackage == state.currentPackage) return false;
+      if (selectedPackage!.id == state.currentPackage!.id) return false;
     }
     return true;
   }
@@ -49,12 +51,11 @@ class SubscriptionContentBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state.hasLifetime) {
-      return const SliverMainAxisGroup(
-        slivers: [
-          SliverToBoxAdapter(
-            child: SubscriptionLifetimeStatusCard(),
-          ),
-        ],
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Align(
+          child: SubscriptionLifetimeStatusCard(),
+        ),
       );
     }
 
@@ -66,21 +67,7 @@ class SubscriptionContentBody extends StatelessWidget {
               currentPackage: state.currentPackage!,
               expirationDate: state.currentSubscription!.expirationDate,
               managementUrl: state.currentSubscription!.managementUrl,
-            ),
-          ),
-          const SliverPadding(padding: .only(bottom: 24)),
-          SubscriptionPackagesList(
-            state: state,
-            selectedPackage: selectedPackage,
-            onPackageSelected: onPackageSelected,
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: SubscriptionFooterAction(
-              buttonLabel: _buttonLabel(),
-              onPressed: _canPurchase() ? onPurchase : null,
-              onRestorePurchases: onRestorePurchases,
-            ),
+            ).animateEntrance(),
           ),
         ],
       );

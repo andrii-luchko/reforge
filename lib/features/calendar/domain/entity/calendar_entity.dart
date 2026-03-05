@@ -7,6 +7,7 @@ class CalendarEntity {
     required this.totalPlanned,
     required this.totalCompleted,
     required this.complianceRate,
+
     required this.days,
   });
 
@@ -48,6 +49,7 @@ class DayEntity {
     required this.sessionsCount,
     required this.sessionIds,
     required this.isCanceled,
+    required this.scheduledWorkoutDayId,
     required this.isSpecificDay,
   });
 
@@ -57,6 +59,7 @@ class DayEntity {
   final bool isCanceled;
 
   final int sessionsCount;
+  final int? scheduledWorkoutDayId;
   final List<int> sessionIds;
 
   factory DayEntity.fromDto(CalendarDayDto dto) {
@@ -67,7 +70,7 @@ class DayEntity {
       isCompleted: dto.isCompleted,
       isCanceled: dto.isCanceled,
       isSpecificDay: dto.isSpecificDay,
-
+      scheduledWorkoutDayId: dto.scheduledWorkoutDayId,
       sessionIds: dto.sessionIds,
       sessionsCount: dto.sessionsCount,
     );
@@ -83,6 +86,6 @@ class DayEntity {
 
   @override
   String toString() {
-    return 'DayEntity(date: $date, isSpecificDay: $isSpecificDay, isCompleted: $isCompleted, isCanceled: $isCanceled, sessionsCount: $sessionsCount, sessionIds: $sessionIds)';
+    return 'DayEntity(date: $date, isSpecificDay: $isSpecificDay, isCompleted: $isCompleted, isCanceled: $isCanceled, sessionsCount: $sessionsCount, scheduledWorkoutDayId: $scheduledWorkoutDayId, sessionIds: $sessionIds)';
   }
 }

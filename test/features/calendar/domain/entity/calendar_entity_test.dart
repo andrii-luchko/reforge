@@ -14,6 +14,7 @@ void main() {
         calendar: [
           CalendarDayDto(
             date: '2025-01-15',
+            scheduledWorkoutDayId: null,
             dayOfWeek: 3,
             isSpecificDay: true,
             isCompleted: true,
@@ -40,6 +41,7 @@ void main() {
           CalendarDayDto(
             date: '2025-02-10',
             dayOfWeek: 1,
+            scheduledWorkoutDayId: null,
             isSpecificDay: true,
             isCompleted: false,
             isCanceled: false,
@@ -65,6 +67,7 @@ void main() {
           CalendarDayDto(
             date: 'invalid-date',
             dayOfWeek: 1,
+            scheduledWorkoutDayId: null,
             isSpecificDay: true,
             isCompleted: false,
             isCanceled: false,
@@ -87,6 +90,7 @@ void main() {
         calendar: [
           CalendarDayDto(
             date: '',
+            scheduledWorkoutDayId: null,
             dayOfWeek: 1,
             isSpecificDay: true,
             isCompleted: false,

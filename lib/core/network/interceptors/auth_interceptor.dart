@@ -10,6 +10,12 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
+
+    if (!requiresAuth) {
+      return handler.next(options);
+    }
+
     final tokens = await _localDataSource.getTokens();
 
     if (tokens != null) {

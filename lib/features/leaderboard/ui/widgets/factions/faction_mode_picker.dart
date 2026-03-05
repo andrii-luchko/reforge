@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -40,7 +39,7 @@ class FactionLeaderboardModePiker extends StatelessWidget {
                     overflow: .ellipsis,
                     textAlign: .center,
                   ),
-                ).animatePress(),
+                ),
               )
               .toList(),
         ),

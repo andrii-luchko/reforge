@@ -12,7 +12,7 @@ class RisingAuraEffect extends StatefulWidget {
     this.autoStopDuration = const Duration(minutes: 2),
     super.key,
     this.particleColor = const Color(0xFFD4AF37),
-    this.particleCount = 50,
+    this.particleCount = 100,
     this.particleSize = 0.5,
   });
 
@@ -164,7 +164,7 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
   }
 
   void _respawnParticle(int i, Size size, {bool initial = false}) {
-    _maxLives[i] = 4.0 + _rng.nextDouble() * 4.0;
+    _maxLives[i] = 4.0 + _rng.nextDouble() * 8.0;
     _lifeTimes[i] = initial ? _rng.nextDouble() * _maxLives[i] : 0.0;
 
     if (initial) {
@@ -172,7 +172,7 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
       _posY[i] = _rng.nextDouble();
     } else {
       _posX[i] = _rng.nextDouble() * size.width;
-      _posY[i] = size.height + 10;
+      _posY[i] = size.height + 5;
     }
 
     _velY[i] = -15.0 - _rng.nextDouble() * 20.0;

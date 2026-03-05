@@ -29,36 +29,33 @@ class AvatarRankCard extends StatelessWidget {
           final w = constraints.maxWidth;
           final h = constraints.maxHeight;
 
+          final xp = rank.xp;
+          final progress = rank.progress;
+          final hasXP = xp != null && progress != null;
+          final lvl = rank.lvl;
+
           return Stack(
             children: [
               Positioned.fill(
-                child: CustomPaint(
-                  painter: AvatarCardPainter(color: appTheme.beige100),
-                  child: ClipPath(
-                    clipper: AvatarClipper(),
-                    child: Image.asset(
-                      rank.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+                child: _buildRankImage(appTheme),
+              ),
+              if (hasXP)
+                Positioned(
+                  top: h * 0.02,
+                  right: w * 0.02,
+                  child: XpIndicatorWidget(
+                    height: h * 0.4,
+                    xp: xp,
+                    xpProgress: progress,
                   ),
                 ),
-              ),
 
-              Positioned(
-                top: h * 0.02,
-                right: w * 0.02,
-                child: XpIndicatorWidget(
-                  height: h * 0.4,
-                  xp: rank.xp,
-                  xpProgress: rank.progress,
+              if (lvl != null)
+                Positioned(
+                  top: 0,
+                  left: w * 0.08,
+                  child: LvlWidget(lvl: lvl),
                 ),
-              ),
-
-              Positioned(
-                top: 0,
-                left: w * 0.08,
-                child: LvlWidget(lvl: rank.lvl),
-              ),
 
               Positioned(
                 bottom: h * 0.25,
@@ -72,13 +69,40 @@ class AvatarRankCard extends StatelessWidget {
                 width: w * 0.93,
 
                 child: RankCard(
-                  rank: t.home.rank_label,
-                  name: rank.rankName,
+                  japanRankName: rank.japanRankName,
+                  rankName: rank.rankName,
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildRankImage(AppTheme appTheme) {
+    final xp = rank.xp;
+    final progress = rank.progress;
+    final hasXP = xp != null && progress != null;
+
+    if (hasXP) {
+      return CustomPaint(
+        painter: AvatarCardPainter(color: appTheme.beige100),
+        child: ClipPath(
+          clipper: AvatarClipper(),
+          child: Image.asset(
+            rank.imageUrl,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.asset(
+        rank.imageUrl,
+        fit: BoxFit.cover,
       ),
     );
   }

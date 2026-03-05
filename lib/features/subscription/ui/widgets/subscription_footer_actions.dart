@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 
@@ -31,19 +32,19 @@ class SubscriptionFooterAction extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ThirtyButton(
-              text: 'Restore Purchases',
+              text: t.subscription.restorePurchases,
               onPressed: onRestorePurchases,
               style: subheadH6Medium,
             ),
 
             ThirtyButton(
-              text: 'Terms',
+              text: t.subscription.termsButton,
               onPressed: () => LaunchUrl.launchAppLink(Env.termsOfUseUrl),
               style: subheadH6Medium,
             ),
 
             ThirtyButton(
-              text: 'Privacy',
+              text: t.subscription.privacyButton,
               onPressed: () => LaunchUrl.launchAppLink(Env.privacyPolicyUrl),
               style: subheadH6Medium,
             ),

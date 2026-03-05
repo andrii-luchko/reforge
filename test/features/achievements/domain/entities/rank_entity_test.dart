@@ -13,6 +13,7 @@ void main() {
           lvl: 5,
           xp: 500,
           maxXp: 1000,
+          japanRankName: '',
         );
         expect(entity.progress, 0.5);
       });
@@ -25,6 +26,7 @@ void main() {
           lvl: 1,
           xp: 0,
           maxXp: 1000,
+          japanRankName: '',
         );
         expect(entity.progress, 0);
       });
@@ -37,6 +39,7 @@ void main() {
           lvl: 10,
           xp: 1000,
           maxXp: 1000,
+          japanRankName: '',
         );
         expect(entity.progress, 1);
 
@@ -47,6 +50,7 @@ void main() {
           lvl: 10,
           xp: 1500,
           maxXp: 1000,
+          japanRankName: '',
         );
         expect(entityOver.progress, 1);
       });

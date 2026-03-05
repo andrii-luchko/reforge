@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
@@ -9,14 +10,22 @@ mixin RepositoryErrorHandler {
   Future<T> makeRequest<T>(
     Future<T> Function() request, {
     String? label,
-    Exception? Function(Object error, StackTrace stackTrace)? transformError,
+    AppException? Function(Object error, StackTrace stackTrace)? transformError,
   }) async {
     try {
       return await request();
     } on DioException catch (e, stackTrace) {
+      if (transformError != null) {
+        final transformed = transformError(e, stackTrace);
+        if (transformed != null) {
+          _logError(label, e, stackTrace);
+          throw transformed;
+        }
+      }
       final userMessage = _toUserMessage(e);
       _logError(label, e, stackTrace);
-      throw Exception(userMessage);
+
+      throw AppException(userMessage);
     } catch (e, stackTrace) {
       if (transformError != null) {
         final transformed = transformError(e, stackTrace);
@@ -38,8 +47,11 @@ mixin RepositoryErrorHandler {
         return t.errors.connection_timeout;
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
+        final statusMessage = e.response?.statusMessage;
         if (statusCode == 401) return t.errors.unauthorized;
-        return t.errors.server_error(statusCode: statusCode ?? 0);
+        final base = t.errors.server_error(statusCode: statusCode ?? 0);
+        return statusMessage != null && statusMessage.isNotEmpty ? '$base. $statusMessage' : base;
+
       case DioExceptionType.cancel:
         return t.errors.request_cancelled;
       case DioExceptionType.connectionError:

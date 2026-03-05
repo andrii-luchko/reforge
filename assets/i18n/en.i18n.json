@@ -16,12 +16,6 @@
         "footer_text_part2": "Sign up ",
         "divider_text": "or"
     },
-    "email_label": "Email",
-    "email_hint": "Enter your email",
-    "password_label": "Password",
-    "password_hint": "Enter your password",
-    "confirm_password_label": "Confirm your password",
-    "confirm_password_hint": "Enter your password",
     "create_acc": {
         "title": "Create account",
         "subtitle": "Join REFORGE and start your journey",
@@ -72,6 +66,24 @@
             "gakki_description": "The path of Power",
             "gyohyo_description": "The path of Stamina",
             "serien_description": "The path of Agility"
+        },
+        "durations": {
+            "day": {
+                "one": "$n day",
+                "other": "$n days"
+            },
+            "week": {
+                "one": "$n week",
+                "other": "$n weeks"
+            },
+            "month": {
+                "one": "$n month",
+                "other": "$n months"
+            },
+            "year": {
+                "one": "$n year",
+                "other": "$n years"
+            }
         },
         "back_button": "Back",
         "next_button": "Next",
@@ -365,6 +377,7 @@
             "noLeaders": "No leaders in $faction yet",
             "beFirst": "Be the first to claim the title!"
         },
+        "currentUserLabel": "Me",
         "xpLabel": "XP"
     },
     "errors": {
@@ -401,7 +414,12 @@
         "selectTier": "Select tier"
     },
     "workout_details": {
-        "startWorkout": "Start Workout"
+        "title": "Power Builder Routine",
+        "startWorkout": "Start Workout",
+        "exercise_count": {
+            "one": "$n Exercise",
+            "other": "$n Exercises"
+        }
     },
     "workout_instruction": {
         "howToPerform": "How to perform",
@@ -415,6 +433,12 @@
         "instagram": "Instagram",
         "save": "Save",
         "saved": "Saved"
+    },
+    "calendar": {
+        "title": "Forge Calendar",
+        "calendar_header": "Your Forge Rhythm",
+        "workout_details_label": "Workout day",
+        "no_workout_for_this_day": "No workout for this day"
     },
     "training_details": {
         "title": "Training Details",
@@ -437,6 +461,7 @@
         "ranks": "Ranks",
         "rankFaction": "Rank faction",
         "noRanksFound": "No ranks found",
+        "noRanksFoundSubtitle": "It looks like you have no attributes yet.",
         "badgesList": "Badges list",
         "itemsCount": "$unlocked/$total items",
         "noBadgesFound": "No Badges Found",
@@ -473,6 +498,11 @@
                 "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
             }
         }
+
+
+       
+  
+       
     },
     "workout_tiers": {
         "beginner": "Beginner",
@@ -526,7 +556,13 @@
         "openSettings": "Open Settings",
         "weightCantBeNull": "Weight cant be null",
         "factionsEmpty": "You need to select at least one Faction",
-        "selectAtLeast2Factions": "You need to select at least 2 Factions"
+        "selectAtLeast2Factions": "You need to select at least 2 Factions",
+        "appVersion": "App Version: $version",
+        "privacyPolicy": "Privacy Policy",
+        "termsAndConditions": "Terms and conditions",
+        "upgradeSubscriptionTitle": "Upgrade your subscription",
+        "upgradeSubscriptionSubtitle": "Upgrade your plan to unlock full access to all factions, advanced training modules, and exclusive rewards.",
+        "seeAllPlans": "See all Plans"
     },
     "subscription": {
         "lifetimeStatus": "You have lifetime access",
@@ -536,7 +572,44 @@
         "manageSubscription": "Manage subscription",
         "currentPlan": "Current plan",
         "upgrade": "Upgrade",
-        "changePlan": "Change plan"
+        "changePlan": "Change plan",
+        "loadErrorTitle": "Couldn't load subscriptions",
+        "loadErrorSubtitle": "Something went wrong on our end. Please try again.",
+        "loadPlansErrorTitle": "Couldn't load plans",
+        "loadPlansErrorSubtitle": "We couldn't load subscription plans. Pull down to refresh or try again later.",
+        "changePlanDescription": "Choose a different plan. Your change will take effect as described in the plan details.",
+        "restorePurchases": "Restore Purchases",
+        "termsButton": "Terms",
+        "privacyButton": "Privacy",
+        "paywallTitle": "Choose Your Plan and Unlock Full Access",
+        "loadOfferingsError": "Failed to load offerings: $error",
+        "purchaseFailed": "Purchase failed: $error",
+        "restoreFailed": "Restore failed: $error",
+        "periodType": {
+            "unknown": "Unknown",
+            "custom": "Custom",
+            "lifetime": "Foundry Member Pass",
+            "yearly": "Yearly",
+            "sixMonths": "6 Months",
+            "threeMonths": "3 Months",
+            "twoMonths": "2 Months",
+            "monthly": "Monthly",
+            "weekly": "Weekly",
+            "perUnknown": "/ unknown",
+            "perCustom": "/ custom",
+            "perOneTime": "/ one time",
+            "perYear": "/ year",
+            "perSixMonths": "/ 6 months",
+            "perThreeMonths": "/ 3 months",
+            "perTwoMonths": "/ 2 months",
+            "perMonth": "/ month",
+            "perWeek": "/ week",
+            "limitedTimeOffer": "Limited time offer!",
+            "bestOffer": "Best offer",
+            "descriptionLifetime": "Lifetime access to all features, all factions, and exclusive status.",
+            "descriptionAnnual": "Save more than 40% compared to the monthly plan. Full access to all features and all factions.",
+            "descriptionMonthly": "Unlimited access to all premium features and exclusive content. No limits, just results."
+        }
     },
     "notifications": {
         "pageTitle": "Notifications",

@@ -5,7 +5,7 @@ String? validateEmail(String? value) {
     return t.validation.email_required;
   }
 
-  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+  if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
     return t.validation.email_invalid;
   }
 
