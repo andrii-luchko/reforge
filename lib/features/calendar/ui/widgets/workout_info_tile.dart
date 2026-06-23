@@ -91,7 +91,7 @@ class _WorkoutInfoTileState extends State<WorkoutInfoTile> with SingleTickerProv
 
         SizeTransition(
           sizeFactor: _controller,
-          axisAlignment: -1,
+          alignment: Alignment.topLeft,
           child: FadeTransition(
             opacity: _controller,
             child: Column(

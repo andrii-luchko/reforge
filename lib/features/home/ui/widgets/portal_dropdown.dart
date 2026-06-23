@@ -117,7 +117,7 @@ class _PortalContentWrapper extends StatelessWidget {
         opacity: animation,
         child: SizeTransition(
           sizeFactor: animation,
-          axisAlignment: -1,
+          alignment: Alignment.topLeft,
           child: Material(
             borderRadius: BorderRadius.circular(_borderRadius),
             elevation: 8,
