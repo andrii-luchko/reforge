@@ -80,7 +80,7 @@ dependencies:
   
   croppy: ^1.4.1
   video_player: ^2.10.1
-  youtube_player_flutter: ^10.0.1
+  youtube_player_flutter: ^9.1.3
   image_picker: ^1.2.1
   image_cropper: ^12.2.1
 

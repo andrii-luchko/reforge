@@ -39,6 +39,32 @@ class AppVideoPlayer extends StatelessWidget {
   }
 }
 
+class _VideoPlayerWrapper extends StatelessWidget {
+  const _VideoPlayerWrapper({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: appTheme.beige900,
+          border: Border.all(color: appTheme.strokeCard),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 class _YoutubeVideoPlayer extends StatefulWidget {
   const _YoutubeVideoPlayer({required this.videoUrl});
 
@@ -56,20 +82,24 @@ class _YoutubeVideoPlayerState extends State<_YoutubeVideoPlayer> {
   void initState() {
     super.initState();
 
-    final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
+    final videoId = YoutubePlayer.convertUrlToId(widget.videoUrl);
     if (videoId == null || videoId.isEmpty) {
       setState(() => _hasError = true);
       return;
     }
 
-    _controller = YoutubePlayerController.fromVideoId(
-      videoId: videoId,
+    _controller = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        autoPlay: false,
+        controlsVisibleAtStart: true,
+      ),
     );
   }
 
   @override
   void dispose() {
-    unawaited(_controller?.close());
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -89,42 +119,39 @@ class _YoutubeVideoPlayerState extends State<_YoutubeVideoPlayer> {
       );
     }
 
-    return SizedBox.shrink();
     final appTheme = context.appTheme;
-    // final progressColors = ProgressBarColors(
-    //   playedColor: appTheme.orange300,
-    //   bufferedColor: appTheme.beige200,
-    //   backgroundColor: appTheme.beige100,
-    //   handleColor: appTheme.orange300,
-    // );
+    final progressColors = ProgressBarColors(
+      playedColor: appTheme.orange300,
+      bufferedColor: appTheme.beige200,
+      backgroundColor: appTheme.beige100,
+      handleColor: appTheme.orange300,
+    );
 
-    // return _VideoPlayerWrapper(
-    //   child: YoutubePlayerBuilder(
-    //     onExitFullScreen: () {
-    //       unawaited(
-    //         SystemChrome.setPreferredOrientations([
-    //           DeviceOrientation.portraitUp,
-    //         ]),
-    //       );
-    //       unawaited(SystemChrome.restoreSystemUIOverlays());
-    //     },
-    //     player: YoutubePlayer(
-    //       controller: _controller!,
-
-    //       builder: (context, player, controller) {},
-    //       progressColors: progressColors,
-    //       bottomActions: [
-    //         const SizedBox(width: 14),
-    //         const CurrentPosition(),
-    //         const SizedBox(width: 8),
-    //         ProgressBar(isExpanded: true, colors: progressColors),
-    //         const RemainingDuration(),
-    //         FullScreenButton(color: appTheme.beige100),
-    //       ],
-    //     ),
-    //     builder: (context, player) => player,
-    //   ),
-    // );
+    return _VideoPlayerWrapper(
+      child: YoutubePlayerBuilder(
+        onExitFullScreen: () {
+          unawaited(
+            SystemChrome.setPreferredOrientations([
+              DeviceOrientation.portraitUp,
+            ]),
+          );
+          unawaited(SystemChrome.restoreSystemUIOverlays());
+        },
+        player: YoutubePlayer(
+          controller: _controller!,
+          progressColors: progressColors,
+          bottomActions: [
+            const SizedBox(width: 14),
+            const CurrentPosition(),
+            const SizedBox(width: 8),
+            ProgressBar(isExpanded: true, colors: progressColors),
+            const RemainingDuration(),
+            FullScreenButton(color: appTheme.beige100),
+          ],
+        ),
+        builder: (context, player) => player,
+      ),
+    );
   }
 }
 
@@ -258,32 +285,6 @@ class _NativeVideoPlayerState extends State<_NativeVideoPlayer> with VideoPlayer
           ],
         );
       },
-    );
-  }
-}
-
-class _VideoPlayerWrapper extends StatelessWidget {
-  const _VideoPlayerWrapper({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
-
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: appTheme.beige900,
-          border: Border.all(color: appTheme.strokeCard),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: child,
-        ),
-      ),
     );
   }
 }

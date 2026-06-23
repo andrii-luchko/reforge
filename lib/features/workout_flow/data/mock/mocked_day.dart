@@ -41,7 +41,7 @@ final List<ExerciseDetailsDTO> newMockExercises = [
     key: 'twists',
 
     metrics: ['weightKg', 'reps', 'angleDeg'],
-    videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    videoInstructionUrl: 'https://www.youtube.com/watch?v=3mDny9XAgic',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
   ),
