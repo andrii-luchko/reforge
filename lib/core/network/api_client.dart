@@ -11,6 +11,7 @@ import 'package:reforge/core/auth/data/requests/refresh_token_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
+import 'package:reforge/core/network/api_extra_keys.dart';
 import 'package:reforge/features/achievements/data/models/achievement_badge_dto.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
 import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
@@ -44,31 +45,34 @@ abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
   // Auth endpoints
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @POST('/auth/signin')
   Future<BaseResponse<AuthTokens>> signin(@Body() SignInRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @POST('/auth/password-reset/initiate')
   Future<void> initiatePasswordReset(@Body() PasswordResetEmailRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @GET('/auth/password-reset/validate')
   Future<void> validatePasswordReset(@Queries() PasswordResetValidateTokenRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @POST('/auth/password-reset/confirm')
   Future<void> confirmPasswordReset(@Body() PasswordResetConfirmRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @POST('/auth/signup')
   Future<BaseResponse<AuthTokens>> signup(@Body() SignUpRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({ApiExtraKeys.requiresAuth: false})
   @POST('/auth/provider')
   Future<BaseResponse<AuthTokens>> provider(@Body() SignWithProviderRequest request);
 
-  @Extra({'requiresAuth': false})
+  @Extra({
+    ApiExtraKeys.requiresAuth: false,
+    ApiExtraKeys.authRefreshRequest: true,
+  })
   @POST('/auth/refresh')
   Future<BaseResponse<AuthTokens>> refreshToken(
     @Body() RefreshTokenRequest request,

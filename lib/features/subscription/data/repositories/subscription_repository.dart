@@ -142,6 +142,10 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<void>> logout() async {
     try {
+      final isAnonymous = await Purchases.isAnonymous;
+
+      if (isAnonymous) return const Result.success(null);
+
       await makeRequest(
         Purchases.logOut,
         label: 'logout',

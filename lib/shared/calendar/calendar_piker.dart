@@ -161,7 +161,7 @@ class _CalendarPickerState extends State<CalendarPicker> {
           transitionBuilder: (child, animation) {
             return SizeTransition(
               sizeFactor: animation,
-              axisAlignment: -1,
+              alignment: Alignment.topLeft,
               child: FadeTransition(
                 opacity: animation,
                 child: child,
