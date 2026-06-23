@@ -40,7 +40,7 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState> {
     switch (result) {
       case Success():
         emit(state.copyWith(isSubmitting: false, isSuccess: true));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(state.copyWith(isSubmitting: false, apiError: error.toString()));
     }
   }

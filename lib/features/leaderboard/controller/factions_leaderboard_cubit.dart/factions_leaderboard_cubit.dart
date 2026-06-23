@@ -36,7 +36,7 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
     switch (result) {
       case Success(value: final factions):
         emit(state.copyWith(factions: factions, userFaction: userFaction, isLoading: false));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(state.copyWith(isLoading: false, error: error.toString()));
     }
   }

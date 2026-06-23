@@ -17,6 +17,7 @@ class WorkoutSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: avoid_types_on_closure_parameters
     final result = context.select((WorkoutCongratulationsCubit c) => c.state.workoutResult);
 
     if (result == null) return const SizedBox.shrink();

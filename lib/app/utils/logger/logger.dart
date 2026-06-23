@@ -18,7 +18,7 @@ class _AppLogger {
     ),
     logger: TalkerLogger(
       settings: TalkerLoggerSettings(),
-      output: (String message) => developer.log(message, name: 'Talker'),
+      output: (message) => developer.log(message, name: 'Talker'),
     ),
   );
 

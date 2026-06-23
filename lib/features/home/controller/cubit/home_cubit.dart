@@ -72,7 +72,7 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         final rank = _createRank(state.user);
         emit(
           state.copyWith(

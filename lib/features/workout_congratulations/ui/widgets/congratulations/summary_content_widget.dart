@@ -71,7 +71,7 @@ class SummaryContentWidget extends StatelessWidget {
                 Text(
                   '+${xpEarned.toString().replaceAllMapped(
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                    (Match m) => '${m[1]},',
+                    (m) => '${m[1]},',
                   )} XP',
                   style: subheadH8Semibold.copyWith(color: appTheme.beige100),
                 ),

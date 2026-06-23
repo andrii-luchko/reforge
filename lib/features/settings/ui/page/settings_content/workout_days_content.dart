@@ -56,7 +56,7 @@ class WorkoutDaysPage extends StatelessWidget {
       workoutsPerWeek: value.daysPerWeek,
       specificDays: value.specificDays.toIntList(),
     );
-    if (result case ErrorR(error: final e)) {
+    if (result case Failure(error: final e)) {
       throw e;
     }
   }

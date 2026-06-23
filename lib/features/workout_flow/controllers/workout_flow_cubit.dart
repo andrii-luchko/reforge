@@ -30,7 +30,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
     switch (result) {
       case Success(value: final programDay):
         emit(state.copyWith(isLoading: false, programDay: programDay, currentExerciseIndex: 0));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(state.copyWith(isLoading: false, programDay: null, error: error.toString()));
     }
   }
@@ -62,7 +62,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
             sessionStatus: WorkoutSessionStatus.active,
           ),
         );
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             isStartingWorkout: false,
@@ -119,7 +119,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
         emit(
           state.copyWith(sessionStatus: status, summary: summary, isLoading: false),
         );
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             sessionStatus: status,

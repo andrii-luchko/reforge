@@ -61,7 +61,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       system: system,
     );
     switch (result) {
-      case Success(value: final value):
+      case Success(:final value):
         if (value == null || value.sets == null) {
           return null;
         }
@@ -74,7 +74,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           notes: value.notes,
         );
 
-      case ErrorR():
+      case Failure():
         return null;
     }
   }
@@ -137,17 +137,19 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     switch (result) {
       case Success():
         final setNumber = state.sets.indexWhere((s) => s.id == setId) + 1;
-        unawaited(_analytics.logEvent(
-          AnalyticsEvents.workoutSetComplete,
-          {
-            'exercise_id': programExercise.exerciseDetails.id,
-            'set_number': setNumber,
-          },
-        ));
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutSetComplete,
+            {
+              'exercise_id': programExercise.exerciseDetails.id,
+              'set_number': setNumber,
+            },
+          ),
+        );
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
         emit(state.copyWith(isSendingSet: false));
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
@@ -193,7 +195,7 @@ submitted: ${state.isSubmitted}
         case Success():
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
-        case ErrorR(error: final error):
+        case Failure(:final error):
           emit(
             state.copyWith(
               isLoading: false,

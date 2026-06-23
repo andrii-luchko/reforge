@@ -16,12 +16,14 @@ cd ios || { echo "❌ iOS directory not found!"; exit 1; }
 # 3. Remove old artifacts
 echo "🗑 Removing Pods, .symlinks, and Podfile.lock..."
 rm -rf Pods
+rm -rf Podfile.lock
 rm -rf .symlinks
-rm -f Podfile.lock
+rm -rf build
 
 # 4. Update CocoaPods and install
 echo "📦 Updating CocoaPods repos and installing pods..."
-# This is the key command to fix the "FirebaseAnalytics 12.8.0" issue
+
+pod cache clean --all
 pod repo update
 pod install --repo-update
 

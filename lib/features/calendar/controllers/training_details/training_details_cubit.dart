@@ -15,7 +15,7 @@ part 'training_details_cubit.freezed.dart';
 @injectable
 class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
   TrainingDetailsCubit(this._repository, this._analytics, @factoryParam this._sessionId)
-      : super(const TrainingDetailsState.initial()) {
+    : super(const TrainingDetailsState.initial()) {
     unawaited(loadWorkoutDetails());
   }
 
@@ -31,7 +31,7 @@ class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
     switch (result) {
       case Success(value: final data):
         emit(TrainingDetailsState.loaded(data));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(TrainingDetailsState.error(error.toString()));
     }
   }

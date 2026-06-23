@@ -1,4 +1,4 @@
-import 'package:reforge/generated/i18n/strings.g.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 String? validatePassword(String? value) {
   final password = value?.trim();

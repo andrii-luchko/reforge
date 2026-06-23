@@ -46,7 +46,7 @@ class LoreCubit extends Cubit<LoreState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             isLoading: false,
@@ -81,7 +81,7 @@ class LoreCubit extends Cubit<LoreState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         _page--;
         emit(
           newState.copyWith(
@@ -119,7 +119,7 @@ class LoreCubit extends Cubit<LoreState> {
 
         emit(state.copyWith(items: updatedItems));
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(state.copyWith(error: error.toString()));
     }
   }

@@ -40,7 +40,7 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
             hasReachedMax: 1 >= data.totalPages,
           ),
         );
-      case ErrorR(error: final e):
+      case Failure(error: final e):
         emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -65,7 +65,7 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
             currentUser: data.currentUser,
           ),
         );
-      case ErrorR(error: final e):
+      case Failure(error: final e):
         emit(state.copyWith(isPaginationLoading: false, paginationError: e.toString()));
     }
   }

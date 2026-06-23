@@ -43,7 +43,7 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
         } else {
           emit(const NotificationPermissionState.permissionDenied());
         }
-      case ErrorR():
+      case Failure():
         emit(const NotificationPermissionState.permissionDenied());
     }
   }
@@ -57,7 +57,7 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
           unawaited(saveToken(token));
         }
         emit(NotificationPermissionState.permissionGranted(token: token));
-      case ErrorR():
+      case Failure():
         emit(const NotificationPermissionState.permissionGranted());
     }
   }
@@ -82,7 +82,7 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
           emit(s.copyWith(isRequestingPermission: false));
         }
         return false;
-      case ErrorR():
+      case Failure():
         if (currentState case final _PermissionGranted s) {
           emit(s.copyWith(isRequestingPermission: false));
         }

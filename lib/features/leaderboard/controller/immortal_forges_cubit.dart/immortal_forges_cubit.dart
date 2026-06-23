@@ -62,7 +62,7 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             isLoading: false,
