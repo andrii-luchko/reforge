@@ -28,7 +28,7 @@ Future<void> configureDependencies() async {
 
   await getIt.init(environment: environment);
 
-  //TODO (Masayoshi): Set to true to use mock/test repositories for the training session flow
+  //TODO(Masayoshi): Set to true to use mock/test repositories for the training session flow
   const useMockRepositories = bool.fromEnvironment('USE_MOCKS', defaultValue: true);
 
   if (useMockRepositories) {

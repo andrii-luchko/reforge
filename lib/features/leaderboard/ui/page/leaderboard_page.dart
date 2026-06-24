@@ -95,9 +95,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       scrolledUnderElevation: 0,
                       automaticallyImplyLeading: false,
                       centerTitle: false,
-
-                      floating: true,
-
                       title: Text(
                         t.leaderboard.title,
                         style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
