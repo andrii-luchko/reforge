@@ -166,26 +166,25 @@ class _WorkoutSetTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final canDelete = !set.isDone && !set.isBusy;
 
-    return DeleteWrapper(
-      enabled: canDelete,
-      onPressed: canDelete
-          ? (context) async {
-              if (set.isEmpty) {
-                onRemoveSet(set.id);
-                return;
-              }
+    return Padding(
+      padding: const EdgeInsetsGeometry.only(bottom: 16),
+      child: DeleteWrapper(
+        enabled: canDelete,
+        onPressed: canDelete
+            ? (context) async {
+                if (set.isEmpty) {
+                  onRemoveSet(set.id);
+                  return;
+                }
 
-              final delete = await WorkoutDialogs.confirmSetDeletion(context);
-              if (delete ?? false) {
-                onRemoveSet(set.id);
+                final delete = await WorkoutDialogs.confirmSetDeletion(context);
+                if (delete ?? false) {
+                  onRemoveSet(set.id);
+                }
               }
-            }
-          : null,
-
-      key: ValueKey(set.id),
-      label: t.common.delete_button,
-      child: Padding(
-        padding: const EdgeInsetsGeometry.only(bottom: 16),
+            : null,
+        key: ValueKey(set.id),
+        label: t.common.delete_button,
         child: AbsorbPointer(
           absorbing: set.isBusy,
           child: AnimatedOpacity(

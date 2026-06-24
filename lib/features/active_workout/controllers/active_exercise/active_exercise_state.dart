@@ -2,6 +2,7 @@ part of 'active_exercise_cubit.dart';
 
 @freezed
 sealed class ActiveExerciseState with _$ActiveExerciseState {
+  const ActiveExerciseState._();
   const factory ActiveExerciseState({
     @Default('') String notes,
     @Default([]) List<WorkoutSet> sets,
@@ -17,4 +18,8 @@ sealed class ActiveExerciseState with _$ActiveExerciseState {
     @Default(false) bool isSendingSet,
     @Default(false) bool isSubmitted,
   }) = _ActiveExerciseState;
+
+  bool get showNotesLimit => notes.length > 200;
+
+  int get notesLimit => 500;
 }

@@ -14,13 +14,24 @@ import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dar
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:toastification/toastification.dart';
 
-class ActiveWorkoutShell extends StatelessWidget {
+class ActiveWorkoutShell extends StatefulWidget {
   const ActiveWorkoutShell({
     required this.child,
     super.key,
   });
 
   final Widget child;
+
+  @override
+  State<ActiveWorkoutShell> createState() => _ActiveWorkoutShellState();
+}
+
+class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<TimerCubit>().startTimer();
+  }
 
   Future<void> onClosePressed(BuildContext context) async {
     final leave = await WorkoutDialogs.confirmWorkoutLeave(context);
@@ -36,8 +47,6 @@ class ActiveWorkoutShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<TimerCubit>().startTimer();
-
     return MultiBlocListener(
       listeners: [
         BlocListener<WorkoutFlowCubit, WorkoutFlowState>(
@@ -91,13 +100,13 @@ class ActiveWorkoutShell extends StatelessWidget {
             extendBodyBehindAppBar: true,
             appBar: ActiveWorkoutAppBar(
               onClosePressed: () async => onClosePressed(context),
-              onTimerPressed: () {
+              onRestTimerPressed: () {
                 unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutRestTimerClick));
                 unawaited(WorkoutDialogs.restTimerDialog(context));
               },
             ),
 
-            body: child,
+            body: widget.child,
           ),
           const WorkoutFlowLoader(),
         ],

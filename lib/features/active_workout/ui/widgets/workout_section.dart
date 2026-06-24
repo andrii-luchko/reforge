@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:reforge/features/workout_common/ui/widgets/app_tags_list_view.dart';
+// import 'package:reforge/features/workout_common/ui/widgets/app_tags_list_view.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_list_tile.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 
@@ -26,8 +26,8 @@ class WorkoutSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        const AppTagsListView(tags: []),
+        // const SizedBox(height: 16),
+        // const AppTagsListView(tags: []),
       ],
     );
   }

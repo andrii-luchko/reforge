@@ -14,15 +14,14 @@ class RootPage extends StatefulWidget {
 class _RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      resizeToAvoidBottomInset: false,
-      body: widget.navigationShell,
-      floatingActionButtonLocation: .centerFloat,
-      bottomNavigationBar: AppBottomBar(
-        navigationShell: widget.navigationShell,
-      ),
+    return Stack(
+      alignment: .bottomCenter,
+      children: [
+        widget.navigationShell,
+        AppBottomBar(
+          navigationShell: widget.navigationShell,
+        ),
+      ],
     );
   }
 }

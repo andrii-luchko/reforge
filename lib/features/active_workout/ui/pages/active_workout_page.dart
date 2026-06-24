@@ -27,7 +27,8 @@ class ActiveWorkoutPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
       builder: (context, exerciseState) {
-        final programExercise = context.read<ActiveExerciseCubit>().programExercise;
+        final cubit = context.read<ActiveExerciseCubit>();
+        final programExercise = cubit.programExercise;
         final exerciseDetails = programExercise.exerciseDetails;
         final previousResult = exerciseState.previousResult;
 
@@ -41,6 +42,14 @@ class ActiveWorkoutPage extends StatelessWidget {
                   final timerDuration = context.read<TimerCubit>().state.duration;
 
                   await flowCubit.nextExercise(timerDuration);
+                },
+              ),
+
+              BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
+                listenWhen: (previous, current) => previous.setValidationError != current.setValidationError,
+                listener: (context, state) {
+                  if (state.setValidationError == null) return;
+                  toastification.showErrorToast(state.setValidationError!, context);
                 },
               ),
             ],
@@ -61,13 +70,15 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 child: AppTextField(
                                   hintText: t.workout.addNotesHint,
                                   maxLines: null,
-                                  maxLength: 500,
+                                  maxLength: exerciseState.showNotesLimit ? exerciseState.notesLimit : null,
                                   keyboardType: TextInputType.multiline,
                                   onChanged: context.read<ActiveExerciseCubit>().setNote,
                                 ),
                               ),
+
                               WorkoutSection(exercise: exerciseDetails),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
+
                               if (previousResult != null) ...[
                                 PreviousExerciseResultListTile(
                                   result: previousResult,
@@ -75,32 +86,20 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 32),
                               ],
-                              BlocConsumer<ActiveExerciseCubit, ActiveExerciseState>(
-                                listenWhen: (previous, current) =>
-                                    previous.setValidationError != current.setValidationError,
-                                listener: (context, state) {
-                                  if (state.setValidationError == null) return;
-                                  toastification.showErrorToast(state.setValidationError!, context);
-                                },
-                                builder: (context, state) {
-                                  final cubit = context.read<ActiveExerciseCubit>();
+                              DynamicWorkoutForm(
+                                metrics: exerciseDetails.metrics,
+                                system: exerciseState.measureSystem,
+                                isTiered: exerciseDetails.isTiered,
+                                tiers: exerciseDetails.tiers,
 
-                                  return DynamicWorkoutForm(
-                                    metrics: exerciseDetails.metrics,
-                                    system: state.measureSystem,
-                                    isTiered: exerciseDetails.isTiered,
-                                    tiers: exerciseDetails.tiers,
+                                selectedTier: exerciseState.selectedTier,
 
-                                    selectedTier: state.selectedTier,
-
-                                    sets: state.sets,
-                                    onTierChanged: cubit.setTier,
-                                    onAddSet: cubit.addSet,
-                                    onUpdateSet: cubit.updateSet,
-                                    onRemoveSet: cubit.removeSet,
-                                    onDonePressed: cubit.markSetDone,
-                                  );
-                                },
+                                sets: exerciseState.sets,
+                                onTierChanged: cubit.setTier,
+                                onAddSet: cubit.addSet,
+                                onUpdateSet: cubit.updateSet,
+                                onRemoveSet: cubit.removeSet,
+                                onDonePressed: cubit.markSetDone,
                               ),
                               const SizedBox(height: 16),
                             ],

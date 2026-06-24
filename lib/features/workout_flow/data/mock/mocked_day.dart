@@ -6,14 +6,26 @@ import 'package:reforge/features/workout_flow/domain/entities/program_day_entity
 
 final List<ExerciseDetailsDTO> newMockExercises = [
   // ID 1: Barbell Deadlift
+  // const ExerciseDetailsDTO(
+  //   id: 1,
+  //   name: 'Barbell Deadlift',
+  //   description:
+  //       'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
+  //   key: 'deadlift',
+
+  //   metrics: ['weightKg', 'reps'],
+  //   videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+  //   thumbnailInstructionUrl:
+  //       'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
+  // ),
   const ExerciseDetailsDTO(
     id: 1,
-    name: 'Barbell Deadlift',
+    name: 'Run 5 km',
     description:
         'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
     key: 'deadlift',
 
-    metrics: ['weightKg', 'reps'],
+    metrics: ['durationSec', 'distanceM', 'speedKmH'],
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',

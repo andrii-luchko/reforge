@@ -47,7 +47,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
     required MeasurementSystem system,
   }) async {
     return Result.success((
-      notes: "Test previous notes",
+      notes: 'Test previous notes',
       sets: [
         WorkoutSet(
           id: 1,

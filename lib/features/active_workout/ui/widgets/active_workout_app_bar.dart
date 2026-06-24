@@ -8,12 +8,12 @@ import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 class ActiveWorkoutAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ActiveWorkoutAppBar({
     this.onClosePressed,
-    this.onTimerPressed,
+    this.onRestTimerPressed,
     super.key,
   });
 
   final VoidCallback? onClosePressed;
-  final VoidCallback? onTimerPressed;
+  final VoidCallback? onRestTimerPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class ActiveWorkoutAppBar extends StatelessWidget implements PreferredSizeWidget
             ),
             AppIconButton(
               iconAsset: Assets.images.icons.timer,
-              onPressed: onTimerPressed,
+              onPressed: onRestTimerPressed,
             ),
           ],
         ),
