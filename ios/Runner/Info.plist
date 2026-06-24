@@ -66,6 +66,10 @@
 		<key>NSHealthUpdateUsageDescription</key>
 		<string>Health data access enables the application to save your completed workouts and sync
 			your progress with Apple Health.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app requires access to your location to track your running route, calculate
+			distance, and determine your pace while you are working out.</string>
+
 
 		<key>UIApplicationSceneManifest</key>
 		<dict>
@@ -93,6 +97,8 @@
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>processing</string>
+			<string>location</string>
+			<string>audio</string>
 		</array>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>

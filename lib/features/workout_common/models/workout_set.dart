@@ -87,6 +87,7 @@ sealed class WorkoutSet with _$WorkoutSet {
 }
 
 extension WorkoutSetValidation on WorkoutSet {
+  //TODO (Masayoshi): can be optimized using Set instead of List
   bool isValid(List<WorkoutMetric> metrics) {
     if (metrics.contains(WorkoutMetric.reps)) {
       if (reps == null || reps! <= 0) return false;

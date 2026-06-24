@@ -101,6 +101,10 @@ dependencies:
   drift: ^2.34.0
   drift_flutter: ^0.3.0
 
+  just_audio: ^0.10.5
+  audio_session: ^0.2.3
+  geolocator: ^14.0.3
+
 
 dev_dependencies:
   flutter_test:

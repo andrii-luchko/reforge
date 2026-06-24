@@ -40,59 +40,49 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
-        target.build_configurations.each do |config|
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-            '$(inherited)',
-    
-            ## dart: PermissionGroup.calendar
-            'PERMISSION_EVENTS=0',
-            
-            ## dart: PermissionGroup.calendarFullAccess
-            'PERMISSION_EVENTS_FULL_ACCESS=0',
-    
-            ## dart: PermissionGroup.reminders
-            'PERMISSION_REMINDERS=0',
-    
-            ## dart: PermissionGroup.contacts
-            'PERMISSION_CONTACTS=0',
-    
-            ## dart: PermissionGroup.camera
-            'PERMISSION_CAMERA=1', 
-    
-            ## dart: PermissionGroup.microphone
-            'PERMISSION_MICROPHONE=0',
-    
-            ## dart: PermissionGroup.speech
-            'PERMISSION_SPEECH_RECOGNIZER=0',
-    
-            ## dart: PermissionGroup.photos
-            'PERMISSION_PHOTOS=1', 
-    
-            ## dart: [PermissionGroup.location, PermissionGroup.locationAlways, PermissionGroup.locationWhenInUse]
-            'PERMISSION_LOCATION=0',
-            'PERMISSION_LOCATION_WHENINUSE=0',
-    
-            ## dart: PermissionGroup.notification
-            'PERMISSION_NOTIFICATIONS=0',
-    
-            ## dart: PermissionGroup.mediaLibrary
-            'PERMISSION_MEDIA_LIBRARY=0',
-    
-            ## dart: PermissionGroup.sensors
-            'PERMISSION_SENSORS=1', 
-    
-            ## dart: PermissionGroup.bluetooth
-            'PERMISSION_BLUETOOTH=0',
-    
-            ## dart: PermissionGroup.appTrackingTransparency
-            'PERMISSION_APP_TRACKING_TRANSPARENCY=0',
-    
-            ## dart: PermissionGroup.criticalAlerts
-            'PERMISSION_CRITICAL_ALERTS=0',
-    
-            ## dart: PermissionGroup.assistant
-            'PERMISSION_ASSISTANT=0',
-          ]
-        end
+    # 1. Permission Handler Macro Configuration
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_EVENTS=0',
+        'PERMISSION_EVENTS_FULL_ACCESS=0',
+        'PERMISSION_REMINDERS=0',
+        'PERMISSION_CONTACTS=0',
+        'PERMISSION_CAMERA=1', 
+        'PERMISSION_MICROPHONE=0',
+        'PERMISSION_SPEECH_RECOGNIZER=0',
+        'PERMISSION_PHOTOS=1', 
+         
+        # ENABLED: Required for Geolocator background tracking (When In Use strategy)
+        'PERMISSION_LOCATION=0',
+        'PERMISSION_LOCATION_WHENINUSE=1',
+        
+        # ENABLED: Required if you decide to add flutter_local_notifications later
+        'PERMISSION_NOTIFICATIONS=1',
+        
+        'PERMISSION_MEDIA_LIBRARY=0',
+        
+        # ENABLED: Required for Pedometer (Motion & Fitness)
+        'PERMISSION_SENSORS=1', 
+        
+        'PERMISSION_BLUETOOTH=0',
+        'PERMISSION_APP_TRACKING_TRANSPARENCY=0',
+        'PERMISSION_CRITICAL_ALERTS=0',
+        'PERMISSION_ASSISTANT=0',
+      ]
+    end
+
+    # 2. Geolocator Apple Configuration
+    # We inject this to force Geolocator to NEVER ask for "Always" permission.
+    # This guarantees we bypass strict Apple App Store Review scrutiny regarding background location.
+    if target.name == "geolocator_apple"
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+          '$(inherited)', 
+          'BYPASS_PERMISSION_LOCATION_ALWAYS=1'
+        ]
       end
     end
+    
+  end
+end
