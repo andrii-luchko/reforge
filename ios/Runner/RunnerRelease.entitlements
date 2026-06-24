@@ -12,5 +12,7 @@
 	<array>
 		<string>applinks:reforge-platform-backend-yv3l.onrender.com</string>
 	</array>
+	<key>com.apple.developer.healthkit</key>
+	<true/>
 </dict>
 </plist>

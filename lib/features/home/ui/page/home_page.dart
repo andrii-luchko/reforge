@@ -1,9 +1,6 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/ui/widgets/home_body.dart';
@@ -35,13 +32,6 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       backgroundColor: Colors.transparent,
       floatingActionButtonLocation: .endTop,
-      floatingActionButton: kDebugMode
-          ? FloatingActionButton(
-              onPressed: () {
-                WorkoutInstructionPageRoute(name: 'name', workoutId: 1).push(context);
-              },
-            )
-          : null,
       body: DefaultBackground(
         body: const HomeBody(),
         additionalAnimationsOnTop: [
