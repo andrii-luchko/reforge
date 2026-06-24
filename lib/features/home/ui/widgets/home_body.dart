@@ -25,8 +25,7 @@ class HomeBody extends StatelessWidget {
       top: false,
       bottom: false,
       child: BlocConsumer<HomeCubit, HomeState>(
-        listenWhen: (previous, current) =>
-            current.error != null && previous.error != current.error,
+        listenWhen: (previous, current) => current.error != null && previous.error != current.error,
         listener: (context, state) {
           if (state.error != null) {
             toastification.showErrorToast(state.error!, context);
@@ -55,7 +54,7 @@ class HomeBody extends StatelessWidget {
                     ),
                   ),
                   SliverPadding(
-                    padding: horizontalPadding.copyWith(bottom: 16),
+                    padding: horizontalPadding.copyWith(bottom: 32),
                     sliver: SliverToBoxAdapter(
                       child: const StartWorkoutListTile().animateEntrance(),
                     ),

@@ -12,11 +12,13 @@ sealed class ActiveExerciseState with _$ActiveExerciseState {
     Tier? selectedTier,
 
     PreviousExerciseResult? previousResult,
-    String? error,
-    String? setValidationError,
+
     @Default(false) bool isLoading,
     @Default(false) bool isSendingSet,
     @Default(false) bool isSubmitted,
+
+    String? error,
+    String? setValidationError,
   }) = _ActiveExerciseState;
 
   bool get showNotesLimit => notes.length > 200;

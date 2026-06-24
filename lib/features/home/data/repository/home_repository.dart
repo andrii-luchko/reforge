@@ -40,6 +40,15 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
 
       final stats = result.data.toDomain();
       return Result.success(stats);
+    } on AppNetworkException catch (error, stackTrace) {
+      if (error.statusCode == 500) {
+        //typical problem from backend for a new user. just return null;
+
+        return const Result.success(null);
+      }
+
+      return Result.error(error, stackTrace);
+
       // ignore: avoid_catches_without_on_clauses
     } catch (error, stackTrace) {
       final exception = error is Exception ? error : AppException(error.toString());
