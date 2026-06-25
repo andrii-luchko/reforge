@@ -27,6 +27,7 @@ import 'package:reforge/features/subscription/controllers/subscription_cubit.dar
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/two_options_dialog_template.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -174,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
                   ),
-                  SliverPadding(padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing / 4)),
+                  const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                 ],
               ),
             ),

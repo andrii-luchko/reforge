@@ -13,6 +13,8 @@ class AppBottomBar extends StatefulWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  static const double totalHeight = 68 + 24;
+
   @override
   State<AppBottomBar> createState() => _AppBottomBarState();
 }

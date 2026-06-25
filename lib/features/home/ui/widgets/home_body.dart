@@ -11,6 +11,7 @@ import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dar
 import 'package:reforge/features/home/ui/widgets/start_workout_list_tile.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/home_workout_results_header.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
@@ -83,9 +84,7 @@ class HomeBody extends StatelessWidget {
                       }
                     },
                   ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
-                  ),
+                  const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                 ],
               ),
             ),

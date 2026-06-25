@@ -15,6 +15,7 @@ import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -155,6 +156,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           badges: state.badges.take(3).toList(),
                         ),
                       ),
+                      const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                     ],
                   ),
                 ),
