@@ -32,6 +32,8 @@ class ActiveWorkoutPage extends StatelessWidget {
         final exerciseDetails = programExercise.exerciseDetails;
         final previousResult = exerciseState.previousResult;
 
+        final isRunningExercise = exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance);
+
         return DefaultBackground(
           body: MultiBlocListener(
             listeners: [
@@ -86,6 +88,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 32),
                               ],
+
                               DynamicWorkoutForm(
                                 metrics: exerciseDetails.metrics,
                                 system: exerciseState.measureSystem,
@@ -107,7 +110,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                         ),
                       ),
 
-                      if (exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance)) ...[
+                      if (isRunningExercise) ...[
                         const SizedBox(height: 8),
                         SecondaryButton(
                           text: t.workout.startRunning,

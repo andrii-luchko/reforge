@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
@@ -17,9 +18,7 @@ part 'workout_flow_cubit.freezed.dart';
 
 @lazySingleton
 class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
-  WorkoutFlowCubit(this._repository, this._analytics) : super(const WorkoutFlowState()) {
-    unawaited(init());
-  }
+  WorkoutFlowCubit(this._repository, this._analytics) : super(const WorkoutFlowState());
 
   final TrainingSessionRepository _repository;
   final AnalyticsService _analytics;
@@ -36,12 +35,25 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
   }
 
   Future<void> init() async {
-    final currentDay = _repository.getUserCurrentProgramDayId() ?? DateTime.now().weekday;
+    final userCurrentDay = _repository.getUserCurrentProgramDayId();
+    final currentWeekDay = DateTime.now().weekday;
+    final currentDay = userCurrentDay ?? currentWeekDay;
+
+    logger.d('userCurrentDay: $userCurrentDay, \ncurrentWeekDay ${DateTime.now().weekday},\n selectedDay:$currentDay ');
+
+    final shouldReload = currentDay != state.programDay?.id;
+
+    if (!shouldReload) return;
+
     await _loadProgramDay(currentDay);
   }
 
-  Future<void> initScheduled(int programDayId) async {
+  Future<void> initWorkoutFromCalendar(int programDayId) async {
     await _loadProgramDay(programDayId);
+  }
+
+  Future<void> getWorkoutSession() async {
+    _repository.getWorkoutSession(137 + 1);
   }
 
   Future<void> startWorkout() async {
@@ -55,6 +67,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
     switch (result) {
       case Success(value: final sessionData):
         unawaited(_analytics.logEvent(AnalyticsEvents.workoutStart));
+        logger.d('CurrentsSession: $sessionData');
         emit(
           state.copyWith(
             isStartingWorkout: false,

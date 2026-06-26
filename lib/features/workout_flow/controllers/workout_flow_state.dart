@@ -7,7 +7,7 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
   const factory WorkoutFlowState({
     ProgramDayEntity? programDay,
 
-    @Default(false) bool isLoading,
+    @Default(true) bool isLoading,
 
     @Default(false) bool isStartingWorkout,
 

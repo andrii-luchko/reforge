@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
@@ -23,7 +22,13 @@ class _WorkoutDetailsPageState extends State<WorkoutDetailsPage> {
   void initState() {
     super.initState();
 
-    unawaited(context.read<WorkoutFlowCubit>().init());
+    unawaited(_init());
+  }
+
+  Future<void> _init() async {
+    final workoutCubit = context.read<WorkoutFlowCubit>();
+
+    await workoutCubit.init();
   }
 
   @override

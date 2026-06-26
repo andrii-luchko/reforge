@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -29,24 +31,24 @@ Future<void> configureDependencies() async {
   await getIt.init(environment: environment);
 
   //TODO(Masayoshi): Set to true to use mock/test repositories for the training session flow
-  const useMockRepositories = bool.fromEnvironment('USE_MOCKS', defaultValue: true);
+  // const useMockRepositories = bool.fromEnvironment('USE_MOCKS', defaultValue: true);
 
-  if (useMockRepositories) {
-    if (getIt.isRegistered<TrainingSessionRepository>()) {
-      await getIt.unregister<TrainingSessionRepository>();
-    }
-    getIt.registerFactory<TrainingSessionRepository>(
-      () => const TestTrainingSessionRepository(),
-    );
+  // if (useMockRepositories) {
+  //   if (getIt.isRegistered<TrainingSessionRepository>()) {
+  //     await getIt.unregister<TrainingSessionRepository>();
+  //   }
+  //   getIt.registerFactory<TrainingSessionRepository>(
+  //     () => const TestTrainingSessionRepository(),
+  //   );
 
-    if (getIt.isRegistered<WorkoutQuizRepository>()) {
-      await getIt.unregister<WorkoutQuizRepository>();
-    }
+  //   if (getIt.isRegistered<WorkoutQuizRepository>()) {
+  //     await getIt.unregister<WorkoutQuizRepository>();
+  //   }
 
-    getIt.registerFactory<WorkoutQuizRepository>(
-      () => const TestWorkoutQuizRepository(),
-    );
-  }
+  //   getIt.registerFactory<WorkoutQuizRepository>(
+  //     () => const TestWorkoutQuizRepository(),
+  //   );
+  // }
 
   getIt<FcmNotificationService>();
 }

@@ -622,9 +622,6 @@ class WorkoutShellRoute extends ShellRouteData {
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(
-          value: di.getIt<WorkoutFlowCubit>(),
-        ),
         BlocProvider(
           create: (context) => di.getIt<WorkoutQuizCubit>(),
         ),

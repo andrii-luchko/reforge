@@ -13,6 +13,8 @@ abstract interface class TrainingSessionRepository {
 
   int? getUserCurrentProgramDayId();
 
+  Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId);
+
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId);
 
   Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({

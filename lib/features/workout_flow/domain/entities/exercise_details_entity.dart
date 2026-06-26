@@ -34,6 +34,6 @@ class ExerciseDetailsEntity {
 
   @override
   String toString() {
-    return 'ExerciseDetailsEntity(id: $id, name: $name, description: $description, key: $key, metrics: $metrics, isTiered: $isTiered, tiers: $tiers, videoInstructionUrl: $videoInstructionUrl, thumbnailInstructionUrl: $thumbnailInstructionUrl, instructionsSteps: $instructionsSteps)';
+    return 'ExerciseDetailsEntity(\nid: $id,\n name: $name,\n description: $description,\n key: $key,\n metrics: $metrics, \nisTiered: $isTiered,\n tiers: $tiers,\n videoInstructionUrl: $videoInstructionUrl, \nthumbnailInstructionUrl: $thumbnailInstructionUrl, \ninstructionsSteps: $instructionsSteps)';
   }
 }

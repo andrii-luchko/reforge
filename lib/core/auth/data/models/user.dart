@@ -29,8 +29,12 @@ sealed class User with _$User {
     required int workoutsPerWeek,
     @Default([]) List<int> specificDays,
 
+    //just program id, not used inside the app
     int? activeProgramId,
+
+    //important for starting workout
     int? currentProgramDayId,
+
     String? avatarUrl,
     @JsonKey(name: 'username') String? userName,
 

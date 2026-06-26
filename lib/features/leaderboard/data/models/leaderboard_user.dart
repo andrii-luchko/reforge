@@ -63,10 +63,10 @@ extension CurrentUserRankX on CurrentUserRank {
   LeaderboardUserEntity toDomain() {
     final username = name ?? '';
 
-    // final realRank = (rank - 1).clamp(1, rank);
+    final realRank = (rank - 1).clamp(1, rank);
 
     return LeaderboardUserEntity(
-      rank: rank,
+      rank: realRank,
       username: username,
       avatarUrl: avatarUrl,
       xp: progress.totalXp.toInt(),

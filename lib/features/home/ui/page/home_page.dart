@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/ui/widgets/home_body.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
@@ -33,6 +37,19 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       backgroundColor: Colors.transparent,
       floatingActionButtonLocation: .endTop,
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              onPressed: () async {
+                final apiClient = di.getIt<ApiClient>();
+
+                final result = await apiClient.getWorkoutDetails(137);
+
+                logger.d(result.data);
+
+                //context.read<WorkoutFlowCubit>().getWorkoutSession();
+              },
+            )
+          : null,
       body: DefaultBackground(
         body: const HomeBody(),
         additionalAnimationsOnTop: [

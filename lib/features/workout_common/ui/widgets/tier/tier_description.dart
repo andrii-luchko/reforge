@@ -20,8 +20,6 @@ class TierDescription extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment: .start,
-
         spacing: 8,
         children: [
           Icon(Icons.info_outline_rounded, color: context.appTheme.beige600),

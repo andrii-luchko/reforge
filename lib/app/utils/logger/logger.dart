@@ -29,5 +29,5 @@ class _AppLogger {
 
   void i(Object message, [Object? exception, StackTrace? stackTrace]) => talker.info(message, exception, stackTrace);
 
-  void d(Object message, [Object? exception, StackTrace? stackTrace]) => talker.debug(message, exception, stackTrace);
+  void d(Object? message, [Object? exception, StackTrace? stackTrace]) => talker.debug(message, exception, stackTrace);
 }

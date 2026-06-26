@@ -27,6 +27,24 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
   }
 
   @override
+  Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId) async {
+    try {
+      return Result.success(
+        WorkoutSession(
+          id: 1,
+          userId: 1,
+          workoutProgramDayId: mockProgramDay.id,
+          duration: 0,
+          status: WorkoutSessionStatus.active,
+          totalXpEarned: 0,
+        ),
+      );
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId) async {
     return Result.success(
       WorkoutSession(

@@ -8,6 +8,7 @@ import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/active_workout_app_bar.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
@@ -67,6 +68,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
           listener: (context, flowState) {
             if (flowState.isCanceled) {
               const HomePageRoute().go(context);
+              unawaited(context.read<UserCubit>().refreshUser());
               return;
             }
 
@@ -82,13 +84,16 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
                   const WorkoutSummaryPageRoute().go(context);
                 }
               }
+              unawaited(context.read<UserCubit>().refreshUser());
               return;
             }
 
-            if (flowState.currentExercise == null) return;
+            final currentExercise = flowState.currentExercise;
+
+            if (currentExercise == null) return;
 
             ActiveWorkoutPageRoute(
-              exerciseId: flowState.currentExercise!.exerciseDetails.id,
+              exerciseId: currentExercise.exerciseDetails.id,
             ).go(context);
           },
         ),

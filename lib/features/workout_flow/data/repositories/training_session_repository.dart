@@ -62,6 +62,18 @@ class TrainingSessionRepositoryImpl with RepositoryErrorHandler implements Train
   }
 
   @override
+  Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId) async {
+    try {
+      final result = await _apiClient.getWorkoutDetails(workoutSessionId);
+
+      logger.d(result);
+      return const Result.success(null);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
   Future<Result<WorkoutSession>> startWorkoutSession(int programId) async {
     try {
       final response = await makeRequest(

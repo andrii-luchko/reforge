@@ -16,4 +16,9 @@ class ProgramDayEntity {
   List<ProgramExerciseEntity> get sortedExercises {
     return [...exercises]..sort((a, b) => a.order.compareTo(b.order));
   }
+
+  @override
+  String toString() {
+    return 'ProgramDayEntity(\nid: $id,\n name: $name, \ndayNumber: $dayNumber, \nexercises: $exercises)';
+  }
 }

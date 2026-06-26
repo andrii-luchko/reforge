@@ -4,6 +4,7 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
+import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 
 part 'workout_session_details_dto.freezed.dart';
 part 'workout_session_details_dto.g.dart';
@@ -12,9 +13,11 @@ part 'workout_session_details_dto.g.dart';
 sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
   const factory WorkoutSessionDetailsDTO({
     required int id,
+    required int workoutProgramDayId,
     required int duration,
+    required WorkoutSessionStatus status,
     required int totalXpEarned,
-    @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions,
+    // @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions, -- same as workoutSessions
     @JsonKey(name: 'workoutSessions') List<ExerciseSessionDTO>? workoutSessions,
     @JsonKey(name: '"createdAt"') DateTime? createdAt,
   }) = _WorkoutSessionDetailsDTO;
@@ -35,7 +38,10 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
   }
 
   List<PreviousExerciseResult> toPreviousResults(MeasurementSystem system) {
-    final sessions = exerciseSessions ?? workoutSessions ?? [];
+    final sessions = workoutSessions ?? [];
+
+    if (sessions.isEmpty) return [];
+
     return sessions
         .where((s) => s.exercise != null)
         .map(
