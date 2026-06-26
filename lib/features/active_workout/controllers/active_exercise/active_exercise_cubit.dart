@@ -28,14 +28,24 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     this._analytics,
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
-  ) : super(const ActiveExerciseState()) {
-    unawaited(_init());
-  }
+  ) : super(const ActiveExerciseState());
 
   final TrainingSessionRepository repository;
   final AnalyticsService _analytics;
   final int workoutSessionId;
   final ProgramExerciseEntity programExercise;
+
+  /// Pre-populated sets from a restored session. Set via [setRestoredSets]
+  /// immediately after creation (before [_init] completes its async work).
+  List<WorkoutSet>? _restoredSets;
+
+  /// Called from the route builder immediately after cubit creation.
+  /// Injects restored sets (if any) and triggers [_init].
+  /// Always call this method — pass `null` when there are no sets to restore.
+  void setRestoredSets(List<WorkoutSet>? sets) {
+    _restoredSets = sets;
+    unawaited(_init());
+  }
 
   Future<void> _init() async {
     emit(state.copyWith(isLoading: true));
@@ -44,11 +54,21 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     final previousResult = await _getPreviousResult(measurementSystem);
 
+    // If we have restored sets from an interrupted session, show them as completed.
+    // A fresh empty set is appended so the user can continue recording.
+    final restored = _restoredSets;
+    final initialSets = (restored != null && restored.isNotEmpty)
+        ? [
+            ...restored.map((s) => s.copyWith(isDone: true)),
+            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch),
+          ]
+        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)];
+
     emit(
       state.copyWith(
         isLoading: false,
         previousResult: previousResult,
-        sets: [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)],
+        sets: initialSets,
         measureSystem: measurementSystem,
       ),
     );

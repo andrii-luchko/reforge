@@ -31,6 +31,16 @@ class TimerCubit extends Cubit<TimerState> {
     emit(const TimerState());
   }
 
+  /// Starts the timer from a previously accumulated [initialSeconds].
+  /// Used when restoring a workout session to continue counting from the right value.
+  void startTimerFrom(int initialSeconds) {
+    _timer?.cancel();
+    emit(TimerState(duration: initialSeconds, isRunning: true));
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      emit(state.copyWith(duration: state.duration + 1));
+    });
+  }
+
   @override
   Future<void> close() {
     _timer?.cancel();

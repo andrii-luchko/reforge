@@ -730,14 +730,24 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
           return const NoWorkoutErrorWidget();
         }
 
+        // If this is a restored session, pass the previously recorded sets so
+        // ActiveExerciseCubit can show them as completed.
+        final restoredSets = flowState.isRestoredSession
+            ? flowState.restoredSets[programExercise.id]
+            : null;
+
         return BlocProvider(
-          create: (context) => di.getIt<ActiveExerciseCubit>(param1: workoutSessionId, param2: programExercise),
+          create: (context) => di.getIt<ActiveExerciseCubit>(
+            param1: workoutSessionId,
+            param2: programExercise,
+          )..setRestoredSets(restoredSets),
           child: const ActiveWorkoutPage(),
         );
       },
     );
   }
 }
+
 
 class StartRunningPageRoute extends GoRouteData with $StartRunningPageRoute {
   const StartRunningPageRoute();

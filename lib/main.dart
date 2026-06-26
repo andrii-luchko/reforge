@@ -20,6 +20,7 @@ import 'package:reforge/features/notifications/controller/notification_feed_cubi
 import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
+import 'package:reforge/features/workout_flow/controllers/workout_restore_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:toastification/toastification.dart';
 
@@ -87,11 +88,13 @@ class App extends StatelessWidget {
         BlocProvider(create: (_) => di.getIt<CalendarCubit>()),
         BlocProvider(
           create: (_) => di.getIt<SubscriptionCubit>(),
-
           lazy: false,
         ),
         BlocProvider(
           create: (_) => di.getIt<WorkoutFlowCubit>(),
+        ),
+        BlocProvider(
+          create: (_) => di.getIt<WorkoutRestoreCubit>(),
         ),
       ],
       child: MaterialApp.router(

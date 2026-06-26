@@ -29,12 +29,46 @@ class ActiveRunningSets extends Table {
   BoolColumn get isBusy => boolean().withDefault(const Constant(false))();
 }
 
-@DriftDatabase(tables: [ActiveSessions, ActiveRunningSets])
+/// Cache table for the currently active workout session.
+/// Always contains at most ONE row — the session currently in progress.
+/// Cleared on successful completion or cancellation.
+class WorkoutSessionCache extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Remote session id from the backend (WorkoutSession.id)
+  IntColumn get remoteSessionId => integer()();
+
+  /// Program day id needed to re-fetch ProgramDayEntity with full exercise details
+  IntColumn get programDayId => integer()();
+
+  /// When the session was originally started (for display purposes)
+  DateTimeColumn get startedAt => dateTime()();
+
+  /// Accumulated duration in seconds — updated periodically while workout is active.
+  /// Stored here so duration is not lost on force-kill.
+  IntColumn get durationSec => integer().withDefault(const Constant(0))();
+
+  /// Index of the last exercise the user was on.
+  /// Used as a fallback to navigate back to the right screen on restore.
+  IntColumn get lastExerciseIndex => integer().withDefault(const Constant(0))();
+}
+
+@DriftDatabase(tables: [ActiveSessions, ActiveRunningSets, WorkoutSessionCache])
 class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(workoutSessionCache);
+          }
+        },
+      );
 
   Stream<List<ActiveRunningSet>> watchSetsForSession(int sessionId) {
     return (select(activeRunningSets)..where((t) => t.sessionId.equals(sessionId))).watch();

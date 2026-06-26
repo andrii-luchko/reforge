@@ -20,6 +20,20 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
     WorkoutSessionSummaryEntity? summary,
 
     String? error,
+
+    // ── Restore context ──────────────────────────────────────────────────────
+    // These fields are populated by [WorkoutFlowCubit.initFromRestore] and
+    // consumed by ActiveExerciseCubit / ActiveWorkoutShell.
+
+    /// True when this session was seeded by a restore (not a fresh start).
+    @Default(false) bool isRestoredSession,
+
+    /// Accumulated duration in seconds at the time of interruption.
+    /// Used to initialise the timer from the correct offset.
+    @Default(0) int restoredDurationSec,
+
+    /// Previously completed sets, keyed by workoutProgramExerciseId.
+    @Default({}) Map<int, List<WorkoutSet>> restoredSets,
   }) = _WorkoutFlowState;
 
   bool get isEmptyData => programDay == null;
@@ -42,4 +56,6 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
   int get totalExercises => programDay?.sortedExercises.length ?? 0;
 
   bool get isLastExercise => currentExerciseIndex == (totalExercises - 1);
+
+  bool get isFirstExercise => currentExerciseIndex == 0;
 }

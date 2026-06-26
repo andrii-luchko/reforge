@@ -5,6 +5,7 @@ import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 
@@ -42,6 +43,21 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
     } on Exception catch (e) {
       return Result.error(e);
     }
+  }
+
+  @override
+  Future<Result<WorkoutSessionDetailsDTO>> getWorkoutSessionDetails(int sessionId) async {
+    // Returns an empty active session — no recorded exercise sets
+    return Result.success(
+      WorkoutSessionDetailsDTO(
+        id: sessionId,
+        workoutProgramDayId: mockProgramDay.id,
+        duration: 0,
+        status: WorkoutSessionStatus.active,
+        totalXpEarned: 0,
+        workoutSessions: const [],
+      ),
+    );
   }
 
   @override

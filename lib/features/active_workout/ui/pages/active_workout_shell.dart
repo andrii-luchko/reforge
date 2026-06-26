@@ -28,10 +28,40 @@ class ActiveWorkoutShell extends StatefulWidget {
 }
 
 class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
+  /// Syncs elapsed duration to Drift every 10 seconds to survive force-kills.
+  Timer? _durationSyncTimer;
+
+  static const _syncInterval = Duration(seconds: 10);
+
   @override
   void initState() {
     super.initState();
-    context.read<TimerCubit>().startTimer();
+    final timerCubit = context.read<TimerCubit>();
+    final flowCubit = context.read<WorkoutFlowCubit>();
+
+    // If restoring a session, initialise the timer with the previously saved duration
+    if (flowCubit.state.isRestoredSession) {
+      // TimerCubit counts from 0 by default; we pre-load the accumulated value.
+      // We stop the timer first in case it was already running (shell rebuild),
+      // then restart it from the restored position.
+      timerCubit
+        ..stopTimer()
+        ..startTimerFrom(flowCubit.state.restoredDurationSec);
+    } else {
+      timerCubit.startTimer();
+    }
+
+    // Persist elapsed duration every 10 s so we don't lose it on force-kill
+    _durationSyncTimer = Timer.periodic(_syncInterval, (_) {
+      final elapsed = context.read<TimerCubit>().state.duration;
+      context.read<WorkoutFlowCubit>().syncDuration(elapsed);
+    });
+  }
+
+  @override
+  void dispose() {
+    _durationSyncTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> onClosePressed(BuildContext context) async {
