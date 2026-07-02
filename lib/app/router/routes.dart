@@ -39,6 +39,8 @@ import 'package:reforge/features/lore/ui/page/lore_page.dart';
 import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
+import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+import 'package:reforge/features/running/ui/pages/running_exercise_host.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/helpers/settings_navigation.dart';
@@ -730,11 +732,35 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
           return const NoWorkoutErrorWidget();
         }
 
-        // If this is a restored session, pass the previously recorded sets so
-        // ActiveExerciseCubit can show them as completed.
-        final restoredSets = flowState.isRestoredSession
-            ? flowState.restoredSets[programExercise.id]
-            : null;
+        // ── Running exercise ─────────────────────────────────────────────
+        if (programExercise.exerciseDetails.isRunningExercise) {
+          final restoredSets = flowState.isRestoredSession ? flowState.restoredSets[programExercise.id] : null;
+
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => di.getIt<ActiveExerciseCubit>(
+                  param1: workoutSessionId,
+                  param2: programExercise,
+                )..setRestoredSets(restoredSets),
+              ),
+              BlocProvider(
+                create: (_) {
+                  final cubit = di.getIt<RunningTrackerCubit>(
+                    param1: workoutSessionId,
+                    param2: programExercise,
+                  );
+                  unawaited(cubit.init());
+                  return cubit;
+                },
+              ),
+            ],
+            child: const RunningExerciseHost(),
+          );
+        }
+
+        // ── Regular exercise ─────────────────────────────────────────────
+        final restoredSets = flowState.isRestoredSession ? flowState.restoredSets[programExercise.id] : null;
 
         return BlocProvider(
           create: (context) => di.getIt<ActiveExerciseCubit>(
@@ -747,7 +773,6 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
     );
   }
 }
-
 
 class StartRunningPageRoute extends GoRouteData with $StartRunningPageRoute {
   const StartRunningPageRoute();

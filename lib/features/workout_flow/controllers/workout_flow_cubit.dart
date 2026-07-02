@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/database/database.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
@@ -64,12 +65,12 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
 
     logger.d(
       'WorkoutFlowCubit.init — userCurrentDay: $userCurrentDay, '
-      'weekday: ${DateTime.now().weekday}, selected: $currentDay',
+      'weekday: $currentWeekDay, selected: $currentDay',
     );
 
     if (currentDay == state.programDay?.id) return;
 
-    await _loadProgramDay(currentDay);
+    await _loadProgramDay(30);
   }
 
   /// Loads a specific program day, e.g. when navigating from the calendar.

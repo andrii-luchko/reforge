@@ -4,16 +4,16 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
-
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -25,12 +25,14 @@ part 'active_exercise_state.dart';
 class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   ActiveExerciseCubit(
     this.repository,
+    this._localWorkoutRepo,
     this._analytics,
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
   ) : super(const ActiveExerciseState());
 
   final TrainingSessionRepository repository;
+  final LocalWorkoutSessionRepository _localWorkoutRepo;
   final AnalyticsService _analytics;
   final int workoutSessionId;
   final ProgramExerciseEntity programExercise;
@@ -38,6 +40,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   /// Pre-populated sets from a restored session. Set via [setRestoredSets]
   /// immediately after creation (before [_init] completes its async work).
   List<WorkoutSet>? _restoredSets;
+
+  StreamSubscription<List<ActiveRunningSet>>? _dbSub;
 
   /// Called from the route builder immediately after cubit creation.
   /// Injects restored sets (if any) and triggers [_init].
@@ -72,6 +76,51 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
         measureSystem: measurementSystem,
       ),
     );
+
+    if (programExercise.exerciseDetails.isRunningExercise) {
+      _dbSub = _localWorkoutRepo.watchActiveRunningSets(workoutSessionId).listen(_onDbRunningSetsChanged);
+    }
+  }
+
+  void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
+    final pendingSync = rows.where((r) => !r.isBusy && !r.isDone).toList();
+
+    // ignore: cascade_invocations
+    pendingSync.forEach(_syncRunningSegment);
+  }
+
+  //TODO(MAsayoshi): segments complete different from sets. check this logic
+  Future<void> _syncRunningSegment(ActiveRunningSet row) async {
+    // Prevent concurrent syncs
+    if (state.isSendingSet) return;
+
+    // Mark as isDone immediately in local state or just let the repository handle it?
+    // Let's create the WorkoutSet
+    final set = WorkoutSet(
+      id: row.id,
+      distance: (row.distanceMeters ?? 0) / 1000,
+      time: Duration(seconds: row.durationSeconds ?? 0),
+      pace: row.paceKmH,
+      setNumber: row.setNumber,
+      isDone: true,
+      programSegmentId: programExercise.segments.length >= row.setNumber
+          ? programExercise.segments[row.setNumber - 1].id
+          : null,
+    );
+
+    await repository.completeSet(
+      exerciseId: programExercise.exerciseDetails.id,
+      workoutProgramExerciseId: programExercise.id,
+      workoutSessionId: workoutSessionId,
+      system: state.measureSystem,
+      set: set,
+    );
+
+    await _localWorkoutRepo.markSetAsDone(row.id);
+
+    // Also update UI state sets
+    final updatedSets = [...state.sets.where((s) => s.id != row.id), set];
+    emit(state.copyWith(sets: updatedSets));
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {
@@ -225,5 +274,11 @@ submitted: ${state.isSubmitted}
           );
       }
     }
+  }
+
+  @override
+  Future<void> close() {
+    _dbSub?.cancel();
+    return super.close();
   }
 }

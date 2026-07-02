@@ -61,6 +61,7 @@ class _RootPageState extends State<RootPage> {
   void _showRestoreDialog(BuildContext context, WorkoutRestorePending pending) {
     unawaited(
       AppDialog.show<bool?>(
+        barrierDismissible: false,
         context,
         child: TwoOptionsDialog(
           title: 'Continue Workout?',

@@ -46,6 +46,9 @@
     >
         <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
         <meta-data android:name="google_analytics_ssaid_collection_enabled" android:value="false" />
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDZkcKe-kf_HYMk8oxjUu3FMFapdtGk7Gc" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

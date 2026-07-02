@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:injectable/injectable.dart';
@@ -5,7 +6,6 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
-import 'package:reforge/core/user/data/datasources/user_local_datasource.dart';
 import 'package:reforge/core/user/data/datasources/user_remote_datasource.dart';
 import 'package:reforge/core/user/domain/repositories/user_repository.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart' as requests;
@@ -14,11 +14,9 @@ import 'package:reforge/features/quiz/data/requests/update_profile_request.dart'
 class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   UserRepositoryImpl(
     this._remoteDataSource,
-    this._localDataSource,
   );
 
   final UserRemoteDataSource _remoteDataSource;
-  final UserLocalDataSource _localDataSource;
 
   @override
   Future<Result<User?>> getCurrentUser() async {
@@ -27,16 +25,11 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
         _remoteDataSource.getCurrentUser,
         label: 'getCurrentUser',
       );
-      await _localDataSource.saveUser(user);
 
       logger.d(user);
 
       return Result.success(user);
     } on Exception catch (e) {
-      final cachedUser = await _localDataSource.getUser();
-      if (cachedUser != null) {
-        return Result.success(cachedUser);
-      }
       return Result.error(e);
     }
   }
@@ -48,7 +41,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
         () => _remoteDataSource.updateProfile(request),
         label: 'updateProfile',
       );
-      await _localDataSource.saveUser(updatedUser);
+
       return Result.success(updatedUser);
     } on Exception catch (e) {
       return Result.error(e);
@@ -62,7 +55,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
         _remoteDataSource.deleteUser,
         label: 'deleteUser',
       );
-      await _localDataSource.clearUser();
+
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
@@ -76,10 +69,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
         () => _remoteDataSource.deleteUserById(id),
         label: 'deleteUserById',
       );
-      final currentUser = await _localDataSource.getUser();
-      if (currentUser?.id == id) {
-        await _localDataSource.clearUser();
-      }
+
       return const Result.success(null);
     } on Exception catch (e) {
       return Result.error(e);
@@ -93,7 +83,7 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
         _remoteDataSource.getCurrentUser,
         label: 'refreshUser',
       );
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);

@@ -15,6 +15,7 @@ cd ios || { echo "❌ iOS directory not found!"; exit 1; }
 
 # 3. Remove old artifacts
 echo "🗑 Removing Pods, .symlinks, and Podfile.lock..."
+rm -rf ~/Library/Developer/Xcode/DerivedData/*
 rm -rf Pods
 rm -rf Podfile.lock
 rm -rf .symlinks

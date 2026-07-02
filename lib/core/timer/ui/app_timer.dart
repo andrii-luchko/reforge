@@ -36,7 +36,6 @@ class AppTimer extends StatelessWidget {
           SmoothTimerText(
             formattedTime,
             style: textStyle,
-            digitWidth: 13,
           ),
           if (isPaused)
             SvgPicture.asset(

@@ -6,15 +6,11 @@ class SmoothTimerText extends StatefulWidget {
   const SmoothTimerText(
     this.text, {
     required this.style,
-    this.digitWidth = 13.5,
-    this.colonWidth = 5.0,
     super.key,
   });
 
   final String text;
   final TextStyle style;
-  final double digitWidth;
-  final double colonWidth;
 
   @override
   State<SmoothTimerText> createState() => _SmoothTimerTextState();
@@ -49,41 +45,50 @@ class _SmoothTimerTextState extends State<SmoothTimerText> with SingleTickerProv
     super.dispose();
   }
 
-  double _getCharWidth(String char) {
-    final isColon = char == ':' || char == '.' || char == ',';
-    final isSign = char == '+' || char == '-';
-    if (isColon) return widget.colonWidth;
-    if (isSign) return widget.digitWidth * 0.8;
-    return widget.digitWidth;
-  }
-
-  double _calculateTotalWidth() {
-    double width = 0;
-    for (var i = 0; i < widget.text.length; i++) {
-      width += _getCharWidth(widget.text[i]);
-    }
-    return width;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final baseStyle = DefaultTextStyle.of(context).style.merge(widget.style);
+    final tabularStyle = baseStyle.merge(
+      const TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
+    );
+
+    final textScaler = MediaQuery.textScalerOf(context);
+
+    final digitPainter = TextPainter(
+      text: TextSpan(text: '0', style: tabularStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: textScaler,
+    )..layout();
+
+    final colonPainter = TextPainter(
+      text: TextSpan(text: ':', style: tabularStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: textScaler,
+    )..layout();
+
+    double calculateTotalWidth() {
+      double width = 0;
+      for (var i = 0; i < widget.text.length; i++) {
+        final char = widget.text[i];
+        width += (char == ':' || char == '.' || char == ',') ? colonPainter.width : digitPainter.width;
+      }
+      return width;
+    }
+
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
           return CustomPaint(
-            painter: _TimerPainter(
+            painter: _OptimizedTimerPainter(
               oldText: _oldText,
               newText: widget.text,
               progress: _controller.value,
-              style: widget.style,
-              digitWidth: widget.digitWidth,
-              colonWidth: widget.colonWidth,
+              style: tabularStyle,
+              digitWidth: digitPainter.width,
+              colonWidth: colonPainter.width,
             ),
-            size: Size(
-              _calculateTotalWidth(),
-              widget.style.fontSize ?? 20.0,
-            ),
+            size: Size(calculateTotalWidth(), digitPainter.height),
           );
         },
       ),
@@ -91,15 +96,20 @@ class _SmoothTimerTextState extends State<SmoothTimerText> with SingleTickerProv
   }
 }
 
-class _TimerPainter extends CustomPainter {
-  _TimerPainter({
+class _OptimizedTimerPainter extends CustomPainter {
+  _OptimizedTimerPainter({
     required this.oldText,
     required this.newText,
     required this.progress,
     required this.style,
     required this.digitWidth,
     required this.colonWidth,
-  });
+  }) {
+    _textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+  }
 
   final String oldText;
   final String newText;
@@ -108,78 +118,52 @@ class _TimerPainter extends CustomPainter {
   final double digitWidth;
   final double colonWidth;
 
-  double _getCharWidth(String char) {
-    final isColon = char == ':' || char == '.' || char == ',';
-    final isSign = char == '+' || char == '-';
-    if (isColon) return colonWidth;
-    if (isSign) return digitWidth * 0.8;
-    return digitWidth;
-  }
+  late final TextPainter _textPainter;
 
   @override
   void paint(Canvas canvas, Size size) {
     var currentX = 0.0;
     final maxLength = max(oldText.length, newText.length);
-
     final slideDistance = size.height * 0.45;
 
     for (var i = 0; i < maxLength; i++) {
       final oldChar = i < oldText.length ? oldText[i] : '';
       final newChar = i < newText.length ? newText[i] : '';
 
-      final targetChar = newChar.isNotEmpty ? newChar : oldChar;
-      final charWidth = _getCharWidth(targetChar);
+      final isColon = newChar == ':' || oldChar == ':';
+      final charWidth = isColon ? colonWidth : digitWidth;
       final xCenter = currentX + (charWidth / 2);
 
       if (oldChar == newChar || progress == 1.0) {
-        _drawCenteredChar(canvas, newChar, xCenter, 0, 1);
+        _drawChar(canvas, newChar, xCenter, 0, 1);
       } else {
         if (oldChar.isNotEmpty) {
-          final yOffsetOld = -(progress * slideDistance);
-          final opacityOld = 1.0 - progress;
-          _drawCenteredChar(canvas, oldChar, xCenter, yOffsetOld, opacityOld);
+          _drawChar(canvas, oldChar, xCenter, -(progress * slideDistance), 1.0 - progress);
         }
-
         if (newChar.isNotEmpty) {
-          final yOffsetNew = (1.0 - progress) * slideDistance;
-          final opacityNew = progress;
-          _drawCenteredChar(canvas, newChar, xCenter, yOffsetNew, opacityNew);
+          _drawChar(canvas, newChar, xCenter, (1.0 - progress) * slideDistance, progress);
         }
       }
-
       currentX += charWidth;
     }
   }
 
-  void _drawCenteredChar(
-    Canvas canvas,
-    String char,
-    double xCenter,
-    double yOffset,
-    double opacity,
-  ) {
-    if (opacity <= 0.01) return;
+  void _drawChar(Canvas canvas, String char, double xCenter, double yOffset, double opacity) {
+    if (opacity <= 0.01 || char.isEmpty) return;
 
     final color = style.color ?? const Color(0xFF000000);
-    final span = TextSpan(
+    _textPainter.text = TextSpan(
       text: char,
       style: style.copyWith(color: color.withValues(alpha: opacity)),
     );
 
-    final textPainter = TextPainter(
-      text: span,
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout();
-
-    final x = xCenter - (textPainter.width / 2);
-    final y = yOffset;
-
-    textPainter.paint(canvas, Offset(x, y));
+    _textPainter.layout();
+    final x = xCenter - (_textPainter.width / 2);
+    _textPainter.paint(canvas, Offset(x, yOffset));
   }
 
   @override
-  bool shouldRepaint(covariant _TimerPainter oldDelegate) {
+  bool shouldRepaint(covariant _OptimizedTimerPainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.oldText != oldText ||
         oldDelegate.newText != newText ||

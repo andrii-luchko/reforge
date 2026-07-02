@@ -197,6 +197,7 @@ class _BaseWorkoutTileContainer extends StatelessWidget {
     final borderRadius = BorderRadius.circular(20);
 
     return PressableAnimation(
+      scaleAmount: 0.98,
       onTap: onTap,
       child: Material(
         color: appTheme.beige900,

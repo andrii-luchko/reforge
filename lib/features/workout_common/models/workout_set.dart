@@ -18,6 +18,7 @@ sealed class WorkoutSet with _$WorkoutSet {
     int? reps,
     double? degrees,
     int? selectedTier,
+    int? programSegmentId,
     @Default(false) bool isDone,
     @Default(false) bool isBusy,
   }) = _WorkoutSet;

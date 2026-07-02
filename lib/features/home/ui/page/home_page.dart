@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/ui/widgets/home_body.dart';
+import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -40,11 +39,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
               onPressed: () async {
-                final apiClient = di.getIt<ApiClient>();
-
-                final result = await apiClient.getWorkoutDetails(137);
-
-                logger.d(result.data);
+                final apiClient = di.getIt<RunningPermissionsService>();
+                apiClient.requestPermissionsForMode(.pedometer);
+                // final result = await apiClient.getWorkoutDetails(137);
 
                 //context.read<WorkoutFlowCubit>().getWorkoutSession();
               },

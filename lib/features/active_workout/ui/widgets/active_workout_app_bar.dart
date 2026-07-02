@@ -15,10 +15,13 @@ class ActiveWorkoutAppBar extends StatelessWidget implements PreferredSizeWidget
   final VoidCallback? onClosePressed;
   final VoidCallback? onRestTimerPressed;
 
+  static const verticalPadding = 32.0;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const .symmetric(horizontal: 16),
+      padding: const .only(left: 16, right: 16, bottom: verticalPadding),
+
       child: SafeArea(
         child: Row(
           mainAxisAlignment: .spaceBetween,
@@ -52,7 +55,7 @@ class ActiveWorkoutAppBar extends StatelessWidget implements PreferredSizeWidget
   }
 
   @override
-  Size get preferredSize => const .fromHeight(kToolbarHeight + 16);
+  Size get preferredSize => const .fromHeight(kToolbarHeight + verticalPadding);
 
-  static Size get preferredSizeStatic => const .fromHeight(kToolbarHeight + 16);
+  static Size get preferredSizeStatic => const .fromHeight(kToolbarHeight + verticalPadding);
 }

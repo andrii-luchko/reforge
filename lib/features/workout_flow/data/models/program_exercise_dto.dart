@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
+import 'package:reforge/features/workout_flow/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 
 part 'program_exercise_dto.freezed.dart';
@@ -14,7 +15,9 @@ sealed class ProgramExerciseDTO with _$ProgramExerciseDTO {
     int? programDayId,
     required int sets,
     required int order,
+    required String executionMode,
     @JsonKey(name: 'exercise') required ExerciseDetailsDTO exerciseDetails,
+    @JsonKey(name: 'segments') @Default([]) List<ExerciseSegmentDTO> segments,
   }) = _ProgramExerciseDTO;
 
   factory ProgramExerciseDTO.fromJson(Map<String, dynamic> json) => _$ProgramExerciseDTOFromJson(json);
@@ -27,8 +30,9 @@ extension ProgramExerciseToEntityX on ProgramExerciseDTO {
       programDayId: programDayId,
       sets: sets,
       order: order,
-
+      executionMode: ExecutionMode.fromJson(executionMode),
       exerciseDetails: exerciseDetails.toEntity(),
+      segments: segments.map((e) => e.toEntity()).toList(),
     );
   }
 }

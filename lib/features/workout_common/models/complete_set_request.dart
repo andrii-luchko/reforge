@@ -13,6 +13,7 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     @JsonKey(name: 'exerciseId') required int exerciseId,
     @JsonKey(name: 'workoutProgramExerciseId') required int workoutProgramExerciseId,
     @JsonKey(name: 'workoutSessionId') required int workoutSessionId,
+    @JsonKey(name: 'programSegmentId') int? programSegmentId,
 
     @JsonKey(name: 'reps') int? reps,
     @JsonKey(name: 'weightKg') double? weightKg,
@@ -30,6 +31,7 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     required int exerciseId,
     required int workoutSessionId,
     required int workoutProgramExerciseId,
+
     required MeasurementSystem system,
   }) {
     double? finalWeightKg;
@@ -56,6 +58,8 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
       exerciseId: exerciseId,
       workoutSessionId: workoutSessionId,
       workoutProgramExerciseId: workoutProgramExerciseId,
+
+      programSegmentId: set.programSegmentId,
 
       reps: set.reps,
       tier: set.selectedTier,

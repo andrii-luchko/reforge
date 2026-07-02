@@ -1,4 +1,6 @@
 // lib/core/database/database.dart
+// ignore_for_file: comment_references
+
 import 'package:drift/drift.dart';
 
 // Generates the required boilerplate
@@ -12,14 +14,18 @@ class ActiveSessions extends Table {
   DateTimeColumn get startTime => dateTime()();
 }
 
-/// Table representing your instances for the active run
+/// Table representing lap/set instances for the active running exercise.
+///
+/// Each row is one lap. Metrics are null until tracking data arrives.
+/// The [isBusy] flag marks the currently active in-progress lap.
+/// The [isDone] flag marks completed laps that have been sent to the backend.
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(ActiveSessions, #id)();
   IntColumn get programExerciseId => integer()(); // Links to ProgramExerciseEntity.id
   IntColumn get setNumber => integer()();
 
-  // Real-time tracking metrics (Null until tracked)
+  // Real-time tracking metrics (null until tracked)
   RealColumn get distanceMeters => real().nullable()();
   IntColumn get durationSeconds => integer().nullable()();
   RealColumn get paceKmH => real().nullable()();
@@ -27,6 +33,19 @@ class ActiveRunningSets extends Table {
   // State flags
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
   BoolColumn get isBusy => boolean().withDefault(const Constant(false))();
+
+  // ── Running-specific fields ──────────────────────────────────────────────
+
+  /// Tracking mode used for this lap: 'gps' or 'pedometer'.
+  TextColumn get trackingMode => text().nullable()();
+
+  /// Segment type for future segment-based running (e.g. 'run', 'walk').
+  /// Defaults to 'run'.
+  TextColumn get segmentType => text().withDefault(const Constant('run'))();
+
+  /// Timestamp of the last background snapshot written by the background
+  /// service. Used to detect stale in-progress laps after a force-kill.
+  DateTimeColumn get lastSnapshotAt => dateTime().nullable()();
 }
 
 /// Cache table for the currently active workout session.
@@ -58,17 +77,24 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.createTable(workoutSessionCache);
-          }
-        },
-      );
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(workoutSessionCache);
+      }
+      if (from < 3) {
+        await m.addColumn(activeRunningSets, activeRunningSets.trackingMode);
+        await m.addColumn(activeRunningSets, activeRunningSets.segmentType);
+        await m.addColumn(activeRunningSets, activeRunningSets.lastSnapshotAt);
+      }
+    },
+  );
+
+  // ── Existing methods ──────────────────────────────────────────────────────
 
   Stream<List<ActiveRunningSet>> watchSetsForSession(int sessionId) {
     return (select(activeRunningSets)..where((t) => t.sessionId.equals(sessionId))).watch();
@@ -89,10 +115,20 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     );
   }
 
+  Future<void> markSetAsFinishedLocally(int setId) {
+    return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
+      const ActiveRunningSetsCompanion(
+        isDone: Value(false),
+        isBusy: Value(false),
+      ),
+    );
+  }
+
   Future<void> markSetAsDone(int setId) {
     return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
       const ActiveRunningSetsCompanion(
         isDone: Value(true),
+        isBusy: Value(false),
       ),
     );
   }
@@ -101,13 +137,59 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     required int sessionId,
     required int programExerciseId,
     required int setNumber,
+    String? trackingMode,
   }) {
     return into(activeRunningSets).insert(
       ActiveRunningSetsCompanion.insert(
         sessionId: sessionId,
         programExerciseId: programExerciseId,
         setNumber: setNumber,
+        isBusy: const Value(true),
+        trackingMode: Value(trackingMode),
       ),
     );
+  }
+
+  // ── Running-specific methods ──────────────────────────────────────────────
+
+  /// Returns the currently in-progress lap for [sessionId] (isBusy=true,
+  /// isDone=false), or null if no lap is active.
+  ///
+  /// Used during session restore to recover the last unfinished lap.
+  Future<ActiveRunningSet?> getInProgressLap(int sessionId) {
+    return (select(activeRunningSets)
+          ..where((t) => t.sessionId.equals(sessionId) & t.isBusy.equals(true) & t.isDone.equals(false))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  /// Writes a periodic snapshot of the current lap metrics.
+  ///
+  /// Called every ~5 seconds by the background tracking service so that
+  /// metrics survive a force-kill. The [lastSnapshotAt] timestamp is updated
+  /// so callers can detect stale snapshots.
+  Future<void> snapshotActiveLap({
+    required int setId,
+    required double distance,
+    required int duration,
+    required double pace,
+  }) {
+    return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
+      ActiveRunningSetsCompanion(
+        distanceMeters: Value(distance),
+        durationSeconds: Value(duration),
+        paceKmH: Value(pace),
+        lastSnapshotAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Returns all completed laps ([isDone]=true) for a given [sessionId],
+  /// ordered by [setNumber] ascending.
+  Future<List<ActiveRunningSet>> getCompletedLapsForSession(int sessionId) {
+    return (select(activeRunningSets)
+          ..where((t) => t.sessionId.equals(sessionId) & t.isDone.equals(true))
+          ..orderBy([(t) => OrderingTerm.asc(t.setNumber)]))
+        .get();
   }
 }

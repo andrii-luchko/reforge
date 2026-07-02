@@ -1,5 +1,6 @@
 part of 'workout_flow_cubit.dart';
 
+
 @freezed
 sealed class WorkoutFlowState with _$WorkoutFlowState {
   const WorkoutFlowState._();
@@ -34,6 +35,16 @@ sealed class WorkoutFlowState with _$WorkoutFlowState {
 
     /// Previously completed sets, keyed by workoutProgramExerciseId.
     @Default({}) Map<int, List<WorkoutSet>> restoredSets,
+
+    // ── Running restore context ──────────────────────────────────────────────
+
+    /// Completed running laps from Drift, keyed by programExerciseId.
+    /// Populated by [WorkoutRestoreCubit] when restoring a running exercise.
+    @Default({}) Map<int, List<ActiveRunningSet>> restoredRunningLaps,
+
+    /// The in-progress (unfinished) running lap from Drift.
+    /// Non-null only when the app was killed mid-lap during a running exercise.
+    ActiveRunningSet? restoredInProgressLap,
   }) = _WorkoutFlowState;
 
   bool get isEmptyData => programDay == null;
