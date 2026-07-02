@@ -9,7 +9,7 @@ import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
-import 'package:reforge/features/running/domain/entities/completed_lap.dart';
+import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/running_laps_list.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
@@ -51,12 +51,13 @@ class RunningLapsSummaryPage extends StatelessWidget {
           final exerciseDetails = programExercise.exerciseDetails;
 
           final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
-            return CompletedLap(
+            return ExerciseLap(
               lapNumber: set.setNumber ?? 0,
               distanceMeters: (set.distance ?? 0) * 1000,
               durationSeconds: set.time?.inSeconds ?? 0,
               paceKmH: set.pace ?? 0,
-              activity: SegmentActivity.run, // TODO: map properly based on programSegmentId
+              // ignore: avoid_redundant_argument_values
+              activity: SegmentActivity.run, // TODO(Masayoshi): map properly based on programSegmentId
             );
           }).toList();
 

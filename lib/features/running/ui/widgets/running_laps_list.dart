@@ -3,7 +3,7 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/running/domain/entities/completed_lap.dart';
+import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/workout_run_exercise_row.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
@@ -23,7 +23,7 @@ class RunningLapsList extends StatelessWidget {
   final List<WorkoutMetric> metrics;
 
   final MeasurementSystem system;
-  final List<CompletedLap> laps;
+  final List<ExerciseLap> laps;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,7 @@ class _LapRow extends StatelessWidget {
 
   final List<WorkoutMetric> metrics;
   final MeasurementSystem system;
-  final CompletedLap lap;
+  final ExerciseLap lap;
 
   @override
   Widget build(BuildContext context) {

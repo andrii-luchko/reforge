@@ -6,14 +6,6 @@ import 'package:drift/drift.dart';
 // Generates the required boilerplate
 part 'database.g.dart';
 
-/// Table representing the active overarching workout session
-class ActiveSessions extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get programDayId => integer()(); // Links to your ProgramDayEntity.id
-  TextColumn get status => text()(); // e.g., 'running', 'paused'
-  DateTimeColumn get startTime => dateTime()();
-}
-
 /// Table representing lap/set instances for the active running exercise.
 ///
 /// Each row is one lap. Metrics are null until tracking data arrives.
@@ -21,7 +13,7 @@ class ActiveSessions extends Table {
 /// The [isDone] flag marks completed laps that have been sent to the backend.
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get sessionId => integer().references(ActiveSessions, #id)();
+  IntColumn get sessionId => integer()();
   IntColumn get programExerciseId => integer()(); // Links to ProgramExerciseEntity.id
   IntColumn get setNumber => integer()();
 
@@ -72,7 +64,7 @@ class WorkoutSessionCache extends Table {
   IntColumn get lastExerciseIndex => integer().withDefault(const Constant(0))();
 }
 
-@DriftDatabase(tables: [ActiveSessions, ActiveRunningSets, WorkoutSessionCache])
+@DriftDatabase(tables: [ActiveRunningSets, WorkoutSessionCache])
 class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 

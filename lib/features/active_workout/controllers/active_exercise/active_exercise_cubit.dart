@@ -278,7 +278,7 @@ submitted: ${state.isSubmitted}
 
   @override
   Future<void> close() {
-    _dbSub?.cancel();
+    unawaited(_dbSub?.cancel());
     return super.close();
   }
 }

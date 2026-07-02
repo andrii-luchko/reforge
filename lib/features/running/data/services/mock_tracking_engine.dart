@@ -1,41 +1,28 @@
 import 'dart:async';
+
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
-import 'package:reforge/features/running/domain/enums/running_mode.dart';
-import 'package:reforge/features/running/domain/services/running_tracking_service.dart';
-import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
 @lazySingleton
-class MockPedometerTrackingService implements RunningTrackingService {
+class MockPedometerTrackingEngine implements TrackingEngine {
   static const double _strideMeters = 0.78;
   static const _tickInterval = Duration(seconds: 1);
 
   final _controller = StreamController<RunningMetrics>.broadcast();
-  Timer? _tickTimer;
 
+  Timer? _tickTimer;
   int _lapSteps = 0;
   int _durationSeconds = 0;
   bool _isPaused = false;
-  RunningMode? _mode;
 
   @override
   Stream<RunningMetrics> get metricsStream => _controller.stream;
 
   @override
-  RunningMode? get currentMode => _mode;
-
-  @override
-  Future<void> startTracking({
-    required RunningMode mode,
-    required List<LapLimit> limits,
-    RunningMetrics? initialOffset,
-    int? workoutSessionId,
-    int? programExerciseId,
-  }) async {
-    if (_mode != null) return;
-    _mode = mode;
+  Future<void> start({RunningMetrics? initialOffset}) async {
+    if (_tickTimer != null) return;
     _isPaused = false;
 
     if (initialOffset != null) {
@@ -46,47 +33,43 @@ class MockPedometerTrackingService implements RunningTrackingService {
       _lapSteps = 0;
     }
 
-    logger.d('MockPedometerTrackingService: starting mock tracking');
+    logger.d('MockPedometerTrackingEngine: starting mock tracking');
 
     _tickTimer = Timer.periodic(_tickInterval, (_) => _onTick());
   }
 
   @override
-  void pauseTracking() {
+  void pause() {
     _isPaused = true;
-    logger.d('MockPedometerTrackingService: paused');
+    logger.d('MockPedometerTrackingEngine: paused');
   }
 
   @override
-  void resumeTracking() {
+  void resume() {
     _isPaused = false;
-    logger.d('MockPedometerTrackingService: resumed');
+    logger.d('MockPedometerTrackingEngine: resumed');
   }
 
   @override
-  void forceNextLap() {}
-
-  @override
-  void stopTracking() {
+  void stop() {
     _tickTimer?.cancel();
     _tickTimer = null;
-    _mode = null;
     _isPaused = false;
-    logger.d('MockPedometerTrackingService: stopped');
+    logger.d('MockPedometerTrackingEngine: stopped');
   }
 
   @override
-  void resetMetrics() {
+  void reset() {
     _lapSteps = 0;
     _durationSeconds = 0;
-    logger.d('MockPedometerTrackingService: metrics reset');
+    logger.d('MockPedometerTrackingEngine: metrics reset');
   }
 
   void _onTick() {
     if (_isPaused) return;
 
     _durationSeconds++;
-    _lapSteps += 2;
+    _lapSteps += 2; // Simulate 2 steps per second
 
     final distanceMeters = _lapSteps * _strideMeters;
     final paceKmH = _durationSeconds > 0 ? (distanceMeters / _durationSeconds) * 3.6 : 0.0;
@@ -102,7 +85,7 @@ class MockPedometerTrackingService implements RunningTrackingService {
   }
 
   void dispose() {
-    stopTracking();
+    stop();
     unawaited(_controller.close());
   }
 }

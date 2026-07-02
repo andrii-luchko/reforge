@@ -11,7 +11,7 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     RunningMode? mode,
 
     /// The lap currently being tracked. Null when not in active phase.
-    ActiveLap? currentLap,
+    ExerciseLap? currentLap,
 
     /// True when the active lap is paused (tracking stream suspended).
     @Default(false) bool isPaused,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -18,7 +20,7 @@ class RunningPermissionDeniedPage extends StatelessWidget {
     return DefaultBackground(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -43,7 +45,12 @@ class RunningPermissionDeniedPage extends StatelessWidget {
               const Spacer(),
               PrimaryButton(
                 text: 'Open Settings',
-                onPressed: () => openAppSettings(),
+                onPressed: () {
+                  try {
+                    unawaited(openAppSettings());
+                    // ignore: avoid_catches_without_on_clauses
+                  } catch (_) {}
+                },
               ),
               const SizedBox(height: 16),
               SecondaryButton(

@@ -3,24 +3,26 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/features/running/data/services/pedometer_tracking_service.dart';
+import 'package:reforge/features/running/data/services/pedometer_tracking_engine.dart';
+import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
-import 'package:reforge/features/running/domain/services/running_tracking_service.dart';
+import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
-@LazySingleton(as: RunningTrackingService)
-class RunningTrackingManager implements RunningTrackingService {
-  RunningTrackingManager(this._pedometerService, this._repository);
+@lazySingleton
+class RunningSessionManager {
+  RunningSessionManager(this._pedometerEngine, this._repository);
 
-  final PedometerTrackingService _pedometerService;
+  final PedometerTrackingEngine _pedometerEngine;
   final LocalWorkoutSessionRepository _repository;
 
   RunningMode? _currentMode;
   List<LapLimit>? _limits;
   int _currentLapIndex = 0;
+  bool _isCompletingLap = false;
 
   StreamSubscription<RunningMetrics>? _metricsSub;
   final _controller = StreamController<RunningMetrics>.broadcast();
@@ -30,97 +32,175 @@ class RunningTrackingManager implements RunningTrackingService {
   int? _currentDbSetId;
   Timer? _snapshotTimer;
 
-  // ── RunningTrackingService ─────────────────────────────────────────────────
+  // ── Public API for Cubit ───────────────────────────────────────────────────
 
-  @override
   Stream<RunningMetrics> get metricsStream => _controller.stream;
 
-  @override
   RunningMode? get currentMode => _currentMode;
 
-  @override
-  Future<void> startTracking({
+  /// Checks if there is an interrupted session we should restore.
+  Future<({RunningMode mode, ExerciseLap initialLap})?> getRestoredSession(int sessionId) async {
+    final lap = await _repository.getInProgressLap(sessionId);
+    if (lap == null || lap.trackingMode == null) return null;
+    final mode = RunningMode.values.firstWhere(
+      (m) => m.dbValue == lap.trackingMode,
+      orElse: () => RunningMode.pedometer,
+    );
+
+    final initialLap = ExerciseLap(
+      driftSetId: lap.id,
+      lapNumber: lap.setNumber,
+      distanceMeters: lap.distanceMeters ?? 0.0,
+      durationSeconds: lap.durationSeconds ?? 0,
+      paceKmH: lap.paceKmH ?? 0.0,
+    );
+
+    return (mode: mode, initialLap: initialLap);
+  }
+
+  Future<void> startSession({
     required RunningMode mode,
     required List<LapLimit> limits,
-    RunningMetrics? initialOffset,
-    int? workoutSessionId,
-    int? programExerciseId,
+    required int sessionId,
+    required int programExerciseId,
+    bool startPaused = false,
   }) async {
     if (_currentMode != null) return;
 
     _currentMode = mode;
     _limits = limits;
-    _currentLapIndex = 0;
-    _workoutSessionId = workoutSessionId;
+    _workoutSessionId = sessionId;
     _programExerciseId = programExerciseId;
 
-    if (_workoutSessionId != null && _programExerciseId != null) {
+    // Check for an interrupted session lap in the DB
+    final inProgressLap = await _repository.getInProgressLap(sessionId);
+
+    RunningMetrics? initialOffset;
+
+    if (inProgressLap != null) {
+      // Resume existing lap
+      _currentDbSetId = inProgressLap.id;
+      _currentLapIndex = inProgressLap.setNumber - 1;
+
+      if (inProgressLap.distanceMeters != null || inProgressLap.durationSeconds != null) {
+        initialOffset = RunningMetrics(
+          distanceMeters: inProgressLap.distanceMeters ?? 0.0,
+          durationSeconds: inProgressLap.durationSeconds ?? 0,
+          paceKmH: inProgressLap.paceKmH ?? 0.0,
+          stepCount: 0,
+        );
+      }
+      logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
+    } else {
+      // Start a fresh lap 1
+      _currentLapIndex = 0;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
         programExerciseId: _programExerciseId!,
         setNumber: _currentLapIndex + 1,
         trackingMode: mode.dbValue,
       );
+      logger.d('RunningSessionManager: Created new lap 1 in DB');
     }
 
-    final service = _getServiceForMode(mode);
-    
-    await service?.startTracking(
-      mode: mode,
-      limits: limits, // Passed down but mostly ignored by leaf trackers
-      initialOffset: initialOffset,
-    );
+    final engine = _getEngineForMode(mode);
 
-    _metricsSub = service?.metricsStream.listen(_onMetricsReceived);
+    await engine?.start(initialOffset: initialOffset);
+
+    _metricsSub = engine?.metricsStream.listen(_onMetricsReceived);
     _startSnapshotTimer();
-    logger.d('RunningTrackingManager: Started tracking with mode $mode and ${limits.length} limits.');
+
+    if (startPaused) {
+      engine?.pause();
+    }
+
+    logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
   }
 
-  @override
-  void pauseTracking() {
-    _getServiceForMode(_currentMode)?.pauseTracking();
+  void pauseSession() {
+    _getEngineForMode(_currentMode)?.pause();
   }
 
-  @override
-  void resumeTracking() {
-    _getServiceForMode(_currentMode)?.resumeTracking();
+  Future<void> resumeSession() async {
+    // If resuming from a suspended state (e.g. from summary), we need to create a new DB row
+    if (_currentDbSetId == null && _workoutSessionId != null && _programExerciseId != null) {
+      _currentDbSetId = await _repository.createNewActiveSet(
+        sessionId: _workoutSessionId!,
+        programExerciseId: _programExerciseId!,
+        setNumber: _currentLapIndex + 1,
+        trackingMode: _currentMode!.dbValue,
+      );
+      logger.d('RunningSessionManager: Created new lap $_currentLapIndex on resume');
+    }
+
+    _getEngineForMode(_currentMode)?.resume();
   }
 
-  @override
+  Future<void> suspendSessionForSummary() async {
+    if (_isCompletingLap || _currentMode == null) return;
+    _isCompletingLap = true;
+
+    try {
+      logger.d('RunningSessionManager: Suspending session for summary');
+
+      // Pause engine immediately
+      _getEngineForMode(_currentMode)?.pause();
+
+      final oldDbSetId = _currentDbSetId;
+      _currentDbSetId = null;
+
+      if (oldDbSetId != null) {
+        await _writeDriftSnapshot(oldDbSetId);
+        await _repository.markSetAsFinishedLocally(oldDbSetId);
+      }
+
+      // Check if session was killed during DB writes
+      if (_currentMode == null || _workoutSessionId == null) {
+        return;
+      }
+
+      _currentLapIndex++;
+      _getEngineForMode(_currentMode)?.reset();
+      _latestMetrics = null;
+
+      // DO NOT create a new active set yet. We leave _currentDbSetId = null.
+      // It will be created just-in-time if the user calls resumeSession().
+    } finally {
+      _isCompletingLap = false;
+    }
+  }
+
   void forceNextLap() {
-    logger.d('RunningTrackingManager: forceNextLap called');
+    logger.d('RunningSessionManager: forceNextLap called');
     _handleLapCompletion();
   }
 
-  @override
-  void stopTracking() {
-    _metricsSub?.cancel();
+  void endSession() {
+    unawaited(_metricsSub?.cancel());
     _metricsSub = null;
     _snapshotTimer?.cancel();
     _snapshotTimer = null;
 
-    _getServiceForMode(_currentMode)?.stopTracking();
+    _getEngineForMode(_currentMode)?.stop();
 
     _currentMode = null;
     _limits = null;
+    _workoutSessionId = null;
+    _programExerciseId = null;
     _currentLapIndex = 0;
     _currentDbSetId = null;
-  }
-
-  @override
-  void resetMetrics() {
-    _getServiceForMode(_currentMode)?.resetMetrics();
+    logger.d('RunningSessionManager: Session ended');
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
 
   /// Evaluates if the current metric has reached the target limit for the active lap.
   void _onMetricsReceived(RunningMetrics rawMetrics) {
-    // We add the current lap index context to the raw metrics so the UI knows which lap we are on.
+    // Add context to raw metrics
     final contextualMetrics = rawMetrics.copyWith(
       currentSegmentIndex: _currentLapIndex,
-      // currentSegment is now null because the tracker is decoupled from ExerciseSegmentEntity
-      currentSegment: null, 
+      // ignore: avoid_redundant_argument_values
+      currentSegment: null,
     );
 
     _controller.add(contextualMetrics);
@@ -129,9 +209,7 @@ class RunningTrackingManager implements RunningTrackingService {
     _latestMetrics = contextualMetrics;
 
     // Evaluate target limit if it exists
-    final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)
-        ? _limits![_currentLapIndex]
-        : null;
+    final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
 
     if (currentLimit != null) {
       var limitReached = false;
@@ -175,45 +253,58 @@ class RunningTrackingManager implements RunningTrackingService {
   }
 
   Future<void> _handleLapCompletion() async {
-    logger.d('RunningTrackingManager: Lap $_currentLapIndex completed!');
+    if (_isCompletingLap || _currentMode == null) return;
+    _isCompletingLap = true;
 
-    // 1. Play sound
-    unawaited(SystemSound.play(SystemSoundType.alert));
+    try {
+      logger.d('RunningSessionManager: Lap $_currentLapIndex completed!');
 
-    // 2. Clear current ID immediately to prevent race conditions with incoming ticks
-    final oldDbSetId = _currentDbSetId;
-    _currentDbSetId = null;
+      // 1. Play sound
+      unawaited(SystemSound.play(SystemSoundType.alert));
 
-    // 3. Write final snapshot to local DB and mark as finished locally
-    if (oldDbSetId != null) {
-      await _writeDriftSnapshot(oldDbSetId);
-      await _repository.markSetAsFinishedLocally(oldDbSetId);
-    }
+      // 2. Clear current ID immediately to prevent race conditions with incoming ticks
+      final oldDbSetId = _currentDbSetId;
+      _currentDbSetId = null;
 
-    // 4. Move to next lap (infinite free run if limits are exhausted)
-    _currentLapIndex++;
-    
-    // Reset physical metrics (distance, duration) for the new lap
-    resetMetrics();
+      // 3. Write final snapshot to local DB and mark as finished locally
+      if (oldDbSetId != null) {
+        await _writeDriftSnapshot(oldDbSetId);
+        await _repository.markSetAsFinishedLocally(oldDbSetId);
+      }
 
-    // Start a new row for the new lap
-    if (_workoutSessionId != null && _programExerciseId != null) {
+      // 4. Move to next lap (infinite free run if limits are exhausted)
+
+      // CRITICAL: Check if the session was ended by the user during the async DB writes!
+      if (_currentMode == null || _workoutSessionId == null || _programExerciseId == null) {
+        logger.d('RunningSessionManager: Session ended during lap completion. Aborting new lap creation.');
+        return;
+      }
+
+      _currentLapIndex++;
+
+      // Reset engine physical metrics for the new lap
+      _getEngineForMode(_currentMode)?.reset();
+      _latestMetrics = null;
+
+      // Start a new row for the new lap
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
         programExerciseId: _programExerciseId!,
         setNumber: _currentLapIndex + 1,
         trackingMode: _currentMode!.dbValue,
       );
+    } finally {
+      _isCompletingLap = false;
     }
   }
 
-  RunningTrackingService? _getServiceForMode(RunningMode? mode) {
+  TrackingEngine? _getEngineForMode(RunningMode? mode) {
     if (mode == null) return null;
     switch (mode) {
       case RunningMode.pedometer:
       case RunningMode.gps:
         // Currently fallback to pedometer for both until GPS is ready
-        return _pedometerService;
+        return _pedometerEngine;
     }
   }
 }

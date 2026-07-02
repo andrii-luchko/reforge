@@ -1,16 +1,12 @@
-// ignore_for_file: unused_import
-
 import 'dart:async';
 
 import 'package:injectable/injectable.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
-import 'package:reforge/features/running/domain/enums/running_mode.dart';
-import 'package:reforge/features/running/domain/services/running_tracking_service.dart';
-import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
-/// Pedometer-based [RunningTrackingService] for treadmill workouts.
+/// Pedometer-based [TrackingEngine] for treadmill workouts.
 ///
 /// Uses the device's built-in step counter (pedometer package) to derive
 /// distance and pace. The step length is fixed at [_strideMeters] until
@@ -20,10 +16,10 @@ import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 ///   steps → distance = steps × [_strideMeters]
 ///   pace (km/h) = (distance / duration) × 3.6
 ///
-/// Registered as the default [RunningTrackingService] in the DI container.
+/// Registered as the default [TrackingEngine] in the DI container.
 /// The GPS implementation will be registered as an alternative in Phase 5.
 @lazySingleton
-class PedometerTrackingService implements RunningTrackingService {
+class PedometerTrackingEngine implements TrackingEngine {
   /// Average stride length in metres. Industry standard is ~0.78 m.
   // TODO(running-module): derive from user height / profile.
   static const double _strideMeters = 0.78;
@@ -44,29 +40,15 @@ class PedometerTrackingService implements RunningTrackingService {
   int _durationSeconds = 0; // elapsed seconds in this lap
   bool _isPaused = false;
 
-  RunningMode? _mode;
-
-  // ── RunningTrackingService ─────────────────────────────────────────────────
-
   @override
   Stream<RunningMetrics> get metricsStream => _controller.stream;
 
   @override
-  RunningMode? get currentMode => _mode;
+  Future<void> start({RunningMetrics? initialOffset}) async {
+    if (_tickTimer != null) return; // Already tracking — ignore.
 
-  @override
-  Future<void> startTracking({
-    required RunningMode mode,
-    required List<LapLimit> limits,
-    RunningMetrics? initialOffset,
-    int? workoutSessionId,
-    int? programExerciseId,
-  }) async {
-    if (_mode != null) return; // Already tracking — ignore.
-
-    _mode = mode;
     _isPaused = false;
-    
+
     if (initialOffset != null) {
       _durationSeconds = initialOffset.durationSeconds;
       _lapSteps = initialOffset.stepCount;
@@ -76,13 +58,13 @@ class PedometerTrackingService implements RunningTrackingService {
     }
     _baselineStepCount = 0;
 
-    logger.d('PedometerTrackingService: starting (mode: ${mode.dbValue})');
+    logger.d('PedometerTrackingEngine: starting');
 
     // Subscribe to the device step counter.
     _stepSub = Pedometer.stepCountStream.listen(
       _onStep,
       onError: (Object e) {
-        logger.e('PedometerTrackingService: step stream error: $e');
+        logger.e('PedometerTrackingEngine: step stream error: $e');
         _controller.addError(e);
       },
       cancelOnError: false,
@@ -93,39 +75,33 @@ class PedometerTrackingService implements RunningTrackingService {
   }
 
   @override
-  void pauseTracking() {
+  void pause() {
     _isPaused = true;
-    logger.d('PedometerTrackingService: paused');
+    logger.d('PedometerTrackingEngine: paused');
   }
 
   @override
-  void resumeTracking() {
+  void resume() {
     _isPaused = false;
-    logger.d('PedometerTrackingService: resumed');
+    logger.d('PedometerTrackingEngine: resumed');
   }
 
   @override
-  void forceNextLap() {
-    // Leaf trackers don't manage laps; this is handled by RunningTrackingManager.
-  }
-
-  @override
-  void stopTracking() {
+  void stop() {
     unawaited(_stepSub?.cancel());
     _stepSub = null;
     _tickTimer?.cancel();
     _tickTimer = null;
-    _mode = null;
     _isPaused = false;
-    logger.d('PedometerTrackingService: stopped');
+    logger.d('PedometerTrackingEngine: stopped');
   }
 
   @override
-  void resetMetrics() {
+  void reset() {
     _lapSteps = 0;
     _durationSeconds = 0;
     _baselineStepCount = 0;
-    logger.d('PedometerTrackingService: metrics reset');
+    logger.d('PedometerTrackingEngine: metrics reset');
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
@@ -161,7 +137,7 @@ class PedometerTrackingService implements RunningTrackingService {
 
   /// Dispose when the singleton is torn down (e.g. during testing).
   void dispose() {
-    stopTracking();
+    stop();
     unawaited(_controller.close());
   }
 }

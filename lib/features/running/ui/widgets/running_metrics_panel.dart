@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/running/domain/entities/active_lap.dart';
-import 'package:reforge/features/running/domain/entities/completed_lap.dart';
+import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/workout_run_exercise_row.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
@@ -14,31 +13,19 @@ class RunningMetricsPanel extends StatelessWidget {
     required this.durationSeconds,
     required this.paceKmH,
     required this.system,
+    this.stepCount,
     this.isLive = false,
 
     super.key,
   });
 
-  /// Convenience constructor from an [ActiveLap].
-  factory RunningMetricsPanel.fromActiveLap(ActiveLap lap, MeasurementSystem system, {bool isLive = true}) {
+  /// Convenience constructor from an [ExerciseLap].
+  factory RunningMetricsPanel.fromExerciseLap(ExerciseLap lap, MeasurementSystem system, {bool isLive = true}) {
     return RunningMetricsPanel(
       distanceMeters: lap.distanceMeters,
       durationSeconds: lap.durationSeconds,
       paceKmH: lap.paceKmH,
-      system: system,
-      isLive: isLive,
-    );
-  }
-
-  /// Convenience constructor from a [CompletedLap].
-  factory RunningMetricsPanel.fromCompletedLap(
-    CompletedLap lap,
-    MeasurementSystem system,
-  ) {
-    return RunningMetricsPanel(
-      distanceMeters: lap.distanceMeters,
-      durationSeconds: lap.durationSeconds,
-      paceKmH: lap.paceKmH,
+      stepCount: isLive ? lap.stepCount : null,
       system: system,
     );
   }
@@ -47,6 +34,7 @@ class RunningMetricsPanel extends StatelessWidget {
   final int durationSeconds;
   final double paceKmH;
   final MeasurementSystem system;
+  final int? stepCount;
 
   /// When true, a subtle pulse indicator is shown to signal live updates.
   final bool isLive;

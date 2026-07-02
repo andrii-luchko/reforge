@@ -47,10 +47,10 @@ class RunningActivePage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 20),
 
                             child: lap != null
-                                ? RunningMetricsPanel.fromActiveLap(
+                                ? RunningMetricsPanel.fromExerciseLap(
                                     lap,
-                                    isLive: !state.isPaused,
                                     measureSystem,
+                                    isLive: !state.isPaused,
                                   )
                                 : RunningMetricsPanel(
                                     distanceMeters: 0,
@@ -85,10 +85,10 @@ class RunningActivePage extends StatelessWidget {
                             const SizedBox(height: 32),
 
                             if (lap != null)
-                              RunningMetricsPanel.fromActiveLap(
+                              RunningMetricsPanel.fromExerciseLap(
                                 lap,
-                                isLive: !state.isPaused,
                                 measureSystem,
+                                isLive: !state.isPaused,
                               )
                             else
                               RunningMetricsPanel(

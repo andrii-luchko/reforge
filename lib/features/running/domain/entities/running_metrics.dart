@@ -1,7 +1,7 @@
-import 'package:reforge/features/running/domain/services/running_tracking_service.dart';
+import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 
-/// A snapshot of real-time running metrics emitted by [RunningTrackingService].
+/// A snapshot of real-time running metrics emitted by [TrackingEngine].
 ///
 /// Immutable — each event from the tracking stream produces a new instance.
 class RunningMetrics {

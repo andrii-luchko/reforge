@@ -1,20 +1,21 @@
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
-/// Snapshot of a running lap that is currently being tracked.
-class ActiveLap {
-  const ActiveLap({
-    required this.driftSetId,
+/// A universal model for both active and completed running laps.
+class ExerciseLap {
+  const ExerciseLap({
     required this.lapNumber,
     required this.distanceMeters,
     required this.durationSeconds,
     required this.paceKmH,
-    required this.stepCount,
-    required this.activity,
+    this.driftSetId,
+    this.stepCount = 0,
+    this.activity = SegmentActivity.run,
   });
 
   // ignore: comment_references
-  /// Row id in [ActiveRunningSets] — used for Drift snapshots.
-  final int driftSetId;
+  /// Row id in [ActiveRunningSets] — used for Drift snapshots while active.
+  /// Null if this lap was loaded from the backend (historical).
+  final int? driftSetId;
 
   /// 1-based lap index.
   final int lapNumber;
@@ -25,7 +26,7 @@ class ActiveLap {
   final int stepCount;
   final SegmentActivity activity;
 
-  ActiveLap copyWith({
+  ExerciseLap copyWith({
     int? driftSetId,
     int? lapNumber,
     double? distanceMeters,
@@ -34,7 +35,7 @@ class ActiveLap {
     int? stepCount,
     SegmentActivity? activity,
   }) {
-    return ActiveLap(
+    return ExerciseLap(
       driftSetId: driftSetId ?? this.driftSetId,
       lapNumber: lapNumber ?? this.lapNumber,
       distanceMeters: distanceMeters ?? this.distanceMeters,
