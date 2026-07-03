@@ -1,5 +1,7 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:injectable/injectable.dart';
 import 'package:reforge/core/database/database.dart';
+import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 
 @LazySingleton(as: LocalWorkoutSessionRepository)
@@ -48,6 +50,39 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   @override
   Future<void> markSetAsFinishedLocally(int setId) {
     return _db.markSetAsFinishedLocally(setId);
+  }
+
+  @override
+  Future<void> addRoutePoint({
+    required int sessionId,
+    required int? setId,
+    required double latitude,
+    required double longitude,
+  }) async {
+    await _db.into(_db.sessionRoutePoints).insert(
+          SessionRoutePointsCompanion.insert(
+            sessionId: sessionId,
+            setId: drift.Value(setId),
+            latitude: latitude,
+            longitude: longitude,
+            timestamp: DateTime.now().toUtc(),
+          ),
+        );
+  }
+
+  @override
+  Future<List<RouteCoordinate>> getRoutePoints(int sessionId) async {
+    final query = _db.select(_db.sessionRoutePoints)
+      ..where((tbl) => tbl.sessionId.equals(sessionId))
+      ..orderBy([(t) => drift.OrderingTerm(expression: t.timestamp)]);
+
+    final points = await query.get();
+    return points
+        .map((p) => RouteCoordinate(
+              latitude: p.latitude,
+              longitude: p.longitude,
+            ))
+        .toList();
   }
 
   @override

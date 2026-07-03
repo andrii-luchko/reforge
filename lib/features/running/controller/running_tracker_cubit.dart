@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -47,6 +48,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           ? programExercise.segments[index].activity
           : SegmentActivity.run;
 
+      final historicalPoints = await _sessionManager.getRoutePoints(workoutSessionId);
+
       emit(
         state.copyWith(
           phase: RunningPhase.active,
@@ -54,6 +57,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           isPaused: true,
           error: null,
           currentLap: data.initialLap.copyWith(activity: activity),
+          routeMap: historicalPoints,
         ),
       );
 
@@ -180,6 +184,15 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         ? programExercise.segments[index].activity
         : SegmentActivity.run;
 
+    final currentRoute = List<RouteCoordinate>.from(state.routeMap);
+    if (metrics.currentLocation != null) {
+      if (currentRoute.isEmpty || 
+          currentRoute.last.latitude != metrics.currentLocation!.latitude || 
+          currentRoute.last.longitude != metrics.currentLocation!.longitude) {
+        currentRoute.add(metrics.currentLocation!);
+      }
+    }
+
     emit(
       state.copyWith(
         currentLap: ExerciseLap(
@@ -191,6 +204,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           stepCount: metrics.stepCount,
           activity: activity,
         ),
+        routeMap: currentRoute,
       ),
     );
   }

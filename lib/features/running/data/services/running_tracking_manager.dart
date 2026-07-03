@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/features/running/data/services/pedometer_tracking_engine.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
@@ -14,9 +14,15 @@ import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dar
 
 @lazySingleton
 class RunningSessionManager {
-  RunningSessionManager(this._pedometerEngine, this._repository);
+  RunningSessionManager(
+    @Named('pedometer') this._pedometerEngine,
+    @Named('gps') this._gpsEngine,
+    this._repository,
+  );
 
-  final PedometerTrackingEngine _pedometerEngine;
+  // Use the interface type, not the concrete implementation classes
+  final TrackingEngine _pedometerEngine;
+  final TrackingEngine _gpsEngine;
   final LocalWorkoutSessionRepository _repository;
 
   RunningMode? _currentMode;
@@ -56,6 +62,11 @@ class RunningSessionManager {
     );
 
     return (mode: mode, initialLap: initialLap);
+  }
+
+  /// Fetches historical route points for the session.
+  Future<List<RouteCoordinate>> getRoutePoints(int sessionId) {
+    return _repository.getRoutePoints(sessionId);
   }
 
   Future<void> startSession({
@@ -203,6 +214,18 @@ class RunningSessionManager {
       currentSegment: null,
     );
 
+    // Save route point in background if GPS location provided
+    if (rawMetrics.currentLocation != null && _workoutSessionId != null) {
+      unawaited(
+        _repository.addRoutePoint(
+          sessionId: _workoutSessionId!,
+          setId: _currentDbSetId,
+          latitude: rawMetrics.currentLocation!.latitude,
+          longitude: rawMetrics.currentLocation!.longitude,
+        ),
+      );
+    }
+
     _controller.add(contextualMetrics);
 
     // Write to snapshot timer uses _latestMetrics
@@ -302,9 +325,9 @@ class RunningSessionManager {
     if (mode == null) return null;
     switch (mode) {
       case RunningMode.pedometer:
-      case RunningMode.gps:
-        // Currently fallback to pedometer for both until GPS is ready
         return _pedometerEngine;
+      case RunningMode.gps:
+        return _gpsEngine;
     }
   }
 }

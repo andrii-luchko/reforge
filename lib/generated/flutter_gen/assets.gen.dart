@@ -237,6 +237,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/splash_logo.png
   AssetGenImage get splashLogo => const AssetGenImage('assets/images/png/splash_logo.png');
 
+  /// File path: assets/images/png/user_pointer.png
+  AssetGenImage get userPointer => const AssetGenImage('assets/images/png/user_pointer.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
     avatar,
@@ -257,6 +260,7 @@ class $AssetsImagesPngGen {
     shaderNoise,
     smoke,
     splashLogo,
+    userPointer,
   ];
 }
 

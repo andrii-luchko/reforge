@@ -64,26 +64,34 @@ class WorkoutSessionCache extends Table {
   IntColumn get lastExerciseIndex => integer().withDefault(const Constant(0))();
 }
 
-@DriftDatabase(tables: [ActiveRunningSets, WorkoutSessionCache])
+/// GPS route points collected during a running session.
+class SessionRoutePoints extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Links to the overall workout session.
+  IntColumn get sessionId => integer()();
+
+  /// Links to the specific active running set/lap.
+  /// Nullable in case we log points before a set is properly assigned,
+  /// though usually it will map to an ActiveRunningSets.id.
+  IntColumn get setId => integer().nullable()();
+
+  RealColumn get latitude => real()();
+  RealColumn get longitude => real()();
+  DateTimeColumn get timestamp => dateTime()();
+}
+
+@DriftDatabase(tables: [ActiveRunningSets, WorkoutSessionCache, SessionRoutePoints])
 class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
-    onUpgrade: (m, from, to) async {
-      if (from < 2) {
-        await m.createTable(workoutSessionCache);
-      }
-      if (from < 3) {
-        await m.addColumn(activeRunningSets, activeRunningSets.trackingMode);
-        await m.addColumn(activeRunningSets, activeRunningSets.segmentType);
-        await m.addColumn(activeRunningSets, activeRunningSets.lastSnapshotAt);
-      }
-    },
+    onUpgrade: (m, from, to) async {},
   );
 
   // ── Existing methods ──────────────────────────────────────────────────────

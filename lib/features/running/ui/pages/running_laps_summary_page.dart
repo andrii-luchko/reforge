@@ -11,6 +11,8 @@ import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart'
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/running_laps_list.dart';
+import 'package:reforge/features/running/ui/widgets/running_map_view.dart';
+import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -82,7 +84,19 @@ class RunningLapsSummaryPage extends StatelessWidget {
                             ),
 
                             WorkoutSection(exercise: exerciseDetails),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 16),
+
+                            if (state.mode == RunningMode.gps && state.routeMap.isNotEmpty) ...[
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: SizedBox(
+                                  height: 250,
+                                  width: double.infinity,
+                                  child: RunningMapView(routeMap: state.routeMap),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
 
                             RunningLapsList(
                               laps: completedLaps,

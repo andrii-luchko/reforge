@@ -18,7 +18,8 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 ///
 /// Registered as the default [TrackingEngine] in the DI container.
 /// The GPS implementation will be registered as an alternative in Phase 5.
-@lazySingleton
+@Injectable(as: TrackingEngine)
+@Named('pedometer')
 class PedometerTrackingEngine implements TrackingEngine {
   /// Average stride length in metres. Industry standard is ~0.78 m.
   // TODO(running-module): derive from user height / profile.

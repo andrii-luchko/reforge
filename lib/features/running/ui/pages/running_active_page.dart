@@ -1,12 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+import 'package:reforge/features/running/ui/widgets/running_map_view.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -61,7 +59,7 @@ class RunningActivePage extends StatelessWidget {
                                   ),
                           ),
 
-                          const Expanded(child: AppMap()),
+                          Expanded(child: RunningMapView(routeMap: state.routeMap)),
                         ],
                       ),
                     ),
@@ -173,30 +171,3 @@ class _ActionButtons extends StatelessWidget {
   }
 }
 
-class AppMap extends StatefulWidget {
-  const AppMap({super.key});
-
-  @override
-  State<AppMap> createState() => _AppMapState();
-}
-
-class _AppMapState extends State<AppMap> {
-  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
-
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
-      mapType: MapType.hybrid,
-      initialCameraPosition: _kGooglePlex,
-      // ignore: unnecessary_lambdas
-      onMapCreated: (controller) {
-        _controller.complete(controller);
-      },
-    );
-  }
-}

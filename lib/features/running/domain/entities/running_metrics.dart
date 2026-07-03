@@ -1,3 +1,4 @@
+import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 
@@ -10,6 +11,7 @@ class RunningMetrics {
     required this.durationSeconds,
     required this.paceKmH,
     required this.stepCount,
+    this.currentLocation,
     this.currentSegment,
     this.currentSegmentIndex = 0,
   });
@@ -19,6 +21,7 @@ class RunningMetrics {
       durationSeconds = 0,
       paceKmH = 0,
       stepCount = 0,
+      currentLocation = null,
       currentSegment = null,
       currentSegmentIndex = 0;
 
@@ -34,6 +37,9 @@ class RunningMetrics {
   /// Raw step count from the pedometer (0 when in GPS mode).
   final int stepCount;
 
+  /// Latest GPS coordinate, if available.
+  final RouteCoordinate? currentLocation;
+
   /// The currently active segment from the playlist.
   final ExerciseSegmentEntity? currentSegment;
 
@@ -45,6 +51,7 @@ class RunningMetrics {
     int? durationSeconds,
     double? paceKmH,
     int? stepCount,
+    RouteCoordinate? currentLocation,
     ExerciseSegmentEntity? currentSegment,
     int? currentSegmentIndex,
   }) {
@@ -53,6 +60,7 @@ class RunningMetrics {
       durationSeconds: durationSeconds ?? this.durationSeconds,
       paceKmH: paceKmH ?? this.paceKmH,
       stepCount: stepCount ?? this.stepCount,
+      currentLocation: currentLocation ?? this.currentLocation,
       currentSegment: currentSegment ?? this.currentSegment,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
     );

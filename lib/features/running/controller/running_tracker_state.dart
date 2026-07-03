@@ -19,6 +19,9 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// True while a lap or exercise finish is in-flight to the backend.
     @Default(false) bool isSubmitting,
 
+    /// The historical and live route coordinates for the current session.
+    @Default([]) List<RouteCoordinate> routeMap,
+
     /// Non-null when an error has occurred. Cleared on the next action.
     String? error,
   }) = _RunningTrackerState;

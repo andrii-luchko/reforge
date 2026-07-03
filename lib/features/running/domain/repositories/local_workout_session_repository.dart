@@ -1,4 +1,5 @@
 import 'package:reforge/core/database/database.dart';
+import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 
 /// Repository for managing the local/offline state of a workout session (Drift).
 /// Used by the running tracker to take snapshots and coordinate active laps.
@@ -24,6 +25,17 @@ abstract interface class LocalWorkoutSessionRepository {
 
   /// Marks the set as finished locally, signaling the Sync Cubit to push it to the backend.
   Future<void> markSetAsFinishedLocally(int setId);
+
+  /// Saves a single GPS coordinate to the database.
+  Future<void> addRoutePoint({
+    required int sessionId,
+    required int? setId,
+    required double latitude,
+    required double longitude,
+  });
+
+  /// Fetches all historical GPS points for a given session.
+  Future<List<RouteCoordinate>> getRoutePoints(int sessionId);
 
   /// Retrieves the active/in-progress lap for the session, if any.
   Future<ActiveRunningSet?> getInProgressLap(int sessionId);
