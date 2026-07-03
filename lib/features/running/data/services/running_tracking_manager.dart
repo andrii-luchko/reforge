@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
@@ -222,6 +223,7 @@ class RunningSessionManager {
           setId: _currentDbSetId,
           latitude: rawMetrics.currentLocation!.latitude,
           longitude: rawMetrics.currentLocation!.longitude,
+          heading: rawMetrics.currentLocation!.heading,
         ),
       );
     }
@@ -260,7 +262,7 @@ class RunningSessionManager {
 
   void _startSnapshotTimer() {
     _snapshotTimer?.cancel();
-    _snapshotTimer = Timer.periodic(const Duration(seconds: 5), (_) => unawaited(_writeDriftSnapshot(_currentDbSetId)));
+    _snapshotTimer = Timer.periodic(RunningConstants.dbSnapshotInterval, (_) => unawaited(_writeDriftSnapshot(_currentDbSetId)));
   }
 
   Future<void> _writeDriftSnapshot(int? dbSetId) async {

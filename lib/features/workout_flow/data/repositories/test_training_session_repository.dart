@@ -48,7 +48,6 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
 
   @override
   Future<Result<WorkoutSessionDetailsDTO>> getWorkoutSessionDetails(int sessionId) async {
-    // Returns an empty active session — no recorded exercise sets
     return Result.success(
       WorkoutSessionDetailsDTO(
         id: sessionId,
@@ -65,7 +64,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId) async {
     return Result.success(
       WorkoutSession(
-        id: 2,
+        id: 1,
         userId: 1,
         workoutProgramDayId: workoutProgramDayId,
         duration: 0,

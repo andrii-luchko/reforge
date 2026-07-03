@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
@@ -23,11 +24,11 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 class PedometerTrackingEngine implements TrackingEngine {
   /// Average stride length in metres. Industry standard is ~0.78 m.
   // TODO(running-module): derive from user height / profile.
-  static const double _strideMeters = 0.78;
+  static const double _strideMeters = RunningConstants.defaultStrideMeters;
 
   /// Ticker interval — we derive duration from a wall-clock stopwatch rather
   /// than relying on the pedometer timestamp, which varies per device.
-  static const _tickInterval = Duration(seconds: 1);
+  static const _tickInterval = RunningConstants.engineTickInterval;
 
   // ── State ──────────────────────────────────────────────────────────────────
 

@@ -32,6 +32,7 @@ abstract interface class LocalWorkoutSessionRepository {
     required int? setId,
     required double latitude,
     required double longitude,
+    required double heading,
   });
 
   /// Fetches all historical GPS points for a given session.

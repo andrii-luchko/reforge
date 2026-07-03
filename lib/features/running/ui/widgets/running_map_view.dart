@@ -1,10 +1,12 @@
-import 'dart:math' as math;
+// ignore_for_file: discarded_futures
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 
 const String _darkMapStyle = '''
 [
@@ -82,14 +84,39 @@ class RunningMapView extends StatefulWidget {
   State<RunningMapView> createState() => _RunningMapViewState();
 }
 
-class _RunningMapViewState extends State<RunningMapView> {
+class _RunningMapViewState extends State<RunningMapView> with SingleTickerProviderStateMixin {
   GoogleMapController? _controller;
   BitmapDescriptor? _userLocationIcon;
+
+  late AnimationController _markerAnimController;
+  RouteCoordinate? _oldPosition;
+  RouteCoordinate? _targetPosition;
+
+  bool _followUser = true;
+  bool _isProgrammaticMovement = false;
 
   @override
   void initState() {
     super.initState();
     _initCustomMarker();
+
+    _markerAnimController = AnimationController(
+      vsync: this,
+      duration: RunningConstants.engineTickInterval,
+    )..addListener(() {
+          setState(() {});
+        });
+
+    if (widget.routeMap.isNotEmpty) {
+      _oldPosition = widget.routeMap.last;
+      _targetPosition = widget.routeMap.last;
+    }
+  }
+
+  @override
+  void dispose() {
+    _markerAnimController.dispose();
+    super.dispose();
   }
 
   Future<void> _initCustomMarker() async {
@@ -108,7 +135,22 @@ class _RunningMapViewState extends State<RunningMapView> {
   @override
   void didUpdateWidget(RunningMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.routeMap.length != oldWidget.routeMap.length && widget.routeMap.isNotEmpty) {
+
+    final hasChanged = widget.routeMap.length != oldWidget.routeMap.length;
+
+    if (widget.routeMap.isNotEmpty) {
+      final latest = widget.routeMap.last;
+      if (_targetPosition == null ||
+          _targetPosition!.latitude != latest.latitude ||
+          _targetPosition!.longitude != latest.longitude) {
+        _oldPosition = _targetPosition ?? latest;
+        _targetPosition = latest;
+
+        _markerAnimController.forward(from: 0);
+      }
+    }
+
+    if (_followUser && widget.routeMap.isNotEmpty && hasChanged) {
       _animateToLatest();
     }
   }
@@ -116,25 +158,30 @@ class _RunningMapViewState extends State<RunningMapView> {
   void _animateToLatest() {
     if (_controller == null || widget.routeMap.isEmpty) return;
     final latest = widget.routeMap.last;
+
+    _isProgrammaticMovement = true;
     _controller?.animateCamera(
-      CameraUpdate.newLatLng(LatLng(latest.latitude, latest.longitude)),
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(latest.latitude, latest.longitude),
+          zoom: RunningConstants.mapCameraZoomActive,
+          bearing: latest.heading,
+        ),
+      ),
     );
   }
 
-  double _calculateBearing(RouteCoordinate start, RouteCoordinate end) {
-    final lat1 = start.latitude * math.pi / 180.0;
-    final lon1 = start.longitude * math.pi / 180.0;
-    final lat2 = end.latitude * math.pi / 180.0;
-    final lon2 = end.longitude * math.pi / 180.0;
+  void _handleCameraMoveStarted() {
+    if (_isProgrammaticMovement) {
+      _isProgrammaticMovement = false;
+      return;
+    }
 
-    final dLon = lon2 - lon1;
-
-    final y = math.sin(dLon) * math.cos(lat2);
-    final x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
-
-    final radians = math.atan2(y, x);
-    // Convert radians to degrees and normalize to 0-360
-    return (radians * 180.0 / math.pi + 360.0) % 360.0;
+    if (_followUser) {
+      setState(() {
+        _followUser = false;
+      });
+    }
   }
 
   @override
@@ -154,41 +201,83 @@ class _RunningMapViewState extends State<RunningMapView> {
       polylineId: const PolylineId('route'),
       points: widget.routeMap.map((p) => LatLng(p.latitude, p.longitude)).toList(),
       color: appTheme.orange100,
-      width: 10,
+      width: 12,
+      jointType: JointType.round,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
     );
 
-    final currentPosition = widget.routeMap.last;
+    double currentLat;
+    double currentLng;
+    double currentHeading;
 
-    final currentHeading = widget.routeMap.length > 1
-        ? _calculateBearing(widget.routeMap[widget.routeMap.length - 2], currentPosition)
-        : 0.0;
+    if (_oldPosition != null && _targetPosition != null) {
+      final t = _markerAnimController.value;
+      currentLat = _oldPosition!.latitude + (_targetPosition!.latitude - _oldPosition!.latitude) * t;
+      currentLng = _oldPosition!.longitude + (_targetPosition!.longitude - _oldPosition!.longitude) * t;
+
+      final oldH = _oldPosition!.heading;
+      final newH = _targetPosition!.heading;
+      var diff = (newH - oldH) % 360.0;
+      if (diff > 180.0) {
+        diff -= 360.0;
+      } else if (diff < -180.0) {
+        diff += 360.0;
+      }
+      currentHeading = (oldH + diff * t) % 360.0;
+    } else {
+      final currentPosition = widget.routeMap.last;
+      currentLat = currentPosition.latitude;
+      currentLng = currentPosition.longitude;
+      currentHeading = currentPosition.heading;
+    }
 
     final userMarker = Marker(
       markerId: const MarkerId('user_current_location'),
-      position: LatLng(currentPosition.latitude, currentPosition.longitude),
+      position: LatLng(currentLat, currentLng),
       icon: _userLocationIcon ?? BitmapDescriptor.defaultMarker,
       rotation: currentHeading,
       flat: true,
       anchor: const Offset(0.5, 0.5),
     );
 
-    return GoogleMap(
-      initialCameraPosition: CameraPosition(
-        target: LatLng(currentPosition.latitude, currentPosition.longitude),
-        zoom: 15.0,
-      ),
-      polylines: {polyline},
-      markers: {userMarker},
-      myLocationEnabled: false,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      mapToolbarEnabled: false,
-      buildingsEnabled: false,
-      // Apply the custom JSON style here
-      style: _darkMapStyle,
-      onMapCreated: (controller) {
-        _controller = controller;
-      },
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: CameraPosition(
+            target: LatLng(currentLat, currentLng),
+            zoom: RunningConstants.mapCameraZoomActive,
+          ),
+          polylines: {polyline},
+          markers: {userMarker},
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          mapToolbarEnabled: false,
+          buildingsEnabled: false,
+          compassEnabled: false,
+          style: _darkMapStyle,
+          onMapCreated: (controller) {
+            _controller = controller;
+          },
+
+          onCameraMoveStarted: _handleCameraMoveStarted,
+        ),
+
+        if (!_followUser)
+          Positioned(
+            bottom: 20,
+            right: 16,
+            child: AppIconButton(
+              iconAsset: Assets.images.icons.myLocation,
+              onPressed: () {
+                setState(() {
+                  _followUser = true;
+                });
+                _animateToLatest();
+              },
+            ),
+          ),
+      ],
     );
   }
 }

@@ -78,6 +78,7 @@ class SessionRoutePoints extends Table {
 
   RealColumn get latitude => real()();
   RealColumn get longitude => real()();
+  RealColumn get heading => real().nullable()();
   DateTimeColumn get timestamp => dateTime()();
 }
 
@@ -90,8 +91,9 @@ class WorkoutDatabase extends _$WorkoutDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (m) => m.createAll(),
-    onUpgrade: (m, from, to) async {},
+    onCreate: (m) async {
+      await m.createAll();
+    },
   );
 
   // ── Existing methods ──────────────────────────────────────────────────────

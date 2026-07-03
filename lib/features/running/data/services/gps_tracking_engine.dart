@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:injectable/injectable.dart';
+import 'package:reforge/features/running/constants/running_constants.dart';
+import 'package:reforge/features/running/data/services/kalman_location_filter.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
@@ -9,14 +12,16 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 @Named('gps')
 class GpsTrackingEngine implements TrackingEngine {
   final _controller = StreamController<RunningMetrics>.broadcast();
-  
+
   Timer? _ticker;
   StreamSubscription<Position>? _positionSub;
 
   double _totalDistance = 0;
   int _durationSec = 0;
-  Position? _lastValidPosition;
+  RouteCoordinate? _lastSmoothedPoint;
   bool _isPaused = false;
+
+  final _kalmanFilter = KalmanLocationFilter();
 
   @override
   Stream<RunningMetrics> get metricsStream => _controller.stream;
@@ -27,13 +32,14 @@ class GpsTrackingEngine implements TrackingEngine {
       _totalDistance = initialOffset.distanceMeters;
       _durationSec = initialOffset.durationSeconds;
     }
-    
+
     _isPaused = false;
-    _lastValidPosition = null;
+    _lastSmoothedPoint = null;
+    _kalmanFilter.reset();
 
     // Start 1-sec ticker for time and pace updates
     _ticker?.cancel();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+    _ticker = Timer.periodic(RunningConstants.engineTickInterval, (_) {
       if (_isPaused) return;
       _durationSec++;
       _emitMetrics();
@@ -41,37 +47,54 @@ class GpsTrackingEngine implements TrackingEngine {
 
     // Start GPS stream
     await _positionSub?.cancel();
-    _positionSub = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 2, // only update if moved > 2m
-      ),
-    ).listen((Position pos) {
-      if (_isPaused) return;
-      
-      // Filter out bad accuracy coordinates
-      if (pos.accuracy > 20) return; 
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: _getFitnessLocationSettings(),
+        ).listen((pos) {
+          if (_isPaused) return;
 
-      if (_lastValidPosition == null) {
-        _lastValidPosition = pos;
-        return;
-      }
+          // Process the raw point through Kalman Filter
+          _kalmanFilter.process(
+            lat: pos.latitude,
+            lng: pos.longitude,
+            accuracy: pos.accuracy,
+            timestampMs: pos.timestamp.millisecondsSinceEpoch,
+          );
 
-      final distanceDelta = Geolocator.distanceBetween(
-        _lastValidPosition!.latitude,
-        _lastValidPosition!.longitude,
-        pos.latitude,
-        pos.longitude,
-      );
+          if (!_kalmanFilter.hasValidState) return;
 
-      if (distanceDelta > 2.0) {
-        _totalDistance += distanceDelta;
-        _lastValidPosition = pos;
-        
-        // Emit immediately to make the map and metrics feel responsive
-        _emitMetrics();
-      }
-    });
+          final smoothedLat = _kalmanFilter.latitude;
+          final smoothedLng = _kalmanFilter.longitude;
+          final smoothedHeading = _kalmanFilter.heading;
+
+          if (_lastSmoothedPoint == null) {
+            _lastSmoothedPoint = RouteCoordinate(
+              latitude: smoothedLat,
+              longitude: smoothedLng,
+              heading: smoothedHeading,
+            );
+            return;
+          }
+
+          final distanceDelta = Geolocator.distanceBetween(
+            _lastSmoothedPoint!.latitude,
+            _lastSmoothedPoint!.longitude,
+            smoothedLat,
+            smoothedLng,
+          );
+
+          if (distanceDelta > RunningConstants.gpsDistanceFilterMeters) {
+            _totalDistance += distanceDelta;
+            _lastSmoothedPoint = RouteCoordinate(
+              latitude: smoothedLat,
+              longitude: smoothedLng,
+              heading: smoothedHeading,
+            );
+
+            // Emit immediately to make the map and metrics feel responsive
+            // _emitMetrics();
+          }
+        });
   }
 
   void _emitMetrics() {
@@ -79,18 +102,15 @@ class GpsTrackingEngine implements TrackingEngine {
     final durationHours = _durationSec / 3600.0;
     final paceKmH = (durationHours > 0) ? (distanceKm / durationHours) : 0.0;
 
-    _controller.add(RunningMetrics(
-      distanceMeters: _totalDistance,
-      durationSeconds: _durationSec,
-      paceKmH: paceKmH,
-      stepCount: 0, // GPS engine doesn't track steps
-      currentLocation: _lastValidPosition != null 
-          ? RouteCoordinate(
-              latitude: _lastValidPosition!.latitude, 
-              longitude: _lastValidPosition!.longitude,
-            )
-          : null,
-    ));
+    _controller.add(
+      RunningMetrics(
+        distanceMeters: _totalDistance,
+        durationSeconds: _durationSec,
+        paceKmH: paceKmH,
+        stepCount: 0, // GPS engine doesn't track steps
+        currentLocation: _lastSmoothedPoint,
+      ),
+    );
   }
 
   @override
@@ -113,6 +133,37 @@ class GpsTrackingEngine implements TrackingEngine {
   void reset() {
     _totalDistance = 0;
     _durationSec = 0;
-    _lastValidPosition = null;
+    _lastSmoothedPoint = null;
+    _kalmanFilter.reset();
+  }
+
+  LocationSettings _getFitnessLocationSettings() {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        // false ensures we use Google's Fused Location Provider, not raw GPS
+        intervalDuration: RunningConstants.engineTickInterval,
+        // Optional: Keeps tracking alive in background service
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationText: 'Tracking your run',
+          notificationTitle: 'Running in progress',
+          enableWakeLock: true,
+        ),
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.high,
+        // CRITICAL: This enables Apple's internal Kalman filter tuned for running
+        activityType: ActivityType.fitness,
+        // Set to false so the OS doesn't randomly kill tracking when pace drops
+        // Required for background tracking
+        showBackgroundLocationIndicator: true,
+      );
+    } else {
+      return const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 0,
+      );
+    }
   }
 }

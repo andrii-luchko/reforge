@@ -55,7 +55,7 @@ class AppIconButton extends StatelessWidget {
             Colors.transparent,
             appTheme.beige100,
           ],
-          backgroundColor: appTheme.beige50,
+          backgroundColor: appTheme.beige50.withValues(alpha: 0.2),
           borderColor: appTheme.beige100.withValues(alpha: 0.1),
           child: Center(
             child: _buildIcon(appTheme),

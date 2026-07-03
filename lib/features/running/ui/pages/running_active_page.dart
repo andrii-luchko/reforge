@@ -7,6 +7,7 @@ import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/ui/widgets/running_map_view.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -59,7 +60,23 @@ class RunningActivePage extends StatelessWidget {
                                   ),
                           ),
 
-                          Expanded(child: RunningMapView(routeMap: state.routeMap)),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                RunningMapView(routeMap: state.routeMap),
+                                //TODO: Lately show pause tag based on cubit value acros two modes
+                                const Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  top: 16,
+                                  child: AppTag(
+                                    text: 'Paused',
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -170,4 +187,3 @@ class _ActionButtons extends StatelessWidget {
     );
   }
 }
-

@@ -58,6 +58,7 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
     required int? setId,
     required double latitude,
     required double longitude,
+    required double heading,
   }) async {
     await _db.into(_db.sessionRoutePoints).insert(
           SessionRoutePointsCompanion.insert(
@@ -65,6 +66,7 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
             setId: drift.Value(setId),
             latitude: latitude,
             longitude: longitude,
+            heading: drift.Value(heading),
             timestamp: DateTime.now().toUtc(),
           ),
         );
@@ -81,6 +83,7 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
         .map((p) => RouteCoordinate(
               latitude: p.latitude,
               longitude: p.longitude,
+              heading: p.heading ?? 0.0,
             ))
         .toList();
   }

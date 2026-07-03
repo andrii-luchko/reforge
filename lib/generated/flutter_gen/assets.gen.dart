@@ -99,6 +99,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/medal_inactive.svg
   String get medalInactive => 'assets/images/icons/medal_inactive.svg';
 
+  /// File path: assets/images/icons/my_location.svg
+  String get myLocation => 'assets/images/icons/my_location.svg';
+
   /// File path: assets/images/icons/pause.svg
   String get pause => 'assets/images/icons/pause.svg';
 
@@ -164,6 +167,7 @@ class $AssetsImagesIconsGen {
     medal,
     medalActive,
     medalInactive,
+    myLocation,
     pause,
     platesActive,
     platesInactive,
