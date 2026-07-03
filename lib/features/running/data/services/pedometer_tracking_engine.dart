@@ -28,7 +28,7 @@ class PedometerTrackingEngine implements TrackingEngine {
 
   /// Ticker interval — we derive duration from a wall-clock stopwatch rather
   /// than relying on the pedometer timestamp, which varies per device.
-  static const _tickInterval = RunningConstants.engineTickInterval;
+  static const Duration _tickInterval = RunningConstants.engineTickInterval;
 
   // ── State ──────────────────────────────────────────────────────────────────
 

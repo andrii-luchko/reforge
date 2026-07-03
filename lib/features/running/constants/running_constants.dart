@@ -1,5 +1,5 @@
 class RunningConstants {
-  /// The global interval at which tracking engines (GPS, Pedometer) 
+  /// The global interval at which tracking engines (GPS, Pedometer)
   /// tick to update metrics like duration and pace.
   static const Duration engineTickInterval = Duration(seconds: 1);
 
@@ -12,22 +12,22 @@ class RunningConstants {
 
   // ── GPS Specific ──────────────────────────────────────────────────────────
 
-  /// The minimum distance in meters the user must move before a new 
+  /// The minimum distance in meters the user must move before a new
   /// GPS coordinate is considered valid (before Kalman filter).
-  static const double gpsDistanceFilterMeters = 2.0;
+  static const double gpsDistanceFilterMeters = 2;
 
   /// Default camera zoom level when actively tracking the user on the map.
-  static const double mapCameraZoomActive = 17.0;
+  static const double mapCameraZoomActive = 17;
 
   // ── Kalman Filter Tuning ──────────────────────────────────────────────────
-  
+
   /// Process noise variance (acceleration noise in m/s^2).
   /// Lower trusts constant velocity more, higher trusts raw GPS more.
-  static const double kalmanAccelNoise = 2.0;
+  static const double kalmanAccelNoise = 2;
 
   /// The minimum acceptable accuracy (in meters) for a GPS fix.
-  static const double kalmanMinAccuracy = 3.0;
+  static const double kalmanMinAccuracy = 3;
 
   /// Mahalanobis distance threshold for rejecting a GPS fix as an outlier.
-  static const double kalmanGatingThreshold = 9.0;
+  static const double kalmanGatingThreshold = 9;
 }

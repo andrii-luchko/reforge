@@ -162,7 +162,6 @@ class GpsTrackingEngine implements TrackingEngine {
     } else {
       return const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 0,
       );
     }
   }
