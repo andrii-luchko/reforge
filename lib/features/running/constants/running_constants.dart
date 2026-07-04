@@ -30,4 +30,21 @@ class RunningConstants {
 
   /// Mahalanobis distance threshold for rejecting a GPS fix as an outlier.
   static const double kalmanGatingThreshold = 9;
+
+  // ── Session Recovery ──────────────────────────────────────────────────────
+
+  /// Maximum time a GPS session can be dormant (app killed / no GPS signal)
+  /// before it is considered stale and auto-finished on the next app launch.
+  ///
+  /// If `DateTime.now() - lastKnownTimestamp > maxSessionStaleness`,
+  /// the background service will call auto-finish instead of restoring.
+  static const Duration maxSessionStaleness = Duration(hours: 4);
+
+  /// Maximum plausible human movement speed in km/h, used to detect
+  /// "teleportation" after an app kill (e.g. user got in a car or a plane).
+  ///
+  /// If the straight-line speed between the last saved coordinate and the
+  /// current GPS fix exceeds this value, the gap is ignored and the session
+  /// resumes from the current position without adding the phantom distance.
+  static const double maxHumanSpeedKmh = 35.0;
 }

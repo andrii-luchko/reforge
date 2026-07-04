@@ -1,44 +1,99 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 part 'timer_state.dart';
 part 'timer_cubit.freezed.dart';
 
+/// A wall-clock timer that survives app backgrounding.
+///
+/// ## Why Timestamp Sync?
+/// A naive `duration + 1` counter freezes when the OS suspends the UI isolate.
+/// Instead, we record [_startedAt] when the timer starts and derive the current
+/// duration as `_baseSec + DateTime.now().difference(_startedAt!)`.
+/// This means that when the app resumes after being backgrounded, the very next
+/// tick (or an explicit [onAppResumed] call) will produce the correct elapsed time.
 @injectable
 class TimerCubit extends Cubit<TimerState> {
   TimerCubit() : super(const TimerState());
 
   Timer? _timer;
 
+  /// The wall-clock moment when the timer was last (re-)started.
+  DateTime? _startedAt;
+
+  /// Duration accumulated before the last pause, in seconds.
+  int _baseSec = 0;
+
+  // ── Public API ─────────────────────────────────────────────────────────────
+
+  /// Starts counting from 0.
   void startTimer() {
     if (state.isRunning) return;
-
-    emit(state.copyWith(isRunning: true));
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      emit(state.copyWith(duration: state.duration + 1));
-    });
+    _baseSec = 0;
+    _startTicking();
   }
 
+  /// Resumes or starts the timer from [initialSeconds].
+  /// Used when restoring an interrupted workout session.
+  void startTimerFrom(int initialSeconds) {
+    _timer?.cancel();
+    _baseSec = initialSeconds;
+    _startTicking();
+  }
+
+  /// Pauses the timer. Saves current elapsed time so [resume] can continue
+  /// from the right value.
   void pauseTimer() {
     _timer?.cancel();
+    _timer = null;
+    _baseSec = state.duration; // snapshot elapsed before pausing
+    _startedAt = null;
     emit(state.copyWith(isRunning: false));
   }
 
+  /// Resets the timer to zero and stops it.
   void stopTimer() {
     _timer?.cancel();
+    _timer = null;
+    _startedAt = null;
+    _baseSec = 0;
     emit(const TimerState());
   }
 
-  /// Starts the timer from a previously accumulated [initialSeconds].
-  /// Used when restoring a workout session to continue counting from the right value.
-  void startTimerFrom(int initialSeconds) {
-    _timer?.cancel();
-    emit(TimerState(duration: initialSeconds, isRunning: true));
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      emit(state.copyWith(duration: state.duration + 1));
-    });
+  /// Resumes a paused timer without changing the accumulated duration.
+  void resumeTimer() {
+    if (state.isRunning) return;
+    _startTicking();
+  }
+
+  /// Call this from [WidgetsBindingObserver.didChangeAppLifecycleState]
+  /// when [AppLifecycleState.resumed] fires.
+  ///
+  /// Forces an immediate state update so the displayed time jumps to the
+  /// correct value instead of waiting up to 1 second for the next tick.
+  void onAppResumed() {
+    if (!state.isRunning || _startedAt == null) return;
+    _emitElapsed();
+  }
+
+  // ── Private ────────────────────────────────────────────────────────────────
+
+  void _startTicking() {
+    _startedAt = DateTime.now();
+    emit(state.copyWith(
+      duration: _baseSec,
+      isRunning: true,
+    ));
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _emitElapsed());
+  }
+
+  void _emitElapsed() {
+    if (_startedAt == null) return;
+    final elapsed = _baseSec + DateTime.now().difference(_startedAt!).inSeconds;
+    emit(state.copyWith(duration: elapsed));
   }
 
   @override

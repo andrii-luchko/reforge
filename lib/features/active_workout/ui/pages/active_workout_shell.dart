@@ -27,7 +27,8 @@ class ActiveWorkoutShell extends StatefulWidget {
   State<ActiveWorkoutShell> createState() => _ActiveWorkoutShellState();
 }
 
-class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
+class _ActiveWorkoutShellState extends State<ActiveWorkoutShell>
+    with WidgetsBindingObserver {
   /// Syncs elapsed duration to Drift every 10 seconds to survive force-kills.
   Timer? _durationSyncTimer;
 
@@ -36,6 +37,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final timerCubit = context.read<TimerCubit>();
     final flowCubit = context.read<WorkoutFlowCubit>();
 
@@ -60,8 +62,18 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _durationSyncTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Force an immediate timer update instead of waiting up to 1 second
+      // for the next tick. Without this, the displayed time can lag briefly.
+      context.read<TimerCubit>().onAppResumed();
+    }
   }
 
   Future<void> onClosePressed(BuildContext context) async {
