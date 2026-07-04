@@ -134,6 +134,14 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     goToSummary();
   }
 
+  /// Called by [LapCompletedListener] as a safety net to ensure
+  /// [RunningTrackerState.lapJustCompleted] is reset after handling.
+  void clearLapCompleted() {
+    if (state.lapJustCompleted) {
+      emit(state.copyWith(lapJustCompleted: false));
+    }
+  }
+
   void goToActive() {
     emit(state.copyWith(phase: RunningPhase.active));
   }
@@ -154,7 +162,9 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         .map(
           (s) => LapLimit(
             metric: s.targetMetric,
-            limitValue: (s.targetMetric == WorkoutMetric.time ? s.durationSec : s.distanceM).toDouble(),
+            limitValue: s.targetMetric == WorkoutMetric.time
+                ? s.durationSec.toDouble()
+                : s.distanceM.toDouble(),
           ),
         )
         .toList();
@@ -178,6 +188,16 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
   void _onMetricsReceived(RunningMetrics metrics) {
     if (state.isPaused) return;
+
+    // A lap just completed — update segment index, fire the event, then reset.
+    // The next normal emission will carry fresh metrics for the new segment.
+    if (metrics.lapJustCompleted) {
+      final newIndex = metrics.currentSegmentIndex;
+      emit(state.copyWith(currentSegmentIndex: newIndex, lapJustCompleted: true));
+      // Immediately reset flag so BlocListener fires only once.
+      emit(state.copyWith(lapJustCompleted: false));
+      return;
+    }
 
     final index = metrics.currentSegmentIndex;
     final activity = (index < programExercise.segments.length)

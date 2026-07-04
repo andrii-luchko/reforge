@@ -22,6 +22,15 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// The historical and live route coordinates for the current session.
     @Default([]) List<RouteCoordinate> routeMap,
 
+    /// Fires true for exactly one pair of emissions when a lap/segment completes.
+    /// UI should handle via [LapCompletedListener] which calls [clearLapCompleted].
+    @Default(false) bool lapJustCompleted,
+
+    /// The index of the segment that is NOW active after the last lap completion.
+    /// Use this in [LapCompletedListener] to determine which segment finished
+    /// (completedIndex = currentSegmentIndex - 1) and what's coming next.
+    @Default(0) int currentSegmentIndex,
+
     /// Non-null when an error has occurred. Cleared on the next action.
     String? error,
   }) = _RunningTrackerState;

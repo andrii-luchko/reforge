@@ -114,6 +114,7 @@ extension ExerciseSegmentToEntityX on ExerciseSegmentDTO {
       case 'reps':
         return WorkoutMetric.reps;
       case 'durationSec':
+      case 'duration':
         return WorkoutMetric.time;
       case 'distanceM':
         return WorkoutMetric.distance;

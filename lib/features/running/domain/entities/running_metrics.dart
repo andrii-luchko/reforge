@@ -14,6 +14,7 @@ class RunningMetrics {
     this.currentLocation,
     this.currentSegment,
     this.currentSegmentIndex = 0,
+    this.lapJustCompleted = false,
   });
 
   const RunningMetrics.zero()
@@ -23,7 +24,8 @@ class RunningMetrics {
       stepCount = 0,
       currentLocation = null,
       currentSegment = null,
-      currentSegmentIndex = 0;
+      currentSegmentIndex = 0,
+      lapJustCompleted = false;
 
   /// Total distance covered in this lap, in metres.
   final double distanceMeters;
@@ -46,6 +48,10 @@ class RunningMetrics {
   /// Index of the current segment in the playlist.
   final int currentSegmentIndex;
 
+  /// True only on the single emission that signals a lap/segment just completed.
+  /// Resets to false on the next emission. UI should listen via BlocListener.
+  final bool lapJustCompleted;
+
   RunningMetrics copyWith({
     double? distanceMeters,
     int? durationSeconds,
@@ -54,6 +60,7 @@ class RunningMetrics {
     RouteCoordinate? currentLocation,
     ExerciseSegmentEntity? currentSegment,
     int? currentSegmentIndex,
+    bool? lapJustCompleted,
   }) {
     return RunningMetrics(
       distanceMeters: distanceMeters ?? this.distanceMeters,
@@ -63,6 +70,7 @@ class RunningMetrics {
       currentLocation: currentLocation ?? this.currentLocation,
       currentSegment: currentSegment ?? this.currentSegment,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
+      lapJustCompleted: lapJustCompleted ?? false,
     );
   }
 

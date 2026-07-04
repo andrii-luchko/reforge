@@ -311,6 +311,19 @@ class RunningSessionManager {
       _getEngineForMode(_currentMode)?.reset();
       _latestMetrics = null;
 
+      // Emit a one-shot event so the UI can show a popup and play sounds.
+      // lapJustCompleted resets to false on every subsequent normal emission.
+      _controller.add(
+        RunningMetrics(
+          distanceMeters: 0,
+          durationSeconds: 0,
+          paceKmH: 0,
+          stepCount: 0,
+          currentSegmentIndex: _currentLapIndex,
+          lapJustCompleted: true,
+        ),
+      );
+
       // Start a new row for the new lap
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
