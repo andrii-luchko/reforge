@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:reforge/app/di/background_injector.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
@@ -15,6 +17,21 @@ import 'package:reforge/features/running/domain/repositories/local_workout_sessi
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
 Future<void> initializeBackgroundService() async {
+  if (Platform.isAndroid) {
+    const channel = AndroidNotificationChannel(
+      RunningConstants.notificationChannelId,
+      'Workout Tracker',
+      description: 'Used for active workout tracking',
+      importance: Importance.low,
+    );
+
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
+
   final service = FlutterBackgroundService();
 
   await service.configure(
@@ -26,22 +43,15 @@ Future<void> initializeBackgroundService() async {
         AndroidForegroundType.location,
         AndroidForegroundType.dataSync,
       ],
-      notificationChannelId: 'running_tracker',
-      initialNotificationTitle: 'Reforge',
-      initialNotificationContent: 'Tracking active workout',
+      notificationChannelId: RunningConstants.notificationChannelId,
+      initialNotificationTitle: RunningConstants.notificationTitle,
+      initialNotificationContent: RunningConstants.notificationText,
     ),
     iosConfiguration: IosConfiguration(
       autoStart: false,
       onForeground: onStart,
-      onBackground: onIosBackground,
     ),
   );
-}
-
-@pragma('vm:entry-point')
-Future<bool> onIosBackground(ServiceInstance service) async {
-  WidgetsFlutterBinding.ensureInitialized();
-  return true;
 }
 
 @pragma('vm:entry-point')

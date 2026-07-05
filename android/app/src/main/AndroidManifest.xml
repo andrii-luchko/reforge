@@ -158,8 +158,11 @@
 
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:foregroundServiceType="dataSync|location" />
-
+            android:foregroundServiceType="dataSync|location"
+        />
+        <service
+            android:name=".CloseAppService"
+            android:stopWithTask="false" />
 
     </application>
     <!-- Required to query activities that can process text, see:

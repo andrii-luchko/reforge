@@ -18,19 +18,42 @@ class RunningPermissionsService {
   }
 
   Future<bool> requestPedometerPermission() async {
-    final permission = Platform.isIOS ? Permission.sensors : Permission.activityRecognition;
+    final sensorPermission = Platform.isIOS ? Permission.sensors : Permission.activityRecognition;
+    final sensorStatus = await sensorPermission.request();
 
-    final status = await permission.request();
+    if (Platform.isIOS) {
+      // iOS requires location to keep the pedometer isolate alive in the background
+      final locationStatus = await Permission.location.request();
+      final isGranted = sensorStatus.isGranted && (locationStatus.isGranted || locationStatus.isLimited);
+      if (isGranted) {
+        await _requestNotificationPermission();
+      }
+      return isGranted;
+    }
 
-    return status.isGranted;
+    if (sensorStatus.isGranted) {
+      await _requestNotificationPermission();
+    }
+
+    return sensorStatus.isGranted;
   }
 
   Future<bool> requestGpsPermission() async {
     final status = await Permission.location.request();
     logger.d('RunningPermissionsService: Location status = $status');
 
-    // We can also request LocationAlways if needed for background tracking.
-    // For now, simple location is requested.
-    return status.isGranted || status.isLimited;
+    final isGranted = status.isGranted || status.isLimited;
+    if (isGranted) {
+      await _requestNotificationPermission();
+    }
+
+    return isGranted;
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    // Required on Android 13+ for the foreground service notification.
+    if (Platform.isAndroid) {
+      await Permission.notification.request();
+    }
   }
 }

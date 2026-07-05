@@ -175,12 +175,6 @@ class GpsTrackingEngine implements TrackingEngine {
       return AndroidSettings(
         accuracy: LocationAccuracy.high,
         intervalDuration: RunningConstants.engineTickInterval,
-
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: 'Tracking your run',
-          notificationTitle: 'Running in progress',
-          enableWakeLock: true,
-        ),
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
       return AppleSettings(

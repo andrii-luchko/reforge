@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
@@ -24,6 +26,7 @@ class PedometerTrackingEngine implements TrackingEngine {
 
   StreamSubscription<StepCount>? _stepSub;
   StreamSubscription<PedestrianStatus>? _statusSub;
+  StreamSubscription<Position>? _iosKeepAliveSub;
   Timer? _tickTimer;
 
   int _baselineStepCount = 0; // platform step counter at the moment tracking started
@@ -104,6 +107,17 @@ class PedometerTrackingEngine implements TrackingEngine {
 
     // Wall-clock tick to increment duration and emit metrics every second.
     _tickTimer = Timer.periodic(_tickInterval, (_) => _onTick());
+
+    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+      _iosKeepAliveSub = Geolocator.getPositionStream(
+        locationSettings: AppleSettings(
+          accuracy: LocationAccuracy.lowest,
+          distanceFilter: 100,
+          activityType: ActivityType.fitness,
+          showBackgroundLocationIndicator: true,
+        ),
+      ).listen((_) {});
+    }
   }
 
   @override
@@ -125,6 +139,8 @@ class PedometerTrackingEngine implements TrackingEngine {
     _stepSub = null;
     unawaited(_statusSub?.cancel());
     _statusSub = null;
+    unawaited(_iosKeepAliveSub?.cancel());
+    _iosKeepAliveSub = null;
     _tickTimer?.cancel();
     _tickTimer = null;
     _isPaused = false;

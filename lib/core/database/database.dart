@@ -13,7 +13,11 @@ part 'database.g.dart';
 /// The [isDone] flag marks completed laps that have been sent to the backend.
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get sessionId => integer()();
+  IntColumn get sessionId => integer().references(
+    WorkoutSessionCache,
+    #remoteSessionId,
+    onDelete: KeyAction.cascade,
+  )();
   IntColumn get programExerciseId => integer()(); // Links to ProgramExerciseEntity.id
   IntColumn get setNumber => integer()();
 
@@ -73,7 +77,11 @@ class SessionRoutePoints extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   /// Links to the overall workout session.
-  IntColumn get sessionId => integer()();
+  IntColumn get sessionId => integer().references(
+    WorkoutSessionCache,
+    #remoteSessionId,
+    onDelete: KeyAction.cascade,
+  )();
 
   /// Links to the specific active running set/lap.
   /// Nullable in case we log points before a set is properly assigned,

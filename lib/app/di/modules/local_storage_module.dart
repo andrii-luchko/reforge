@@ -15,5 +15,14 @@ abstract class LocalStorageModule {
   }
 
   @lazySingleton
-  WorkoutDatabase get workoutDatabase => WorkoutDatabase(driftDatabase(name: 'workout_db'));
+  WorkoutDatabase get workoutDatabase => WorkoutDatabase(
+    driftDatabase(
+      name: 'workout_db',
+      native: DriftNativeOptions(
+        setup: (db) {
+          db.execute('PRAGMA foreign_keys = ON;');
+        },
+      ),
+    ),
+  );
 }

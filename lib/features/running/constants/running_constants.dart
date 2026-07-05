@@ -10,6 +10,12 @@ class RunningConstants {
   /// Average human stride length in meters, used by the pedometer engine.
   static const double defaultStrideMeters = 0.78;
 
+  // ── Notifications ─────────────────────────────────────────────────────────
+
+  static const String notificationChannelId = 'running_tracker';
+  static const String notificationTitle = 'Reforge';
+  static const String notificationText = 'Tracking your run';
+
   // ── GPS Specific ──────────────────────────────────────────────────────────
 
   /// The minimum distance in meters the user must move before a new
