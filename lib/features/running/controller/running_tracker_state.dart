@@ -19,9 +19,6 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// True while a lap or exercise finish is in-flight to the backend.
     @Default(false) bool isSubmitting,
 
-    /// The historical and live route coordinates for the current session.
-    @Default([]) List<RouteCoordinate> routeMap,
-
     /// Fires true for exactly one pair of emissions when a lap/segment completes.
     /// UI should handle via [LapCompletedListener] which calls [clearLapCompleted].
     @Default(false) bool lapJustCompleted,

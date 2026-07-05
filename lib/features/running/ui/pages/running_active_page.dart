@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
+import 'package:reforge/features/running/controller/map/running_map_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
-import 'package:reforge/features/running/ui/widgets/running_map_view.dart';
+import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -65,7 +67,12 @@ class RunningActivePage extends StatelessWidget {
                           Expanded(
                             child: Stack(
                               children: [
-                                RunningMapView(routeMap: state.routeMap),
+                                BlocProvider(
+                                  create: (context) => getIt<RunningMapCubit>(
+                                    param1: context.read<RunningTrackerCubit>().workoutSessionId,
+                                  )..init(),
+                                  child: const ActiveRunningMapContainer(),
+                                ),
 
                                 //TODO: Lately show pause tag based on cubit value acros two modes
                                 Positioned(

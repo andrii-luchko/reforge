@@ -7,7 +7,6 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
-import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -47,7 +46,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       // Background restore logic: jump to active but paused
       final modeStr = lap?.trackingMode ?? RunningMode.gps.dbValue;
       final mode = RunningMode.values.firstWhere(
-        (m) => m.dbValue == modeStr, 
+        (m) => m.dbValue == modeStr,
         orElse: () => RunningMode.gps,
       );
 
@@ -56,8 +55,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       final activity = (index < programExercise.segments.length)
           ? programExercise.segments[index].activity
           : SegmentActivity.run;
-
-      final historicalPoints = await _repository.getRoutePoints(workoutSessionId);
 
       emit(
         state.copyWith(
@@ -73,17 +70,16 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
             paceKmH: lap?.paceKmH ?? 0.0,
             activity: activity,
           ),
-          routeMap: historicalPoints,
         ),
       );
 
-      // We call startSession, which either spins up the service (if killed) 
+      // We call startSession, which either spins up the service (if killed)
       // or just attaches metrics if it is already running.
       await _subscribeToTracking(mode);
       // Wait for service to process before pausing
       await Future.delayed(const Duration(milliseconds: 300));
       _serviceClient.pauseSession(); // Pause it safely
-      
+
       logger.d('RunningTrackerCubit: restored tracking (mode: ${mode.dbValue}) paused');
     } else {
       // Start fresh
@@ -184,9 +180,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         .map(
           (s) => LapLimit(
             metric: s.targetMetric,
-            limitValue: s.targetMetric == WorkoutMetric.time
-                ? s.durationSec.toDouble()
-                : s.distanceM.toDouble(),
+            limitValue: s.targetMetric == WorkoutMetric.time ? s.durationSec.toDouble() : s.distanceM.toDouble(),
           ),
         )
         .toList();
@@ -225,15 +219,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         ? programExercise.segments[index].activity
         : SegmentActivity.run;
 
-    final currentRoute = List<RouteCoordinate>.from(state.routeMap);
-    if (metrics.currentLocation != null) {
-      if (currentRoute.isEmpty || 
-          currentRoute.last.latitude != metrics.currentLocation!.latitude || 
-          currentRoute.last.longitude != metrics.currentLocation!.longitude) {
-        currentRoute.add(metrics.currentLocation!);
-      }
-    }
-
     emit(
       state.copyWith(
         currentLap: ExerciseLap(
@@ -245,7 +230,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           stepCount: metrics.stepCount,
           activity: activity,
         ),
-        routeMap: currentRoute,
       ),
     );
   }

@@ -43,6 +43,7 @@ class RunningServiceClient {
             ? RouteCoordinate(
                 latitude: (event['lat'] as num).toDouble(),
                 longitude: (event['lng'] as num).toDouble(),
+                heading: (event['heading'] as num?)?.toDouble() ?? 0.0,
               )
             : null,
       );

@@ -107,6 +107,7 @@ Future<void> onStart(ServiceInstance service) async {
                 'lapJustCompleted': metrics.lapJustCompleted,
                 if (metrics.currentLocation != null) 'lat': metrics.currentLocation!.latitude,
                 if (metrics.currentLocation != null) 'lng': metrics.currentLocation!.longitude,
+                if (metrics.currentLocation != null) 'heading': metrics.currentLocation!.heading,
               });
             },
             onError: (Object e, StackTrace st) {

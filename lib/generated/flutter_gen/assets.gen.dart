@@ -11,6 +11,19 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsAudioGen {
+  const $AssetsAudioGen();
+
+  /// File path: assets/audio/single_heavy_hummer.wav
+  String get singleHeavyHummer => 'assets/audio/single_heavy_hummer.wav';
+
+  /// File path: assets/audio/triple-heavy-hammer.wav
+  String get tripleHeavyHammer => 'assets/audio/triple-heavy-hammer.wav';
+
+  /// List of all assets
+  List<String> get values => [singleHeavyHummer, tripleHeavyHammer];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -293,6 +306,7 @@ class $AssetsImagesSvgGen {
 class Assets {
   const Assets._();
 
+  static const $AssetsAudioGen audio = $AssetsAudioGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 

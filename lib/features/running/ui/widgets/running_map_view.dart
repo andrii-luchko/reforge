@@ -9,7 +9,6 @@ import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 @immutable
 class InterpolatedPosition {
@@ -27,18 +26,20 @@ class InterpolatedPosition {
 InterpolatedPosition interpolateRoutePosition({
   required RouteCoordinate from,
   required RouteCoordinate to,
+  required double fromHeading,
+  required double toHeading,
   required double t,
 }) {
   final lat = from.latitude + (to.latitude - from.latitude) * t;
   final lng = from.longitude + (to.longitude - from.longitude) * t;
 
-  var headingDiff = (to.heading - from.heading) % 360.0;
+  var headingDiff = (toHeading - fromHeading) % 360.0;
   if (headingDiff > 180.0) {
     headingDiff -= 360.0;
   } else if (headingDiff < -180.0) {
     headingDiff += 360.0;
   }
-  final heading = (from.heading + headingDiff * t) % 360.0;
+  final heading = (fromHeading + headingDiff * t) % 360.0;
 
   return InterpolatedPosition(latitude: lat, longitude: lng, heading: heading);
 }
@@ -46,10 +47,20 @@ InterpolatedPosition interpolateRoutePosition({
 class RunningMapView extends StatefulWidget {
   const RunningMapView({
     required this.routeMap,
+    this.currentLocation,
+    this.heading = 0.0,
+    this.isFollowingUser = false,
+    this.onCameraMoveStarted,
+    this.onRecenterPressed,
     super.key,
   });
 
   final List<RouteCoordinate> routeMap;
+  final RouteCoordinate? currentLocation;
+  final double heading;
+  final bool isFollowingUser;
+  final VoidCallback? onCameraMoveStarted;
+  final VoidCallback? onRecenterPressed;
 
   @override
   State<RunningMapView> createState() => _RunningMapViewState();
@@ -63,9 +74,10 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
   RouteCoordinate? _oldPosition;
   RouteCoordinate? _targetPosition;
 
-  Set<Polyline> _polylines = {};
+  double _oldHeading = 0;
+  double _targetHeading = 0;
 
-  bool _followUser = true;
+  Set<Polyline> _polylines = {};
   bool _isProgrammaticMovement = false;
 
   @override
@@ -75,12 +87,16 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
 
     _markerAnimController = AnimationController(
       vsync: this,
-      duration: RunningConstants.engineTickInterval,
+      duration: const Duration(milliseconds: 300),
     )..addListener(_onMarkerAnimTick);
 
+    _targetPosition = widget.currentLocation ?? widget.routeMap.lastOrNull;
+    _oldPosition = _targetPosition;
+    _targetHeading = widget.heading;
+    _oldHeading = widget.heading;
+
     if (widget.routeMap.isNotEmpty) {
-      _oldPosition = widget.routeMap.last;
-      _targetPosition = widget.routeMap.last;
+      _rebuildPolyline(widget.routeMap);
     }
   }
 
@@ -97,26 +113,51 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
     super.didUpdateWidget(oldWidget);
 
     final hasNewPoints = widget.routeMap.length != oldWidget.routeMap.length;
-    if (widget.routeMap.isEmpty) return;
-
     if (hasNewPoints) {
-      _rebuildPolyline();
+      _rebuildPolyline(widget.routeMap);
     }
 
-    _handleLatestPositionChanged();
+    final latest = widget.currentLocation;
+    final heading = widget.heading;
 
-    if (_followUser && hasNewPoints) {
-      _animateToLatest();
+    if (latest == null) return;
+
+    final isSamePosition =
+        _targetPosition != null &&
+        _targetPosition!.latitude == latest.latitude &&
+        _targetPosition!.longitude == latest.longitude;
+
+    final headingDiff = (heading - _targetHeading).abs();
+    final headingChanged = headingDiff > 1.0 && headingDiff < 359.0;
+
+    if (!isSamePosition || headingChanged) {
+      _oldPosition = _targetPosition ?? latest;
+      _targetPosition = latest;
+
+      _oldHeading = _targetHeading;
+      _targetHeading = heading;
+
+      _markerAnimController.forward(from: 0);
+    }
+
+    // Only animate camera if following user and (new point OR heading changed)
+    // If it's a new point, we want to slide the camera there.
+    // If heading changed, we want to rotate camera.
+    if (widget.isFollowingUser && (!isSamePosition || headingChanged)) {
+      _animateToLatest(latest, heading);
+    } else if (widget.isFollowingUser && !oldWidget.isFollowingUser) {
+      // User just pressed recenter button
+      _animateToLatest(latest, heading);
     }
   }
 
   void _onMarkerAnimTick() => setState(() {});
 
-  void _rebuildPolyline() {
+  void _rebuildPolyline(List<RouteCoordinate> points) {
     _polylines = {
       Polyline(
         polylineId: const PolylineId('route'),
-        points: widget.routeMap.map((p) => LatLng(p.latitude, p.longitude)).toList(),
+        points: points.map((p) => LatLng(p.latitude, p.longitude)).toList(),
         color: context.appTheme.orange100,
         width: 12,
         jointType: JointType.round,
@@ -126,23 +167,11 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
     };
   }
 
-  void _handleLatestPositionChanged() {
-    final latest = widget.routeMap.last;
-    final isSamePosition =
-        _targetPosition != null &&
-        _targetPosition!.latitude == latest.latitude &&
-        _targetPosition!.longitude == latest.longitude;
-
-    if (isSamePosition) return;
-
-    _oldPosition = _targetPosition ?? latest;
-    _targetPosition = latest;
-    _markerAnimController.forward(from: 0);
-  }
-
   Future<void> _initCustomMarker() async {
     final icon = await BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(40, 40)),
+      width: 40,
+      height: 78,
+      const ImageConfiguration(size: Size(40, 78)),
       Assets.images.png.userPointer.path,
     );
 
@@ -153,9 +182,8 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
     }
   }
 
-  void _animateToLatest() {
-    if (_controller == null || widget.routeMap.isEmpty) return;
-    final latest = widget.routeMap.last;
+  void _animateToLatest(RouteCoordinate latest, double heading) {
+    if (_controller == null) return;
 
     _isProgrammaticMovement = true;
     _controller?.animateCamera(
@@ -163,7 +191,7 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
         CameraPosition(
           target: LatLng(latest.latitude, latest.longitude),
           zoom: RunningConstants.mapCameraZoomActive,
-          bearing: latest.heading,
+          bearing: heading,
         ),
       ),
     );
@@ -175,25 +203,24 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
       return;
     }
 
-    if (_followUser) {
-      setState(() {
-        _followUser = false;
-      });
+    if (widget.isFollowingUser) {
+      widget.onCameraMoveStarted?.call();
     }
   }
 
   void _handleRecenterPressed() {
-    setState(() {
-      _followUser = true;
-    });
-    _animateToLatest();
+    widget.onRecenterPressed?.call();
+
+    if (widget.currentLocation != null) {
+      _animateToLatest(widget.currentLocation!, widget.heading);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
-    if (widget.routeMap.isEmpty) {
+    if (widget.routeMap.isEmpty && widget.currentLocation == null) {
       return Container(
         color: appTheme.beige800,
       );
@@ -203,12 +230,14 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
         ? interpolateRoutePosition(
             from: _oldPosition!,
             to: _targetPosition!,
+            fromHeading: _oldHeading,
+            toHeading: _targetHeading,
             t: _markerAnimController.value,
           )
         : InterpolatedPosition(
-            latitude: widget.routeMap.last.latitude,
-            longitude: widget.routeMap.last.longitude,
-            heading: widget.routeMap.last.heading,
+            latitude: widget.currentLocation?.latitude ?? widget.routeMap.last.latitude,
+            longitude: widget.currentLocation?.longitude ?? widget.routeMap.last.longitude,
+            heading: widget.heading,
           );
 
     final userMarker = Marker(
@@ -226,6 +255,7 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
           initialCameraPosition: CameraPosition(
             target: LatLng(position.latitude, position.longitude),
             zoom: RunningConstants.mapCameraZoomActive,
+            bearing: widget.heading, // Start map with initial heading
           ),
           polylines: _polylines,
           markers: {userMarker},
@@ -241,7 +271,7 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
           },
           onCameraMoveStarted: _handleCameraMoveStarted,
         ),
-        if (!_followUser)
+        if (!widget.isFollowingUser && widget.currentLocation != null)
           Positioned(
             bottom: 20,
             right: 16,
