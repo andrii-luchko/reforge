@@ -1,4 +1,0 @@
-enum TrackingMode {
-  outdoorGps,
-  indoorTreadmill,
-}

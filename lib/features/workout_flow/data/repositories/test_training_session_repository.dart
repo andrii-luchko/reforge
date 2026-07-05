@@ -64,7 +64,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId) async {
     return Result.success(
       WorkoutSession(
-        id: 1,
+        id: 99,
         userId: 1,
         workoutProgramDayId: workoutProgramDayId,
         duration: 0,

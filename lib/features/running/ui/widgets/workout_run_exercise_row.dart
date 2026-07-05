@@ -53,7 +53,9 @@ class WorkoutRunExerciseRow extends StatelessWidget {
           children: [
             Expanded(
               child: _WorkoutContainer(
-                child: Center(child: SmoothTimerText(time, style: style)),
+                child: Center(
+                  child: SmoothTimerText(time, style: style),
+                ),
               ),
             ),
             Expanded(
@@ -81,7 +83,7 @@ class FadedMetricText extends StatelessWidget {
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 100),
       transitionBuilder: (child, animation) {
         return FadeTransition(
           opacity: animation,

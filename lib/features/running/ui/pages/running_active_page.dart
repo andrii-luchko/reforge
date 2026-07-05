@@ -32,6 +32,8 @@ class RunningActivePage extends StatelessWidget {
           final cubit = context.read<RunningTrackerCubit>();
           final programExercise = cubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
+
+          final segments = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
           final lap = state.currentLap;
 
           return DefaultBackground(
@@ -64,14 +66,39 @@ class RunningActivePage extends StatelessWidget {
                             child: Stack(
                               children: [
                                 RunningMapView(routeMap: state.routeMap),
+
                                 //TODO: Lately show pause tag based on cubit value acros two modes
-                                const Positioned(
+                                Positioned(
                                   left: 16,
                                   right: 16,
                                   top: 16,
-                                  child: AppTag(
-                                    text: 'Paused',
-                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  child: IgnorePointer(
+                                    ignoring: !state.isPaused,
+                                    child: AnimatedOpacity(
+                                      opacity: state.isPaused ? 1 : 0,
+                                      duration: const Duration(milliseconds: 200),
+                                      child: const AppTag(
+                                        text: 'Paused',
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  top: 16,
+                                  child: IgnorePointer(
+                                    ignoring: segments?.activity == .walk,
+                                    child: AnimatedOpacity(
+                                      opacity: segments?.activity == .walk ? 1 : 0,
+                                      duration: const Duration(milliseconds: 200),
+                                      child: const AppTag(
+                                        text: 'Walk',
+                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

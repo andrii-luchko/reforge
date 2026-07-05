@@ -1,10 +1,10 @@
 import 'dart:async';
-
-import 'package:injectable/injectable.dart';
+import 'package:flutter/services.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
 /// Pedometer-based [TrackingEngine] for treadmill workouts.
@@ -18,9 +18,6 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 ///   pace (km/h) = (distance / duration) × 3.6
 ///
 /// Registered as the default [TrackingEngine] in the DI container.
-/// The GPS implementation will be registered as an alternative in Phase 5.
-@Injectable(as: TrackingEngine)
-@Named('pedometer')
 class PedometerTrackingEngine implements TrackingEngine {
   /// Average stride length in metres. Industry standard is ~0.78 m.
   // TODO(running-module): derive from user height / profile.
@@ -65,10 +62,27 @@ class PedometerTrackingEngine implements TrackingEngine {
     // Subscribe to the device step counter.
     _stepSub = Pedometer.stepCountStream.listen(
       _onStep,
-      onError: (Object e) {
-        logger.e('PedometerTrackingEngine: step stream error: $e');
-        _controller.addError(e);
+      onError: (Object e, StackTrace st) {
+        // PlatformException code 3 = "Step Count is not available" — the
+        // hardware sensor is physically absent (simulator, some tablets).
+        // This is FATAL for this session: no point retrying.
+        if (e is PlatformException && e.code == '3') {
+          logger.e('PedometerTrackingEngine: sensor unavailable (code 3). Stopping.', e, st);
+          _controller.addError(
+            SensorUnavailableException('pedometer', cause: e),
+            st,
+          );
+          // Cancel the dead subscription — there is nothing to recover from.
+          unawaited(_stepSub?.cancel());
+          _stepSub = null;
+          return;
+        }
+        // All other errors are potentially transient — log and keep listening.
+        logger.e('PedometerTrackingEngine: step stream error (recoverable)', e, st);
+        _controller.addError(e, st);
       },
+      // CRITICAL: cancelOnError:false prevents Dart from silently closing the
+      // subscription on the first error. We handle cancellation explicitly above.
       cancelOnError: false,
     );
 

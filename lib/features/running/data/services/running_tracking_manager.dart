@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
+import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
@@ -13,18 +13,19 @@ import 'package:reforge/features/running/domain/repositories/local_workout_sessi
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
-@lazySingleton
 class RunningSessionManager {
   RunningSessionManager(
     @Named('pedometer') this._pedometerEngine,
     @Named('gps') this._gpsEngine,
     this._repository,
+    this._audioFeedbackService,
   );
 
   // Use the interface type, not the concrete implementation classes
   final TrackingEngine _pedometerEngine;
   final TrackingEngine _gpsEngine;
   final LocalWorkoutSessionRepository _repository;
+  final AudioFeedbackService _audioFeedbackService;
 
   RunningMode? _currentMode;
   List<LapLimit>? _limits;
@@ -119,7 +120,19 @@ class RunningSessionManager {
 
     await engine?.start(initialOffset: initialOffset);
 
-    _metricsSub = engine?.metricsStream.listen(_onMetricsReceived);
+    _metricsSub = engine?.metricsStream.listen(
+      _onMetricsReceived,
+      onError: (Object e, StackTrace st) {
+        logger.e('RunningSessionManager: engine stream error', e, st);
+        // Propagate typed errors to the UI (RunningTrackerCubit) so it can
+        // show an appropriate message. We do NOT stop the session — the
+        // engine's internal ticker keeps time even when the sensor fails.
+        _controller.addError(e, st);
+      },
+      // CRITICAL: never cancel on first error. A GPS glitch or temporary
+      // sensor hiccup should not terminate the entire stream pipeline.
+      cancelOnError: false,
+    );
     _startSnapshotTimer();
 
     if (startPaused) {
@@ -184,7 +197,7 @@ class RunningSessionManager {
 
   void forceNextLap() {
     logger.d('RunningSessionManager: forceNextLap called');
-    _handleLapCompletion();
+    unawaited(_handleLapCompletion());
   }
 
   void endSession() {
@@ -218,13 +231,19 @@ class RunningSessionManager {
     // Save route point in background if GPS location provided
     if (rawMetrics.currentLocation != null && _workoutSessionId != null) {
       unawaited(
-        _repository.addRoutePoint(
-          sessionId: _workoutSessionId!,
-          setId: _currentDbSetId,
-          latitude: rawMetrics.currentLocation!.latitude,
-          longitude: rawMetrics.currentLocation!.longitude,
-          heading: rawMetrics.currentLocation!.heading,
-        ),
+        _repository
+            .addRoutePoint(
+              sessionId: _workoutSessionId!,
+              setId: _currentDbSetId,
+              latitude: rawMetrics.currentLocation!.latitude,
+              longitude: rawMetrics.currentLocation!.longitude,
+              heading: rawMetrics.currentLocation!.heading,
+            )
+            .catchError((Object e, StackTrace st) {
+              // Route point loss is non-critical: the map will have a small gap.
+              // We log but do NOT propagate — this must never crash the session.
+              logger.w('RunningSessionManager: failed to write route point: $e');
+            }),
       );
     }
 
@@ -253,7 +272,7 @@ class RunningSessionManager {
       }
 
       if (limitReached) {
-        _handleLapCompletion();
+        unawaited(_handleLapCompletion());
       }
     }
   }
@@ -262,19 +281,28 @@ class RunningSessionManager {
 
   void _startSnapshotTimer() {
     _snapshotTimer?.cancel();
-    _snapshotTimer = Timer.periodic(RunningConstants.dbSnapshotInterval, (_) => unawaited(_writeDriftSnapshot(_currentDbSetId)));
+    _snapshotTimer = Timer.periodic(
+      RunningConstants.dbSnapshotInterval,
+      (_) => unawaited(_writeDriftSnapshot(_currentDbSetId)),
+    );
   }
 
   Future<void> _writeDriftSnapshot(int? dbSetId) async {
     final metrics = _latestMetrics;
     if (dbSetId == null || metrics == null) return;
 
-    await _repository.snapshotActiveLap(
-      setId: dbSetId,
-      distance: metrics.distanceMeters,
-      duration: metrics.durationSeconds,
-      pace: metrics.paceKmH,
-    );
+    try {
+      await _repository.snapshotActiveLap(
+        setId: dbSetId,
+        distance: metrics.distanceMeters,
+        duration: metrics.durationSeconds,
+        pace: metrics.paceKmH,
+      );
+    } on Exception catch (e, st) {
+      // Snapshot failure is non-critical: the next periodic snapshot will
+      // overwrite with fresher data. Log and continue.
+      logger.w('RunningSessionManager: snapshot write failed (will retry): $e', e, st);
+    }
   }
 
   Future<void> _handleLapCompletion() async {
@@ -285,9 +313,8 @@ class RunningSessionManager {
       logger.d('RunningSessionManager: Lap $_currentLapIndex completed!');
 
       // 1. Play sound
-      unawaited(SystemSound.play(SystemSoundType.alert));
+      unawaited(_audioFeedbackService.playLapCompleted());
 
-      // 2. Clear current ID immediately to prevent race conditions with incoming ticks
       final oldDbSetId = _currentDbSetId;
       _currentDbSetId = null;
 

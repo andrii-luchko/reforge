@@ -9,6 +9,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
+import 'package:reforge/features/running/data/services/background_running_service.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
@@ -34,6 +35,7 @@ void main() async {
 
       await LocaleSettings.useDeviceLocale();
       await di.configureDependencies();
+      await initializeBackgroundService();
 
       runApp(
         ToastificationWrapper(

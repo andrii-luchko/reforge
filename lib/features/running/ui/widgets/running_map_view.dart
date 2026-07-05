@@ -3,11 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/map_styles.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 @immutable
 class InterpolatedPosition {
@@ -192,11 +194,8 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
     final appTheme = context.appTheme;
 
     if (widget.routeMap.isEmpty) {
-      return ColoredBox(
+      return Container(
         color: appTheme.beige800,
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
       );
     }
 
@@ -237,6 +236,7 @@ class _RunningMapViewState extends State<RunningMapView> with SingleTickerProvid
           compassEnabled: false,
           style: darkMapStyle,
           onMapCreated: (controller) {
+            logger.d('RunningMapView: GoogleMap created');
             _controller = controller;
           },
           onCameraMoveStarted: _handleCameraMoveStarted,

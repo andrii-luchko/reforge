@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:injectable/injectable.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/data/services/kalman_location_filter.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
-@Injectable(as: TrackingEngine)
-@Named('gps')
 class GpsTrackingEngine implements TrackingEngine {
   final _controller = StreamController<RunningMetrics>.broadcast();
 
@@ -50,51 +49,67 @@ class GpsTrackingEngine implements TrackingEngine {
     _positionSub =
         Geolocator.getPositionStream(
           locationSettings: _getFitnessLocationSettings(),
-        ).listen((pos) {
-          if (_isPaused) return;
+        ).listen(
+          (pos) {
+            if (_isPaused) return;
 
-          // Process the raw point through Kalman Filter
-          _kalmanFilter.process(
-            lat: pos.latitude,
-            lng: pos.longitude,
-            accuracy: pos.accuracy,
-            timestampMs: pos.timestamp.millisecondsSinceEpoch,
-          );
-
-          if (!_kalmanFilter.hasValidState) return;
-
-          final smoothedLat = _kalmanFilter.latitude;
-          final smoothedLng = _kalmanFilter.longitude;
-          final smoothedHeading = _kalmanFilter.heading;
-
-          if (_lastSmoothedPoint == null) {
-            _lastSmoothedPoint = RouteCoordinate(
-              latitude: smoothedLat,
-              longitude: smoothedLng,
-              heading: smoothedHeading,
-            );
-            return;
-          }
-
-          final distanceDelta = Geolocator.distanceBetween(
-            _lastSmoothedPoint!.latitude,
-            _lastSmoothedPoint!.longitude,
-            smoothedLat,
-            smoothedLng,
-          );
-
-          if (distanceDelta > RunningConstants.gpsDistanceFilterMeters) {
-            _totalDistance += distanceDelta;
-            _lastSmoothedPoint = RouteCoordinate(
-              latitude: smoothedLat,
-              longitude: smoothedLng,
-              heading: smoothedHeading,
+            // Process the raw point through Kalman Filter
+            _kalmanFilter.process(
+              lat: pos.latitude,
+              lng: pos.longitude,
+              accuracy: pos.accuracy,
+              timestampMs: pos.timestamp.millisecondsSinceEpoch,
             );
 
-            // Emit immediately to make the map and metrics feel responsive
-            // _emitMetrics();
-          }
-        });
+            if (!_kalmanFilter.hasValidState) return;
+
+            final smoothedLat = _kalmanFilter.latitude;
+            final smoothedLng = _kalmanFilter.longitude;
+            final smoothedHeading = _kalmanFilter.heading;
+
+            if (_lastSmoothedPoint == null) {
+              _lastSmoothedPoint = RouteCoordinate(
+                latitude: smoothedLat,
+                longitude: smoothedLng,
+                heading: smoothedHeading,
+              );
+              return;
+            }
+
+            final distanceDelta = Geolocator.distanceBetween(
+              _lastSmoothedPoint!.latitude,
+              _lastSmoothedPoint!.longitude,
+              smoothedLat,
+              smoothedLng,
+            );
+
+            if (distanceDelta > RunningConstants.gpsDistanceFilterMeters) {
+              _totalDistance += distanceDelta;
+              _lastSmoothedPoint = RouteCoordinate(
+                latitude: smoothedLat,
+                longitude: smoothedLng,
+                heading: smoothedHeading,
+              );
+
+              // Emit immediately to make the map and metrics feel responsive
+              // _emitMetrics();
+            }
+          },
+          onError: (Object e, StackTrace st) {
+            // GPS errors are recoverable (signal lost, brief hardware glitch).
+            // We log and continue — the ticker keeps time even without position.
+            // If the OS revokes permission entirely, the next position event
+            // will throw again, and we'll log it again. That is acceptable.
+            logger.e('GpsTrackingEngine: position stream error', e, st);
+            _controller.addError(
+              SensorUnavailableException('gps', cause: e),
+              st,
+            );
+          },
+          // CRITICAL: do NOT cancel the subscription on a single error.
+          // GPS signal can be temporarily lost (tunnel, indoors) and restored.
+          cancelOnError: false,
+        );
   }
 
   void _emitMetrics() {
@@ -126,7 +141,7 @@ class GpsTrackingEngine implements TrackingEngine {
   @override
   void stop() {
     _ticker?.cancel();
-    _positionSub?.cancel();
+    unawaited(_positionSub?.cancel());
   }
 
   @override

@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
@@ -78,11 +76,6 @@ class RunningOverviewPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 32),
                             ],
-
-                            if (activeExerciseCubit.state.sets.where((s) => s.isDone).isNotEmpty) ...[
-                              _RestoredLapsNotice(count: activeExerciseCubit.state.sets.where((s) => s.isDone).length),
-                              const SizedBox(height: 16),
-                            ],
                           ],
                         ),
                       ),
@@ -99,39 +92,6 @@ class RunningOverviewPage extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-/// Small banner shown when the user returns to an exercise that already has
-/// completed laps from a previous interrupted session.
-class _RestoredLapsNotice extends StatelessWidget {
-  const _RestoredLapsNotice({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.appTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: theme.orange60.withValues(alpha: 0.15),
-        border: Border.all(color: theme.orange400.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.history_rounded, color: theme.orange400, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              '$count lap${count > 1 ? 's' : ''} restored from previous session',
-              style: bodyLRegular.copyWith(color: theme.beige200),
-            ),
-          ),
-        ],
       ),
     );
   }

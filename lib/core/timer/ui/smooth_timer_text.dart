@@ -122,16 +122,18 @@ class _OptimizedTimerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var currentX = 0.0;
+    var currentX = size.width;
     final maxLength = max(oldText.length, newText.length);
     final slideDistance = size.height * 0.45;
 
-    for (var i = 0; i < maxLength; i++) {
-      final oldChar = i < oldText.length ? oldText[i] : '';
-      final newChar = i < newText.length ? newText[i] : '';
+    for (var i = 1; i <= maxLength; i++) {
+      final oldChar = i <= oldText.length ? oldText[oldText.length - i] : '';
+      final newChar = i <= newText.length ? newText[newText.length - i] : '';
 
       final isColon = newChar == ':' || oldChar == ':';
       final charWidth = isColon ? colonWidth : digitWidth;
+
+      currentX -= charWidth;
       final xCenter = currentX + (charWidth / 2);
 
       if (oldChar == newChar || progress == 1.0) {
@@ -144,7 +146,6 @@ class _OptimizedTimerPainter extends CustomPainter {
           _drawChar(canvas, newChar, xCenter, (1.0 - progress) * slideDistance, progress);
         }
       }
-      currentX += charWidth;
     }
   }
 
