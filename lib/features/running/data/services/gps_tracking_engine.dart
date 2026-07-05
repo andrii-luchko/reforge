@@ -17,6 +17,8 @@ class GpsTrackingEngine implements TrackingEngine {
 
   double _totalDistance = 0;
   int _durationSec = 0;
+  int _lastProcessedMs = 0; // wall-clock time of the last successful Kalman update
+  static const int _gpsStallTimeoutMs = 5000;
   RouteCoordinate? _lastSmoothedPoint;
   bool _isPaused = false;
 
@@ -62,6 +64,8 @@ class GpsTrackingEngine implements TrackingEngine {
             );
 
             if (!_kalmanFilter.hasValidState) return;
+
+            _lastProcessedMs = DateTime.now().millisecondsSinceEpoch;
 
             final smoothedLat = _kalmanFilter.latitude;
             final smoothedLng = _kalmanFilter.longitude;
@@ -117,9 +121,11 @@ class GpsTrackingEngine implements TrackingEngine {
     final durationHours = _durationSec / 3600.0;
     final avgSpeedKmH = (durationHours > 0) ? (distanceKm / durationHours) : 0.0;
 
-    // Kalman filter speed with deadband
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final signalStale = _lastProcessedMs > 0 && (nowMs - _lastProcessedMs) > _gpsStallTimeoutMs;
+
     final rawSpeedMps = _kalmanFilter.speedMetersPerSecond;
-    final currentSpeedKmH = (rawSpeedMps < 0.15 ? 0.0 : rawSpeedMps) * 3.6;
+    final currentSpeedKmH = signalStale ? 0.0 : (rawSpeedMps < 0.15 ? 0.0 : rawSpeedMps) * 3.6;
 
     final avgPaceMinKm = avgSpeedKmH > 0 ? 60.0 / avgSpeedKmH : 0.0;
     final currentPaceMinKm = currentSpeedKmH > 0 ? 60.0 / currentSpeedKmH : 0.0;
@@ -132,7 +138,7 @@ class GpsTrackingEngine implements TrackingEngine {
         currentSpeedKmH: currentSpeedKmH,
         avgPaceMinKm: avgPaceMinKm,
         currentPaceMinKm: currentPaceMinKm,
-        stepCount: 0, // GPS engine doesn't track steps
+        stepCount: 0,
         currentLocation: _lastSmoothedPoint,
       ),
     );
@@ -146,6 +152,7 @@ class GpsTrackingEngine implements TrackingEngine {
   @override
   void resume() {
     _isPaused = false;
+    _lastSmoothedPoint = null;
   }
 
   @override
@@ -159,6 +166,7 @@ class GpsTrackingEngine implements TrackingEngine {
     _totalDistance = 0;
     _durationSec = 0;
     _lastSmoothedPoint = null;
+    _lastProcessedMs = 0;
     _kalmanFilter.reset();
   }
 
@@ -166,7 +174,6 @@ class GpsTrackingEngine implements TrackingEngine {
     if (defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
         accuracy: LocationAccuracy.high,
-        // false ensures we use Google's Fused Location Provider, not raw GPS
         intervalDuration: RunningConstants.engineTickInterval,
 
         foregroundNotificationConfig: const ForegroundNotificationConfig(
@@ -178,10 +185,7 @@ class GpsTrackingEngine implements TrackingEngine {
     } else if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
       return AppleSettings(
         accuracy: LocationAccuracy.high,
-        // CRITICAL: This enables Apple's internal Kalman filter tuned for running
         activityType: ActivityType.fitness,
-        // Set to false so the OS doesn't randomly kill tracking when pace drops
-        // Required for background tracking
         showBackgroundLocationIndicator: true,
       );
     } else {
