@@ -115,13 +115,23 @@ class GpsTrackingEngine implements TrackingEngine {
   void _emitMetrics() {
     final distanceKm = _totalDistance / 1000.0;
     final durationHours = _durationSec / 3600.0;
-    final paceKmH = (durationHours > 0) ? (distanceKm / durationHours) : 0.0;
+    final avgSpeedKmH = (durationHours > 0) ? (distanceKm / durationHours) : 0.0;
+
+    // Kalman filter speed with deadband
+    final rawSpeedMps = _kalmanFilter.speedMetersPerSecond;
+    final currentSpeedKmH = (rawSpeedMps < 0.15 ? 0.0 : rawSpeedMps) * 3.6;
+
+    final avgPaceMinKm = avgSpeedKmH > 0 ? 60.0 / avgSpeedKmH : 0.0;
+    final currentPaceMinKm = currentSpeedKmH > 0 ? 60.0 / currentSpeedKmH : 0.0;
 
     _controller.add(
       RunningMetrics(
         distanceMeters: _totalDistance,
         durationSeconds: _durationSec,
-        paceKmH: paceKmH,
+        avgSpeedKmH: avgSpeedKmH,
+        currentSpeedKmH: currentSpeedKmH,
+        avgPaceMinKm: avgPaceMinKm,
+        currentPaceMinKm: currentPaceMinKm,
         stepCount: 0, // GPS engine doesn't track steps
         currentLocation: _lastSmoothedPoint,
       ),
@@ -158,7 +168,7 @@ class GpsTrackingEngine implements TrackingEngine {
         accuracy: LocationAccuracy.high,
         // false ensures we use Google's Fused Location Provider, not raw GPS
         intervalDuration: RunningConstants.engineTickInterval,
-        // Optional: Keeps tracking alive in background service
+
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationText: 'Tracking your run',
           notificationTitle: 'Running in progress',

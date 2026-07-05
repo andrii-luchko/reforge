@@ -12,6 +12,7 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 class RunningSessionManager {
   RunningSessionManager(
@@ -55,12 +56,25 @@ class RunningSessionManager {
       orElse: () => RunningMode.pedometer,
     );
 
+    final duration = lap.durationSeconds ?? 0;
+    final distanceKm = (lap.distanceMeters ?? 0.0) / 1000.0;
+    final avgSpeedKmH = duration > 0 ? (distanceKm / (duration / 3600.0)) : 0.0;
+    final avgPaceMinKm = avgSpeedKmH > 0 ? 60.0 / avgSpeedKmH : 0.0;
+
     final initialLap = ExerciseLap(
       driftSetId: lap.id,
       lapNumber: lap.setNumber,
       distanceMeters: lap.distanceMeters ?? 0.0,
-      durationSeconds: lap.durationSeconds ?? 0,
-      paceKmH: lap.paceKmH ?? 0.0,
+      durationSeconds: duration,
+      avgSpeedKmH: avgSpeedKmH,
+      currentSpeedKmH: lap.currentSpeedKmH ?? 0.0,
+      avgPaceMinKm: avgPaceMinKm,
+      currentPaceMinKm: lap.currentPaceMinKm ?? 0.0,
+      stepCount: lap.stepCount ?? 0,
+      activity: SegmentActivity.values.firstWhere(
+        (e) => e.name == lap.segmentType,
+        orElse: () => SegmentActivity.run,
+      ),
     );
 
     return (mode: mode, initialLap: initialLap);
@@ -99,8 +113,11 @@ class RunningSessionManager {
         initialOffset = RunningMetrics(
           distanceMeters: inProgressLap.distanceMeters ?? 0.0,
           durationSeconds: inProgressLap.durationSeconds ?? 0,
-          paceKmH: inProgressLap.paceKmH ?? 0.0,
-          stepCount: 0,
+          avgSpeedKmH: inProgressLap.avgSpeedKmH ?? 0.0,
+          currentSpeedKmH: inProgressLap.currentSpeedKmH ?? 0.0,
+          avgPaceMinKm: inProgressLap.avgPaceMinKm ?? 0.0,
+          currentPaceMinKm: inProgressLap.currentPaceMinKm ?? 0.0,
+          stepCount: inProgressLap.stepCount ?? 0,
         );
       }
       logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
@@ -296,7 +313,11 @@ class RunningSessionManager {
         setId: dbSetId,
         distance: metrics.distanceMeters,
         duration: metrics.durationSeconds,
-        pace: metrics.paceKmH,
+        avgSpeedKmH: metrics.avgSpeedKmH,
+        currentSpeedKmH: metrics.currentSpeedKmH,
+        avgPaceMinKm: metrics.avgPaceMinKm,
+        currentPaceMinKm: metrics.currentPaceMinKm,
+        stepCount: metrics.stepCount,
       );
     } on Exception catch (e, st) {
       // Snapshot failure is non-critical: the next periodic snapshot will
@@ -344,7 +365,10 @@ class RunningSessionManager {
         RunningMetrics(
           distanceMeters: 0,
           durationSeconds: 0,
-          paceKmH: 0,
+          avgSpeedKmH: 0,
+          currentSpeedKmH: 0,
+          avgPaceMinKm: 0,
+          currentPaceMinKm: 0,
           stepCount: 0,
           currentSegmentIndex: _currentLapIndex,
           lapJustCompleted: true,

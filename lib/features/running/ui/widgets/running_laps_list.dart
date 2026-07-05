@@ -99,7 +99,7 @@ class _LapRow extends StatelessWidget {
           child: WorkoutRunExerciseRow(
             distance: km,
             durationInSeconds: lap.durationSeconds,
-            pace: lap.paceKmH,
+            pace: lap.avgSpeedKmH,
             metrics: metrics,
             system: system,
           ),

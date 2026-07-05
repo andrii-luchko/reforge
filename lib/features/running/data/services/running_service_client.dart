@@ -35,7 +35,10 @@ class RunningServiceClient {
       final metrics = RunningMetrics(
         distanceMeters: (event['distanceMeters'] as num).toDouble(),
         durationSeconds: event['durationSeconds'] as int,
-        paceKmH: (event['paceKmH'] as num).toDouble(),
+        avgSpeedKmH: (event['avgSpeedKmH'] as num).toDouble(),
+        currentSpeedKmH: (event['currentSpeedKmH'] as num).toDouble(),
+        avgPaceMinKm: (event['avgPaceMinKm'] as num).toDouble(),
+        currentPaceMinKm: (event['currentPaceMinKm'] as num).toDouble(),
         stepCount: event['stepCount'] as int,
         currentSegmentIndex: event['currentSegmentIndex'] as int? ?? 0,
         lapJustCompleted: event['lapJustCompleted'] as bool? ?? false,

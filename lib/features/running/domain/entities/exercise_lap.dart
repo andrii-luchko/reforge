@@ -6,7 +6,10 @@ class ExerciseLap {
     required this.lapNumber,
     required this.distanceMeters,
     required this.durationSeconds,
-    required this.paceKmH,
+    required this.avgSpeedKmH,
+    required this.currentSpeedKmH,
+    required this.avgPaceMinKm,
+    required this.currentPaceMinKm,
     this.driftSetId,
     this.stepCount = 0,
     this.activity = SegmentActivity.run,
@@ -22,7 +25,10 @@ class ExerciseLap {
 
   final double distanceMeters;
   final int durationSeconds;
-  final double paceKmH;
+  final double avgSpeedKmH;
+  final double currentSpeedKmH;
+  final double avgPaceMinKm;
+  final double currentPaceMinKm;
   final int stepCount;
   final SegmentActivity activity;
 
@@ -31,7 +37,10 @@ class ExerciseLap {
     int? lapNumber,
     double? distanceMeters,
     int? durationSeconds,
-    double? paceKmH,
+    double? avgSpeedKmH,
+    double? currentSpeedKmH,
+    double? avgPaceMinKm,
+    double? currentPaceMinKm,
     int? stepCount,
     SegmentActivity? activity,
   }) {
@@ -40,7 +49,10 @@ class ExerciseLap {
       lapNumber: lapNumber ?? this.lapNumber,
       distanceMeters: distanceMeters ?? this.distanceMeters,
       durationSeconds: durationSeconds ?? this.durationSeconds,
-      paceKmH: paceKmH ?? this.paceKmH,
+      avgSpeedKmH: avgSpeedKmH ?? this.avgSpeedKmH,
+      currentSpeedKmH: currentSpeedKmH ?? this.currentSpeedKmH,
+      avgPaceMinKm: avgPaceMinKm ?? this.avgPaceMinKm,
+      currentPaceMinKm: currentPaceMinKm ?? this.currentPaceMinKm,
       stepCount: stepCount ?? this.stepCount,
       activity: activity ?? this.activity,
     );

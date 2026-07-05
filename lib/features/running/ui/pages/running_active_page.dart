@@ -35,7 +35,7 @@ class RunningActivePage extends StatelessWidget {
           final programExercise = cubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
 
-          final segments = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+          final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
           final lap = state.currentLap;
 
           return DefaultBackground(
@@ -58,7 +58,7 @@ class RunningActivePage extends StatelessWidget {
                                 : RunningMetricsPanel(
                                     distanceMeters: 0,
                                     durationSeconds: 0,
-                                    paceKmH: 0,
+                                    speedKmH: 0,
 
                                     system: measureSystem,
                                   ),
@@ -97,9 +97,9 @@ class RunningActivePage extends StatelessWidget {
                                   right: 16,
                                   top: 16,
                                   child: IgnorePointer(
-                                    ignoring: segments?.activity == .walk,
+                                    ignoring: segment?.activity == .walk,
                                     child: AnimatedOpacity(
-                                      opacity: segments?.activity == .walk ? 1 : 0,
+                                      opacity: segment?.activity == .walk ? 1 : 0,
                                       duration: const Duration(milliseconds: 200),
                                       child: const AppTag(
                                         text: 'Walk',
@@ -143,7 +143,7 @@ class RunningActivePage extends StatelessWidget {
                               RunningMetricsPanel(
                                 distanceMeters: 0,
                                 durationSeconds: 0,
-                                paceKmH: 0,
+                                speedKmH: 0,
 
                                 system: measureSystem,
                               ),

@@ -20,7 +20,11 @@ class ActiveRunningSets extends Table {
   // Real-time tracking metrics (null until tracked)
   RealColumn get distanceMeters => real().nullable()();
   IntColumn get durationSeconds => integer().nullable()();
-  RealColumn get paceKmH => real().nullable()();
+  RealColumn get avgSpeedKmH => real().nullable()();
+  RealColumn get currentSpeedKmH => real().nullable()();
+  RealColumn get avgPaceMinKm => real().nullable()();
+  RealColumn get currentPaceMinKm => real().nullable()();
+  IntColumn get stepCount => integer().nullable()();
 
   // State flags
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
@@ -106,13 +110,21 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     required int setId,
     required double distance,
     required int duration,
-    required double pace,
+    required double avgSpeedKmH,
+    required double currentSpeedKmH,
+    required double avgPaceMinKm,
+    required double currentPaceMinKm,
+    required int stepCount,
   }) {
     return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
       ActiveRunningSetsCompanion(
         distanceMeters: Value(distance),
         durationSeconds: Value(duration),
-        paceKmH: Value(pace),
+        avgSpeedKmH: Value(avgSpeedKmH),
+        currentSpeedKmH: Value(currentSpeedKmH),
+        avgPaceMinKm: Value(avgPaceMinKm),
+        currentPaceMinKm: Value(currentPaceMinKm),
+        stepCount: Value(stepCount),
       ),
     );
   }
@@ -174,13 +186,21 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     required int setId,
     required double distance,
     required int duration,
-    required double pace,
+    required double avgSpeedKmH,
+    required double currentSpeedKmH,
+    required double avgPaceMinKm,
+    required double currentPaceMinKm,
+    required int stepCount,
   }) {
     return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
       ActiveRunningSetsCompanion(
         distanceMeters: Value(distance),
         durationSeconds: Value(duration),
-        paceKmH: Value(pace),
+        avgSpeedKmH: Value(avgSpeedKmH),
+        currentSpeedKmH: Value(currentSpeedKmH),
+        avgPaceMinKm: Value(avgPaceMinKm),
+        currentPaceMinKm: Value(currentPaceMinKm),
+        stepCount: Value(stepCount),
         lastSnapshotAt: Value(DateTime.now()),
       ),
     );

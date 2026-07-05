@@ -37,13 +37,21 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
     required int setId,
     required double distance,
     required int duration,
-    required double pace,
+    required double avgSpeedKmH,
+    required double currentSpeedKmH,
+    required double avgPaceMinKm,
+    required double currentPaceMinKm,
+    required int stepCount,
   }) {
     return _db.snapshotActiveLap(
       setId: setId,
       distance: distance,
       duration: duration,
-      pace: pace,
+      avgSpeedKmH: avgSpeedKmH,
+      currentSpeedKmH: currentSpeedKmH,
+      avgPaceMinKm: avgPaceMinKm,
+      currentPaceMinKm: currentPaceMinKm,
+      stepCount: stepCount,
     );
   }
 

@@ -72,13 +72,21 @@ class MockPedometerTrackingEngine implements TrackingEngine {
     _lapSteps += 2; // Simulate 2 steps per second
 
     final distanceMeters = _lapSteps * _strideMeters;
-    final paceKmH = _durationSeconds > 0 ? (distanceMeters / _durationSeconds) * 3.6 : 0.0;
+    final distanceKm = distanceMeters / 1000;
+    final durationHours = _durationSeconds / 3600;
+    final avgSpeedKmH = durationHours > 0 ? (distanceKm / durationHours) : 0.0;
+    final currentSpeedKmH = avgSpeedKmH; // Mock engine doesn't vary speed
+    final avgPaceMinKm = avgSpeedKmH > 0 ? 60.0 / avgSpeedKmH : 0.0;
+    final currentPaceMinKm = currentSpeedKmH > 0 ? 60.0 / currentSpeedKmH : 0.0;
 
     _controller.add(
       RunningMetrics(
         distanceMeters: distanceMeters,
         durationSeconds: _durationSeconds,
-        paceKmH: paceKmH,
+        avgSpeedKmH: avgSpeedKmH,
+        currentSpeedKmH: currentSpeedKmH,
+        avgPaceMinKm: avgPaceMinKm,
+        currentPaceMinKm: currentPaceMinKm,
         stepCount: _lapSteps,
       ),
     );

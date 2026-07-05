@@ -9,7 +9,10 @@ class RunningMetrics {
   const RunningMetrics({
     required this.distanceMeters,
     required this.durationSeconds,
-    required this.paceKmH,
+    required this.avgSpeedKmH,
+    required this.currentSpeedKmH,
+    required this.avgPaceMinKm,
+    required this.currentPaceMinKm,
     required this.stepCount,
     this.currentLocation,
     this.currentSegment,
@@ -20,7 +23,10 @@ class RunningMetrics {
   const RunningMetrics.zero()
     : distanceMeters = 0,
       durationSeconds = 0,
-      paceKmH = 0,
+      avgSpeedKmH = 0,
+      currentSpeedKmH = 0,
+      avgPaceMinKm = 0,
+      currentPaceMinKm = 0,
       stepCount = 0,
       currentLocation = null,
       currentSegment = null,
@@ -33,8 +39,17 @@ class RunningMetrics {
   /// Elapsed time for this lap, in seconds.
   final int durationSeconds;
 
-  /// Current pace in km/h. Derived from distance and duration.
-  final double paceKmH;
+  /// Average speed in km/h. Derived from total distance and duration.
+  final double avgSpeedKmH;
+
+  /// Current instantaneous speed in km/h.
+  final double currentSpeedKmH;
+
+  /// Average pace in minutes per kilometer.
+  final double avgPaceMinKm;
+
+  /// Current instantaneous pace in minutes per kilometer.
+  final double currentPaceMinKm;
 
   /// Raw step count from the pedometer (0 when in GPS mode).
   final int stepCount;
@@ -55,7 +70,10 @@ class RunningMetrics {
   RunningMetrics copyWith({
     double? distanceMeters,
     int? durationSeconds,
-    double? paceKmH,
+    double? avgSpeedKmH,
+    double? currentSpeedKmH,
+    double? avgPaceMinKm,
+    double? currentPaceMinKm,
     int? stepCount,
     RouteCoordinate? currentLocation,
     ExerciseSegmentEntity? currentSegment,
@@ -65,7 +83,10 @@ class RunningMetrics {
     return RunningMetrics(
       distanceMeters: distanceMeters ?? this.distanceMeters,
       durationSeconds: durationSeconds ?? this.durationSeconds,
-      paceKmH: paceKmH ?? this.paceKmH,
+      avgSpeedKmH: avgSpeedKmH ?? this.avgSpeedKmH,
+      currentSpeedKmH: currentSpeedKmH ?? this.currentSpeedKmH,
+      avgPaceMinKm: avgPaceMinKm ?? this.avgPaceMinKm,
+      currentPaceMinKm: currentPaceMinKm ?? this.currentPaceMinKm,
       stepCount: stepCount ?? this.stepCount,
       currentLocation: currentLocation ?? this.currentLocation,
       currentSegment: currentSegment ?? this.currentSegment,
@@ -77,6 +98,6 @@ class RunningMetrics {
   @override
   String toString() =>
       'RunningMetrics(dist: ${distanceMeters.toStringAsFixed(1)} m, '
-      'dur: ${durationSeconds}s, pace: ${paceKmH.toStringAsFixed(2)} km/h, '
-      'steps: $stepCount)';
+      'dur: ${durationSeconds}s, avgSpeed: ${avgSpeedKmH.toStringAsFixed(2)} km/h, '
+      'curSpeed: ${currentSpeedKmH.toStringAsFixed(2)} km/h, steps: $stepCount)';
 }

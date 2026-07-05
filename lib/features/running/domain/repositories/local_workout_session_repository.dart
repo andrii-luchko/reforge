@@ -20,7 +20,11 @@ abstract interface class LocalWorkoutSessionRepository {
     required int setId,
     required double distance,
     required int duration,
-    required double pace,
+    required double avgSpeedKmH,
+    required double currentSpeedKmH,
+    required double avgPaceMinKm,
+    required double currentPaceMinKm,
+    required int stepCount,
   });
 
   /// Marks the set as finished locally, signaling the Sync Cubit to push it to the backend.

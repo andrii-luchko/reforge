@@ -101,7 +101,10 @@ Future<void> onStart(ServiceInstance service) async {
               service.invoke('metrics', {
                 'distanceMeters': metrics.distanceMeters,
                 'durationSeconds': metrics.durationSeconds,
-                'paceKmH': metrics.paceKmH,
+                'avgSpeedKmH': metrics.avgSpeedKmH,
+                'currentSpeedKmH': metrics.currentSpeedKmH,
+                'avgPaceMinKm': metrics.avgPaceMinKm,
+                'currentPaceMinKm': metrics.currentPaceMinKm,
                 'stepCount': metrics.stepCount,
                 'currentSegmentIndex': metrics.currentSegmentIndex,
                 'lapJustCompleted': metrics.lapJustCompleted,
@@ -180,7 +183,7 @@ Future<void> onStart(ServiceInstance service) async {
       // the listeners above are registered.
       service.invoke('service_ready');
     },
-    (Object error, StackTrace stack) async {
+    (error, stack) async {
       // An unhandled exception escaped all individual try/catch blocks.
       // This is a fatal error for the background isolate.
       logger.e('Background: FATAL unhandled error. Stopping service.', error, stack);

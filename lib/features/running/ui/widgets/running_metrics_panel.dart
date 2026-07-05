@@ -11,7 +11,7 @@ class RunningMetricsPanel extends StatelessWidget {
   const RunningMetricsPanel({
     required this.distanceMeters,
     required this.durationSeconds,
-    required this.paceKmH,
+    required this.speedKmH,
     required this.system,
     this.stepCount,
     this.isLive = false,
@@ -24,7 +24,7 @@ class RunningMetricsPanel extends StatelessWidget {
     return RunningMetricsPanel(
       distanceMeters: lap.distanceMeters,
       durationSeconds: lap.durationSeconds,
-      paceKmH: lap.paceKmH,
+      speedKmH: isLive ? lap.currentSpeedKmH : lap.avgSpeedKmH,
       stepCount: isLive ? lap.stepCount : null,
       system: system,
     );
@@ -32,7 +32,7 @@ class RunningMetricsPanel extends StatelessWidget {
 
   final double distanceMeters;
   final int durationSeconds;
-  final double paceKmH;
+  final double speedKmH;
   final MeasurementSystem system;
   final int? stepCount;
 
@@ -49,7 +49,7 @@ class RunningMetricsPanel extends StatelessWidget {
       system: system,
       durationInSeconds: durationSeconds,
       distance: km,
-      pace: paceKmH,
+      pace: speedKmH,
     );
   }
 }

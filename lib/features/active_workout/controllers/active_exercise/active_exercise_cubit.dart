@@ -100,7 +100,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       id: row.id,
       distance: (row.distanceMeters ?? 0) / 1000,
       time: Duration(seconds: row.durationSeconds ?? 0),
-      pace: row.paceKmH,
+      pace: row.avgSpeedKmH,
       setNumber: row.setNumber,
       isDone: true,
       programSegmentId: programExercise.segments.length >= row.setNumber

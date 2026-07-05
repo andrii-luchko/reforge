@@ -20,15 +20,6 @@ import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:toastification/toastification.dart';
 
-/// Final screen of the running exercise flow — shown after "Finish Run" is
-/// pressed from [RunningActivePage].
-///
-/// Displays:
-/// - Aggregate stats (total distance, average pace, total time)
-/// - Full list of all completed laps with individual metrics
-/// - "Back to Running" — returns the user to the active tracking phase
-/// - "Finish Exercise" — calls [RunningTrackerCubit.finishExercise] then hands
-///   control to [WorkoutFlowCubit.nextExercise]
 class RunningLapsSummaryPage extends StatelessWidget {
   const RunningLapsSummaryPage({super.key});
 
@@ -50,14 +41,18 @@ class RunningLapsSummaryPage extends StatelessWidget {
           final programExercise = cubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
 
+          final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+
           final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
             return ExerciseLap(
               lapNumber: set.setNumber ?? 0,
               distanceMeters: (set.distance ?? 0) * 1000,
               durationSeconds: set.time?.inSeconds ?? 0,
-              paceKmH: set.pace ?? 0,
-              // ignore: avoid_redundant_argument_values
-              activity: SegmentActivity.run, // TODO(Masayoshi): map properly based on programSegmentId
+              avgSpeedKmH: set.pace ?? 0, // Fallback to pace as speed for old records
+              currentSpeedKmH: 0,
+              avgPaceMinKm: (set.pace ?? 0) > 0 ? 60.0 / set.pace! : 0,
+              currentPaceMinKm: 0,
+              activity: segment?.activity ?? SegmentActivity.run,
             );
           }).toList();
 
@@ -84,29 +79,6 @@ class RunningLapsSummaryPage extends StatelessWidget {
                             WorkoutSection(exercise: exerciseDetails),
                             const SizedBox(height: 16),
 
-                            // if (state.mode == RunningMode.gps) ...[
-                            //   FutureBuilder<List<RouteCoordinate>>(
-                            //     future: context.read<RunningTrackerCubit>().getRoutePoints(),
-                            //     builder: (context, snapshot) {
-                            //       final points = snapshot.data ?? [];
-                            //       if (points.isEmpty) return const SizedBox.shrink();
-
-                            //       return Column(
-                            //         children: [
-                            //           ClipRRect(
-                            //             borderRadius: BorderRadius.circular(16),
-                            //             child: SizedBox(
-                            //               height: 250,
-                            //               width: double.infinity,
-                            //               child: RunningMapView(routeMap: points),
-                            //             ),
-                            //           ),
-                            //           const SizedBox(height: 16),
-                            //         ],
-                            //       );
-                            //     },
-                            //   ),
-                            // ],
                             RunningLapsList(
                               laps: completedLaps,
                               metrics: exerciseDetails.metrics,
