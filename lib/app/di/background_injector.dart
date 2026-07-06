@@ -1,9 +1,5 @@
-import 'dart:io';
-
-import 'package:drift/native.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/running/data/repositories/local_workout_session_repository_impl.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
@@ -51,17 +47,17 @@ Future<void> configureBackgroundDependencies() async {
   // multiple concurrent readers + one writer. The background service is the
   // sole writer; the UI isolate only reads (during session restore). This is
   // safe without additional locking.
-  final dbDir = await getApplicationDocumentsDirectory();
-  final dbFile = File(p.join(dbDir.path, 'workout_db.sqlite'));
-
   final db = WorkoutDatabase(
-    NativeDatabase(
-      dbFile,
-      setup: (rawDb) {
-        // Enable WAL mode so the UI can read concurrently while we write.
-        rawDb.execute('PRAGMA journal_mode=WAL;');
-        rawDb.execute('PRAGMA synchronous=NORMAL;');
-      },
+    driftDatabase(
+      name: 'workout_db',
+      native: DriftNativeOptions(
+        shareAcrossIsolates: true,
+        setup: (db) {
+          db.execute('PRAGMA foreign_keys = ON;');
+          db.execute('PRAGMA journal_mode=WAL;');
+          db.execute('PRAGMA synchronous=NORMAL;');
+        },
+      ),
     ),
   );
 

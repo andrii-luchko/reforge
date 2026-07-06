@@ -9,7 +9,6 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
-import 'package:reforge/features/running/data/services/background_running_service.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
@@ -19,6 +18,7 @@ import 'package:reforge/features/calendar/controllers/calendar/calendar_cubit.da
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
+import 'package:reforge/features/running/data/services/background_running_service.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_restore_cubit.dart';

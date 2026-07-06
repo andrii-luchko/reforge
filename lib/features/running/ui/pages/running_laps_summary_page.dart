@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
@@ -41,9 +42,10 @@ class RunningLapsSummaryPage extends StatelessWidget {
           final programExercise = cubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
 
-          final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
-
           final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
+            final segment = set.programSegmentId == null
+                ? null
+                : programExercise.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
             return ExerciseLap(
               lapNumber: set.setNumber ?? 0,
               distanceMeters: (set.distance ?? 0) * 1000,

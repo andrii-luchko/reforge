@@ -19,8 +19,11 @@ abstract class LocalStorageModule {
     driftDatabase(
       name: 'workout_db',
       native: DriftNativeOptions(
+        shareAcrossIsolates: true,
         setup: (db) {
           db.execute('PRAGMA foreign_keys = ON;');
+          db.execute('PRAGMA journal_mode=WAL;');
+          db.execute('PRAGMA synchronous=NORMAL;');
         },
       ),
     ),
