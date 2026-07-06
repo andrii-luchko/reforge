@@ -21,12 +21,20 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
     required int programExerciseId,
     required int setNumber,
     required String trackingMode,
+    int? programSegmentId,
+    String? segmentType,
   }) async {
-    await _db.createNewActiveSet(
-      sessionId: sessionId,
-      programExerciseId: programExerciseId,
-      setNumber: setNumber,
-      trackingMode: trackingMode,
+    await _db.into(_db.activeRunningSets).insert(
+      ActiveRunningSetsCompanion.insert(
+        sessionId: sessionId,
+        programExerciseId: programExerciseId,
+        setNumber: setNumber,
+        isBusy: const drift.Value(true),
+        isDone: const drift.Value(false),
+        trackingMode: drift.Value(trackingMode),
+        programSegmentId: drift.Value(programSegmentId),
+        segmentType: segmentType != null ? drift.Value(segmentType) : const drift.Value.absent(),
+      ),
     );
     final row = await _db.getInProgressLap(sessionId);
     return row!.id;

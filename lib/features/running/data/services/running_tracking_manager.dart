@@ -124,11 +124,14 @@ class RunningSessionManager {
     } else {
       // Start a fresh lap 1
       _currentLapIndex = 0;
+      final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
         programExerciseId: _programExerciseId!,
         setNumber: _currentLapIndex + 1,
         trackingMode: mode.dbValue,
+        programSegmentId: currentLimit?.segmentId,
+        segmentType: currentLimit?.activityType.name,
       );
       logger.d('RunningSessionManager: Created new lap 1 in DB');
     }
@@ -166,11 +169,14 @@ class RunningSessionManager {
   Future<void> resumeSession() async {
     // If resuming from a suspended state (e.g. from summary), we need to create a new DB row
     if (_currentDbSetId == null && _workoutSessionId != null && _programExerciseId != null) {
+      final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
         programExerciseId: _programExerciseId!,
         setNumber: _currentLapIndex + 1,
         trackingMode: _currentMode!.dbValue,
+        programSegmentId: currentLimit?.segmentId,
+        segmentType: currentLimit?.activityType.name,
       );
       logger.d('RunningSessionManager: Created new lap $_currentLapIndex on resume');
     }
@@ -239,8 +245,12 @@ class RunningSessionManager {
   /// Evaluates if the current metric has reached the target limit for the active lap.
   void _onMetricsReceived(RunningMetrics rawMetrics) {
     // Add context to raw metrics
+    final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
+
     final contextualMetrics = rawMetrics.copyWith(
       currentSegmentIndex: _currentLapIndex,
+      segmentId: currentLimit?.segmentId,
+      activityType: currentLimit?.activityType ?? SegmentActivity.run,
       // ignore: avoid_redundant_argument_values
       currentSegment: null,
     );
@@ -270,8 +280,6 @@ class RunningSessionManager {
     _latestMetrics = contextualMetrics;
 
     // Evaluate target limit if it exists
-    final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
-
     if (currentLimit != null) {
       var limitReached = false;
       switch (currentLimit.metric) {
@@ -359,6 +367,8 @@ class RunningSessionManager {
       _getEngineForMode(_currentMode)?.reset();
       _latestMetrics = null;
 
+      final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
+
       // Emit a one-shot event so the UI can show a popup and play sounds.
       // lapJustCompleted resets to false on every subsequent normal emission.
       _controller.add(
@@ -372,6 +382,8 @@ class RunningSessionManager {
           stepCount: 0,
           currentSegmentIndex: _currentLapIndex,
           lapJustCompleted: true,
+          segmentId: currentLimit?.segmentId,
+          activityType: currentLimit?.activityType ?? SegmentActivity.run,
         ),
       );
 
@@ -381,6 +393,8 @@ class RunningSessionManager {
         programExerciseId: _programExerciseId!,
         setNumber: _currentLapIndex + 1,
         trackingMode: _currentMode!.dbValue,
+        programSegmentId: currentLimit?.segmentId,
+        segmentType: currentLimit?.activityType.name,
       );
     } finally {
       _isCompletingLap = false;

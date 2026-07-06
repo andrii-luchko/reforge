@@ -13,6 +13,8 @@ abstract interface class LocalWorkoutSessionRepository {
     required int programExerciseId,
     required int setNumber,
     required String trackingMode,
+    int? programSegmentId,
+    String? segmentType,
   });
 
   /// Updates the specified set with the latest metrics.

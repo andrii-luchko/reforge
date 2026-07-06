@@ -85,7 +85,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
     logger.d(rows);
 
-    final pendingSync = rows.where((r) => !r.isBusy && !r.isDone).toList();
+    final pendingSync = rows.where((r) => r.readyToSync).toList();
 
     // ignore: cascade_invocations
     pendingSync.forEach(_syncRunningSegment);
@@ -96,7 +96,6 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     // Prevent concurrent syncs
     if (state.isSendingSet) return;
 
-    // Mark as isDone immediately in local state or just let the repository handle it?
     // Let's create the WorkoutSet
     final set = WorkoutSet(
       id: row.id,
@@ -105,12 +104,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       pace: row.avgSpeedKmH,
       setNumber: row.setNumber,
       isDone: true,
-      programSegmentId: programExercise.segments.length >= row.setNumber
-          ? programExercise.segments[row.setNumber - 1].id
-          : null,
+      programSegmentId: row.programSegmentId,
     );
 
-    await repository.completeSet(
+    final result = await repository.completeSet(
       exerciseId: programExercise.exerciseDetails.id,
       workoutProgramExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
@@ -118,11 +115,18 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       set: set,
     );
 
-    await _localWorkoutRepo.markSetAsDone(row.id);
+    await result.fold(
+      onSuccess: (_) async {
+        await _localWorkoutRepo.markSetAsDone(row.id);
 
-    // Also update UI state sets
-    final updatedSets = [...state.sets.where((s) => s.id != row.id), set];
-    emit(state.copyWith(sets: updatedSets));
+        // Also update UI state sets
+        final updatedSets = [...state.sets.where((s) => s.id != row.id), set];
+        emit(state.copyWith(sets: updatedSets));
+      },
+      onError: (e, st) {
+        //TODO:need to handle that error
+      },
+    );
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {

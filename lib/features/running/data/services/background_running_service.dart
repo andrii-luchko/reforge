@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -15,6 +15,7 @@ import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 Future<void> initializeBackgroundService() async {
   if (Platform.isAndroid) {
@@ -92,6 +93,11 @@ Future<void> onStart(ServiceInstance service) async {
             return LapLimit(
               metric: WorkoutMetric.values.firstWhere((m) => m.name == metricName),
               limitValue: (map['limitValue'] as num).toDouble(),
+              segmentId: map['segmentId'] as int?,
+              activityType: SegmentActivity.values.firstWhere(
+                (a) => a.name == (map['activityType'] as String?),
+                orElse: () => SegmentActivity.run,
+              ),
             );
           }).toList();
 
@@ -118,6 +124,8 @@ Future<void> onStart(ServiceInstance service) async {
                 'stepCount': metrics.stepCount,
                 'currentSegmentIndex': metrics.currentSegmentIndex,
                 'lapJustCompleted': metrics.lapJustCompleted,
+                'segmentId': metrics.segmentId,
+                'activityType': metrics.activityType.name,
                 if (metrics.currentLocation != null) 'lat': metrics.currentLocation!.latitude,
                 if (metrics.currentLocation != null) 'lng': metrics.currentLocation!.longitude,
                 if (metrics.currentLocation != null) 'heading': metrics.currentLocation!.heading,

@@ -125,10 +125,8 @@ class ActiveGpsSession extends StatelessWidget {
 
     return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
       builder: (context, state) {
-        final cubit = context.read<RunningTrackerCubit>();
-        final programExercise = cubit.programExercise;
-        final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
         final lap = state.currentLap;
+        final segmentActivity = lap?.activity;
 
         return Column(
           children: [
@@ -160,7 +158,6 @@ class ActiveGpsSession extends StatelessWidget {
                     child: const ActiveRunningMapContainer(),
                   ),
 
-                  //TODO: Lately show pause tag based on cubit value across two modes
                   Positioned(
                     left: 16,
                     right: 16,
@@ -184,9 +181,9 @@ class ActiveGpsSession extends StatelessWidget {
                       right: 16,
                       top: 16,
                       child: IgnorePointer(
-                        ignoring: segment?.activity == .walk,
+                        ignoring: segmentActivity == .walk,
                         child: AnimatedOpacity(
-                          opacity: segment?.activity == .walk ? 1 : 0,
+                          opacity: segmentActivity == .walk ? 1 : 0,
                           duration: const Duration(milliseconds: 200),
                           child: const AppTag(
                             text: 'Walk',
@@ -218,8 +215,8 @@ class ActivePedometerSession extends StatelessWidget {
         final programExercise = cubit.programExercise;
         final exerciseDetails = programExercise.exerciseDetails;
 
-        final segment = cubit.currentSegment;
         final lap = state.currentLap;
+        final segmentActivity = lap?.activity;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -231,6 +228,7 @@ class ActivePedometerSession extends StatelessWidget {
                   hintText: t.workout.addNotesHint,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
+                  initialValue: context.read<ActiveExerciseCubit>().state.notes,
                   onChanged: context.read<ActiveExerciseCubit>().setNote,
                 ),
               ),
@@ -266,7 +264,7 @@ class ActivePedometerSession extends StatelessWidget {
               ),
 
               AnimatedOpacity(
-                opacity: !state.isPaused && segment?.activity == .walk ? 1 : 0,
+                opacity: !state.isPaused && segmentActivity == .walk ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
                 child: const AppTag(
                   text: 'Walk',

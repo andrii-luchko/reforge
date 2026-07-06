@@ -74,6 +74,7 @@ class RunningLapsSummaryPage extends StatelessWidget {
                                 hintText: t.workout.addNotesHint,
                                 maxLines: null,
                                 keyboardType: TextInputType.multiline,
+                                initialValue: context.read<ActiveExerciseCubit>().state.notes,
                                 onChanged: context.read<ActiveExerciseCubit>().setNote,
                               ),
                             ),

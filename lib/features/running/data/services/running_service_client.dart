@@ -5,6 +5,7 @@ import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 /// A UI-isolate client for communicating with the [FlutterBackgroundService].
 ///
@@ -42,6 +43,11 @@ class RunningServiceClient {
         stepCount: event['stepCount'] as int,
         currentSegmentIndex: event['currentSegmentIndex'] as int? ?? 0,
         lapJustCompleted: event['lapJustCompleted'] as bool? ?? false,
+        segmentId: event['segmentId'] as int?,
+        activityType: SegmentActivity.values.firstWhere(
+          (a) => a.name == (event['activityType'] as String?),
+          orElse: () => SegmentActivity.run,
+        ),
         currentLocation: event['lat'] != null && event['lng'] != null
             ? RouteCoordinate(
                 latitude: (event['lat'] as num).toDouble(),
@@ -95,6 +101,8 @@ class RunningServiceClient {
             (l) => {
               'metric': l.metric.name,
               'limitValue': l.limitValue,
+              'segmentId': l.segmentId,
+              'activityType': l.activityType.name,
             },
           )
           .toList(),

@@ -11,6 +11,10 @@ part 'database.g.dart';
 /// Each row is one lap. Metrics are null until tracking data arrives.
 /// The [isBusy] flag marks the currently active in-progress lap.
 /// The [isDone] flag marks completed laps that have been sent to the backend.
+extension ActiveRunningSetX on ActiveRunningSet {
+  bool get readyToSync => !isBusy && !isDone;
+}
+
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(
@@ -42,6 +46,9 @@ class ActiveRunningSets extends Table {
   /// Segment type for future segment-based running (e.g. 'run', 'walk').
   /// Defaults to 'run'.
   TextColumn get segmentType => text().withDefault(const Constant('run'))();
+
+  /// Links to ExerciseSegmentEntity.id for backend synchronization.
+  IntColumn get programSegmentId => integer().nullable()();
 
   /// Timestamp of the last background snapshot written by the background
   /// service. Used to detect stale in-progress laps after a force-kill.

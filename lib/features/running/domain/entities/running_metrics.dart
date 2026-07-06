@@ -1,5 +1,6 @@
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
+import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 
 /// A snapshot of real-time running metrics emitted by [TrackingEngine].
@@ -18,6 +19,8 @@ class RunningMetrics {
     this.currentSegment,
     this.currentSegmentIndex = 0,
     this.lapJustCompleted = false,
+    this.segmentId,
+    this.activityType = SegmentActivity.run,
   });
 
   const RunningMetrics.zero()
@@ -31,7 +34,9 @@ class RunningMetrics {
       currentLocation = null,
       currentSegment = null,
       currentSegmentIndex = 0,
-      lapJustCompleted = false;
+      lapJustCompleted = false,
+      segmentId = null,
+      activityType = SegmentActivity.run;
 
   /// Total distance covered in this lap, in metres.
   final double distanceMeters;
@@ -67,6 +72,12 @@ class RunningMetrics {
   /// Resets to false on the next emission. UI should listen via BlocListener.
   final bool lapJustCompleted;
 
+  /// The backend ID of the current segment (if applicable).
+  final int? segmentId;
+
+  /// The activity type of the current segment.
+  final SegmentActivity activityType;
+
   RunningMetrics copyWith({
     double? distanceMeters,
     int? durationSeconds,
@@ -79,6 +90,8 @@ class RunningMetrics {
     ExerciseSegmentEntity? currentSegment,
     int? currentSegmentIndex,
     bool? lapJustCompleted,
+    int? segmentId,
+    SegmentActivity? activityType,
   }) {
     return RunningMetrics(
       distanceMeters: distanceMeters ?? this.distanceMeters,
@@ -92,6 +105,8 @@ class RunningMetrics {
       currentSegment: currentSegment ?? this.currentSegment,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
       lapJustCompleted: lapJustCompleted ?? false,
+      segmentId: segmentId ?? this.segmentId,
+      activityType: activityType ?? this.activityType,
     );
   }
 

@@ -153,18 +153,18 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> endWorkout() async {
     if (state.isSubmitting) return;
 
-    // Suspend instead of stopping. The stream stays alive in case they return.
     _serviceClient.suspendSessionForSummary();
 
-    // Reset pause state so if they return and press resume, it works properly.
-    // Wait, if they return to active, should it be paused? Yes, the engine is paused.
-    emit(state.copyWith(isPaused: true));
+    emit(
+      state.copyWith(
+        isPaused: true,
+        currentLap: null,
+      ),
+    );
 
     goToSummary();
   }
 
-  /// Called by [LapCompletedListener] as a safety net to ensure
-  /// [RunningTrackerState.lapJustCompleted] is reset after handling.
   void clearLapCompleted() {
     if (state.lapJustCompleted) {
       emit(state.copyWith(lapJustCompleted: false));
@@ -192,6 +192,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           (s) => LapLimit(
             metric: s.targetMetric,
             limitValue: s.targetMetric == WorkoutMetric.time ? s.durationSec.toDouble() : s.distanceM.toDouble(),
+            segmentId: s.id,
+            activityType: s.activity,
           ),
         )
         .toList();
@@ -225,10 +227,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       return;
     }
 
-    final index = metrics.currentSegmentIndex;
-    final activity = (index < programExercise.segments.length)
-        ? programExercise.segments[index].activity
-        : SegmentActivity.run;
+    final activity = metrics.activityType;
 
     emit(
       state.copyWith(
