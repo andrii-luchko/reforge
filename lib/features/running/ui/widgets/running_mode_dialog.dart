@@ -1,33 +1,23 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/shared/badge_image.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
+import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 
-/// Modal dialog for picking the running tracking mode.
-///
-/// Shows two options: GPS (outdoor) and Pedometer (treadmill).
-/// On selection → calls [RunningTrackerCubit.setMode] then pushes
-/// [StartRunningPageRoute] (countdown). After the countdown pops
-/// with `true` → calls [RunningTrackerCubit.startLap].
 class RunningModeDialog extends StatelessWidget {
   const RunningModeDialog({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return AppDialog.show<void>(
+  static Future<RunningMode?> show(BuildContext context) {
+    return AppDialog.show<RunningMode?>(
       context,
-      child: BlocProvider.value(
-        value: context.read<RunningTrackerCubit>(),
-        child: const RunningModeDialog(),
-      ),
+      child: const RunningModeDialog(),
     );
   }
 
@@ -57,7 +47,7 @@ class RunningModeDialog extends StatelessWidget {
 
           _RunningModeOption(
             icon: Icons.fitness_center_rounded,
-            title: 'Treadmill',
+            title: 'Treadmill run',
 
             mode: RunningMode.pedometer,
             onTap: (mode) => _onModeSelected(context, mode),
@@ -70,21 +60,7 @@ class RunningModeDialog extends StatelessWidget {
   }
 
   Future<void> _onModeSelected(BuildContext context, RunningMode mode) async {
-    final runningCubit = context.read<RunningTrackerCubit>()..setMode(mode);
-    Navigator.of(context).pop(); // close dialog
-
-    // Push countdown — returns true when countdown finishes.
-    final started = await const StartRunningPageRoute().push<bool>(context);
-
-    logger.d('''
-started $started,
-mounted ${context.mounted}
-
-''');
-
-    if (started ?? false) {
-      await runningCubit.startLap();
-    }
+    Navigator.of(context).pop(mode);
   }
 }
 
@@ -157,6 +133,63 @@ class _RunningModeOption extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AudioHintDialog extends StatelessWidget {
+  const AudioHintDialog({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return AppDialog.show<void>(
+      context,
+      child: const AudioHintDialog(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.appTheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Workout Cues',
+            style: subheadH2Medium.copyWith(color: theme.beige100),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+
+          SizedBox(
+            height: 160,
+            child: BadgeImage.asset(
+              asset: Assets.images.png.magnificHammer.path,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Follow the Hammer',
+            style: subheadH1Medium.copyWith(color: theme.beige100),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "The hammer sound will guide you through each interval. One strike means it's time to switch pace, while three strikes indicate you've completed the workout.",
+            style: bodyLRegular.copyWith(color: theme.beige600),
+            textAlign: TextAlign.center,
+          ),
+
+          const SizedBox(height: 24),
+
+          PrimaryButton(
+            text: 'Got it',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
       ),
     );
   }

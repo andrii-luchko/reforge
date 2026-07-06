@@ -8,6 +8,7 @@ class DefaultDialogHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onClosePressed;
   final int textFlex;
+
   @override
   Widget build(BuildContext context) {
     return Row(

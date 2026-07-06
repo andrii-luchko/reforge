@@ -10,6 +10,9 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// Selected tracking mode. Null until the user picks one.
     RunningMode? mode,
 
+    // True after check permission.
+    @Default(false) bool isPermissionGranted,
+
     /// The lap currently being tracked. Null when not in active phase.
     ExerciseLap? currentLap,
 

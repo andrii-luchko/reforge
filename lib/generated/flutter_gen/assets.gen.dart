@@ -239,6 +239,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/lock.png
   AssetGenImage get lock => const AssetGenImage('assets/images/png/lock.png');
 
+  /// File path: assets/images/png/magnific_hammer.png
+  AssetGenImage get magnificHammer => const AssetGenImage('assets/images/png/magnific_hammer.png');
+
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
 
@@ -272,6 +275,7 @@ class $AssetsImagesPngGen {
     gyohyoRankCard,
     icon1024x1024,
     lock,
+    magnificHammer,
     noiseAndTexture,
     seirenRankCard,
     shaderNoise,

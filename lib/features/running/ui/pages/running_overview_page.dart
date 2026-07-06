@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
@@ -27,13 +28,47 @@ class RunningOverviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<RunningTrackerCubit, RunningTrackerState>(
-      listenWhen: (prev, curr) => prev.error != curr.error,
-      listener: (context, state) {
-        if (state.error case final err?) {
-          toastification.showErrorToast(err, context);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<RunningTrackerCubit, RunningTrackerState>(
+          listenWhen: (prev, curr) => prev.error != curr.error,
+          listener: (context, state) {
+            if (state.error case final err?) {
+              toastification.showErrorToast(err, context);
+            }
+          },
+        ),
+        BlocListener<RunningTrackerCubit, RunningTrackerState>(
+          listenWhen: (prev, curr) => prev.mode == null && curr.mode != null,
+
+          listener: (context, state) async {
+            final runningCubit = context.read<RunningTrackerCubit>();
+
+            await runningCubit.askPermissions();
+          },
+        ),
+
+        BlocListener<RunningTrackerCubit, RunningTrackerState>(
+          listenWhen: (previous, current) => !previous.isPermissionGranted && current.isPermissionGranted,
+
+          listener: (context, state) async {
+            final runningCubit = context.read<RunningTrackerCubit>();
+
+            if (context.mounted) {
+              //TODO show only once, after showing register flag inside shared prefs;
+              await AudioHintDialog.show(context);
+
+              if (context.mounted) {
+                final started = await const StartRunningPageRoute().push<bool>(context);
+
+                if (started ?? false) {
+                  await runningCubit.startLap();
+                }
+              }
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
         builder: (context, runningState) {
           final cubit = context.read<RunningTrackerCubit>();
@@ -59,6 +94,7 @@ class RunningOverviewPage extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 16, bottom: 16),
                               child: AppTextField(
+                                initialValue: context.read<ActiveExerciseCubit>().state.notes,
                                 hintText: t.workout.addNotesHint,
                                 maxLines: null,
                                 keyboardType: TextInputType.multiline,
@@ -84,7 +120,13 @@ class RunningOverviewPage extends StatelessWidget {
                     const SizedBox(height: 8),
                     SecondaryButton(
                       text: t.workout.startRunning,
-                      onPressed: () => RunningModeDialog.show(context),
+                      onPressed: () async {
+                        final mode = await RunningModeDialog.show(context);
+
+                        if (mode != null) {
+                          cubit.setMode(mode);
+                        }
+                      },
                     ),
                   ],
                 ),

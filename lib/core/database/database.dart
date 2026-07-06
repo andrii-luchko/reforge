@@ -55,7 +55,7 @@ class WorkoutSessionCache extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   /// Remote session id from the backend (WorkoutSession.id)
-  IntColumn get remoteSessionId => integer()();
+  IntColumn get remoteSessionId => integer().unique()();
 
   /// Program day id needed to re-fetch ProgramDayEntity with full exercise details
   IntColumn get programDayId => integer()();

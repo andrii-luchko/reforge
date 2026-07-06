@@ -6,6 +6,7 @@ import 'package:reforge/features/active_workout/controllers/active_exercise/acti
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/map/running_map_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -21,7 +22,6 @@ class RunningActivePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final measureSystem = context.read<ActiveExerciseCubit>().state.measureSystem;
     return BlocListener<RunningTrackerCubit, RunningTrackerState>(
       listenWhen: (prev, curr) => prev.error != curr.error,
       listener: (context, state) {
@@ -29,142 +29,36 @@ class RunningActivePage extends StatelessWidget {
           toastification.showErrorToast(err, context);
         }
       },
-      child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
-        builder: (context, state) {
-          final cubit = context.read<RunningTrackerCubit>();
-          final programExercise = cubit.programExercise;
-          final exerciseDetails = programExercise.exerciseDetails;
+      child: DefaultBackground(
+        body: SafeArea(
+          child: Column(
+            children: [
+              BlocSelector<RunningTrackerCubit, RunningTrackerState, RunningMode?>(
+                selector: (state) => state.mode,
+                builder: (context, mode) {
+                  return switch (mode) {
+                    .gps => const Expanded(child: ActiveGpsSession()),
 
-          final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
-          final lap = state.currentLap;
-
-          return DefaultBackground(
-            body: SafeArea(
-              child: Column(
-                children: [
-                  switch (state.mode) {
-                    .gps => Expanded(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 20),
-
-                            child: lap != null
-                                ? RunningMetricsPanel.fromExerciseLap(
-                                    lap,
-                                    measureSystem,
-                                    isLive: !state.isPaused,
-                                  )
-                                : RunningMetricsPanel(
-                                    distanceMeters: 0,
-                                    durationSeconds: 0,
-                                    speedKmH: 0,
-
-                                    system: measureSystem,
-                                  ),
-                          ),
-
-                          Expanded(
-                            child: Stack(
-                              children: [
-                                BlocProvider(
-                                  create: (context) => getIt<RunningMapCubit>(
-                                    param1: context.read<RunningTrackerCubit>().workoutSessionId,
-                                  )..init(),
-                                  child: const ActiveRunningMapContainer(),
-                                ),
-
-                                //TODO: Lately show pause tag based on cubit value acros two modes
-                                Positioned(
-                                  left: 16,
-                                  right: 16,
-                                  top: 16,
-                                  child: IgnorePointer(
-                                    ignoring: !state.isPaused,
-                                    child: AnimatedOpacity(
-                                      opacity: state.isPaused ? 1 : 0,
-                                      duration: const Duration(milliseconds: 200),
-                                      child: const AppTag(
-                                        text: 'Paused',
-                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                Positioned(
-                                  left: 16,
-                                  right: 16,
-                                  top: 16,
-                                  child: IgnorePointer(
-                                    ignoring: segment?.activity == .walk,
-                                    child: AnimatedOpacity(
-                                      opacity: segment?.activity == .walk ? 1 : 0,
-                                      duration: const Duration(milliseconds: 200),
-                                      child: const AppTag(
-                                        text: 'Walk',
-                                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    .pedometer => Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: AppTextField(
-                                hintText: t.workout.addNotesHint,
-                                maxLines: null,
-                                keyboardType: TextInputType.multiline,
-                                onChanged: context.read<ActiveExerciseCubit>().setNote,
-                              ),
-                            ),
-
-                            WorkoutSection(exercise: exerciseDetails),
-                            const SizedBox(height: 32),
-
-                            if (lap != null)
-                              RunningMetricsPanel.fromExerciseLap(
-                                lap,
-                                measureSystem,
-                                isLive: !state.isPaused,
-                              )
-                            else
-                              RunningMetricsPanel(
-                                distanceMeters: 0,
-                                durationSeconds: 0,
-                                speedKmH: 0,
-
-                                system: measureSystem,
-                              ),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
-                      ),
-                    ),
+                    .pedometer => const Expanded(child: ActivePedometerSession()),
 
                     _ => Container(),
-                  },
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _ActionButtons(state: state, cubit: cubit),
-                  ),
-                ],
+                  };
+                },
               ),
-            ),
-          );
-        },
+
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
+                  builder: (context, state) {
+                    final cubit = context.read<RunningTrackerCubit>();
+                    return _ActionButtons(state: state, cubit: cubit);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -218,6 +112,172 @@ class _ActionButtons extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ActiveGpsSession extends StatelessWidget {
+  const ActiveGpsSession({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final measureSystem = context.read<ActiveExerciseCubit>().state.measureSystem;
+
+    return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
+      builder: (context, state) {
+        final cubit = context.read<RunningTrackerCubit>();
+        final programExercise = cubit.programExercise;
+        final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+        final lap = state.currentLap;
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 20),
+
+              child: lap != null
+                  ? RunningMetricsPanel.fromExerciseLap(
+                      lap,
+                      measureSystem,
+                      isLive: !state.isPaused,
+                    )
+                  : RunningMetricsPanel(
+                      distanceMeters: 0,
+                      durationSeconds: 0,
+                      speedKmH: 0,
+
+                      system: measureSystem,
+                    ),
+            ),
+
+            Expanded(
+              child: Stack(
+                children: [
+                  BlocProvider(
+                    create: (context) => getIt<RunningMapCubit>(
+                      param1: context.read<RunningTrackerCubit>().workoutSessionId,
+                    )..init(),
+                    child: const ActiveRunningMapContainer(),
+                  ),
+
+                  //TODO: Lately show pause tag based on cubit value across two modes
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    child: IgnorePointer(
+                      ignoring: !state.isPaused,
+                      child: AnimatedOpacity(
+                        opacity: state.isPaused ? 1 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: const AppTag(
+                          text: 'Paused',
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (!state.isPaused)
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      top: 16,
+                      child: IgnorePointer(
+                        ignoring: segment?.activity == .walk,
+                        child: AnimatedOpacity(
+                          opacity: segment?.activity == .walk ? 1 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: const AppTag(
+                            text: 'Walk',
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class ActivePedometerSession extends StatelessWidget {
+  const ActivePedometerSession({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final measureSystem = context.read<ActiveExerciseCubit>().state.measureSystem;
+
+    return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
+      builder: (context, state) {
+        final cubit = context.read<RunningTrackerCubit>();
+        final programExercise = cubit.programExercise;
+        final exerciseDetails = programExercise.exerciseDetails;
+
+        final segment = cubit.currentSegment;
+        final lap = state.currentLap;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: AppTextField(
+                  hintText: t.workout.addNotesHint,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  onChanged: context.read<ActiveExerciseCubit>().setNote,
+                ),
+              ),
+
+              WorkoutSection(exercise: exerciseDetails),
+              const SizedBox(height: 32),
+
+              if (lap != null)
+                RunningMetricsPanel.fromExerciseLap(
+                  lap,
+                  measureSystem,
+                  isLive: !state.isPaused,
+                )
+              else
+                RunningMetricsPanel(
+                  distanceMeters: 0,
+                  durationSeconds: 0,
+                  speedKmH: 0,
+
+                  system: measureSystem,
+                ),
+
+              const SizedBox(height: 32),
+              AnimatedOpacity(
+                opacity: state.isPaused ? 1 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: state.isPaused
+                    ? const AppTag(
+                        text: 'Paused',
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+
+              AnimatedOpacity(
+                opacity: !state.isPaused && segment?.activity == .walk ? 1 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: const AppTag(
+                  text: 'Walk',
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
     );
   }
 }

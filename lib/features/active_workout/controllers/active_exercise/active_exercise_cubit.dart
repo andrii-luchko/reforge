@@ -83,6 +83,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
+    logger.d(rows);
+
     final pendingSync = rows.where((r) => !r.isBusy && !r.isDone).toList();
 
     // ignore: cascade_invocations

@@ -14,6 +14,7 @@ import 'package:reforge/features/running/domain/repositories/local_workout_sessi
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 
 part 'running_tracker_cubit.freezed.dart';
@@ -37,6 +38,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   final ProgramExerciseEntity programExercise;
 
   StreamSubscription<RunningMetrics>? _metricsSub;
+
+  ExerciseSegmentEntity? get currentSegment => programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
 
   Future<void> init() async {
     final isServiceRunning = await _serviceClient.isRunning;
@@ -98,18 +101,23 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     emit(state.copyWith(phase: RunningPhase.overview));
   }
 
+  Future<void> askPermissions() async {
+    final mode = state.mode;
+    if (mode == null) return;
+
+    final hasPermission = await _permissionsService.requestPermissionsForMode(mode);
+    if (!hasPermission) {
+      emit(state.copyWith(phase: RunningPhase.permissionDenied));
+    } else {
+      emit(state.copyWith(isPermissionGranted: true));
+    }
+  }
+
   Future<void> startLap() async {
     final mode = state.mode;
     if (mode == null) return;
 
-    // Check permissions
-    final hasPermission = await _permissionsService.requestPermissionsForMode(mode);
-    if (!hasPermission) {
-      emit(state.copyWith(phase: RunningPhase.permissionDenied));
-      return;
-    }
-
-    // Start tracking via Manager (metrics get reset in the Manager if fresh)
+    if (state.phase == .permissionDenied) return;
 
     emit(
       state.copyWith(
