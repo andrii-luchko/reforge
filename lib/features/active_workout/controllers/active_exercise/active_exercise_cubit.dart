@@ -84,8 +84,6 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
-    logger.d(rows.lastOrNull);
-
     final mappedSets = rows.map((row) {
       return WorkoutSet(
         id: row.id,

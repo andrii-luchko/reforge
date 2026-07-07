@@ -85,6 +85,18 @@
                 "other": "$n years"
             }
         },
+        "unit_hour(plural)": {
+            "one": "hour",
+            "other": "hours"
+        },
+        "unit_minute(plural)": {
+            "one": "minute",
+            "other": "minutes"
+        },
+        "unit_second(plural)": {
+            "one": "second",
+            "other": "seconds"
+        },
         "back_button": "Back",
         "next_button": "Next",
         "submit_button": "Submit",

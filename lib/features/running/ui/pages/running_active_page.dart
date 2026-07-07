@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
@@ -8,6 +9,7 @@ import 'package:reforge/features/running/controller/map/running_map_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
+import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -22,13 +24,36 @@ class RunningActivePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<RunningTrackerCubit, RunningTrackerState>(
-      listenWhen: (prev, curr) => prev.error != curr.error,
-      listener: (context, state) {
-        if (state.error case final err?) {
-          toastification.showErrorToast(err, context);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<RunningTrackerCubit, RunningTrackerState>(
+          listenWhen: (prev, curr) => prev.error != curr.error,
+          listener: (context, state) {
+            if (state.error case final err?) {
+              toastification.showErrorToast(err, context);
+            }
+          },
+        ),
+        BlocListener<RunningTrackerCubit, RunningTrackerState>(
+          listenWhen: (prev, curr) => curr.phase == .active && curr.lapJustCompleted && !prev.lapJustCompleted,
+          listener: (context, state) async {
+            // state.currentSegmentIndex is already the NEW active segment index.
+            // The segment that just finished = currentSegmentIndex - 1.
+
+            logger.d(state.currentSegmentIndex);
+            final cubit = context.read<RunningTrackerCubit>();
+            final programExercise = cubit.programExercise;
+
+            final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+
+            if (segment != null && segment.activity == .walk) {
+              await WalkAudioHintDialog.show(context, Duration(seconds: segment.durationSec));
+            }
+
+            cubit.clearLapCompleted();
+          },
+        ),
+      ],
       child: DefaultBackground(
         body: SafeArea(
           child: Column(
