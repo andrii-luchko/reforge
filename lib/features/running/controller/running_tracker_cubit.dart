@@ -12,6 +12,7 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
+import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
@@ -26,6 +27,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     this._serviceClient,
     this._repository,
     this._permissionsService,
+    this._preferencesService,
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
   ) : super(const RunningTrackerState());
@@ -33,6 +35,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   final RunningServiceClient _serviceClient;
   final LocalWorkoutSessionRepository _repository;
   final RunningPermissionsService _permissionsService;
+  final RunningPreferencesService _preferencesService;
 
   final int workoutSessionId;
   final ProgramExerciseEntity programExercise;
@@ -40,6 +43,12 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   StreamSubscription<RunningMetrics>? _metricsSub;
 
   ExerciseSegmentEntity? get currentSegment => programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+
+  bool get hasSeenAudioHint => _preferencesService.hasSeenAudioHint;
+
+  Future<void> markAudioHintSeen() async {
+    await _preferencesService.markAudioHintSeen();
+  }
 
   Future<void> init() async {
     final isServiceRunning = await _serviceClient.isRunning;

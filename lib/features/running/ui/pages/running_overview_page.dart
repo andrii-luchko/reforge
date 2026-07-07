@@ -32,7 +32,7 @@ class RunningOverviewPage extends StatelessWidget {
     return MultiBlocListener(
       listeners: [
         BlocListener<RunningTrackerCubit, RunningTrackerState>(
-          listenWhen: (prev, curr) => prev.error != curr.error,
+          listenWhen: (prev, curr) => curr.phase == .overview && prev.error != curr.error,
           listener: (context, state) {
             if (state.error case final err?) {
               toastification.showErrorToast(err, context);
@@ -40,7 +40,7 @@ class RunningOverviewPage extends StatelessWidget {
           },
         ),
         BlocListener<RunningTrackerCubit, RunningTrackerState>(
-          listenWhen: (prev, curr) => prev.mode == null && curr.mode != null,
+          listenWhen: (prev, curr) => curr.phase == .overview && prev.mode == null && curr.mode != null,
 
           listener: (context, state) async {
             final runningCubit = context.read<RunningTrackerCubit>();
@@ -50,14 +50,17 @@ class RunningOverviewPage extends StatelessWidget {
         ),
 
         BlocListener<RunningTrackerCubit, RunningTrackerState>(
-          listenWhen: (previous, current) => !previous.isPermissionGranted && current.isPermissionGranted,
+          listenWhen: (previous, current) =>
+              current.phase == .overview && !previous.isPermissionGranted && current.isPermissionGranted,
 
           listener: (context, state) async {
             final runningCubit = context.read<RunningTrackerCubit>();
 
             if (context.mounted) {
-              //TODO show only once, after showing register flag inside shared prefs;
-              await AudioHintDialog.show(context);
+              if (!runningCubit.hasSeenAudioHint) {
+                await AudioHintDialog.show(context);
+                await runningCubit.markAudioHintSeen();
+              }
 
               if (context.mounted) {
                 final started = await const StartRunningPageRoute().push<bool>(context);
