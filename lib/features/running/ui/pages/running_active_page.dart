@@ -154,6 +154,7 @@ class ActiveGpsSession extends StatelessWidget {
                   BlocProvider(
                     create: (context) => getIt<RunningMapCubit>(
                       param1: context.read<RunningTrackerCubit>().workoutSessionId,
+                      // ignore: discarded_futures
                     )..init(),
                     child: const ActiveRunningMapContainer(),
                   ),

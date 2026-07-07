@@ -44,17 +44,18 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> init() async {
     final isServiceRunning = await _serviceClient.isRunning;
     final lap = await _repository.getInProgressLap(workoutSessionId);
+    final lastLap = await _repository.getLastLap(workoutSessionId);
 
-    if (isServiceRunning || lap != null) {
+    if (isServiceRunning || lastLap != null) {
       // Background restore logic: jump to active but paused
-      final modeStr = lap?.trackingMode ?? RunningMode.gps.dbValue;
+      final modeStr = lap?.trackingMode ?? lastLap?.trackingMode ?? RunningMode.gps.dbValue;
       final mode = RunningMode.values.firstWhere(
         (m) => m.dbValue == modeStr,
         orElse: () => RunningMode.gps,
       );
 
       // Calculate real activity from playlist
-      final index = (lap?.setNumber ?? 1) - 1;
+      final index = lap != null ? (lap.setNumber - 1) : (lastLap?.setNumber ?? 0);
       final activity = (index < programExercise.segments.length)
           ? programExercise.segments[index].activity
           : SegmentActivity.run;

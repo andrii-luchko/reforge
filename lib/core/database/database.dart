@@ -15,9 +15,11 @@ extension ActiveRunningSetX on ActiveRunningSet {
   bool get readyToSync => !isBusy && !isDone;
 }
 
+@TableIndex(name: 'idx_active_running_sets_search', columns: {#sessionId, #isBusy, #isDone})
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(
+
     WorkoutSessionCache,
     #remoteSessionId,
     onDelete: KeyAction.cascade,
@@ -77,9 +79,13 @@ class WorkoutSessionCache extends Table {
   /// Index of the last exercise the user was on.
   /// Used as a fallback to navigate back to the right screen on restore.
   IntColumn get lastExerciseIndex => integer().withDefault(const Constant(0))();
+
+  /// Last time this session had activity. Used for garbage collection.
+  DateTimeColumn get updatedAt => dateTime().nullable()();
 }
 
 /// GPS route points collected during a running session.
+@TableIndex(name: 'idx_session_route_points_lookup', columns: {#sessionId, #timestamp})
 class SessionRoutePoints extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -106,12 +112,19 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.addColumn(workoutSessionCache, workoutSessionCache.updatedAt);
+        await m.createIndex(idxActiveRunningSetsSearch);
+        await m.createIndex(idxSessionRoutePointsLookup);
+      }
     },
   );
 
@@ -188,6 +201,15 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   Future<ActiveRunningSet?> getInProgressLap(int sessionId) {
     return (select(activeRunningSets)
           ..where((t) => t.sessionId.equals(sessionId) & t.isBusy.equals(true) & t.isDone.equals(false))
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  /// Returns the last lap (highest setNumber) for [sessionId].
+  Future<ActiveRunningSet?> getLastLap(int sessionId) {
+    return (select(activeRunningSets)
+          ..where((t) => t.sessionId.equals(sessionId))
+          ..orderBy([(t) => OrderingTerm(expression: t.setNumber, mode: OrderingMode.desc)])
           ..limit(1))
         .getSingleOrNull();
   }

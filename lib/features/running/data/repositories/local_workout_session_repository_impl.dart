@@ -110,6 +110,11 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   }
 
   @override
+  Future<ActiveRunningSet?> getLastLap(int sessionId) {
+    return _db.getLastLap(sessionId);
+  }
+
+  @override
   Future<void> markSetAsDone(int setId) {
     return _db.markSetAsDone(setId);
   }

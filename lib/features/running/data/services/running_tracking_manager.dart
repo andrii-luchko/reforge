@@ -4,7 +4,6 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
-import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
@@ -46,39 +45,6 @@ class RunningSessionManager {
   Stream<RunningMetrics> get metricsStream => _controller.stream;
 
   RunningMode? get currentMode => _currentMode;
-
-  /// Checks if there is an interrupted session we should restore.
-  Future<({RunningMode mode, ExerciseLap initialLap})?> getRestoredSession(int sessionId) async {
-    final lap = await _repository.getInProgressLap(sessionId);
-    if (lap == null || lap.trackingMode == null) return null;
-    final mode = RunningMode.values.firstWhere(
-      (m) => m.dbValue == lap.trackingMode,
-      orElse: () => RunningMode.pedometer,
-    );
-
-    final duration = lap.durationSeconds ?? 0;
-    final distanceKm = (lap.distanceMeters ?? 0.0) / 1000.0;
-    final avgSpeedKmH = duration > 0 ? (distanceKm / (duration / 3600.0)) : 0.0;
-    final avgPaceMinKm = avgSpeedKmH > 0 ? 60.0 / avgSpeedKmH : 0.0;
-
-    final initialLap = ExerciseLap(
-      driftSetId: lap.id,
-      lapNumber: lap.setNumber,
-      distanceMeters: lap.distanceMeters ?? 0.0,
-      durationSeconds: duration,
-      avgSpeedKmH: avgSpeedKmH,
-      currentSpeedKmH: lap.currentSpeedKmH ?? 0.0,
-      avgPaceMinKm: avgPaceMinKm,
-      currentPaceMinKm: lap.currentPaceMinKm ?? 0.0,
-      stepCount: lap.stepCount ?? 0,
-      activity: SegmentActivity.values.firstWhere(
-        (e) => e.name == lap.segmentType,
-        orElse: () => SegmentActivity.run,
-      ),
-    );
-
-    return (mode: mode, initialLap: initialLap);
-  }
 
   /// Fetches historical route points for the session.
   Future<List<RouteCoordinate>> getRoutePoints(int sessionId) {
@@ -122,8 +88,10 @@ class RunningSessionManager {
       }
       logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
     } else {
-      // Start a fresh lap 1
-      _currentLapIndex = 0;
+      // Start a fresh lap
+      final lastLap = await _repository.getLastLap(sessionId);
+      _currentLapIndex = lastLap?.setNumber ?? 0;
+      
       final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
@@ -133,7 +101,7 @@ class RunningSessionManager {
         programSegmentId: currentLimit?.segmentId,
         segmentType: currentLimit?.activityType.name,
       );
-      logger.d('RunningSessionManager: Created new lap 1 in DB');
+      logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
     }
 
     final engine = _getEngineForMode(mode);

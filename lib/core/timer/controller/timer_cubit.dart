@@ -6,14 +6,6 @@ import 'package:injectable/injectable.dart';
 part 'timer_state.dart';
 part 'timer_cubit.freezed.dart';
 
-/// A wall-clock timer that survives app backgrounding.
-///
-/// ## Why Timestamp Sync?
-/// A naive `duration + 1` counter freezes when the OS suspends the UI isolate.
-/// Instead, we record [_startedAt] when the timer starts and derive the current
-/// duration as `_baseSec + DateTime.now().difference(_startedAt!)`.
-/// This means that when the app resumes after being backgrounded, the very next
-/// tick (or an explicit [onAppResumed] call) will produce the correct elapsed time.
 @injectable
 class TimerCubit extends Cubit<TimerState> {
   TimerCubit() : super(const TimerState());
@@ -43,8 +35,6 @@ class TimerCubit extends Cubit<TimerState> {
     _startTicking();
   }
 
-  /// Pauses the timer. Saves current elapsed time so [resume] can continue
-  /// from the right value.
   void pauseTimer() {
     _timer?.cancel();
     _timer = null;
@@ -82,10 +72,12 @@ class TimerCubit extends Cubit<TimerState> {
 
   void _startTicking() {
     _startedAt = DateTime.now();
-    emit(state.copyWith(
-      duration: _baseSec,
-      isRunning: true,
-    ));
+    emit(
+      state.copyWith(
+        duration: _baseSec,
+        isRunning: true,
+      ),
+    );
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _emitElapsed());
   }

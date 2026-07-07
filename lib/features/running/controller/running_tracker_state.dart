@@ -1,3 +1,5 @@
+// ignore_for_file: comment_references
+
 part of 'running_tracker_cubit.dart';
 
 @freezed

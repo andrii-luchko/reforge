@@ -9,9 +9,6 @@ import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 /// A UI-isolate client for communicating with the [FlutterBackgroundService].
 ///
-/// This class provides an identical API to [RunningSessionManager], but instead
-/// of managing the engines directly, it delegates all commands to the background
-/// isolate via [ServiceInstance.invoke] and listens to metrics events.
 @lazySingleton
 class RunningServiceClient {
   RunningServiceClient() : _service = FlutterBackgroundService();

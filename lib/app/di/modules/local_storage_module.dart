@@ -21,9 +21,10 @@ abstract class LocalStorageModule {
       native: DriftNativeOptions(
         shareAcrossIsolates: true,
         setup: (db) {
-          db.execute('PRAGMA foreign_keys = ON;');
-          db.execute('PRAGMA journal_mode=WAL;');
-          db.execute('PRAGMA synchronous=NORMAL;');
+          db
+            ..execute('PRAGMA foreign_keys = ON;')
+            ..execute('PRAGMA journal_mode=WAL;')
+            ..execute('PRAGMA synchronous=NORMAL;');
         },
       ),
     ),

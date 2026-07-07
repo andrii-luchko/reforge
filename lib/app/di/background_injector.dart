@@ -22,7 +22,6 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 ///         ↓                      ↓
 ///              [RunningSessionManager]
 ///
-/// Call [configureBackgroundDependencies] once at the start of [onStart].
 final GetIt backgroundGetIt = GetIt.instance;
 
 /// Registers the minimal dependency graph for the background tracking isolate.
@@ -53,9 +52,10 @@ Future<void> configureBackgroundDependencies() async {
       native: DriftNativeOptions(
         shareAcrossIsolates: true,
         setup: (db) {
-          db.execute('PRAGMA foreign_keys = ON;');
-          db.execute('PRAGMA journal_mode=WAL;');
-          db.execute('PRAGMA synchronous=NORMAL;');
+          db
+            ..execute('PRAGMA foreign_keys = ON;')
+            ..execute('PRAGMA journal_mode=WAL;')
+            ..execute('PRAGMA synchronous=NORMAL;');
         },
       ),
     ),

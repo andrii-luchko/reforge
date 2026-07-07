@@ -44,8 +44,11 @@ abstract interface class LocalWorkoutSessionRepository {
   /// Fetches all historical GPS points for a given session.
   Future<List<RouteCoordinate>> getRoutePoints(int sessionId);
 
-  /// Retrieves the active/in-progress lap for the session, if any.
+  /// Returns the in-progress (isBusy = true) running set/lap, if any.
   Future<ActiveRunningSet?> getInProgressLap(int sessionId);
+
+  /// Returns the last lap (highest setNumber) for this session, regardless of status.
+  Future<ActiveRunningSet?> getLastLap(int sessionId);
 
   /// Marks the set as completely synced to the backend.
   Future<void> markSetAsDone(int setId);

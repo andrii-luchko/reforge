@@ -74,9 +74,9 @@ class RunningMapCubit extends Cubit<RunningMapState> {
   }
 
   @override
-  Future<void> close() {
-    _compassSub?.cancel();
-    _metricsSub?.cancel();
+  Future<void> close() async {
+    await _compassSub?.cancel();
+    await _metricsSub?.cancel();
     return super.close();
   }
 }

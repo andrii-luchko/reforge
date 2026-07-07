@@ -52,5 +52,5 @@ class RunningConstants {
   /// If the straight-line speed between the last saved coordinate and the
   /// current GPS fix exceeds this value, the gap is ignored and the session
   /// resumes from the current position without adding the phantom distance.
-  static const double maxHumanSpeedKmh = 35.0;
+  static const double maxHumanSpeedKmh = 35;
 }

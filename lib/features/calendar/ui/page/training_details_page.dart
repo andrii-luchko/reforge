@@ -210,7 +210,7 @@ class _TrainingDetailsContentView extends StatelessWidget {
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: data.exercises.isEmpty
                   //TODO(Masayoshi): translate
-                  ? SliverEmptyListMessage(
+                  ? const SliverEmptyListMessage(
                       icon: Icons.auto_stories_outlined,
                       title: 'No Info Found',
                       subtitle: 'It seems there are no results available at the moment. Please check back later.',
