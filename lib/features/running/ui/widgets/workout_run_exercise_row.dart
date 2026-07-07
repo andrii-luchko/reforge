@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/core/timer/ui/smooth_timer_text.dart';
@@ -11,7 +12,7 @@ class WorkoutRunExerciseRow extends StatelessWidget {
     required this.metrics,
     required this.system,
     required this.durationInSeconds,
-    required this.distance,
+    required this.distanceKm,
     required this.pace,
     super.key,
   });
@@ -20,7 +21,7 @@ class WorkoutRunExerciseRow extends StatelessWidget {
   final MeasurementSystem system;
 
   final int durationInSeconds;
-  final double distance;
+  final double distanceKm;
   final double pace;
 
   @override
@@ -31,6 +32,14 @@ class WorkoutRunExerciseRow extends StatelessWidget {
     final m = (durationInSeconds ~/ 60).toString().padLeft(2, '0');
     final s = (durationInSeconds % 60).toString().padLeft(2, '0');
     final time = '$m:$s';
+
+    var displayDistance = distanceKm;
+    var displayPace = pace;
+
+    if (system == MeasurementSystem.imperial) {
+      displayDistance = MeasureSystemValues.toMiles(displayDistance);
+      displayPace = MeasureSystemValues.toMiles(displayPace);
+    }
 
     return Column(
       spacing: 16,
@@ -59,10 +68,10 @@ class WorkoutRunExerciseRow extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: _WorkoutContainer(child: Center(child: FadedMetricText(distance.toStringAsFixed(2)))),
+              child: _WorkoutContainer(child: Center(child: FadedMetricText(displayDistance.toStringAsFixed(2)))),
             ),
             Expanded(
-              child: _WorkoutContainer(child: Center(child: FadedMetricText(pace.toStringAsFixed(1)))),
+              child: _WorkoutContainer(child: Center(child: FadedMetricText(displayPace.toStringAsFixed(1)))),
             ),
           ],
         ),

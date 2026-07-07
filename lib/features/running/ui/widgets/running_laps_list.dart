@@ -59,7 +59,6 @@ class _LapRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    //TODO(Masayoshi): translate base on current measure system;
     final km = lap.distanceMeters / 1000;
 
     return Column(
@@ -97,7 +96,7 @@ class _LapRow extends StatelessWidget {
             ),
           ),
           child: WorkoutRunExerciseRow(
-            distance: km,
+            distanceKm: km,
             durationInSeconds: lap.durationSeconds,
             pace: lap.avgSpeedKmH,
             metrics: metrics,

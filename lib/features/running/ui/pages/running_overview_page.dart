@@ -8,6 +8,7 @@ import 'package:reforge/features/active_workout/controllers/active_exercise/acti
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_mode_dialog.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
@@ -117,7 +118,7 @@ class RunningOverviewPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     SecondaryButton(
                       text: t.workout.startRunning,
                       onPressed: () async {

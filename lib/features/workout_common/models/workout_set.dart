@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
@@ -25,6 +26,22 @@ sealed class WorkoutSet with _$WorkoutSet {
 
   bool get isEmpty =>
       time == null && distance == null && pace == null && weight == null && reps == null && degrees == null;
+
+  WorkoutSet toImperial() {
+    return copyWith(
+      distance: distance != null ? MeasureSystemValues.toMiles(distance!) : null,
+      pace: pace != null ? MeasureSystemValues.toMiles(pace!) : null,
+      weight: weight != null ? MeasureSystemValues.toPounds(weight!) : null,
+    );
+  }
+
+  WorkoutSet toMetric() {
+    return copyWith(
+      distance: distance != null ? MeasureSystemValues.toKm(distance!) : null,
+      pace: pace != null ? MeasureSystemValues.toKm(pace!) : null,
+      weight: weight != null ? MeasureSystemValues.toKg(weight!) : null,
+    );
+  }
 
   WorkoutSet copyWithMetric(WorkoutMetric metric, dynamic value) {
     return switch (metric) {
@@ -81,7 +98,7 @@ sealed class WorkoutSet with _$WorkoutSet {
   String _formatDouble(double? val, {String suffix = ''}) {
     if (val == null) return '-';
 
-    final formatted = (val % 1 == 0) ? val.toInt().toString() : val.toString();
+    final formatted = (val % 1 == 0) ? val.toInt().toString() : val.toStringAsFixed(2);
 
     return '$formatted$suffix';
   }

@@ -1,7 +1,4 @@
-// ignore_for_file: comment_references
-
 import 'dart:async';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,8 +23,6 @@ class RunningLapsSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final measureSystem = context.read<ActiveExerciseCubit>().state.measureSystem;
-
     return BlocListener<RunningTrackerCubit, RunningTrackerState>(
       listenWhen: (prev, curr) => prev.error != curr.error,
       listener: (context, state) {
@@ -42,17 +37,23 @@ class RunningLapsSummaryPage extends StatelessWidget {
           final programExercise = cubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
 
+          final measureSystem = activeExerciseCubit.state.measureSystem;
+
           final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
             final segment = set.programSegmentId == null
                 ? null
                 : programExercise.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
+
+            final distanceM = (set.distance ?? 0) * 1000;
+            final speedKmH = set.pace ?? 0;
+
             return ExerciseLap(
               lapNumber: set.setNumber ?? 0,
-              distanceMeters: (set.distance ?? 0) * 1000,
+              distanceMeters: distanceM,
               durationSeconds: set.time?.inSeconds ?? 0,
-              avgSpeedKmH: set.pace ?? 0, // Fallback to pace as speed for old records
+              avgSpeedKmH: speedKmH,
               currentSpeedKmH: 0,
-              avgPaceMinKm: (set.pace ?? 0) > 0 ? 60.0 / set.pace! : 0,
+              avgPaceMinKm: speedKmH > 0 ? 60.0 / speedKmH : 0,
               currentPaceMinKm: 0,
               activity: segment?.activity ?? SegmentActivity.run,
             );
@@ -102,7 +103,6 @@ class RunningLapsSummaryPage extends StatelessWidget {
                       text: 'Finish Exercise',
                       onPressed: state.isSubmitting ? null : () => unawaited(_onFinishExercise(context, cubit)),
                     ),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),

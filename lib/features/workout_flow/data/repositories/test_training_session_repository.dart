@@ -20,7 +20,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
 
   @override
   MeasurementSystem? getUserMeasurementSystem() {
-    return MeasurementSystem.metric;
+    return MeasurementSystem.imperial;
   }
 
   @override

@@ -41,14 +41,13 @@ class RunningMetricsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //
     final km = distanceMeters / 1000;
 
     return WorkoutRunExerciseRow(
       metrics: WorkoutMetric.runningMetrics,
       system: system,
       durationInSeconds: durationSeconds,
-      distance: km,
+      distanceKm: km,
       pace: speedKmH,
     );
   }

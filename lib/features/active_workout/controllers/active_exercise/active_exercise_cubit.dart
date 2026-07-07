@@ -83,7 +83,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
-    logger.d(rows);
+    logger.d(rows.lastOrNull);
 
     final pendingSync = rows.where((r) => r.readyToSync).toList();
 
@@ -91,39 +91,44 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     pendingSync.forEach(_syncRunningSegment);
   }
 
-  //TODO(MAsayoshi): segments complete different from sets. check this logic
   Future<void> _syncRunningSegment(ActiveRunningSet row) async {
-    // Prevent concurrent syncs
     if (state.isSendingSet) return;
 
-    // Let's create the WorkoutSet
+    final distance = (row.distanceMeters ?? 0) / 1000;
+    final pace = row.avgSpeedKmH ?? 0.0;
+
     final set = WorkoutSet(
       id: row.id,
-      distance: (row.distanceMeters ?? 0) / 1000,
+      distance: distance,
       time: Duration(seconds: row.durationSeconds ?? 0),
-      pace: row.avgSpeedKmH,
+      pace: pace,
       setNumber: row.setNumber,
       isDone: true,
       programSegmentId: row.programSegmentId,
     );
 
+    //Optimistic update
+
+    final previousSets = state.sets;
+
+    final updatedSets = [...previousSets.where((s) => s.id != row.id), set];
+    emit(state.copyWith(sets: updatedSets));
+
     final result = await repository.completeSet(
       exerciseId: programExercise.exerciseDetails.id,
       workoutProgramExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
-      system: state.measureSystem,
+      //important, backend expect metric values and we already provide them
+      system: .metric,
       set: set,
     );
 
     await result.fold(
       onSuccess: (_) async {
         await _localWorkoutRepo.markSetAsDone(row.id);
-
-        // Also update UI state sets
-        final updatedSets = [...state.sets.where((s) => s.id != row.id), set];
-        emit(state.copyWith(sets: updatedSets));
       },
       onError: (e, st) {
+        emit(state.copyWith(sets: previousSets));
         //TODO:need to handle that error
       },
     );
