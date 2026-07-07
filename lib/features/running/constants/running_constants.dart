@@ -23,7 +23,7 @@ class RunningConstants {
   static const double gpsDistanceFilterMeters = 2;
 
   /// Default camera zoom level when actively tracking the user on the map.
-  static const double mapCameraZoomActive = 17;
+  static const double mapCameraZoomActive = 17.5;
 
   // ── Kalman Filter Tuning ──────────────────────────────────────────────────
 
