@@ -73,6 +73,18 @@ class RunningServiceClient {
         _eventsController.add(const PlannedWorkoutCompletedEvent());
       }
     });
+
+    _service.on('sensor_error').listen((event) {
+      if (event != null && event['message'] != null) {
+        _metricsController.addError(event['message'] as String);
+      }
+    });
+
+    _service.on('fatal_error').listen((event) {
+      if (event != null && event['message'] != null) {
+        _metricsController.addError(event['message'] as String);
+      }
+    });
   }
 
   Future<bool> get isRunning async {
