@@ -94,12 +94,12 @@ class RunningLapsSummaryPage extends StatelessWidget {
                     ),
 
                     SecondaryButton(
-                      text: 'Back to Running',
+                      text: t.running.summary.back_to_running,
                       onPressed: cubit.goToActive,
                     ),
                     const SizedBox(height: 12),
                     PrimaryButton(
-                      text: 'Finish Exercise',
+                      text: t.running.summary.finish_exercise,
                       onPressed: state.isSubmitting ? null : () => unawaited(_onFinishExercise(context, cubit)),
                     ),
                   ],

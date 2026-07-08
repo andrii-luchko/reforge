@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/duration_extensions.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/badge_image.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -28,7 +29,7 @@ class AudioHintDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Workout Cues',
+            t.running.audio_hint.workout_cues,
             style: subheadH2Medium.copyWith(color: theme.beige100),
             textAlign: TextAlign.center,
           ),
@@ -42,7 +43,7 @@ class AudioHintDialog extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Follow the Hammer',
+            t.running.audio_hint.follow_hammer,
             style: subheadH1Medium.copyWith(color: theme.beige100),
             textAlign: TextAlign.center,
           ),
@@ -56,7 +57,7 @@ class AudioHintDialog extends StatelessWidget {
           const SizedBox(height: 24),
 
           PrimaryButton(
-            text: 'Got it',
+            text: t.running.audio_hint.got_it,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -89,7 +90,7 @@ class WalkAudioHintDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Next Interval',
+            t.running.audio_hint.next_interval,
             style: subheadH2Medium.copyWith(color: theme.beige100),
             textAlign: TextAlign.center,
           ),
@@ -103,7 +104,7 @@ class WalkAudioHintDialog extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Recovery Walk',
+            t.running.audio_hint.recovery_walk,
             style: subheadH1Medium.copyWith(color: theme.beige100),
             textAlign: TextAlign.center,
           ),
@@ -112,7 +113,7 @@ class WalkAudioHintDialog extends StatelessWidget {
             TextSpan(
               style: bodyLRegular.copyWith(color: theme.beige600),
               children: [
-                const TextSpan(text: 'Slow down to a walking pace for'),
+                TextSpan(text: t.running.audio_hint.slow_down_part1),
                 TextSpan(
                   text: '\n${walkDuration.toDigital}\n',
                   style: subheadH2Medium.copyWith(
@@ -120,7 +121,7 @@ class WalkAudioHintDialog extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                const TextSpan(text: ' to recover before the next run interval'),
+                TextSpan(text: t.running.audio_hint.slow_down_part2),
               ],
             ),
             textAlign: TextAlign.center,
@@ -129,7 +130,7 @@ class WalkAudioHintDialog extends StatelessWidget {
           const SizedBox(height: 24),
 
           PrimaryButton(
-            text: 'Got it',
+            text: t.running.audio_hint.got_it,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],

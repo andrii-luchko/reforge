@@ -103,7 +103,7 @@ class _ActionButtons extends StatelessWidget {
         children: [
           Expanded(
             child: SecondaryButton(
-              text: 'Finish',
+              text: t.running.active.finish,
               onPressed: () async {
                 await cubit.endWorkout();
               },
@@ -112,7 +112,7 @@ class _ActionButtons extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: PrimaryButton(
-              text: 'Resume',
+              text: t.running.active.resume,
               onPressed: cubit.resumeLap,
             ),
           ),
@@ -125,14 +125,14 @@ class _ActionButtons extends StatelessWidget {
       children: [
         Expanded(
           child: SecondaryButton(
-            text: 'Next Lap',
+            text: t.running.active.next_lap,
             onPressed: state.isSubmitting ? null : () async => cubit.forceNextLap(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: PrimaryButton(
-            text: 'Pause',
+            text: t.running.active.pause,
             onPressed: cubit.pauseLap,
           ),
         ),
@@ -193,9 +193,9 @@ class ActiveGpsSession extends StatelessWidget {
                       child: AnimatedOpacity(
                         opacity: state.isPaused ? 1 : 0,
                         duration: const Duration(milliseconds: 200),
-                        child: const AppTag(
-                          text: 'Paused',
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: AppTag(
+                          text: t.running.active.paused,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
                       ),
                     ),
@@ -211,9 +211,9 @@ class ActiveGpsSession extends StatelessWidget {
                         child: AnimatedOpacity(
                           opacity: segmentActivity == .walk ? 1 : 0,
                           duration: const Duration(milliseconds: 200),
-                          child: const AppTag(
-                            text: 'Walk',
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          child: AppTag(
+                            text: t.running.active.walk,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
                       ),
@@ -282,9 +282,9 @@ class ActivePedometerSession extends StatelessWidget {
                 opacity: state.isPaused ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
                 child: state.isPaused
-                    ? const AppTag(
-                        text: 'Paused',
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ? AppTag(
+                        text: t.running.active.paused,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -292,9 +292,9 @@ class ActivePedometerSession extends StatelessWidget {
               AnimatedOpacity(
                 opacity: !state.isPaused && segmentActivity == .walk ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: const AppTag(
-                  text: 'Walk',
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: AppTag(
+                  text: t.running.active.walk,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
               ),
               const SizedBox(height: 32),

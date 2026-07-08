@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -32,19 +33,19 @@ class RunningPermissionDeniedPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Permission Required',
+                t.running.permission.title,
                 style: titleH3Regular.copyWith(color: theme.beige100),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Tracking your run requires access to device sensors. Please open settings and grant the required permissions.',
+                t.running.permission.description,
                 style: bodyMRegular.copyWith(color: theme.beige400),
                 textAlign: TextAlign.center,
               ),
               const Spacer(),
               PrimaryButton(
-                text: 'Open Settings',
+                text: t.running.permission.open_settings,
                 onPressed: () {
                   try {
                     unawaited(openAppSettings());
@@ -54,7 +55,7 @@ class RunningPermissionDeniedPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               SecondaryButton(
-                text: 'Cancel',
+                text: t.running.permission.cancel,
                 onPressed: () => context.read<RunningTrackerCubit>().cancelPermissionRequest(),
               ),
               const SizedBox(height: 24),

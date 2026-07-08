@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
@@ -25,16 +26,16 @@ class RunningModeDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: .only(right: 10),
-            child: DefaultDialogHeader(title: 'Running'),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: DefaultDialogHeader(title: t.running.mode.title),
           ),
 
           const SizedBox(height: 24),
 
           _RunningModeOption(
             icon: Icons.directions_run_rounded,
-            title: 'Outdoor Run',
+            title: t.running.mode.outdoor_run,
 
             mode: RunningMode.gps,
             onTap: (mode) => _onModeSelected(context, mode),
@@ -44,7 +45,7 @@ class RunningModeDialog extends StatelessWidget {
 
           _RunningModeOption(
             icon: Icons.fitness_center_rounded,
-            title: 'Treadmill run',
+            title: t.running.mode.treadmill_run,
 
             mode: RunningMode.pedometer,
             onTap: (mode) => _onModeSelected(context, mode),
@@ -117,7 +118,7 @@ class _RunningModeOption extends StatelessWidget {
                               color: theme.beige800,
                             ),
                             child: Text(
-                              'Soon',
+                              t.running.mode.soon,
                               style: bodySRegular.copyWith(color: theme.beige500),
                             ),
                           ),
