@@ -85,6 +85,18 @@
                 "other": "$n years"
             }
         },
+        "unit_hour(plural)": {
+            "one": "hour",
+            "other": "hours"
+        },
+        "unit_minute(plural)": {
+            "one": "minute",
+            "other": "minutes"
+        },
+        "unit_second(plural)": {
+            "one": "second",
+            "other": "seconds"
+        },
         "back_button": "Back",
         "next_button": "Next",
         "submit_button": "Submit",
@@ -444,7 +456,9 @@
         "title": "Training Details",
         "overview": "Overview",
         "workout_info": "Workout info",
-        "trainingDateTitle": "Training $date"
+        "trainingDateTitle": "Training $date",
+        "empty_title": "No Info Found",
+        "empty_subtitle": "It seems there are no results available at the moment. Please check back later."
     },
     "workout_flow": {
         "startWorkoutError": "Failed to start workout: $error",
@@ -618,5 +632,40 @@
         "emptyTitle": "No notifications yet",
         "emptySubtitle": "You're all caught up! Once there's something new — like updates, reminders, or messages — you'll see it here.",
         "defaultTitle": "Notification"
+    },
+    "running": {
+        "mode": {
+            "title": "Running",
+            "outdoor_run": "Outdoor Run",
+            "treadmill_run": "Treadmill run",
+            "soon": "Soon"
+        },
+        "audio_hint": {
+            "workout_cues": "Workout Cues",
+            "follow_hammer": "Follow the Hammer",
+            "got_it": "Got it",
+            "next_interval": "Next Interval",
+            "recovery_walk": "Recovery Walk",
+            "slow_down_part1": "Slow down to a walking pace for",
+            "slow_down_part2": " to recover before the next run interval"
+        },
+        "active": {
+            "finish": "Finish",
+            "resume": "Resume",
+            "next_lap": "Next Lap",
+            "pause": "Pause",
+            "paused": "Paused",
+            "walk": "Walk"
+        },
+        "permission": {
+            "title": "Permission Required",
+            "description": "Tracking your run requires access to device sensors. Please open settings and grant the required permissions.",
+            "open_settings": "Open Settings",
+            "cancel": "Cancel"
+        },
+        "summary": {
+            "back_to_running": "Back to Running",
+            "finish_exercise": "Finish Exercise"
+        }
     }
 }

@@ -6,7 +6,7 @@ import 'package:reforge/features/auth/controllers/validation/auth_validation_cub
 import 'package:reforge/features/auth/ui/widgets/auth_providers_buttons.dart';
 import 'package:reforge/features/auth/ui/widgets/auth_redirect_text.dart';
 import 'package:reforge/features/auth/ui/widgets/terms_check_box.dart';
-import 'package:reforge/generated/i18n/strings.g.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
@@ -62,10 +62,10 @@ class _SignUpFormState extends State<SignUpForm> {
               selector: (state) => state.emailError,
               builder: (context, emailError) {
                 return LabeledAppTextField(
-                  label: t.email_label,
+                  label: t.common.email_label,
                   field: AppTextField(
                     errorText: emailError,
-                    hintText: t.email_hint,
+                    hintText: t.common.email_hint,
                     controller: _emailController,
                     onChanged: cubit.emailChanged,
                   ),
@@ -80,10 +80,10 @@ class _SignUpFormState extends State<SignUpForm> {
               selector: (state) => state.passwordError,
               builder: (context, passwordError) {
                 return LabeledAppTextField(
-                  label: t.password_label,
+                  label: t.common.password_label,
                   field: AppTextField.password(
                     errorText: passwordError,
-                    hintText: t.password_hint,
+                    hintText: t.common.password_hint,
                     controller: _passwordController,
                     onChanged: cubit.passwordChanged,
                   ),
@@ -98,10 +98,10 @@ class _SignUpFormState extends State<SignUpForm> {
               selector: (state) => state.confirmPasswordError,
               builder: (context, confirmPasswordError) {
                 return LabeledAppTextField(
-                  label: t.confirm_password_label,
+                  label: t.common.confirm_password_label,
                   field: AppTextField.password(
                     errorText: confirmPasswordError,
-                    hintText: t.confirm_password_hint,
+                    hintText: t.common.confirm_password_hint,
                     controller: _confirmPasswordController,
                     onChanged: cubit.confirmPasswordChanged,
                   ),

@@ -43,6 +43,13 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
+  void _loadUserData() {
+    final userResult = _repository.getUserData();
+    if (userResult != null) {
+      emit(state.copyWith(user: userResult));
+    }
+  }
+
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {
     if (!isInitial && state.statsMap.containsKey(period)) {
       emit(state.copyWith(period: period));
@@ -72,7 +79,7 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         final rank = _createRank(state.user);
         emit(
           state.copyWith(
@@ -81,13 +88,6 @@ class HomeCubit extends Cubit<HomeState> {
             isStatsLoading: false,
           ),
         );
-    }
-  }
-
-  void _loadUserData() {
-    final userResult = _repository.getUserData();
-    if (userResult != null) {
-      emit(state.copyWith(user: userResult));
     }
   }
 

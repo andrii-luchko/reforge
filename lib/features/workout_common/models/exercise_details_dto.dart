@@ -2,7 +2,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
 import 'package:reforge/features/workout_common/models/tier.dart';
+import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 
 part 'exercise_details_dto.freezed.dart';
 part 'exercise_details_dto.g.dart';
@@ -72,6 +74,56 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
         return WorkoutMetric.degrees;
       default:
         return null;
+    }
+  }
+}
+
+@freezed
+sealed class ExerciseSegmentDTO with _$ExerciseSegmentDTO {
+  const factory ExerciseSegmentDTO({
+    required int id,
+    required int order,
+    required String activity,
+    required String targetMetric,
+    String? label,
+    int? distanceM,
+    int? durationSec,
+  }) = _ExerciseSegmentDTO;
+
+  factory ExerciseSegmentDTO.fromJson(Map<String, dynamic> json) => _$ExerciseSegmentDTOFromJson(json);
+}
+
+extension ExerciseSegmentToEntityX on ExerciseSegmentDTO {
+  ExerciseSegmentEntity toEntity() {
+    final metric = _mapStringToMetric(targetMetric);
+
+    return ExerciseSegmentEntity(
+      id: id,
+      order: order,
+      activity: SegmentActivity.fromJson(activity),
+      targetMetric: metric,
+      distanceM: distanceM ?? 0,
+      durationSec: durationSec ?? 0,
+    );
+  }
+
+  WorkoutMetric _mapStringToMetric(String value) {
+    switch (value) {
+      case 'weightKg':
+        return WorkoutMetric.weight;
+      case 'reps':
+        return WorkoutMetric.reps;
+      case 'durationSec':
+      case 'duration':
+        return WorkoutMetric.time;
+      case 'distanceM':
+        return WorkoutMetric.distance;
+      case 'speedKmH':
+        return WorkoutMetric.pace;
+      case 'angleDeg':
+        return WorkoutMetric.degrees;
+      default:
+        return WorkoutMetric.distance;
     }
   }
 }

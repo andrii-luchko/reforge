@@ -20,15 +20,15 @@ void main() {
       test('creates ErrorR with error', () {
         final exception = Exception('test error');
         final result = Result<int>.error(exception);
-        expect(result, isA<ErrorR<int>>());
-        expect((result as ErrorR<int>).error, exception);
+        expect(result, isA<Failure<int>>());
+        expect((result as Failure<int>).error, exception);
       });
 
       test('ErrorR stores optional stackTrace', () {
         final exception = Exception('test');
         final stackTrace = StackTrace.current;
         final result = Result<int>.error(exception, stackTrace);
-        expect((result as ErrorR<int>).stackTrace, stackTrace);
+        expect((result as Failure<int>).stackTrace, stackTrace);
       });
 
       test('ErrorR toString returns expected format', () {

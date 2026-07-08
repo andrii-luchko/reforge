@@ -43,7 +43,7 @@ class MeasurementPage extends StatelessWidget {
   Future<void> onSave(MeasurementSystem value, UserCubit cubit) async {
     final result = await cubit.updateMeasurementSystem(value);
 
-    if (result case ErrorR(error: final e)) {
+    if (result case Failure(error: final e)) {
       throw e;
     }
   }

@@ -33,12 +33,9 @@ class AppTimer extends StatelessWidget {
       child: Row(
         spacing: 16,
         children: [
-          RepaintBoundary(
-            child: SmoothTimerText(
-              formattedTime,
-              style: textStyle,
-              digitWidth: 13,
-            ),
+          SmoothTimerText(
+            formattedTime,
+            style: textStyle,
           ),
           if (isPaused)
             SvgPicture.asset(

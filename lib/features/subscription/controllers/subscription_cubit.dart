@@ -66,7 +66,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         switch (subscriptionResult) {
           case Success(value: final sub):
             currentSubscription = sub;
-          case ErrorR():
+          case Failure():
             break;
         }
         emit(
@@ -76,7 +76,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
             isLoading: false,
           ),
         );
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             error: t.subscription.loadOfferingsError(error: error.toString()),
@@ -104,7 +104,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         );
 
         logger.d('Subscription purchased: $subscription');
-      case ErrorR(error: final error):
+      case Failure(:final error):
         if (error is PurchaseCancelledException) {
           emit(state.copyWith(isPurchasing: false));
         } else {
@@ -133,7 +133,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         if (state.offerings != null) {
           emit(state.copyWith(currentSubscription: subscription));
         }
-      case ErrorR():
+      case Failure():
         break;
     }
   }
@@ -156,7 +156,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
             isPurchasing: false,
           ),
         );
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             error: t.subscription.restoreFailed(error: error.toString()),

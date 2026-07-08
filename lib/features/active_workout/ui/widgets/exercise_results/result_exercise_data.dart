@@ -21,6 +21,7 @@ class ResultExerciseData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final convertedSet = system == .imperial ? set.toImperial() : set;
     return WorkoutRowLayout(
       setsCell: WorkoutContainer(
         text: setNumber.toString(),
@@ -28,7 +29,9 @@ class ResultExerciseData extends StatelessWidget {
 
       metricCells: metrics.map((metric) {
         return WorkoutContainer(
-          text: set.formatValue(metric: metric),
+          text: convertedSet.formatValue(
+            metric: metric,
+          ),
         );
       }).toList(),
 

@@ -139,7 +139,7 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
       animation: _controller,
       builder: (context, child) {
         final imageSize = (widget.tags == null || widget.tags!.isEmpty)
-            ? Size.lerp(const Size(73, 85), const Size(62, 62), _controller.value)!
+            ? Size.lerp(const Size(62, 62), const Size(73, 85), _controller.value)!
             : const Size(73, 85);
 
         return _BaseWorkoutTileContainer(
@@ -197,6 +197,7 @@ class _BaseWorkoutTileContainer extends StatelessWidget {
     final borderRadius = BorderRadius.circular(20);
 
     return PressableAnimation(
+      scaleAmount: 0.98,
       onTap: onTap,
       child: Material(
         color: appTheme.beige900,

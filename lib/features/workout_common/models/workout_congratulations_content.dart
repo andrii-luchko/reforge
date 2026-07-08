@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
-import 'package:reforge/features/workout_common/domain/enums/tier.dart';
 
 part 'workout_congratulations_content.freezed.dart';
 
@@ -15,7 +14,6 @@ enum CongratulationsContentType {
 @freezed
 sealed class RankCardContent with _$RankCardContent {
   const factory RankCardContent({
-    required TierEnum tier,
     required String faction,
     required int level,
     required double xpProgress,

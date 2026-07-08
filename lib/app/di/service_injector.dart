@@ -10,6 +10,10 @@ import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/di/modules/background_handler.dart';
 import 'package:reforge/app/di/service_injector.config.dart';
 import 'package:reforge/features/notifications/data/service/fcm_notification_service.dart';
+import 'package:reforge/features/workout_flow/data/repositories/test_training_session_repository.dart';
+import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
+import 'package:reforge/features/workout_quiz/data/repositories/test_workout_quiz_repository.dart';
+import 'package:reforge/features/workout_quiz/domain/repositories/workout_quiz_repository.dart';
 import 'package:reforge/firebase_options.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -19,10 +23,29 @@ Future<void> configureDependencies() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   const environment = kDebugMode ? Environment.dev : Environment.prod;
-
   await initializeRevenueCat();
 
   await getIt.init(environment: environment);
+
+  //TODO(Masayoshi): Set to true to use mock/test repositories for the training session flow
+  const useMockRepositories = bool.fromEnvironment('USE_MOCKS');
+
+  if (useMockRepositories) {
+    if (getIt.isRegistered<TrainingSessionRepository>()) {
+      await getIt.unregister<TrainingSessionRepository>();
+    }
+    getIt.registerFactory<TrainingSessionRepository>(
+      () => const TestTrainingSessionRepository(),
+    );
+
+    if (getIt.isRegistered<WorkoutQuizRepository>()) {
+      await getIt.unregister<WorkoutQuizRepository>();
+    }
+
+    getIt.registerFactory<WorkoutQuizRepository>(
+      () => const TestWorkoutQuizRepository(),
+    );
+  }
 
   getIt<FcmNotificationService>();
 }

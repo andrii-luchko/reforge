@@ -13,6 +13,7 @@ import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
 import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
 import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
@@ -59,6 +60,30 @@ class TrainingSessionRepositoryImpl with RepositoryErrorHandler implements Train
       onboarded: (u) => u.currentProgramDayId,
     );
     return currentProgramDayId;
+  }
+
+  @override
+  Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId) async {
+    try {
+      final result = await _apiClient.getWorkoutDetails(workoutSessionId);
+      logger.d(result);
+      return const Result.success(null);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<WorkoutSessionDetailsDTO>> getWorkoutSessionDetails(int sessionId) async {
+    try {
+      final response = await makeRequest(
+        () => _apiClient.getWorkoutDetails(sessionId),
+        label: 'getWorkoutSessionDetails',
+      );
+      return Result.success(response.data);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
   }
 
   @override

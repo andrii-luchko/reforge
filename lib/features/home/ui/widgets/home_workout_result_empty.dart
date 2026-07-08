@@ -30,7 +30,7 @@ class HomeWorkoutResultEmpty extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: AppSvgListTileIcon.asset(
-                  asset: Assets.images.icons.lock,
+                  asset: Assets.images.icons.document,
                   color: context.appTheme.beige100,
                 ),
               ),

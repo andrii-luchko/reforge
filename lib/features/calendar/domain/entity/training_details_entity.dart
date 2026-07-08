@@ -18,3 +18,7 @@ class TrainingDetailsEntity {
 
   final List<PreviousExerciseResult> exercises;
 }
+
+extension TrainingDetailsEntityX on TrainingDetailsEntity {
+  bool get isEmptyDetails => totalXpEarned == 0 || exercises.isEmpty;
+}

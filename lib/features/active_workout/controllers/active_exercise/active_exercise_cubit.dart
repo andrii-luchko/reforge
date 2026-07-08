@@ -4,16 +4,16 @@ import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
-
 import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -25,17 +25,32 @@ part 'active_exercise_state.dart';
 class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   ActiveExerciseCubit(
     this.repository,
+    this._localWorkoutRepo,
     this._analytics,
     @factoryParam this.workoutSessionId,
     @factoryParam this.programExercise,
-  ) : super(const ActiveExerciseState()) {
-    unawaited(_init());
-  }
+  ) : super(const ActiveExerciseState());
 
   final TrainingSessionRepository repository;
+  final LocalWorkoutSessionRepository _localWorkoutRepo;
   final AnalyticsService _analytics;
   final int workoutSessionId;
   final ProgramExerciseEntity programExercise;
+
+  /// Pre-populated sets from a restored session. Set via [setRestoredSets]
+  /// immediately after creation (before [_init] completes its async work).
+  List<WorkoutSet>? _restoredSets;
+
+  StreamSubscription<List<ActiveRunningSet>>? _dbSub;
+  final Set<int> _syncingRowIds = {};
+
+  /// Called from the route builder immediately after cubit creation.
+  /// Injects restored sets (if any) and triggers [_init].
+  /// Always call this method — pass `null` when there are no sets to restore.
+  void setRestoredSets(List<WorkoutSet>? sets) {
+    _restoredSets = sets;
+    unawaited(_init());
+  }
 
   Future<void> _init() async {
     emit(state.copyWith(isLoading: true));
@@ -44,14 +59,103 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     final previousResult = await _getPreviousResult(measurementSystem);
 
+    // If we have restored sets from an interrupted session, show them as completed.
+    // A fresh empty set is appended so the user can continue recording.
+    final restored = _restoredSets;
+    final initialSets = (restored != null && restored.isNotEmpty)
+        ? [
+            ...restored.map((s) => s.copyWith(isDone: true)),
+            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch),
+          ]
+        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)];
+
     emit(
       state.copyWith(
         isLoading: false,
         previousResult: previousResult,
-        sets: [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)],
+        sets: initialSets,
         measureSystem: measurementSystem,
       ),
     );
+
+    if (programExercise.exerciseDetails.isRunningExercise) {
+      _dbSub = _localWorkoutRepo.watchActiveRunningSets(workoutSessionId).listen(_onDbRunningSetsChanged);
+    }
+  }
+
+  void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
+    final mappedSets = rows.map((row) {
+      return WorkoutSet(
+        id: row.id,
+        distance: (row.distanceMeters ?? 0) / 1000,
+        time: Duration(seconds: row.durationSeconds ?? 0),
+        pace: row.avgSpeedKmH ?? 0.0,
+        setNumber: row.setNumber,
+        isDone: row.isDone || row.readyToSync,
+        isBusy: row.isBusy,
+        programSegmentId: row.programSegmentId,
+      );
+    }).toList();
+
+    emit(state.copyWith(sets: mappedSets, isSendingSet: _syncingRowIds.isNotEmpty));
+
+    final pendingSync = rows.where((r) => r.readyToSync).toList();
+    // ignore: cascade_invocations
+    pendingSync.forEach(_syncRunningSegment);
+  }
+
+  Future<void> _syncRunningSegment(ActiveRunningSet row) async {
+    if (_syncingRowIds.contains(row.id)) return;
+    _syncingRowIds.add(row.id);
+
+    // Update state to lock UI
+    emit(state.copyWith(isSendingSet: true));
+
+    try {
+      // Find the mapped set (it should already be in state from the stream)
+      final set =
+          state.sets.firstWhereOrNull((s) => s.id == row.id) ??
+          WorkoutSet(
+            id: row.id,
+            distance: (row.distanceMeters ?? 0) / 1000,
+            time: Duration(seconds: row.durationSeconds ?? 0),
+            pace: row.avgSpeedKmH ?? 0.0,
+            setNumber: row.setNumber,
+            isDone: true,
+            programSegmentId: row.programSegmentId,
+          );
+
+      final result = await repository.completeSet(
+        exerciseId: programExercise.exerciseDetails.id,
+        workoutProgramExerciseId: programExercise.id,
+        workoutSessionId: workoutSessionId,
+        //important, backend expect metric values and we already provide them
+        system: MeasurementSystem.metric,
+        set: set,
+      );
+      //TODO(Masaoyshi): check here
+      await result.fold(
+        onSuccess: (_) async {
+          await _localWorkoutRepo.markSetAsDone(row.id);
+        },
+        onError: (e, st) async {
+          logger.e('Failed to sync running lap ${row.id}, retrying in 3s...', e, st);
+
+          _syncingRowIds.remove(row.id);
+          emit(state.copyWith(isSendingSet: _syncingRowIds.isNotEmpty));
+
+          await Future.delayed(const Duration(seconds: 3));
+          if (isClosed) return;
+
+          unawaited(_syncRunningSegment(row));
+        },
+      );
+    } finally {
+      _syncingRowIds.remove(row.id);
+      if (!isClosed) {
+        emit(state.copyWith(isSendingSet: _syncingRowIds.isNotEmpty));
+      }
+    }
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {
@@ -61,7 +165,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       system: system,
     );
     switch (result) {
-      case Success(value: final value):
+      case Success(:final value):
         if (value == null || value.sets == null) {
           return null;
         }
@@ -74,7 +178,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           notes: value.notes,
         );
 
-      case ErrorR():
+      case Failure():
         return null;
     }
   }
@@ -137,17 +241,19 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     switch (result) {
       case Success():
         final setNumber = state.sets.indexWhere((s) => s.id == setId) + 1;
-        unawaited(_analytics.logEvent(
-          AnalyticsEvents.workoutSetComplete,
-          {
-            'exercise_id': programExercise.exerciseDetails.id,
-            'set_number': setNumber,
-          },
-        ));
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutSetComplete,
+            {
+              'exercise_id': programExercise.exerciseDetails.id,
+              'set_number': setNumber,
+            },
+          ),
+        );
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
         emit(state.copyWith(isSendingSet: false));
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
@@ -193,7 +299,7 @@ submitted: ${state.isSubmitted}
         case Success():
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
-        case ErrorR(error: final error):
+        case Failure(:final error):
           emit(
             state.copyWith(
               isLoading: false,
@@ -203,5 +309,11 @@ submitted: ${state.isSubmitted}
           );
       }
     }
+  }
+
+  @override
+  Future<void> close() {
+    unawaited(_dbSub?.cancel());
+    return super.close();
   }
 }

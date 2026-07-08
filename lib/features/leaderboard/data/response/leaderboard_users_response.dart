@@ -37,7 +37,7 @@ extension LeaderboardResponseX on LeaderboardResponse {
     return (
       currentUser: currentUserInList.copyWith(username: t.leaderboard.currentUserLabel),
       usersList: usersList,
-      totalPages: meta.pagination.total,
+      totalPages: meta.pagination.pages,
     );
   }
 }

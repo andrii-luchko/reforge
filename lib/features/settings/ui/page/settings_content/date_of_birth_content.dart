@@ -40,7 +40,7 @@ class DateOfBirthPage extends StatelessWidget {
   Future<void> onSave(DateTime? value, UserCubit cubit) async {
     if (value == null) return;
     final result = await cubit.updateBirthDate(value);
-    if (result case ErrorR(error: final e)) {
+    if (result case Failure(error: final e)) {
       throw e;
     }
   }

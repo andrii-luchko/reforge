@@ -18,7 +18,7 @@ class _AppLogger {
     ),
     logger: TalkerLogger(
       settings: TalkerLoggerSettings(),
-      output: (String message) => developer.log(message, name: 'Talker'),
+      output: (message) => developer.log(message, name: 'Talker'),
     ),
   );
 
@@ -29,5 +29,5 @@ class _AppLogger {
 
   void i(Object message, [Object? exception, StackTrace? stackTrace]) => talker.info(message, exception, stackTrace);
 
-  void d(Object message, [Object? exception, StackTrace? stackTrace]) => talker.debug(message, exception, stackTrace);
+  void d(Object? message, [Object? exception, StackTrace? stackTrace]) => talker.debug(message, exception, stackTrace);
 }

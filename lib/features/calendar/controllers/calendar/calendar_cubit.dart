@@ -48,7 +48,7 @@ class CalendarCubit extends Cubit<CalendarState> {
     final result = await _repository.getMonthCalendarData(month);
 
     switch (result) {
-      case Success(value: final value):
+      case Success(:final value):
         final updatedCalendar = Map<String, CalendarEntity>.from(state.calendar);
         updatedCalendar[monthNormalized] = value;
 
@@ -60,7 +60,7 @@ class CalendarCubit extends Cubit<CalendarState> {
           ),
         );
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(
           state.copyWith(
             currentDate: month,

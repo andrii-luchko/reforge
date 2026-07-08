@@ -38,7 +38,7 @@ class EmailPage extends StatelessWidget {
     final result = await cubit.updateEmail(
       value,
     );
-    if (result case ErrorR(error: final e)) {
+    if (result case Failure(error: final e)) {
       throw e;
     }
   }

@@ -31,7 +31,7 @@ class _ScheduledWorkoutDetailsPageState extends State<ScheduledWorkoutDetailsPag
   void initState() {
     super.initState();
 
-    unawaited(context.read<WorkoutFlowCubit>().initScheduled(widget.scheduledWorkoutDayId));
+    unawaited(context.read<WorkoutFlowCubit>().initWorkoutFromCalendar(widget.scheduledWorkoutDayId));
   }
 
   @override

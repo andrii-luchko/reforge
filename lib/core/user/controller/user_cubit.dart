@@ -79,7 +79,7 @@ class UserCubit extends Cubit<UserState> {
           await _userSessionService.clearUser();
           emit(const UserState.initial());
         }
-      case ErrorR(error: final error):
+      case Failure(:final error):
         await _userSessionService.clearUser();
         emit(UserState.error(error.toString()));
     }
@@ -117,7 +117,7 @@ class UserCubit extends Cubit<UserState> {
       case Success(value: final user):
         await _userSessionService.saveUser(user);
         emit(UserState.loaded(user));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
     }
@@ -134,7 +134,7 @@ class UserCubit extends Cubit<UserState> {
         case Success():
           emit(const UserState.deleted());
           await _userSessionService.clearUser();
-        case ErrorR(error: final error):
+        case Failure(:final error):
           emit(UserState.error(error.toString()));
           emit(UserState.loaded(user));
       }
@@ -152,7 +152,7 @@ class UserCubit extends Cubit<UserState> {
         case Success():
           emit(const UserState.deleted());
           await _userSessionService.clearUser();
-        case ErrorR(error: final error):
+        case Failure(:final error):
           emit(UserState.error(error.toString()));
           emit(UserState.loaded(user));
       }
@@ -258,7 +258,7 @@ class UserCubit extends Cubit<UserState> {
         emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
         return result;
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(UserState.error(error.toString()));
 
         emit(UserState.loaded(oldUser));
@@ -275,7 +275,7 @@ class UserCubit extends Cubit<UserState> {
       case Success(value: final url):
         logger.d(result);
         await updateAvatarURL(url);
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(UserState.error(error.toString()));
         emit(currentState);
     }
@@ -300,7 +300,7 @@ class UserCubit extends Cubit<UserState> {
 
         return Result.success(currentState.user.copyWith(email: newEmail));
 
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(UserState.loaded(currentState.user));
         return Result.error(error);
     }

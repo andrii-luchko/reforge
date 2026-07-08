@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
@@ -8,11 +7,10 @@ import 'package:reforge/features/active_workout/ui/widgets/active_workout_page/a
 import 'package:reforge/features/active_workout/ui/widgets/dynamic_workout_form.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
-import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -25,30 +23,39 @@ class ActiveWorkoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
-      builder: (context, exerciseState) {
-        final programExercise = context.read<ActiveExerciseCubit>().programExercise;
-        final exerciseDetails = programExercise.exerciseDetails;
-        final previousResult = exerciseState.previousResult;
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
+          listenWhen: (prev, curr) => !prev.isSubmitted && curr.isSubmitted,
+          listener: (context, state) async {
+            final flowCubit = context.read<WorkoutFlowCubit>();
+            final timerDuration = context.read<TimerCubit>().state.duration;
 
-        return DefaultBackground(
-          body: MultiBlocListener(
-            listeners: [
-              BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
-                listenWhen: (prev, curr) => !prev.isSubmitted && curr.isSubmitted,
-                listener: (context, state) async {
-                  final flowCubit = context.read<WorkoutFlowCubit>();
-                  final timerDuration = context.read<TimerCubit>().state.duration;
+            await flowCubit.nextExercise(timerDuration);
+          },
+        ),
 
-                  await flowCubit.nextExercise(timerDuration);
-                },
-              ),
-            ],
-            child: Skeletonizer(
+        BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
+          listenWhen: (previous, current) => previous.setValidationError != current.setValidationError,
+          listener: (context, state) {
+            if (state.setValidationError == null) return;
+            toastification.showErrorToast(state.setValidationError!, context);
+          },
+        ),
+      ],
+      child: BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
+        builder: (context, exerciseState) {
+          final cubit = context.read<ActiveExerciseCubit>();
+          final programExercise = cubit.programExercise;
+          final exerciseDetails = programExercise.exerciseDetails;
+          final previousResult = exerciseState.previousResult;
+
+          return DefaultBackground(
+            body: Skeletonizer(
               enabled: exerciseState.isLoading,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                  padding: const EdgeInsets.only(left: 16, right: 16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -61,13 +68,15 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 child: AppTextField(
                                   hintText: t.workout.addNotesHint,
                                   maxLines: null,
-                                  maxLength: 500,
+                                  maxLength: exerciseState.showNotesLimit ? exerciseState.notesLimit : null,
                                   keyboardType: TextInputType.multiline,
                                   onChanged: context.read<ActiveExerciseCubit>().setNote,
                                 ),
                               ),
+
                               WorkoutSection(exercise: exerciseDetails),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 24),
+
                               if (previousResult != null) ...[
                                 PreviousExerciseResultListTile(
                                   result: previousResult,
@@ -75,50 +84,27 @@ class ActiveWorkoutPage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 32),
                               ],
-                              BlocConsumer<ActiveExerciseCubit, ActiveExerciseState>(
-                                listenWhen: (previous, current) =>
-                                    previous.setValidationError != current.setValidationError,
-                                listener: (context, state) {
-                                  if (state.setValidationError == null) return;
-                                  toastification.showErrorToast(state.setValidationError!, context);
-                                },
-                                builder: (context, state) {
-                                  final cubit = context.read<ActiveExerciseCubit>();
 
-                                  return DynamicWorkoutForm(
-                                    metrics: exerciseDetails.metrics,
-                                    system: state.measureSystem,
-                                    isTiered: exerciseDetails.isTiered,
-                                    tiers: exerciseDetails.tiers,
+                              DynamicWorkoutForm(
+                                metrics: exerciseDetails.metrics,
+                                system: exerciseState.measureSystem,
+                                isTiered: exerciseDetails.isTiered,
+                                tiers: exerciseDetails.tiers,
 
-                                    selectedTier: state.selectedTier,
+                                selectedTier: exerciseState.selectedTier,
 
-                                    sets: state.sets,
-                                    onTierChanged: cubit.setTier,
-                                    onAddSet: cubit.addSet,
-                                    onUpdateSet: cubit.updateSet,
-                                    onRemoveSet: cubit.removeSet,
-                                    onDonePressed: cubit.markSetDone,
-                                  );
-                                },
+                                sets: exerciseState.sets,
+                                onTierChanged: cubit.setTier,
+                                onAddSet: cubit.addSet,
+                                onUpdateSet: cubit.updateSet,
+                                onRemoveSet: cubit.removeSet,
+                                onDonePressed: cubit.markSetDone,
                               ),
                               const SizedBox(height: 16),
                             ],
                           ),
                         ),
                       ),
-
-                      if (exerciseDetails.metrics.any((m) => m == WorkoutMetric.distance)) ...[
-                        const SizedBox(height: 8),
-                        SecondaryButton(
-                          text: t.workout.startRunning,
-                          onPressed: () {
-                            // ignore: discarded_futures
-                            const StartRunningPageRoute().push<void>(context);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                      ],
 
                       const SizedBox(height: 8),
                       Skeleton.leaf(
@@ -134,10 +120,10 @@ class ActiveWorkoutPage extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-          loader: const Positioned.fill(child: ActiveWorkoutLoader()),
-        );
-      },
+            loader: const Positioned.fill(child: ActiveWorkoutLoader()),
+          );
+        },
+      ),
     );
   }
 }

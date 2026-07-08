@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
@@ -10,7 +11,9 @@ import 'package:reforge/features/home/ui/widgets/home_workout_result_empty.dart'
 import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dart';
 import 'package:reforge/features/home/ui/widgets/start_workout_list_tile.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/home_workout_results_header.dart';
+import 'package:reforge/features/workout_flow/controllers/workout_restore_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
@@ -24,74 +27,88 @@ class HomeBody extends StatelessWidget {
     return SafeArea(
       top: false,
       bottom: false,
-      child: BlocConsumer<HomeCubit, HomeState>(
-        listenWhen: (previous, current) =>
-            current.error != null && previous.error != current.error,
-        listener: (context, state) {
-          if (state.error != null) {
-            toastification.showErrorToast(state.error!, context);
-          }
-        },
-        builder: (context, state) {
-          return RefreshIndicator(
-            onRefresh: () => context.read<HomeCubit>().loadInitialData(),
-            child: Skeletonizer(
-              enabled: state.isLoading,
-              child: CustomScrollView(
-                slivers: [
-                  HomeSliverAppBar(
-                    imageUrl: state.user?.avatarUrl,
-                    username: state.user?.userName,
-                  ),
-                  SliverPadding(
-                    padding: horizontalPadding.copyWith(top: 16, bottom: 16),
-                    sliver: SliverToBoxAdapter(
-                      child: Skeleton.replace(
-                        replacement: const AvatarCardShimmer(),
-                        child: AvatarRankCard(
-                          rank: state.rank ?? RankEntity.mockWith(t),
-                        ).animateEntrance(),
+      child: MultiBlocListener(
+        listeners: [
+          // Once HomeCubit finishes initial loading, trigger the restore check.
+          // This is a fire-and-forget: WorkoutRestoreCubit will emit
+          // [WorkoutRestorePending] asynchronously if something is found.
+          BlocListener<HomeCubit, HomeState>(
+            listenWhen: (prev, curr) => prev.isLoading && !curr.isLoading,
+            listener: (ctx, _) {
+              unawaited(ctx.read<WorkoutRestoreCubit>().checkForInterrupted());
+            },
+          ),
+
+          // Error toasts from HomeCubit.
+          BlocListener<HomeCubit, HomeState>(
+            listenWhen: (prev, curr) => curr.error != null && prev.error != curr.error,
+            listener: (ctx, state) {
+              if (state.error != null) {
+                toastification.showErrorToast(state.error!, ctx);
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            return RefreshIndicator(
+              onRefresh: () => context.read<HomeCubit>().loadInitialData(),
+              child: Skeletonizer(
+                enabled: state.isLoading,
+                child: CustomScrollView(
+                  slivers: [
+                    HomeSliverAppBar(
+                      imageUrl: state.user?.avatarUrl,
+                      username: state.user?.userName,
+                    ),
+                    SliverPadding(
+                      padding: horizontalPadding.copyWith(top: 16, bottom: 16),
+                      sliver: SliverToBoxAdapter(
+                        child: Skeleton.replace(
+                          replacement: const AvatarCardShimmer(),
+                          child: AvatarRankCard(
+                            rank: state.rank ?? RankEntity.mockWith(t),
+                          ).animateEntrance(),
+                        ),
                       ),
                     ),
-                  ),
-                  SliverPadding(
-                    padding: horizontalPadding.copyWith(bottom: 16),
-                    sliver: SliverToBoxAdapter(
-                      child: const StartWorkoutListTile().animateEntrance(),
+                    SliverPadding(
+                      padding: horizontalPadding.copyWith(bottom: 32),
+                      sliver: SliverToBoxAdapter(
+                        child: const StartWorkoutListTile().animateEntrance(),
+                      ),
                     ),
-                  ),
-                  SliverPadding(
-                    padding: horizontalPadding.copyWith(bottom: 16),
-                    sliver: const WorkoutResultHeader(),
-                  ),
-                  BlocSelector<HomeCubit, HomeState, ({bool isStatsLoading, UserStats? currentStats})>(
-                    selector: (state) => (
-                      isStatsLoading: state.isStatsLoading,
-                      currentStats: state.currentStats,
+                    SliverPadding(
+                      padding: horizontalPadding.copyWith(bottom: 16),
+                      sliver: const WorkoutResultHeader(),
                     ),
-                    builder: (context, state) {
-                      final currentStats = state.isStatsLoading
-                          ? UserStatsX.mock(badgeName: t.home.mockBadgeName)
-                          : state.currentStats;
+                    BlocSelector<HomeCubit, HomeState, ({bool isStatsLoading, UserStats? currentStats})>(
+                      selector: (state) => (
+                        isStatsLoading: state.isStatsLoading,
+                        currentStats: state.currentStats,
+                      ),
+                      builder: (context, state) {
+                        final currentStats = state.isStatsLoading
+                            ? UserStatsX.mock(badgeName: t.home.mockBadgeName)
+                            : state.currentStats;
 
-                      if (currentStats == null) {
-                        return const HomeWorkoutResultEmpty();
-                      } else {
-                        return HomeWorkoutResultSection(
-                          isLoading: state.isStatsLoading,
-                          stats: currentStats,
-                        );
-                      }
-                    },
-                  ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 100),
-                  ),
-                ],
+                        if (currentStats == null) {
+                          return const HomeWorkoutResultEmpty();
+                        } else {
+                          return HomeWorkoutResultSection(
+                            isLoading: state.isStatsLoading,
+                            stats: currentStats,
+                          );
+                        }
+                      },
+                    ),
+                    const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

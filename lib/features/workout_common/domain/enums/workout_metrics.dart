@@ -16,7 +16,9 @@ enum WorkoutMetric {
   @JsonValue('speedKmH')
   pace,
   @JsonValue('angleDeg')
-  degrees,
+  degrees;
+
+  static const List<WorkoutMetric> runningMetrics = [.time, .distance, .pace];
 }
 
 extension WorkoutMetricsX on WorkoutMetric {

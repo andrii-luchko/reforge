@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/leaderboard/data/repositories/leaderboard_repository.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_user_entity.dart';
 
@@ -40,7 +41,7 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
             hasReachedMax: 1 >= data.totalPages,
           ),
         );
-      case ErrorR(error: final e):
+      case Failure(error: final e):
         emit(state.copyWith(isLoading: false, error: e.toString()));
     }
   }
@@ -55,6 +56,9 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
 
     switch (result) {
       case Success(value: final data):
+        logger.d('''
+$nextPage
+${data.totalPages}''');
         emit(
           state.copyWith(
             isPaginationLoading: false,
@@ -65,7 +69,7 @@ class UsersLeaderboardCubit extends Cubit<UsersLeaderboardState> {
             currentUser: data.currentUser,
           ),
         );
-      case ErrorR(error: final e):
+      case Failure(error: final e):
         emit(state.copyWith(isPaginationLoading: false, paginationError: e.toString()));
     }
   }

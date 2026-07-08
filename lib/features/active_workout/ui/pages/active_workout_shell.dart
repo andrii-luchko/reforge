@@ -8,19 +8,73 @@ import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/active_workout/ui/widgets/active_workout_app_bar.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_dialogs.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:toastification/toastification.dart';
 
-class ActiveWorkoutShell extends StatelessWidget {
+class ActiveWorkoutShell extends StatefulWidget {
   const ActiveWorkoutShell({
     required this.child,
     super.key,
   });
 
   final Widget child;
+
+  @override
+  State<ActiveWorkoutShell> createState() => _ActiveWorkoutShellState();
+}
+
+class _ActiveWorkoutShellState extends State<ActiveWorkoutShell>
+    with WidgetsBindingObserver {
+  /// Syncs elapsed duration to Drift every 10 seconds to survive force-kills.
+  Timer? _durationSyncTimer;
+
+  static const _syncInterval = Duration(seconds: 10);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    final timerCubit = context.read<TimerCubit>();
+    final flowCubit = context.read<WorkoutFlowCubit>();
+
+    // If restoring a session, initialise the timer with the previously saved duration
+    if (flowCubit.state.isRestoredSession) {
+      // TimerCubit counts from 0 by default; we pre-load the accumulated value.
+      // We stop the timer first in case it was already running (shell rebuild),
+      // then restart it from the restored position.
+      timerCubit
+        ..stopTimer()
+        ..startTimerFrom(flowCubit.state.restoredDurationSec);
+    } else {
+      timerCubit.startTimer();
+    }
+
+    // Persist elapsed duration every 10 s so we don't lose it on force-kill
+    _durationSyncTimer = Timer.periodic(_syncInterval, (_) {
+      final elapsed = context.read<TimerCubit>().state.duration;
+      context.read<WorkoutFlowCubit>().syncDuration(elapsed);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _durationSyncTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Force an immediate timer update instead of waiting up to 1 second
+      // for the next tick. Without this, the displayed time can lag briefly.
+      context.read<TimerCubit>().onAppResumed();
+    }
+  }
 
   Future<void> onClosePressed(BuildContext context) async {
     final leave = await WorkoutDialogs.confirmWorkoutLeave(context);
@@ -36,8 +90,6 @@ class ActiveWorkoutShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<TimerCubit>().startTimer();
-
     return MultiBlocListener(
       listeners: [
         BlocListener<WorkoutFlowCubit, WorkoutFlowState>(
@@ -58,6 +110,7 @@ class ActiveWorkoutShell extends StatelessWidget {
           listener: (context, flowState) {
             if (flowState.isCanceled) {
               const HomePageRoute().go(context);
+              unawaited(context.read<UserCubit>().refreshUser());
               return;
             }
 
@@ -73,13 +126,16 @@ class ActiveWorkoutShell extends StatelessWidget {
                   const WorkoutSummaryPageRoute().go(context);
                 }
               }
+              unawaited(context.read<UserCubit>().refreshUser());
               return;
             }
 
-            if (flowState.currentExercise == null) return;
+            final currentExercise = flowState.currentExercise;
+
+            if (currentExercise == null) return;
 
             ActiveWorkoutPageRoute(
-              exerciseId: flowState.currentExercise!.exerciseDetails.id,
+              exerciseId: currentExercise.exerciseDetails.id,
             ).go(context);
           },
         ),
@@ -91,13 +147,13 @@ class ActiveWorkoutShell extends StatelessWidget {
             extendBodyBehindAppBar: true,
             appBar: ActiveWorkoutAppBar(
               onClosePressed: () async => onClosePressed(context),
-              onTimerPressed: () {
+              onRestTimerPressed: () {
                 unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutRestTimerClick));
                 unawaited(WorkoutDialogs.restTimerDialog(context));
               },
             ),
 
-            body: child,
+            body: widget.child,
           ),
           const WorkoutFlowLoader(),
         ],

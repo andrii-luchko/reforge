@@ -3,7 +3,6 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
-import 'package:reforge/core/user/data/datasources/user_local_datasource.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/settings/data/request/profile_requests.dart';
 import 'package:reforge/features/settings/domain/repositories/profile_repository.dart';
@@ -12,11 +11,9 @@ import 'package:reforge/features/settings/domain/repositories/profile_repository
 class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileRepository {
   ProfileRepositoryImpl(
     this._apiClient,
-    this._localDataSource,
   );
 
   final ApiClient _apiClient;
-  final UserLocalDataSource _localDataSource;
 
   @override
   Future<Result<User>> updateUsername(String username) async {
@@ -26,7 +23,6 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateUsername',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -41,7 +37,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateAvatar',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -60,7 +56,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateFactions',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -77,7 +73,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateBirthDate',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -96,7 +92,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateMeasurementSystem',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -115,7 +111,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateWorkoutDays',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -130,7 +126,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateBodyWeight',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);
@@ -149,7 +145,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
         label: 'updateNotificationSettings',
       );
       final user = response.data;
-      await _localDataSource.saveUser(user);
+
       return Result.success(user);
     } on Exception catch (e) {
       return Result.error(e);

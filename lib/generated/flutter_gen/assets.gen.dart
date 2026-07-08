@@ -11,6 +11,19 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsAudioGen {
+  const $AssetsAudioGen();
+
+  /// File path: assets/audio/single_heavy_hummer.wav
+  String get singleHeavyHummer => 'assets/audio/single_heavy_hummer.wav';
+
+  /// File path: assets/audio/triple-heavy-hammer.wav
+  String get tripleHeavyHammer => 'assets/audio/triple-heavy-hammer.wav';
+
+  /// List of all assets
+  List<String> get values => [singleHeavyHummer, tripleHeavyHammer];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -99,6 +112,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/medal_inactive.svg
   String get medalInactive => 'assets/images/icons/medal_inactive.svg';
 
+  /// File path: assets/images/icons/my_location.svg
+  String get myLocation => 'assets/images/icons/my_location.svg';
+
   /// File path: assets/images/icons/pause.svg
   String get pause => 'assets/images/icons/pause.svg';
 
@@ -164,6 +180,7 @@ class $AssetsImagesIconsGen {
     medal,
     medalActive,
     medalInactive,
+    myLocation,
     pause,
     platesActive,
     platesInactive,
@@ -222,6 +239,9 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/lock.png
   AssetGenImage get lock => const AssetGenImage('assets/images/png/lock.png');
 
+  /// File path: assets/images/png/magnific_hammer.png
+  AssetGenImage get magnificHammer => const AssetGenImage('assets/images/png/magnific_hammer.png');
+
   /// File path: assets/images/png/noise_and_texture.png
   AssetGenImage get noiseAndTexture => const AssetGenImage('assets/images/png/noise_and_texture.png');
 
@@ -236,6 +256,9 @@ class $AssetsImagesPngGen {
 
   /// File path: assets/images/png/splash_logo.png
   AssetGenImage get splashLogo => const AssetGenImage('assets/images/png/splash_logo.png');
+
+  /// File path: assets/images/png/user_pointer.png
+  AssetGenImage get userPointer => const AssetGenImage('assets/images/png/user_pointer.png');
 
   /// List of all assets
   List<AssetGenImage> get values => [
@@ -252,11 +275,13 @@ class $AssetsImagesPngGen {
     gyohyoRankCard,
     icon1024x1024,
     lock,
+    magnificHammer,
     noiseAndTexture,
     seirenRankCard,
     shaderNoise,
     smoke,
     splashLogo,
+    userPointer,
   ];
 }
 
@@ -285,6 +310,7 @@ class $AssetsImagesSvgGen {
 class Assets {
   const Assets._();
 
+  static const $AssetsAudioGen audio = $AssetsAudioGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 

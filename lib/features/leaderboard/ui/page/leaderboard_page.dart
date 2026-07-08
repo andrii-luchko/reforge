@@ -17,6 +17,7 @@ import 'package:reforge/features/leaderboard/ui/widgets/users/users_leaderboard_
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/animations/rising_aura_effect.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 
@@ -95,9 +96,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       scrolledUnderElevation: 0,
                       automaticallyImplyLeading: false,
                       centerTitle: false,
-
-                      floating: true,
-
                       title: Text(
                         t.leaderboard.title,
                         style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
@@ -139,9 +137,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       },
                     ),
 
-                    SliverPadding(
-                      padding: EdgeInsets.only(bottom: context.appTheme.sliverBottomSpacing),
-                    ),
+                    const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                   ],
                 ),
               ),

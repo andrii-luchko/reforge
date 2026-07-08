@@ -13,7 +13,6 @@ extension CustomToast on Toastification {
     return toastification.showCustom(
       autoCloseDuration: const Duration(seconds: 5),
       alignment: Alignment.topCenter,
-      dismissDirection: DismissDirection.none,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
       },
@@ -40,7 +39,6 @@ extension CustomToast on Toastification {
     return toastification.showCustom(
       autoCloseDuration: const Duration(seconds: 5),
       alignment: Alignment.topRight,
-      dismissDirection: DismissDirection.none,
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
       },
@@ -57,8 +55,6 @@ extension CustomToast on Toastification {
     return toastification.showCustom(
       autoCloseDuration: duration,
       alignment: alignment,
-      dismissDirection: DismissDirection.none,
-
       animationBuilder: (context, animation, alignment, child) {
         return FadeTransition(opacity: animation, child: child);
       },

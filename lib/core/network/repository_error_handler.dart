@@ -22,10 +22,13 @@ mixin RepositoryErrorHandler {
           throw transformed;
         }
       }
+
+      final statusCode = e.response?.statusCode;
+
       final userMessage = _toUserMessage(e);
       _logError(label, e, stackTrace);
 
-      throw AppException(userMessage);
+      throw AppNetworkException(userMessage, statusCode: statusCode, originalError: e);
     } catch (e, stackTrace) {
       if (transformError != null) {
         final transformed = transformError(e, stackTrace);

@@ -107,7 +107,7 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
                   duration: const Duration(milliseconds: 400),
                   switchInCurve: Curves.elasticOut,
                   switchOutCurve: Curves.easeIn,
-                  transitionBuilder: (Widget child, Animation<double> animation) {
+                  transitionBuilder: (child, animation) {
                     final inAnimation = Tween<Offset>(
                       begin: const Offset(0, 0.5),
                       end: Offset.zero,

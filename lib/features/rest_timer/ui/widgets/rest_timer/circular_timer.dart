@@ -27,8 +27,6 @@ class CircularTimer extends StatelessWidget {
         ? subheadH5Medium.copyWith(color: appTheme.beige100)
         : subheadH2Medium.copyWith(color: appTheme.beige100);
 
-    final digitWidth = hasHours ? 10.0 : 13.5;
-
     return TweenAnimationBuilder<double>(
       duration: Durations.long1,
       curve: Curves.easeInOut,
@@ -45,7 +43,7 @@ class CircularTimer extends StatelessWidget {
                   child: SmoothTimerText(
                     formatSeconds(mainTime),
                     style: timeStyle,
-                    digitWidth: digitWidth,
+                    //  digitWidth: digitWidth,
                   ),
                 ),
               ),

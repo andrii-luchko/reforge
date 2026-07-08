@@ -4,6 +4,7 @@ import 'package:reforge/features/workout_common/domain/entities/workout_summary_
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
+import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
 
 abstract interface class TrainingSessionRepository {
@@ -12,6 +13,12 @@ abstract interface class TrainingSessionRepository {
   MeasurementSystem? getUserMeasurementSystem();
 
   int? getUserCurrentProgramDayId();
+
+  Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId);
+
+  /// Fetches the full session details including all recorded exercise sessions and sets.
+  /// Used for restoring an interrupted workout.
+  Future<Result<WorkoutSessionDetailsDTO>> getWorkoutSessionDetails(int sessionId);
 
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId);
 

@@ -56,7 +56,7 @@ class HeightAndWeightPage extends StatelessWidget {
       value.toStorageWeight(system).toInt(),
     );
 
-    if (result case ErrorR(error: final e)) {
+    if (result case Failure(error: final e)) {
       throw e;
     }
   }

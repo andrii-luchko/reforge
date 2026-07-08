@@ -26,8 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
   final domain.AuthRepository _authRepository;
   final AnalyticsService _analytics;
 
-  String _errorMessage(Exception e) =>
-      e is AppException ? e.message : e.toString();
+  String _errorMessage(Exception e) => e is AppException ? e.message : e.toString();
 
   Future<void> _initialize() async {
     final result = await _authRepository.getTokens();
@@ -40,7 +39,7 @@ class AuthCubit extends Cubit<AuthState> {
           await _authRepository.clearTokens();
           emit(const AuthState.unauthenticated());
         }
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(AuthState.error(_errorMessage(error)));
     }
   }
@@ -54,7 +53,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         unawaited(_analytics.logLogin(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(AuthState.error(_errorMessage(error)));
     }
   }
@@ -68,7 +67,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         unawaited(_analytics.logSignUp(method: 'email'));
         emit(AuthState.authenticated(tokens: tokens));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(AuthState.error(_errorMessage(error)));
     }
   }
@@ -82,7 +81,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         unawaited(_analytics.logLogin(method: 'google'));
         emit(AuthState.authenticated(tokens: tokens));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
@@ -101,7 +100,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success(value: final tokens):
         unawaited(_analytics.logLogin(method: 'apple'));
         emit(AuthState.authenticated(tokens: tokens));
-      case ErrorR(error: final error):
+      case Failure(:final error):
         if (error is AuthCanceledException) {
           emit(const AuthState.unauthenticated());
         } else {
@@ -122,7 +121,7 @@ class AuthCubit extends Cubit<AuthState> {
       case Success():
         unawaited(_analytics.setUserId(null));
         emit(const AuthState.unauthenticated());
-      case ErrorR(error: final error):
+      case Failure(:final error):
         emit(AuthState.error(_errorMessage(error)));
         emit(currentState);
     }

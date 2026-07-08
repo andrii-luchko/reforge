@@ -12,6 +12,7 @@ import 'package:reforge/features/lore/ui/widgets/lore_card.dart';
 import 'package:reforge/features/lore/ui/widgets/plate_list_tile.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
@@ -150,9 +151,7 @@ class _LoreBodyState extends State<LoreBody> {
                         sliver: SliverToBoxAdapter(child: PaginationLoader()),
                       ),
 
-                    SliverPadding(
-                      padding: EdgeInsets.only(bottom: appTheme.sliverBottomSpacing / 2),
-                    ),
+                    const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                   ],
                 ),
               );

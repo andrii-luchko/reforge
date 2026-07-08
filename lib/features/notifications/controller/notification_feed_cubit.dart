@@ -37,11 +37,13 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
 
     switch (result) {
       case Success(value: final data):
-        emit(NotificationFeedState.loaded(
-          notifications: data.items,
-          hasMore: data.hasMore,
-        ));
-      case ErrorR(error: final e):
+        emit(
+          NotificationFeedState.loaded(
+            notifications: data.items,
+            hasMore: data.hasMore,
+          ),
+        );
+      case Failure(error: final e):
         emit(NotificationFeedState.error(e.toString()));
     }
   }
@@ -66,17 +68,21 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
       switch (result) {
         case Success(value: final data):
           final merged = [...existing, ...data.items];
-          emit(currentState.copyWith(
-            notifications: merged,
-            hasMore: data.hasMore,
-            isLoadingMore: false,
-          ));
-        case ErrorR(error: final e):
+          emit(
+            currentState.copyWith(
+              notifications: merged,
+              hasMore: data.hasMore,
+              isLoadingMore: false,
+            ),
+          );
+        case Failure(error: final e):
           _page--;
-          emit(currentState.copyWith(
-            isLoadingMore: false,
-            error: e.toString(),
-          ));
+          emit(
+            currentState.copyWith(
+              isLoadingMore: false,
+              error: e.toString(),
+            ),
+          );
       }
     }
   }
@@ -92,7 +98,7 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
       final updated = notifications.where((n) => n.id != id).toList();
       emit(currentState.copyWith(notifications: updated));
       final result = await _repository.markNotificationAsRead(id);
-      if (result case ErrorR(error: final e)) {
+      if (result case Failure(error: final e)) {
         emit(currentState.copyWith(notifications: notifications, error: e.toString()));
       }
     }
@@ -104,7 +110,7 @@ class NotificationFeedCubit extends Cubit<NotificationFeedState> {
       unawaited(_analytics.logEvent(AnalyticsEvents.notificationsClearAll));
       emit(currentState.copyWith(notifications: []));
       final result = await _repository.markAllAsRead();
-      if (result case ErrorR(error: final e)) {
+      if (result case Failure(error: final e)) {
         emit(currentState.copyWith(notifications: notifications, error: e.toString()));
       }
     }

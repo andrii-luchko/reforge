@@ -11,12 +11,17 @@ class TwoOptionsDialog extends StatefulWidget {
 
     required this.contentBuilder,
     this.buttonSpacing = 16,
+    this.onLeftOptionPressed,
+    this.onRightOptionPressed,
     super.key,
   });
 
   final String title;
   final String leftButtonLabel;
   final String rightButtonLabel;
+  final VoidCallback? onRightOptionPressed;
+  final VoidCallback? onLeftOptionPressed;
+
   final double buttonSpacing;
 
   final Widget Function(BuildContext context) contentBuilder;
@@ -46,6 +51,7 @@ class _TwoOptionsDialogState extends State<TwoOptionsDialog> {
                   text: widget.leftButtonLabel,
                   onPressed: () {
                     Navigator.of(context).pop(false);
+                    widget.onLeftOptionPressed?.call();
                   },
                 ),
               ),
@@ -55,6 +61,7 @@ class _TwoOptionsDialogState extends State<TwoOptionsDialog> {
                   text: widget.rightButtonLabel,
                   onPressed: () {
                     Navigator.of(context).pop(true);
+                    widget.onRightOptionPressed?.call();
                   },
                 ),
               ),

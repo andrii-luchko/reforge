@@ -13,6 +13,7 @@ import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
+import 'package:reforge/shared/empty_list_message.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -191,7 +192,7 @@ class _TrainingDetailsContentView extends StatelessWidget {
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: SliverToBoxAdapter(
                 child: XpTile(
-                  progress: 0.5,
+                  progress: data.totalXpEarned == 0 ? 0 : 0.5,
                   xp: data.totalXpEarned,
                 ).animateEntrance(),
               ),
@@ -207,18 +208,24 @@ class _TrainingDetailsContentView extends StatelessWidget {
             ),
             SliverPadding(
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
-              sliver: SliverList.separated(
-                itemCount: data.exercises.length,
-                itemBuilder: (context, index) {
-                  return WorkoutInfoTile(
-                    result: data.exercises[index],
-                    system: data.measurementSystem,
-                  ).animateEntrance();
-                },
-                separatorBuilder: (context, index) => const SizedBox(
-                  height: 16,
-                ),
-              ),
+              sliver: data.exercises.isEmpty
+                  ? SliverEmptyListMessage(
+                      icon: Icons.auto_stories_outlined,
+                      title: t.training_details.empty_title,
+                      subtitle: t.training_details.empty_subtitle,
+                    )
+                  : SliverList.separated(
+                      itemCount: data.exercises.length,
+                      itemBuilder: (context, index) {
+                        return WorkoutInfoTile(
+                          result: data.exercises[index],
+                          system: data.measurementSystem,
+                        ).animateEntrance();
+                      },
+                      separatorBuilder: (context, index) => const SizedBox(
+                        height: 16,
+                      ),
+                    ),
             ),
           ],
         ),

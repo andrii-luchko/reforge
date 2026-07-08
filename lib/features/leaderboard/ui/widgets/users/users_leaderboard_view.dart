@@ -22,7 +22,10 @@ class UsersLeaderboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SliverMainAxisGroup(
-      slivers: [ImmortalForgesSection(), LeaderBoardListSection()],
+      slivers: [
+        ImmortalForgesSection(),
+        SliverPadding(padding: .only(bottom: 90), sliver: LeaderBoardListSection()),
+      ],
     );
   }
 }
@@ -146,8 +149,7 @@ class LeaderBoardListSection extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Center(
                       child: TextButton(
-                        onPressed: () =>
-                            context.read<UsersLeaderboardCubit>().loadNextPage(),
+                        onPressed: () => context.read<UsersLeaderboardCubit>().loadNextPage(),
                         child: Text(t.leaderboard.usersList.retry),
                       ),
                     ),

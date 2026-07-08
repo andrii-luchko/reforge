@@ -40,8 +40,9 @@ class ImagePickerService {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.all(16),
+
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -53,6 +54,7 @@ class ImagePickerService {
                 iconPath: Assets.images.icons.camera,
                 onTap: () => Navigator.pop(ctx, PickerOption.takePhoto),
               ),
+              const SizedBox(height: 12),
               _buildPickerItem(
                 context,
                 title: 'Choose photo',
@@ -100,16 +102,24 @@ class ImagePickerService {
   }) {
     final color = isDestructive ? context.appTheme.red400 : context.appTheme.beige100;
 
-    return ListTile(
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: .circular(20)),
-      title: Text(
-        title,
-        style: subheadH5Medium.copyWith(color: color),
+    return Container(
+      padding: const .all(16),
+      decoration: BoxDecoration(
+        border: .all(color: context.appTheme.strokeCard),
+        borderRadius: .circular(20),
       ),
-      trailing: SvgPicture.asset(
-        iconPath,
-        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      child: Row(
+        spacing: 10,
+        children: [
+          SvgPicture.asset(
+            iconPath,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+          ),
+          Text(
+            title,
+            style: subheadH3Medium.copyWith(color: color),
+          ),
+        ],
       ),
     );
   }

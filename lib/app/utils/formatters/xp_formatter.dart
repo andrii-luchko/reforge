@@ -37,7 +37,7 @@ class XpFormatter {
   static String precise(int number) {
     return number.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]} ',
+      (m) => '${m[1]} ',
     );
   }
 }
