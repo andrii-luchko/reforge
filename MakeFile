@@ -14,9 +14,9 @@ $(shell \
 endef
 
 define check_args
-	@if [ -z "$(1)" ] || [ -z "$(2)" ]; then \
-		echo "Usage: make $(3) <flavor> <version> [clean]"; \
-		echo "Example: make $(3) prod 1.0.0"; \
+	@if [ -z "$(1)" ]; then \
+		echo "Usage: make $(2) <version> [clean]"; \
+		echo "Example: make $(2) 1.0.0"; \
 		exit 1; \
 	fi
 endef
@@ -26,13 +26,12 @@ test:
 	@echo "Desktop path: $(DESKTOP_BUILD_DIR)"
 
 aab:
-	$(eval FLAVOR := $(word 2,$(MAKECMDGOALS)))
-	$(eval VERSION := $(word 3,$(MAKECMDGOALS)))
-	$(eval CLEAN := $(word 4,$(MAKECMDGOALS)))
-	$(call check_args,$(FLAVOR),$(VERSION),aab)
-	$(eval BUILD_NUMBER_FILE := .build_number_aab_$(FLAVOR))
+	$(eval VERSION := $(word 2,$(MAKECMDGOALS)))
+	$(eval CLEAN := $(word 3,$(MAKECMDGOALS)))
+	$(call check_args,$(VERSION),aab)
+	$(eval BUILD_NUMBER_FILE := .build_number_aab)
 	$(eval BUILD_NUMBER := $(call increment_build_number,$(BUILD_NUMBER_FILE)))
-	@echo "🚀 Building Android AAB: $(FLAVOR) | Version: $(VERSION) | Build: $(BUILD_NUMBER)"
+	@echo "🚀 Building Android AAB | Version: $(VERSION) | Build: $(BUILD_NUMBER)"
 	@mkdir -p $(DEBUG_INFO_DIR)
 	@if [ "$(CLEAN)" = "clean" ]; then \
 		echo "🧹 Cleaning project..."; \
@@ -42,22 +41,20 @@ aab:
 	flutter build appbundle --release \
 		--build-name=$(VERSION) \
 		--build-number=$(BUILD_NUMBER) \
-		--flavor $(FLAVOR) \
-		--dart-define-from-file=env_$(FLAVOR).json \
-		--obfuscate --split-debug-info=$(DEBUG_INFO_DIR)/android-$(FLAVOR)
+		--dart-define-from-file=env.json \
+		--obfuscate --split-debug-info=$(DEBUG_INFO_DIR)/android
 	@echo "📦 Copying to Desktop..."
-	@mkdir -p $(DESKTOP_BUILD_DIR)/$(FLAVOR)/aab
-	@cp build/app/outputs/bundle/$(FLAVOR)Release/app-$(FLAVOR)-release.aab $(DESKTOP_BUILD_DIR)/$(FLAVOR)/aab/reforge-$(VERSION)-$(BUILD_NUMBER).aab
-	@echo "✅ Done! Check Desktop/reforge_builds"
+	@mkdir -p $(DESKTOP_BUILD_DIR)/aab
+	@cp build/app/outputs/bundle/release/app-release.aab $(DESKTOP_BUILD_DIR)/aab/reforge-$(VERSION)-$(BUILD_NUMBER).aab
+	@echo "✅ Done! Check Desktop/reforge_builds/aab"
 
 ipa:
-	$(eval FLAVOR := $(word 2,$(MAKECMDGOALS)))
-	$(eval VERSION := $(word 3,$(MAKECMDGOALS)))
-	$(eval CLEAN := $(word 4,$(MAKECMDGOALS)))
-	$(call check_args,$(FLAVOR),$(VERSION),ipa)
-	$(eval BUILD_NUMBER_FILE := .build_number_ipa_$(FLAVOR))
+	$(eval VERSION := $(word 2,$(MAKECMDGOALS)))
+	$(eval CLEAN := $(word 3,$(MAKECMDGOALS)))
+	$(call check_args,$(VERSION),ipa)
+	$(eval BUILD_NUMBER_FILE := .build_number_ipa)
 	$(eval BUILD_NUMBER := $(call increment_build_number,$(BUILD_NUMBER_FILE)))
-	@echo "🚀 Building iOS IPA: $(FLAVOR) | Version: $(VERSION) | Build: $(BUILD_NUMBER)"
+	@echo "🚀 Building iOS IPA | Version: $(VERSION) | Build: $(BUILD_NUMBER)"
 	@mkdir -p $(DEBUG_INFO_DIR)
 	@if [ "$(CLEAN)" = "clean" ]; then \
 		echo "🧹 Cleaning project..."; \
@@ -67,13 +64,12 @@ ipa:
 	flutter build ipa --release \
 		--build-name=$(VERSION) \
 		--build-number=$(BUILD_NUMBER) \
-		--flavor $(FLAVOR) \
-		--dart-define-from-file=env_$(FLAVOR).json \
-		--obfuscate --split-debug-info=$(DEBUG_INFO_DIR)/ios-$(FLAVOR)
+		--dart-define-from-file=env.json \
+		--obfuscate --split-debug-info=$(DEBUG_INFO_DIR)/ios
 	@echo "📦 Copying to Desktop..."
-	@mkdir -p $(DESKTOP_BUILD_DIR)/$(FLAVOR)/ipa
-	@cp build/ios/ipa/*.ipa $(DESKTOP_BUILD_DIR)/$(FLAVOR)/ipa/reforge-$(VERSION)-$(BUILD_NUMBER).ipa
-	@echo "✅ Done! Check Desktop/reforge_builds"
+	@mkdir -p $(DESKTOP_BUILD_DIR)/ipa
+	@cp build/ios/ipa/*.ipa $(DESKTOP_BUILD_DIR)/ipa/reforge-$(VERSION)-$(BUILD_NUMBER).ipa
+	@echo "✅ Done! Check Desktop/reforge_builds/ipa"
 
 %:
 	@:
