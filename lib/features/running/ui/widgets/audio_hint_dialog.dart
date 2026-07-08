@@ -4,7 +4,6 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/duration_extensions.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/badge_image.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -115,7 +114,7 @@ class WalkAudioHintDialog extends StatelessWidget {
               children: [
                 const TextSpan(text: 'Slow down to a walking pace for'),
                 TextSpan(
-                  text: '\n${walkDuration.toDigitalWithUnit(t)}\n',
+                  text: '\n${walkDuration.toDigital}\n',
                   style: subheadH2Medium.copyWith(
                     color: theme.orange400,
                     fontSize: 16,

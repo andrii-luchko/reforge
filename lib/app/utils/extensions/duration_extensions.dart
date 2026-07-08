@@ -18,4 +18,8 @@ extension DigitalDurationWithUnit on Duration {
 
     return '$digitalString $unitName';
   }
+
+  String toDigital() {
+    return formatSeconds(inSeconds);
+  }
 }
