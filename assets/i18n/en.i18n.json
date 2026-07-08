@@ -456,7 +456,9 @@
         "title": "Training Details",
         "overview": "Overview",
         "workout_info": "Workout info",
-        "trainingDateTitle": "Training $date"
+        "trainingDateTitle": "Training $date",
+        "empty_title": "No Info Found",
+        "empty_subtitle": "It seems there are no results available at the moment. Please check back later."
     },
     "workout_flow": {
         "startWorkoutError": "Failed to start workout: $error",

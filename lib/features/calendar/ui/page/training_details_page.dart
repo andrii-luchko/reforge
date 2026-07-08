@@ -209,11 +209,10 @@ class _TrainingDetailsContentView extends StatelessWidget {
             SliverPadding(
               padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
               sliver: data.exercises.isEmpty
-                  //TODO(Masayoshi): translate
-                  ? const SliverEmptyListMessage(
+                  ? SliverEmptyListMessage(
                       icon: Icons.auto_stories_outlined,
-                      title: 'No Info Found',
-                      subtitle: 'It seems there are no results available at the moment. Please check back later.',
+                      title: t.training_details.empty_title,
+                      subtitle: t.training_details.empty_subtitle,
                     )
                   : SliverList.separated(
                       itemCount: data.exercises.length,
