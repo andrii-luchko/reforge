@@ -3,6 +3,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
+import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
@@ -15,10 +16,12 @@ class RunningServiceClient {
   final FlutterBackgroundService _service;
 
   final _metricsController = StreamController<RunningMetrics>.broadcast();
+  final _eventsController = StreamController<RunningEvent>.broadcast();
   bool _isListening = false;
   RunningMode? _currentMode;
 
   Stream<RunningMetrics> get metricsStream => _metricsController.stream;
+  Stream<RunningEvent> get eventsStream => _eventsController.stream;
   RunningMode? get currentMode => _currentMode;
 
   /// Subscribes to events from the background service.
@@ -39,7 +42,6 @@ class RunningServiceClient {
         currentPaceMinKm: (event['currentPaceMinKm'] as num).toDouble(),
         stepCount: event['stepCount'] as int,
         currentSegmentIndex: event['currentSegmentIndex'] as int? ?? 0,
-        lapJustCompleted: event['lapJustCompleted'] as bool? ?? false,
         segmentId: event['segmentId'] as int?,
         activityType: SegmentActivity.values.firstWhere(
           (a) => a.name == (event['activityType'] as String?),
@@ -54,6 +56,22 @@ class RunningServiceClient {
             : null,
       );
       _metricsController.add(metrics);
+    });
+
+    _service.on('events').listen((event) {
+      if (event == null) return;
+
+      final type = event['type'] as String?;
+      if (type == 'LapCompletedEvent') {
+        _eventsController.add(
+          LapCompletedEvent(
+            segmentIndex: event['segmentIndex'] as int,
+            segmentId: event['segmentId'] as int?,
+          ),
+        );
+      } else if (type == 'PlannedWorkoutCompletedEvent') {
+        _eventsController.add(const PlannedWorkoutCompletedEvent());
+      }
     });
   }
 

@@ -6,6 +6,7 @@ import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
+import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
@@ -34,6 +35,7 @@ class RunningSessionManager {
 
   StreamSubscription<RunningMetrics>? _metricsSub;
   final _controller = StreamController<RunningMetrics>.broadcast();
+  final _eventsController = StreamController<RunningEvent>.broadcast();
 
   int? _workoutSessionId;
   int? _programExerciseId;
@@ -43,6 +45,7 @@ class RunningSessionManager {
   // ── Public API for Cubit ───────────────────────────────────────────────────
 
   Stream<RunningMetrics> get metricsStream => _controller.stream;
+  Stream<RunningEvent> get eventsStream => _eventsController.stream;
 
   RunningMode? get currentMode => _currentMode;
 
@@ -309,19 +312,14 @@ class RunningSessionManager {
     try {
       logger.d('RunningSessionManager: Lap $_currentLapIndex completed!');
 
-      // 1. Play sound
-      unawaited(_audioFeedbackService.playLapCompleted());
-
       final oldDbSetId = _currentDbSetId;
       _currentDbSetId = null;
 
-      // 3. Write final snapshot to local DB and mark as finished locally
+      // Write final snapshot to local DB and mark as finished locally
       if (oldDbSetId != null) {
         await _writeDriftSnapshot(oldDbSetId);
         await _repository.markSetAsFinishedLocally(oldDbSetId);
       }
-
-      // 4. Move to next lap (infinite free run if limits are exhausted)
 
       // CRITICAL: Check if the session was ended by the user during the async DB writes!
       if (_currentMode == null || _workoutSessionId == null || _programExerciseId == null) {
@@ -335,35 +333,34 @@ class RunningSessionManager {
       _getEngineForMode(_currentMode)?.reset();
       _latestMetrics = null;
 
+      final isPlannedWorkoutCompleted = _limits != null && _currentLapIndex == _limits!.length;
       final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
 
-      // Emit a one-shot event so the UI can show a popup and play sounds.
-      // lapJustCompleted resets to false on every subsequent normal emission.
-      _controller.add(
-        RunningMetrics(
-          distanceMeters: 0,
-          durationSeconds: 0,
-          avgSpeedKmH: 0,
-          currentSpeedKmH: 0,
-          avgPaceMinKm: 0,
-          currentPaceMinKm: 0,
-          stepCount: 0,
-          currentSegmentIndex: _currentLapIndex,
-          lapJustCompleted: true,
-          segmentId: currentLimit?.segmentId,
-          activityType: currentLimit?.activityType ?? SegmentActivity.run,
-        ),
-      );
+      if (isPlannedWorkoutCompleted) {
+        // Workout finished!
+        unawaited(_audioFeedbackService.playWorkoutCompleted());
+        _eventsController.add(const PlannedWorkoutCompletedEvent());
+        _getEngineForMode(_currentMode)?.pause();
+      } else {
+        // Normal lap finished
+        unawaited(_audioFeedbackService.playLapCompleted());
+        _eventsController.add(
+          LapCompletedEvent(
+            segmentIndex: _currentLapIndex,
+            segmentId: currentLimit?.segmentId,
+          ),
+        );
 
-      // Start a new row for the new lap
-      _currentDbSetId = await _repository.createNewActiveSet(
-        sessionId: _workoutSessionId!,
-        programExerciseId: _programExerciseId!,
-        setNumber: _currentLapIndex + 1,
-        trackingMode: _currentMode!.dbValue,
-        programSegmentId: currentLimit?.segmentId,
-        segmentType: currentLimit?.activityType.name,
-      );
+        // Start a new row for the new lap
+        _currentDbSetId = await _repository.createNewActiveSet(
+          sessionId: _workoutSessionId!,
+          programExerciseId: _programExerciseId!,
+          setNumber: _currentLapIndex + 1,
+          trackingMode: _currentMode!.dbValue,
+          programSegmentId: currentLimit?.segmentId,
+          segmentType: currentLimit?.activityType.name,
+        );
+      }
     } finally {
       _isCompletingLap = false;
     }

@@ -79,7 +79,7 @@ class _RunningMapViewState extends State<RunningMapView> {
     final hasNewPoints = widget.routeMap.length != oldWidget.routeMap.length;
     if (hasNewPoints) {
       _polylineDelayTimer?.cancel();
-      _polylineDelayTimer = Timer(const Duration(milliseconds: 500), () {
+      _polylineDelayTimer = Timer(const Duration(milliseconds: 900), () {
         if (mounted) {
           setState(() {
             _rebuildPolyline(widget.routeMap);

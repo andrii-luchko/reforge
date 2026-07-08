@@ -17,4 +17,9 @@ class ExerciseSegmentEntity {
   final WorkoutMetric targetMetric;
   final int distanceM;
   final int durationSec;
+
+  @override
+  String toString() {
+    return 'ExerciseSegmentEntity(id: $id, order: $order, activity: $activity, targetMetric: $targetMetric, distanceM: $distanceM, durationSec: $durationSec)';
+  }
 }

@@ -14,13 +14,10 @@ import 'package:reforge/shared/uikit/app_tag.dart';
 /// Shows a row per lap with lap number, distance, pace and time.
 class RunningLapsList extends StatelessWidget {
   const RunningLapsList({
-    required this.metrics,
     required this.system,
     required this.laps,
     super.key,
   });
-
-  final List<WorkoutMetric> metrics;
 
   final MeasurementSystem system;
   final List<ExerciseLap> laps;
@@ -36,7 +33,7 @@ class RunningLapsList extends StatelessWidget {
         ...laps.map(
           (lap) => _LapRow(
             lap: lap,
-            metrics: metrics,
+            metrics: WorkoutMetric.runningMetrics,
             system: system,
           ),
         ),

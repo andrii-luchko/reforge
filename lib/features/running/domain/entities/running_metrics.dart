@@ -18,7 +18,6 @@ class RunningMetrics {
     this.currentLocation,
     this.currentSegment,
     this.currentSegmentIndex = 0,
-    this.lapJustCompleted = false,
     this.segmentId,
     this.activityType = SegmentActivity.run,
   });
@@ -34,7 +33,6 @@ class RunningMetrics {
       currentLocation = null,
       currentSegment = null,
       currentSegmentIndex = 0,
-      lapJustCompleted = false,
       segmentId = null,
       activityType = SegmentActivity.run;
 
@@ -68,10 +66,6 @@ class RunningMetrics {
   /// Index of the current segment in the playlist.
   final int currentSegmentIndex;
 
-  /// True only on the single emission that signals a lap/segment just completed.
-  /// Resets to false on the next emission. UI should listen via BlocListener.
-  final bool lapJustCompleted;
-
   /// The backend ID of the current segment (if applicable).
   final int? segmentId;
 
@@ -89,7 +83,6 @@ class RunningMetrics {
     RouteCoordinate? currentLocation,
     ExerciseSegmentEntity? currentSegment,
     int? currentSegmentIndex,
-    bool? lapJustCompleted,
     int? segmentId,
     SegmentActivity? activityType,
   }) {
@@ -104,7 +97,6 @@ class RunningMetrics {
       currentLocation: currentLocation ?? this.currentLocation,
       currentSegment: currentSegment ?? this.currentSegment,
       currentSegmentIndex: currentSegmentIndex ?? this.currentSegmentIndex,
-      lapJustCompleted: lapJustCompleted ?? false,
       segmentId: segmentId ?? this.segmentId,
       activityType: activityType ?? this.activityType,
     );

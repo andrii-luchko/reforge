@@ -8,7 +8,8 @@ import 'package:reforge/app/utils/logger/logger.dart';
 /// Ensures proper audio session configuration (ducking other audio like Spotify)
 /// and preloads assets to eliminate latency during playback.
 class AudioFeedbackService {
-  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _singlePlayer = AudioPlayer();
+  final AudioPlayer _triplePlayer = AudioPlayer();
   bool _isInitialized = false;
 
   /// Initializes the audio session and preloads assets.
@@ -44,12 +45,13 @@ class AudioFeedbackService {
         ),
       );
 
-      // 2. Preload the lap completion sound.
+      // 2. Preload the sounds.
       // We load it once and keep it in memory. Subsequent plays will just seek to 0.
-      await _player.setAsset('assets/audio/single_heavy_hummer.wav');
+      await _singlePlayer.setAsset('assets/audio/single_heavy_hummer.wav');
+      await _triplePlayer.setAsset('assets/audio/triple-heavy-hammer.wav');
 
       _isInitialized = true;
-      logger.d('AudioFeedbackService: initialized and asset preloaded');
+      logger.d('AudioFeedbackService: initialized and assets preloaded');
     } on Exception catch (e, st) {
       logger.e('AudioFeedbackService: initialization failed', e, st);
     }
@@ -63,19 +65,32 @@ class AudioFeedbackService {
     }
 
     try {
-      // Since we reuse the same player and asset, we must rewind to the start.
-      await _player.seek(Duration.zero);
-      // play() returns a Future that completes when playback finishes.
-      // Usually we unawait this from the caller side so it doesn't block.
-      await _player.play();
+      await _singlePlayer.seek(Duration.zero);
+      await _singlePlayer.play();
     } on Exception catch (e, st) {
-      logger.e('AudioFeedbackService: failed to play lap sound', e, st);
+      logger.e('AudioFeedbackService: failed to play single lap sound', e, st);
+    }
+  }
+
+  /// Plays the workout completion sound (triple heavy hammer).
+  Future<void> playWorkoutCompleted() async {
+    if (!_isInitialized) {
+      logger.w('AudioFeedbackService: playWorkoutCompleted called before init()');
+      return;
+    }
+
+    try {
+      await _triplePlayer.seek(Duration.zero);
+      await _triplePlayer.play();
+    } on Exception catch (e, st) {
+      logger.e('AudioFeedbackService: failed to play workout completed sound', e, st);
     }
   }
 
   /// Disposes of the audio player resources.
   Future<void> dispose() async {
-    await _player.dispose();
+    await _singlePlayer.dispose();
+    await _triplePlayer.dispose();
     _isInitialized = false;
   }
 }

@@ -85,7 +85,6 @@ class RunningLapsSummaryPage extends StatelessWidget {
 
                             RunningLapsList(
                               laps: completedLaps,
-                              metrics: exerciseDetails.metrics,
                               system: measureSystem,
                             ),
                             const SizedBox(height: 16),

@@ -23,6 +23,6 @@ class ProgramExerciseEntity {
 
   @override
   String toString() {
-    return 'ProgramExerciseEntity(\nid: $id, \nprogramDayId: $programDayId, \nsets: $sets, \norder: $order, \nexerciseDetails: $exerciseDetails)';
+    return 'ProgramExerciseEntity(\nid: $id, \nprogramDayId: $programDayId, \nsets: $sets, \norder: $order, \nexerciseDetails: $exerciseDetails,\n segments:$segments )';
   }
 }

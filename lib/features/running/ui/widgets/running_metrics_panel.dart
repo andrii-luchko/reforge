@@ -4,9 +4,6 @@ import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/workout_run_exercise_row.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
-/// Displays a horizontal row of running metric chips:
-/// distance · pace · elapsed time.
-///
 class RunningMetricsPanel extends StatelessWidget {
   const RunningMetricsPanel({
     required this.distanceMeters,
@@ -14,12 +11,9 @@ class RunningMetricsPanel extends StatelessWidget {
     required this.speedKmH,
     required this.system,
     this.stepCount,
-    this.isLive = false,
-
     super.key,
   });
 
-  /// Convenience constructor from an [ExerciseLap].
   factory RunningMetricsPanel.fromExerciseLap(ExerciseLap lap, MeasurementSystem system, {bool isLive = true}) {
     return RunningMetricsPanel(
       distanceMeters: lap.distanceMeters,
@@ -35,9 +29,6 @@ class RunningMetricsPanel extends StatelessWidget {
   final double speedKmH;
   final MeasurementSystem system;
   final int? stepCount;
-
-  /// When true, a subtle pulse indicator is shown to signal live updates.
-  final bool isLive;
 
   @override
   Widget build(BuildContext context) {

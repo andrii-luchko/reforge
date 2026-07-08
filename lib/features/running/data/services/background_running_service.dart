@@ -11,6 +11,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
@@ -69,6 +70,7 @@ Future<void> onStart(ServiceInstance service) async {
       await configureBackgroundDependencies();
       final manager = backgroundGetIt<RunningSessionManager>();
       StreamSubscription<RunningMetrics>? metricsSub;
+      StreamSubscription<RunningEvent>? eventsSub;
 
       // 1. Ping-Pong
       service.on('ping').listen((_) {
@@ -123,7 +125,6 @@ Future<void> onStart(ServiceInstance service) async {
                 'currentPaceMinKm': metrics.currentPaceMinKm,
                 'stepCount': metrics.stepCount,
                 'currentSegmentIndex': metrics.currentSegmentIndex,
-                'lapJustCompleted': metrics.lapJustCompleted,
                 'segmentId': metrics.segmentId,
                 'activityType': metrics.activityType.name,
                 if (metrics.currentLocation != null) 'lat': metrics.currentLocation!.latitude,
@@ -137,6 +138,27 @@ Future<void> onStart(ServiceInstance service) async {
               // continues — the timer keeps running even without sensor data.
               logger.e('Background: metrics stream error', e, st);
               service.invoke('sensor_error', {'message': e.toString()});
+            },
+            cancelOnError: false,
+          );
+
+          await eventsSub?.cancel();
+          eventsSub = manager.eventsStream.listen(
+            (event) {
+              if (event is LapCompletedEvent) {
+                service.invoke('events', {
+                  'type': 'LapCompletedEvent',
+                  'segmentIndex': event.segmentIndex,
+                  'segmentId': event.segmentId,
+                });
+              } else if (event is PlannedWorkoutCompletedEvent) {
+                service.invoke('events', {
+                  'type': 'PlannedWorkoutCompletedEvent',
+                });
+              }
+            },
+            onError: (Object e, StackTrace st) {
+              logger.e('Background: events stream error', e, st);
             },
             cancelOnError: false,
           );
@@ -186,6 +208,7 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('stop_session').listen((_) async {
         try {
           await metricsSub?.cancel();
+          await eventsSub?.cancel();
           manager.endSession();
         } on Exception catch (e) {
           logger.e('Background: Error in stop_session: $e');

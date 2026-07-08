@@ -70,7 +70,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
 
     if (currentDay == state.programDay?.id) return;
 
-    await _loadProgramDay(30);
+    await _loadProgramDay(currentDay);
   }
 
   /// Loads a specific program day, e.g. when navigating from the calendar.

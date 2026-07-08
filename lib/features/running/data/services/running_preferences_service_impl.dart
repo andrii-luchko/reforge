@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @LazySingleton(as: RunningPreferencesService)
 class RunningPreferencesServiceImpl implements RunningPreferencesService {

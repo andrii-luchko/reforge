@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -41,6 +42,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   final ProgramExerciseEntity programExercise;
 
   StreamSubscription<RunningMetrics>? _metricsSub;
+  StreamSubscription<RunningEvent>? _eventsSub;
 
   ExerciseSegmentEntity? get currentSegment => programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
 
@@ -196,6 +198,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
   Future<void> _subscribeToTracking(RunningMode mode) async {
     await _metricsSub?.cancel();
+    await _eventsSub?.cancel();
 
     final limits = programExercise.segments
         .map(
@@ -222,20 +225,26 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         emit(state.copyWith(error: e.toString()));
       },
     );
+    _eventsSub = _serviceClient.eventsStream.listen(
+      _onEventReceived,
+      onError: (Object e) {
+        logger.e('RunningTrackerCubit: events stream error: $e');
+      },
+    );
+  }
+
+  void _onEventReceived(RunningEvent event) {
+    if (event is LapCompletedEvent) {
+      emit(state.copyWith(currentSegmentIndex: event.segmentIndex, lapJustCompleted: true));
+      // Immediately reset flag so BlocListener fires only once.
+      emit(state.copyWith(lapJustCompleted: false));
+    } else if (event is PlannedWorkoutCompletedEvent) {
+      unawaited(endWorkout());
+    }
   }
 
   void _onMetricsReceived(RunningMetrics metrics) {
     if (state.isPaused) return;
-
-    // A lap just completed — update segment index, fire the event, then reset.
-    // The next normal emission will carry fresh metrics for the new segment.
-    if (metrics.lapJustCompleted) {
-      final newIndex = metrics.currentSegmentIndex;
-      emit(state.copyWith(currentSegmentIndex: newIndex, lapJustCompleted: true));
-      // Immediately reset flag so BlocListener fires only once.
-      emit(state.copyWith(lapJustCompleted: false));
-      return;
-    }
 
     final activity = metrics.activityType;
 
@@ -260,7 +269,9 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   void _stopTracking() {
     _serviceClient.endSession();
     unawaited(_metricsSub?.cancel());
+    unawaited(_eventsSub?.cancel());
     _metricsSub = null;
+    _eventsSub = null;
   }
 
   @override
