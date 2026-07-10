@@ -16,7 +16,7 @@ class DefaultSliverAppBar extends StatelessWidget {
     final appTheme = context.appTheme;
 
     return SliverPadding(
-      padding: horizontalPadding,
+      padding: horizontalPadding.copyWith(bottom: 10),
       sliver: SliverAppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

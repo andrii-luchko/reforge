@@ -65,9 +65,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     final initialSets = (restored != null && restored.isNotEmpty)
         ? [
             ...restored.map((s) => s.copyWith(isDone: true)),
-            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch),
+            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: restored.length + 1),
           ]
-        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch)];
+        : [
+            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1),
+          ];
 
     emit(
       state.copyWith(
@@ -193,7 +195,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void addSet() {
-    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch);
+    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: state.sets.length + 1);
     emit(state.copyWith(sets: [...state.sets, newSet]));
   }
 

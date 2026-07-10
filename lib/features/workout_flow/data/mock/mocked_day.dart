@@ -23,16 +23,29 @@ final List<ExerciseDetailsDTO> newMockExercises = [
   // ),
   const ExerciseDetailsDTO(
     id: 1,
-    name: 'Run 5 km',
+    name: 'Some angle exercise',
     description:
         'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
-    key: 'deadlift',
+    key: 'angle',
 
-    metrics: ['durationSec', 'distanceM', 'speedKmH'],
+    metrics: ['angleDeg'],
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
   ),
+
+  // const ExerciseDetailsDTO(
+  //   id: 1,
+  //   name: 'Run 5 km',
+  //   description:
+  //       'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
+  //   key: 'deadlift',
+
+  //   metrics: ['durationSec', 'distanceM', 'speedKmH'],
+  //   videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+  //   thumbnailInstructionUrl:
+  //       'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
+  // ),
 
   // ID 2: High Intensity Burpees
   const ExerciseDetailsDTO(

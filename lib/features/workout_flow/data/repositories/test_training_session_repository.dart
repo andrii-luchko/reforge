@@ -4,7 +4,6 @@ import 'package:reforge/features/workout_common/domain/entities/workout_summary_
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
@@ -15,7 +14,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
 
   @override
   Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
-    return Result.success(parsedMockedDay.toEntity());
+    return Result.success(mockProgramDay);
   }
 
   @override
@@ -35,7 +34,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
         WorkoutSession(
           id: 1,
           userId: 1,
-          workoutProgramDayId: parsedMockedDay.id,
+          workoutProgramDayId: mockProgramDay.id,
           duration: 0,
           status: WorkoutSessionStatus.active,
           totalXpEarned: 0,

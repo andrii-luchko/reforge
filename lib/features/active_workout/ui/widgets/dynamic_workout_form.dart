@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/extensions/string_extensions.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
@@ -72,14 +73,14 @@ class _DynamicWorkoutFormState extends State<DynamicWorkoutForm> {
               },
             ),
           ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: WorkoutHeaderRow(
-            metrics: widget.metrics,
-            system: widget.system,
-          ),
-        ),
+        if (widget.sets.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: WorkoutHeaderRow(
+              metrics: widget.metrics,
+              system: widget.system,
+            ),
+          ).animateEntrance(),
 
         _WorkoutSetsList(
           sets: widget.sets,

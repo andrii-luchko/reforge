@@ -58,6 +58,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/camera.svg
   String get camera => 'assets/images/icons/camera.svg';
 
+  /// File path: assets/images/icons/camera_alt.svg
+  String get cameraAlt => 'assets/images/icons/camera_alt.svg';
+
   /// File path: assets/images/icons/card_remove.svg
   String get cardRemove => 'assets/images/icons/card_remove.svg';
 
@@ -103,6 +106,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/lock.svg
   String get lock => 'assets/images/icons/lock.svg';
 
+  /// File path: assets/images/icons/magic_wand.svg
+  String get magicWand => 'assets/images/icons/magic_wand.svg';
+
   /// File path: assets/images/icons/medal.svg
   String get medal => 'assets/images/icons/medal.svg';
 
@@ -127,6 +133,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/play.svg
   String get play => 'assets/images/icons/play.svg';
 
+  /// File path: assets/images/icons/reload.svg
+  String get reload => 'assets/images/icons/reload.svg';
+
   /// File path: assets/images/icons/setting_active.svg
   String get settingActive => 'assets/images/icons/setting_active.svg';
 
@@ -141,6 +150,9 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/trash.svg
   String get trash => 'assets/images/icons/trash.svg';
+
+  /// File path: assets/images/icons/upload.svg
+  String get upload => 'assets/images/icons/upload.svg';
 
   /// File path: assets/images/icons/user.svg
   String get user => 'assets/images/icons/user.svg';
@@ -162,6 +174,7 @@ class $AssetsImagesIconsGen {
     calendar2,
     calendarAlt,
     camera,
+    cameraAlt,
     cardRemove,
     chartActive,
     chartInactive,
@@ -177,6 +190,7 @@ class $AssetsImagesIconsGen {
     homeActive,
     homeInactive,
     lock,
+    magicWand,
     medal,
     medalActive,
     medalInactive,
@@ -185,11 +199,13 @@ class $AssetsImagesIconsGen {
     platesActive,
     platesInactive,
     play,
+    reload,
     settingActive,
     settingInactive,
     sms,
     timer,
     trash,
+    upload,
     user,
     wallet,
     weight,

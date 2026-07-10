@@ -16,6 +16,7 @@ import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
+import 'package:reforge/core/photo/ui/image_source_picker_dialog.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/settings/data/services/system_info_services.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
@@ -222,10 +223,41 @@ class SettingsGroup extends StatelessWidget {
 
   final OnboardedUser user;
 
+  Future<void> onImagePressed(BuildContext context) async {
+    final userCubit = context.read<UserCubit>();
+
+    final result = await ImagePickerService.pickAndCrop(
+      context,
+      dialogData: const ImageSourcePickerDialogData(
+        title: 'Edit profile picture',
+      ),
+    );
+
+    await result.fold(
+      onSuccess: (pickedData) async {
+        if (pickedData == null) return;
+
+        logger.d(
+          'picker option: ${pickedData.option}, hasFile: ${pickedData.file != null}',
+        );
+
+        if (pickedData.option == PickerOption.deletePhoto) {
+          await userCubit.deleteUserAvatar();
+          return;
+        }
+
+        final file = pickedData.file;
+        if (file != null) {
+          return userCubit.uploadUserAvatar(file);
+        }
+      },
+      onError: (_, _) {},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final userCubit = context.read<UserCubit>();
     final subscription = context.watch<SubscriptionCubit>().state.currentSubscription;
     logger.d(subscription ?? '');
 
@@ -242,24 +274,7 @@ class SettingsGroup extends StatelessWidget {
                 return Align(
                   child: SettingsImagePicker(
                     imageUrl: user.avatarUrl,
-                    onPressed: () async {
-                      final pickedData = await ImagePickerService.pickAndCrop(context);
-                      if (pickedData == null) return;
-
-                      logger.d(
-                        'picker option: ${pickedData.option}, hasFile: ${pickedData.file != null}',
-                      );
-
-                      if (pickedData.option == PickerOption.deletePhoto) {
-                        await userCubit.deleteUserAvatar();
-                        return;
-                      }
-
-                      final file = pickedData.file;
-                      if (file != null) {
-                        return userCubit.uploadUserAvatar(file);
-                      }
-                    },
+                    onPressed: () => onImagePressed(context),
                   ),
                 );
               }

@@ -29,6 +29,7 @@ import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart
 import 'package:reforge/features/calendar/controllers/training_details/training_details_cubit.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
+import 'package:reforge/features/camera_detection/ui/pages/camera_detection_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -606,10 +607,12 @@ class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
     ),
     TypedShellRoute<ActiveWorkoutsShellRoute>(
       routes: [
-        TypedGoRoute<ActiveWorkoutPageRoute>(path: '/active-workout'),
+        TypedGoRoute<ActiveWorkoutPageRoute>(
+          path: '/active-workout',
+        ),
       ],
     ),
-
+    TypedGoRoute<CameraDetectionPageRoute>(path: '/camera-detection'),
     TypedGoRoute<StartRunningPageRoute>(path: '/start-running'),
     TypedShellRoute<WorkoutCongratulationsShellRoute>(
       routes: [
@@ -770,6 +773,20 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
           child: const ActiveWorkoutPage(),
         );
       },
+    );
+  }
+}
+
+class CameraDetectionPageRoute extends GoRouteData with $CameraDetectionPageRoute {
+  const CameraDetectionPageRoute({required this.$extra});
+
+  final ActiveExerciseCubit $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return BlocProvider.value(
+      value: $extra,
+      child: const CameraDetectionPage(),
     );
   }
 }

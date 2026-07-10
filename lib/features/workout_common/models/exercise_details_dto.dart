@@ -20,7 +20,8 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
     required String key,
 
     @Default([]) List<String> metrics,
-
+    @Default(false) bool isPoseDetectionEnabled,
+    String? poseDetectionPreset,
     @Default(false) bool isTiered,
     StaticDataDTO? staticData,
 

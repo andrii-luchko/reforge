@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
@@ -9,7 +10,9 @@ import 'package:reforge/features/active_workout/ui/widgets/exercise_results/prev
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
 
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
+import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
@@ -108,11 +111,23 @@ class ActiveWorkoutPage extends StatelessWidget {
 
                       const SizedBox(height: 8),
                       Skeleton.leaf(
-                        child: PrimaryButton(
-                          text: t.workout.forgeNextMove,
-                          onPressed: () async {
-                            await context.read<ActiveExerciseCubit>().finishExercise();
-                          },
+                        child: Row(
+                          spacing: 8,
+                          children: [
+                            AppIconButton(
+                              iconAsset: Assets.images.icons.cameraAlt,
+                              iconSize: 22,
+                              onPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
+                            ),
+                            Expanded(
+                              child: PrimaryButton(
+                                text: t.workout.forgeNextMove,
+                                onPressed: () async {
+                                  await context.read<ActiveExerciseCubit>().finishExercise();
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
