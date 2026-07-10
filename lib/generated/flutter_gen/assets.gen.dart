@@ -73,6 +73,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/check.svg
   String get check => 'assets/images/icons/check.svg';
 
+  /// File path: assets/images/icons/close.svg
+  String get close => 'assets/images/icons/close.svg';
+
   /// File path: assets/images/icons/computing.svg
   String get computing => 'assets/images/icons/computing.svg';
 
@@ -179,6 +182,7 @@ class $AssetsImagesIconsGen {
     chartActive,
     chartInactive,
     check,
+    close,
     computing,
     cup,
     document,

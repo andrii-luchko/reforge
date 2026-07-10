@@ -5,6 +5,8 @@ part 'pose_data_point.g.dart';
 
 @freezed
 sealed class PoseDataPoint with _$PoseDataPoint {
+  const PoseDataPoint._();
+
   const factory PoseDataPoint({
     required int number,
     required String name,
@@ -14,4 +16,6 @@ sealed class PoseDataPoint with _$PoseDataPoint {
   }) = _PoseDataPoint;
 
   factory PoseDataPoint.fromJson(Map<String, dynamic> json) => _$PoseDataPointFromJson(json);
+
+  bool get isLowConfidence => score < 0.7;
 }

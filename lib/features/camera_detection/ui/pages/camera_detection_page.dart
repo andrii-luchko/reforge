@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/app/utils/extensions/media_query_extension.dart';
+import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/photo/ui/image_source_picker_dialog.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
+import 'package:reforge/features/camera_detection/ui/widgets/pose_detection_image.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/upload_image_widget.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_section.dart';
@@ -17,7 +21,6 @@ import 'package:reforge/shared/animations/painters/dashed_border_painter.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
-import 'package:reforge/shared/uikit/app_svg_icon.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/text_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -34,13 +37,12 @@ class CameraDetectionPage extends StatefulWidget {
 
 class _CameraDetectionPageState extends State<CameraDetectionPage> {
   final TextEditingController _setTextField = TextEditingController();
-
-  final ValueNotifier<WorkoutSet?> _selectedSet = ValueNotifier(null);
+  final ValueNotifier<bool> _isDraggingPosePoint = ValueNotifier(false);
 
   @override
   void dispose() {
     _setTextField.dispose();
-    _selectedSet.dispose();
+    _isDraggingPosePoint.dispose();
     super.dispose();
   }
 
@@ -49,126 +51,331 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
-        builder: (context, state) {
-          final cubit = context.read<ActiveExerciseCubit>();
-          final programExercise = cubit.programExercise;
+        builder: (context, exerciseState) {
+          final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+          final programExercise = activeExerciseCubit.programExercise;
           final exerciseDetails = programExercise.exerciseDetails;
 
-          return DefaultBackground(
-            additionalAnimationsBehind: const [ParticlesWidget()],
-            body: CustomScrollView(
-              slivers: [
-                DefaultSliverAppBar(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  title: 'Camera',
-                ),
-                SliverPadding(
-                  padding: const .symmetric(horizontal: 16, vertical: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: VideoSection(
-                      videoUrl: exerciseDetails.videoInstructionUrl,
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const .symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(child: WorkoutSection(exercise: exerciseDetails)),
-                ),
-                SliverPadding(
-                  padding: const .symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(
-                    child: ValueListenableBuilder(
-                      valueListenable: _selectedSet,
-                      builder: (context, value, child) {
-                        return SetSelectionField(
-                          controller: _setTextField,
-                          initialValue: value,
-                          setList: state.sets.where((set) => !set.isDone && !set.isBusy).toList(),
-                          onChanged: (value) {
-                            _selectedSet.value = value;
-                            _setTextField.text = 'Set ${value.setNumber} ';
+          return BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
+            builder: (context, cameraState) {
+              final possibleSets = exerciseState.sets.where((set) => !set.isDone && !set.isBusy).toList();
+              final selectedSet = possibleSets.firstWhereOrNull((set) => set.id == cameraState.selectedSetId);
+
+              if (selectedSet == null && _setTextField.text.isNotEmpty) {
+                _setTextField.clear();
+              } else if (selectedSet != null) {
+                _setTextField.text = 'Set ${selectedSet.setNumber}';
+              }
+
+              return DefaultBackground(
+                additionalAnimationsBehind: const [ParticlesWidget()],
+                body: ValueListenableBuilder(
+                  valueListenable: _isDraggingPosePoint,
+                  builder: (context, isDraggingPosePoint, child) {
+                    return CustomScrollView(
+                      physics: isDraggingPosePoint ? const NeverScrollableScrollPhysics() : null,
+                      slivers: [
+                        DefaultSliverAppBar(
+                          onPressed: () {
+                            Navigator.of(context).pop();
                           },
-                        );
-                      },
-                    ),
-                  ),
+                          title: 'Camera',
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          sliver: SliverToBoxAdapter(
+                            child: VideoSection(
+                              videoUrl: exerciseDetails.videoInstructionUrl,
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverToBoxAdapter(child: WorkoutSection(exercise: exerciseDetails)),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverToBoxAdapter(
+                            child: SetSelectionField(
+                              controller: _setTextField,
+                              initialValue: selectedSet,
+                              setList: possibleSets,
+                              onChanged: (value) {
+                                context.read<CameraDetectionCubit>().selectSet(value.id);
+                                _setTextField.text = 'Set ${value.setNumber}';
+                              },
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                          sliver: SliverToBoxAdapter(
+                            child: ImageSection(
+                              state: cameraState,
+                              onPickImage: () => _pickImage(context),
+                              onPoseInteractionStart: () {
+                                _isDraggingPosePoint.value = true;
+                              },
+                              onPoseInteractionEnd: () {
+                                _isDraggingPosePoint.value = false;
+                              },
+                            ),
+                          ),
+                        ),
+                        const AppBottomPaddingWidget.sliver(),
+                      ],
+                    );
+                  },
                 ),
-
-                SliverPadding(
-                  padding: .symmetric(horizontal: 16, vertical: 20),
-                  sliver: SliverToBoxAdapter(
-                    child: ImageSection(),
-                  ),
-                ),
-
-                const AppBottomPaddingWidget.sliver(),
-              ],
+              );
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
+        builder: (context, cameraState) {
+          return AppBottomPaddingWidget(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: PrimaryButton(
+                text: _primaryButtonText(cameraState),
+                iconAsset: _primaryButtonIcon(cameraState),
+                onPressed: _primaryButtonAction(context, cameraState),
+              ),
             ),
           );
         },
       ),
-      bottomNavigationBar: AppBottomPaddingWidget(
-        child: Padding(
-          padding: const .symmetric(horizontal: 16),
-          child: PrimaryButton(
-            text: 'Analyze image',
-            iconAsset: Assets.images.icons.magicWand,
-            onPressed: () {},
-          ),
-        ),
+    );
+  }
+
+  Future<void> _pickImage(BuildContext context) async {
+    final result = await ImagePickerService.pickAndCrop(
+      context,
+      availableOptions: [
+        PickerOption.takePhoto,
+        PickerOption.selectPhoto,
+      ],
+      dialogData: const ImageSourcePickerDialogData(
+        title: 'Camera',
+        takePhotoTitle: 'Use camera',
+        selectPhotoTitle: 'Upload image',
       ),
     );
+    final pickedData = result.orNull;
+    final file = pickedData?.file;
+
+    if (!context.mounted || file == null) return;
+
+    await context.read<CameraDetectionCubit>().setImage(file);
+  }
+
+  String _primaryButtonText(CameraDetectionState state) {
+    return switch (state) {
+      CameraDetectionAdjusting() => 'Confirm',
+      CameraDetectionSavingResult() => 'Confirming',
+      _ => 'Analyze image',
+    };
+  }
+
+  String? _primaryButtonIcon(CameraDetectionState state) {
+    return switch (state) {
+      CameraDetectionAdjusting() || CameraDetectionSavingResult() => null,
+      _ => Assets.images.icons.magicWand,
+    };
+  }
+
+  VoidCallback? _primaryButtonAction(BuildContext context, CameraDetectionState state) {
+    return switch (state) {
+      CameraDetectionImageSelected() => () => context.read<CameraDetectionCubit>().analyzeImage(),
+      CameraDetectionAdjusting() => () => _confirmResult(context, state),
+      _ => null,
+    };
+  }
+
+  void _confirmResult(BuildContext context, CameraDetectionAdjusting state) {
+    final cameraCubit = context.read<CameraDetectionCubit>();
+    final angle = cameraCubit.startSavingResult();
+    final selectedSetId = state.selectedSetId;
+
+    if (angle == null || selectedSetId == null) return;
+
+    final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+    final selectedSet = activeExerciseCubit.state.sets.firstWhereOrNull((set) => set.id == selectedSetId);
+
+    if (selectedSet == null) {
+      cameraCubit.selectSet(null);
+      return;
+    }
+
+    activeExerciseCubit.updateSet(
+      selectedSetId,
+      selectedSet.copyWith(degrees: double.parse(angle.toStringAsFixed(2))),
+    );
+    cameraCubit.reset();
   }
 }
 
 class ImageSection extends StatelessWidget {
-  const ImageSection({super.key});
+  const ImageSection({
+    required this.state,
+    required this.onPickImage,
+    required this.onPoseInteractionStart,
+    required this.onPoseInteractionEnd,
+    super.key,
+  });
+
+  final CameraDetectionState state;
+  final VoidCallback onPickImage;
+  final VoidCallback onPoseInteractionStart;
+  final VoidCallback onPoseInteractionEnd;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+
     return Column(
-      crossAxisAlignment: .start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const .only(bottom: 16),
-          child: Text('Your image', style: subheadH3Medium.copyWith(color: context.appTheme.beige100)),
-        ),
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: .spaceBetween,
+            children: [
+              Text('Your image', style: subheadH3Medium.copyWith(color: context.appTheme.beige100)),
 
+              if (state is CameraDetectionAdjusting) ...[
+                const SizedBox(width: 20),
+                AppTextButton(
+                  onPressed: context.read<CameraDetectionCubit>().resetPoints,
+                  text: 'Reset points',
+                  assetPath: Assets.images.icons.close,
+                ),
+              ],
+            ],
+          ),
+        ),
         AspectRatio(
           aspectRatio: 316 / 415,
           child: CustomPaint(
             painter: DashedBorderPainter(color: appTheme.strokeCard, strokeWidth: 1, radius: 20),
             child: Padding(
-              padding: const .all(10),
-              child: UploadImageWidget(
-                onPressed: () async {
-                  final result = await ImagePickerService.pickAndCrop(
-                    context,
-                    availableOptions: [
-                      .takePhoto,
-                      .selectPhoto,
-                    ],
-                    dialogData: ImageSourcePickerDialogData(
-                      title: 'Camera',
-                      takePhotoTitle: 'Use camera',
-                      selectPhotoTitle: 'Upload image',
-                    ),
-                  );
-                },
+              padding: const EdgeInsets.all(10),
+              child: _ImageContent(
+                state: state,
+                onPickImage: onPickImage,
+                onPoseInteractionStart: onPoseInteractionStart,
+                onPoseInteractionEnd: onPoseInteractionEnd,
               ),
             ),
           ),
         ),
+        if (state.hasImage)
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AppTextButton(
+                  onPressed: onPickImage,
+                  text: 'Replace image',
+                  assetPath: Assets.images.icons.reload,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
 
-        Padding(
-          padding: const .only(top: 30),
-          child: Center(
-            child: AppTextButton(onPressed: () {}, text: 'Replace image', assetPath: Assets.images.icons.reload),
+class _ImageContent extends StatelessWidget {
+  const _ImageContent({
+    required this.state,
+    required this.onPickImage,
+    required this.onPoseInteractionStart,
+    required this.onPoseInteractionEnd,
+  });
+
+  final CameraDetectionState state;
+  final VoidCallback onPickImage;
+  final VoidCallback onPoseInteractionStart;
+  final VoidCallback onPoseInteractionEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    return switch (state) {
+      CameraDetectionInitial() => UploadImageWidget(onPressed: onPickImage),
+      CameraDetectionImageSelected(:final imagePath) => _SelectedImage(imagePath: imagePath),
+      CameraDetectionAnalyzing(:final imagePath) => _SelectedImage(imagePath: imagePath, isLoading: true),
+      CameraDetectionAdjusting(
+        :final imagePath,
+        :final originalImageSize,
+        :final points,
+        :final angle,
+      ) =>
+        PoseDetectionImage(
+          imagePath: imagePath,
+          originalImageSize: originalImageSize,
+          points: points,
+          angle: angle,
+          onPointMoved: (pointNumber, position) {
+            context.read<CameraDetectionCubit>().movePoint(
+              pointNumber: pointNumber,
+              position: position,
+            );
+          },
+          onInteractionStart: onPoseInteractionStart,
+          onInteractionEnd: onPoseInteractionEnd,
+        ),
+      CameraDetectionSavingResult(
+        :final imagePath,
+        :final originalImageSize,
+        :final points,
+        :final angle,
+      ) =>
+        PoseDetectionImage(
+          imagePath: imagePath,
+          originalImageSize: originalImageSize,
+          points: points,
+          angle: angle,
+          onPointMoved: (_, _) {},
+          onInteractionStart: onPoseInteractionStart,
+          onInteractionEnd: onPoseInteractionEnd,
+        ),
+    };
+  }
+}
+
+class _SelectedImage extends StatelessWidget {
+  const _SelectedImage({
+    required this.imagePath,
+    this.isLoading = false,
+  });
+
+  final String imagePath;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.contain,
           ),
         ),
+        if (isLoading)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: context.appTheme.beige1000.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
+          ),
       ],
     );
   }
@@ -182,6 +389,7 @@ class SetSelectionField extends StatelessWidget {
     this.initialValue,
     super.key,
   });
+
   final TextEditingController controller;
   final WorkoutSet? initialValue;
   final List<WorkoutSet> setList;
@@ -202,7 +410,6 @@ class SetSelectionField extends StatelessWidget {
             return Center(
               child: Text(
                 'No options to select',
-
                 style: style,
               ),
             );
@@ -217,7 +424,6 @@ class SetSelectionField extends StatelessWidget {
               .toList();
 
           final indexFound = initialValue == null ? 0 : setList.indexOf(initialValue!);
-
           final initialIndex = indexFound >= 0 ? indexFound : 0;
 
           return ValueScrollPicker(

@@ -29,6 +29,7 @@ import 'package:reforge/features/auth/ui/pages/success_password_change_page.dart
 import 'package:reforge/features/calendar/controllers/training_details/training_details_cubit.dart';
 import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
+import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
 import 'package:reforge/features/camera_detection/ui/pages/camera_detection_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
@@ -784,8 +785,13 @@ class CameraDetectionPageRoute extends GoRouteData with $CameraDetectionPageRout
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return BlocProvider.value(
-      value: $extra,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: $extra),
+        BlocProvider(
+          create: (context) => di.getIt<CameraDetectionCubit>(),
+        ),
+      ],
       child: const CameraDetectionPage(),
     );
   }
