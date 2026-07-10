@@ -8,6 +8,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
+import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/camera_detection/domain/pose_angle_calculator.dart';
 import 'package:reforge/features/camera_detection/domain/pose_detection_repository.dart';
 
@@ -30,15 +31,17 @@ sealed class CameraDetectionState with _$CameraDetectionState {
   const factory CameraDetectionState.analyzing({
     required String imagePath,
     required Size originalImageSize,
+    required PoseDetectionPreset preset,
     int? selectedSetId,
   }) = CameraDetectionAnalyzing;
 
   const factory CameraDetectionState.adjusting({
     required String imagePath,
     required Size originalImageSize,
+    required PoseDetectionPreset preset,
     required List<PoseDataPoint> originalPoints,
     required List<PoseDataPoint> points,
-    required double angle,
+    PoseAngleResult? angleResult,
     int? selectedSetId,
     String? error,
   }) = CameraDetectionAdjusting;
@@ -46,9 +49,10 @@ sealed class CameraDetectionState with _$CameraDetectionState {
   const factory CameraDetectionState.savingResult({
     required String imagePath,
     required Size originalImageSize,
+    required PoseDetectionPreset preset,
     required List<PoseDataPoint> originalPoints,
     required List<PoseDataPoint> points,
-    required double angle,
+    required PoseAngleResult angleResult,
     required int selectedSetId,
   }) = CameraDetectionSavingResult;
 
@@ -77,7 +81,7 @@ sealed class CameraDetectionState with _$CameraDetectionState {
 
   bool get canConfirm {
     final current = this;
-    return current is CameraDetectionAdjusting && current.selectedSetId != null;
+    return current is CameraDetectionAdjusting && current.selectedSetId != null && current.angleResult != null;
   }
 }
 
@@ -101,7 +105,7 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     );
   }
 
-  Future<void> analyzeImage() async {
+  Future<void> analyzeImage({required PoseDetectionPreset preset}) async {
     final current = state;
     if (current is! CameraDetectionImageSelected) return;
 
@@ -109,6 +113,7 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
       CameraDetectionState.analyzing(
         imagePath: current.imagePath,
         originalImageSize: current.originalImageSize,
+        preset: preset,
         selectedSetId: current.selectedSetId,
       ),
     );
@@ -118,14 +123,21 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
 
     switch (result) {
       case Success(:final value):
+        final angleResult = _angleCalculator.calculate(
+          preset: preset,
+          points: value,
+        );
+
         emit(
           CameraDetectionState.adjusting(
             imagePath: current.imagePath,
             originalImageSize: current.originalImageSize,
+            preset: preset,
             originalPoints: value,
             points: value,
-            angle: _angleCalculator.calculate(value),
+            angleResult: angleResult,
             selectedSetId: current.selectedSetId,
+            error: angleResult == null ? 'Cannot calculate pose angle' : null,
           ),
         );
 
@@ -134,9 +146,9 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
           CameraDetectionState.adjusting(
             imagePath: current.imagePath,
             originalImageSize: current.originalImageSize,
+            preset: preset,
             originalPoints: const [],
             points: const [],
-            angle: 0,
             selectedSetId: current.selectedSetId,
             error: error.toString(),
           ),
@@ -182,7 +194,10 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     emit(
       current.copyWith(
         points: updatedPoints,
-        angle: _angleCalculator.calculate(updatedPoints),
+        angleResult: _angleCalculator.calculate(
+          preset: current.preset,
+          points: updatedPoints,
+        ),
         error: null,
       ),
     );
@@ -195,7 +210,10 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     emit(
       current.copyWith(
         points: current.originalPoints,
-        angle: _angleCalculator.calculate(current.originalPoints),
+        angleResult: _angleCalculator.calculate(
+          preset: current.preset,
+          points: current.originalPoints,
+        ),
         error: null,
       ),
     );
@@ -206,8 +224,14 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     if (current is! CameraDetectionAdjusting) return null;
 
     final selectedSetId = current.selectedSetId;
+    final angleResult = current.angleResult;
     if (selectedSetId == null) {
       emit(current.copyWith(error: 'Select set first'));
+      return null;
+    }
+
+    if (angleResult == null) {
+      emit(current.copyWith(error: 'Cannot calculate pose angle'));
       return null;
     }
 
@@ -215,14 +239,15 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
       CameraDetectionState.savingResult(
         imagePath: current.imagePath,
         originalImageSize: current.originalImageSize,
+        preset: current.preset,
         originalPoints: current.originalPoints,
         points: current.points,
-        angle: current.angle,
+        angleResult: angleResult,
         selectedSetId: selectedSetId,
       ),
     );
 
-    return current.angle;
+    return angleResult.angle;
   }
 
   void reset() {

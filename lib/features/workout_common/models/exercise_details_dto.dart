@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
 import 'package:reforge/features/workout_common/models/tier.dart';
@@ -51,6 +52,7 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       key: key,
 
       metrics: metrics.map(_mapStringToMetric).whereType<WorkoutMetric>().toList(),
+      poseDetectionPreset: _mapPoseDetectionPreset(poseDetectionPreset),
       isTiered: isTiered,
       tiers: staticData?.tiers ?? [],
       videoInstructionUrl: videoInstructionUrl,
@@ -76,6 +78,14 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       default:
         return null;
     }
+  }
+
+  PoseDetectionPreset? _mapPoseDetectionPreset(String? value) {
+    return switch (value) {
+      'spine' => PoseDetectionPreset.spine,
+      'legs' => PoseDetectionPreset.legs,
+      _ => null,
+    };
   }
 }
 

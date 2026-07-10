@@ -29,6 +29,7 @@ final List<ExerciseDetailsDTO> newMockExercises = [
     key: 'angle',
 
     metrics: ['angleDeg'],
+    poseDetectionPreset: 'spine',
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
     thumbnailInstructionUrl:
         'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/camera_detection/domain/enums/pose_point_name.dart';
 
 part 'pose_data_point.freezed.dart';
 part 'pose_data_point.g.dart';
@@ -9,7 +10,7 @@ sealed class PoseDataPoint with _$PoseDataPoint {
 
   const factory PoseDataPoint({
     required int number,
-    required String name,
+    required PosePointName name,
     required double score,
     required int x,
     required int y,
@@ -17,5 +18,5 @@ sealed class PoseDataPoint with _$PoseDataPoint {
 
   factory PoseDataPoint.fromJson(Map<String, dynamic> json) => _$PoseDataPointFromJson(json);
 
-  bool get isLowConfidence => score < 0.7;
+  bool get isLowConfidence => score < 0.99;
 }

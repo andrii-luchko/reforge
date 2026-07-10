@@ -79,6 +79,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/computing.svg
   String get computing => 'assets/images/icons/computing.svg';
 
+  /// File path: assets/images/icons/crosshair.svg
+  String get crosshair => 'assets/images/icons/crosshair.svg';
+
   /// File path: assets/images/icons/cup.svg
   String get cup => 'assets/images/icons/cup.svg';
 
@@ -100,11 +103,26 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/google.svg
   String get google => 'assets/images/icons/google.svg';
 
+  /// File path: assets/images/icons/head.svg
+  String get head => 'assets/images/icons/head.svg';
+
   /// File path: assets/images/icons/home_active.svg
   String get homeActive => 'assets/images/icons/home_active.svg';
 
   /// File path: assets/images/icons/home_inactive.svg
   String get homeInactive => 'assets/images/icons/home_inactive.svg';
+
+  /// File path: assets/images/icons/left_foot.svg
+  String get leftFoot => 'assets/images/icons/left_foot.svg';
+
+  /// File path: assets/images/icons/left_leg.svg
+  String get leftLeg => 'assets/images/icons/left_leg.svg';
+
+  /// File path: assets/images/icons/left_pelvis.svg
+  String get leftPelvis => 'assets/images/icons/left_pelvis.svg';
+
+  /// File path: assets/images/icons/left_shoulder.svg
+  String get leftShoulder => 'assets/images/icons/left_shoulder.svg';
 
   /// File path: assets/images/icons/lock.svg
   String get lock => 'assets/images/icons/lock.svg';
@@ -138,6 +156,18 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/reload.svg
   String get reload => 'assets/images/icons/reload.svg';
+
+  /// File path: assets/images/icons/right_foot.svg
+  String get rightFoot => 'assets/images/icons/right_foot.svg';
+
+  /// File path: assets/images/icons/right_leg.svg
+  String get rightLeg => 'assets/images/icons/right_leg.svg';
+
+  /// File path: assets/images/icons/right_pelvis.svg
+  String get rightPelvis => 'assets/images/icons/right_pelvis.svg';
+
+  /// File path: assets/images/icons/right_shoulder.svg
+  String get rightShoulder => 'assets/images/icons/right_shoulder.svg';
 
   /// File path: assets/images/icons/setting_active.svg
   String get settingActive => 'assets/images/icons/setting_active.svg';
@@ -184,6 +214,7 @@ class $AssetsImagesIconsGen {
     check,
     close,
     computing,
+    crosshair,
     cup,
     document,
     dumbbell,
@@ -191,8 +222,13 @@ class $AssetsImagesIconsGen {
     eyeSlash,
     gallery,
     google,
+    head,
     homeActive,
     homeInactive,
+    leftFoot,
+    leftLeg,
+    leftPelvis,
+    leftShoulder,
     lock,
     magicWand,
     medal,
@@ -204,6 +240,10 @@ class $AssetsImagesIconsGen {
     platesInactive,
     play,
     reload,
+    rightFoot,
+    rightLeg,
+    rightPelvis,
+    rightShoulder,
     settingActive,
     settingInactive,
     sms,

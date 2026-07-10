@@ -1,22 +1,22 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/photo/ui/image_source_picker_dialog.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
+import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
+import 'package:reforge/features/camera_detection/ui/widgets/contained_image_frame.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/pose_detection_image.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/upload_image_widget.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_section.dart';
 import 'package:reforge/features/workout_instruction/ui/widgets/video_section.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/painters/dashed_border_painter.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
@@ -134,16 +134,25 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
       ),
       bottomNavigationBar: BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
         builder: (context, cameraState) {
-          return AppBottomPaddingWidget(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: PrimaryButton(
-                text: _primaryButtonText(cameraState),
-                iconAsset: _primaryButtonIcon(cameraState),
-                onPressed: _primaryButtonAction(context, cameraState),
-              ),
-            ),
-          );
+          switch (cameraState) {
+            case CameraDetectionInitial():
+              return const SizedBox.shrink();
+
+            case CameraDetectionImageSelected():
+            case CameraDetectionAnalyzing():
+            case CameraDetectionAdjusting():
+            case CameraDetectionSavingResult():
+              return AppBottomPaddingWidget(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: PrimaryButton(
+                    text: _primaryButtonText(cameraState),
+                    iconAsset: _primaryButtonIcon(cameraState),
+                    onPressed: _primaryButtonAction(context, cameraState),
+                  ),
+                ).animateEntrance(),
+              );
+          }
         },
       ),
     );
@@ -187,10 +196,17 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
 
   VoidCallback? _primaryButtonAction(BuildContext context, CameraDetectionState state) {
     return switch (state) {
-      CameraDetectionImageSelected() => () => context.read<CameraDetectionCubit>().analyzeImage(),
-      CameraDetectionAdjusting() => () => _confirmResult(context, state),
+      CameraDetectionImageSelected() => () => context.read<CameraDetectionCubit>().analyzeImage(
+        preset: _poseDetectionPreset(context),
+      ),
+      CameraDetectionAdjusting() when state.canConfirm => () => _confirmResult(context, state),
       _ => null,
     };
+  }
+
+  PoseDetectionPreset _poseDetectionPreset(BuildContext context) {
+    return context.read<ActiveExerciseCubit>().programExercise.exerciseDetails.poseDetectionPreset ??
+        PoseDetectionPreset.legs;
   }
 
   void _confirmResult(BuildContext context, CameraDetectionAdjusting state) {
@@ -272,7 +288,7 @@ class ImageSection extends StatelessWidget {
         ),
         if (state.hasImage)
           Padding(
-            padding: const EdgeInsets.only(top: 20),
+            padding: const EdgeInsets.only(top: 25),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -306,19 +322,26 @@ class _ImageContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (state) {
       CameraDetectionInitial() => UploadImageWidget(onPressed: onPickImage),
-      CameraDetectionImageSelected(:final imagePath) => _SelectedImage(imagePath: imagePath),
-      CameraDetectionAnalyzing(:final imagePath) => _SelectedImage(imagePath: imagePath, isLoading: true),
+      CameraDetectionImageSelected(:final imagePath, :final originalImageSize) => _SelectedImage(
+        imagePath: imagePath,
+        originalImageSize: originalImageSize,
+      ),
+      CameraDetectionAnalyzing(:final imagePath, :final originalImageSize) => _SelectedImage(
+        imagePath: imagePath,
+        originalImageSize: originalImageSize,
+        isLoading: true,
+      ),
       CameraDetectionAdjusting(
         :final imagePath,
         :final originalImageSize,
         :final points,
-        :final angle,
+        :final angleResult,
       ) =>
         PoseDetectionImage(
           imagePath: imagePath,
           originalImageSize: originalImageSize,
           points: points,
-          angle: angle,
+          angleResult: angleResult,
           onPointMoved: (pointNumber, position) {
             context.read<CameraDetectionCubit>().movePoint(
               pointNumber: pointNumber,
@@ -332,13 +355,13 @@ class _ImageContent extends StatelessWidget {
         :final imagePath,
         :final originalImageSize,
         :final points,
-        :final angle,
+        :final angleResult,
       ) =>
         PoseDetectionImage(
           imagePath: imagePath,
           originalImageSize: originalImageSize,
           points: points,
-          angle: angle,
+          angleResult: angleResult,
           onPointMoved: (_, _) {},
           onInteractionStart: onPoseInteractionStart,
           onInteractionEnd: onPoseInteractionEnd,
@@ -350,33 +373,33 @@ class _ImageContent extends StatelessWidget {
 class _SelectedImage extends StatelessWidget {
   const _SelectedImage({
     required this.imagePath,
+    required this.originalImageSize,
     this.isLoading = false,
   });
 
   final String imagePath;
+  final Size originalImageSize;
   final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Image.file(
-            File(imagePath),
-            fit: BoxFit.contain,
-          ),
-        ),
-        if (isLoading)
-          DecoratedBox(
+    return ContainedImageFrame(
+      imagePath: imagePath,
+      originalImageSize: originalImageSize,
+      builder: (context, transform) {
+        if (!isLoading) return const SizedBox.shrink();
+
+        return Positioned.fromRect(
+          rect: transform.imageRect,
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: context.appTheme.beige1000.withValues(alpha: 0.55),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Center(child: CircularProgressIndicator()),
           ),
-      ],
+        );
+      },
     );
   }
 }
@@ -400,7 +423,7 @@ class SetSelectionField extends StatelessWidget {
     final style = subheadH3Medium.copyWith(color: context.appTheme.beige100);
 
     return LabeledAppTextField(
-      label: t.workout.selectTier,
+      label: 'Select set',
       field: PortalSelectField(
         controller: controller,
         hintText: 'Select set',

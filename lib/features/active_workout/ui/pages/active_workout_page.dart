@@ -114,11 +114,12 @@ class ActiveWorkoutPage extends StatelessWidget {
                         child: Row(
                           spacing: 8,
                           children: [
-                            AppIconButton(
-                              iconAsset: Assets.images.icons.cameraAlt,
-                              iconSize: 22,
-                              onPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
-                            ),
+                            if (exerciseDetails.poseDetectionPreset != null)
+                              AppIconButton(
+                                iconAsset: Assets.images.icons.cameraAlt,
+                                iconSize: 22,
+                                onPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
+                              ),
                             Expanded(
                               child: PrimaryButton(
                                 text: t.workout.forgeNextMove,
