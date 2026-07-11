@@ -11,6 +11,7 @@ import 'package:reforge/features/camera_detection/data/models/pose_data_point.da
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/camera_detection/domain/pose_angle_calculator.dart';
 import 'package:reforge/features/camera_detection/domain/pose_detection_repository.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'camera_detection_cubit.freezed.dart';
 
@@ -212,7 +213,7 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
             points: value,
             angleResult: angleResult,
             selectedSetId: selectedSetId,
-            error: angleResult == null ? 'Cannot calculate pose angle' : null,
+            error: angleResult == null ? t.camera_detection.errors.cannotCalculatePoseAngle : null,
           ),
         );
 
@@ -350,12 +351,12 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     final selectedSetId = current.selectedSetId;
     final angleResult = current.angleResult;
     if (selectedSetId == null) {
-      emit(current.copyWith(error: 'Select set first'));
+      emit(current.copyWith(error: t.camera_detection.errors.selectSetFirst));
       return null;
     }
 
     if (angleResult == null) {
-      emit(current.copyWith(error: 'Cannot calculate pose angle'));
+      emit(current.copyWith(error: t.camera_detection.errors.cannotCalculatePoseAngle));
       return null;
     }
 

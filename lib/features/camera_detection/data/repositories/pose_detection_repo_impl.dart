@@ -7,6 +7,7 @@ import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/core/photo/service/image_compress_service.dart';
 import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
 import 'package:reforge/features/camera_detection/domain/pose_detection_repository.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 @Injectable(as: PoseDetectionRepository)
 class PoseDetectionRepoImpl with RepositoryErrorHandler implements PoseDetectionRepository {
@@ -29,13 +30,13 @@ class PoseDetectionRepoImpl with RepositoryErrorHandler implements PoseDetection
           final points = result.data;
 
           if (points.isEmpty) {
-            return const Result.error(LowConfidencePoseException());
+            return Result.error(LowConfidencePoseException());
           }
 
           final isLowScoredAnalyze = points.every((p) => p.isLowConfidence);
 
           if (isLowScoredAnalyze) {
-            return const Result.error(LowConfidencePoseException());
+            return Result.error(LowConfidencePoseException());
           }
 
           return Result.success(points);
@@ -50,7 +51,7 @@ class PoseDetectionRepoImpl with RepositoryErrorHandler implements PoseDetection
 }
 
 class LowConfidencePoseException implements Exception {
-  const LowConfidencePoseException([this.message = 'Could not recognize the body clearly.']);
+  LowConfidencePoseException([String? message]) : message = message ?? t.camera_detection.errors.lowConfidencePose;
   final String message;
 
   @override

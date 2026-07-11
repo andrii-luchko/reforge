@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/text_button.dart';
 
 class UploadImageWidget extends StatelessWidget {
@@ -22,12 +23,12 @@ class UploadImageWidget extends StatelessWidget {
           decoration: BoxDecoration(
             border: .fromLTRB(bottom: BorderSide(color: appTheme.beige100)),
           ),
-          text: 'Upload image',
+          text: t.camera_detection.uploadImage,
           assetPath: Assets.images.icons.upload,
           themeColor: appTheme.beige100,
         ),
         Text(
-          'Upload a clear full-body photo to get accurate posture results',
+          t.camera_detection.uploadImageDescription,
           textAlign: .center,
           style: bodyLRegular.copyWith(color: context.appTheme.beige600),
         ),

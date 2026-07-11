@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/camera_detection/domain/enums/pose_point_name.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 @immutable
 class PoseAngleResult {
@@ -69,7 +70,7 @@ class PoseAngleCalculator {
 
     if (leftPelvis == null || rightPelvis == null || leftFoot == null || rightFoot == null) return null;
 
-    final pelvisCenter = _midpoint(leftPelvis, rightPelvis, 'Pelvis center');
+    final pelvisCenter = _midpoint(leftPelvis, rightPelvis, t.camera_detection.posePoints.pelvisCenter);
     final first = _fromPoint(leftFoot);
     final second = _fromPoint(rightFoot);
 
@@ -105,9 +106,9 @@ class PoseAngleCalculator {
       return null;
     }
 
-    final shoulderCenter = _midpoint(leftShoulder, rightShoulder, 'Shoulder center');
-    final pelvisCenter = _midpoint(leftPelvis, rightPelvis, 'Pelvis center');
-    final kneeCenter = _midpoint(leftKnee, rightKnee, 'Knee center');
+    final shoulderCenter = _midpoint(leftShoulder, rightShoulder, t.camera_detection.posePoints.shoulderCenter);
+    final pelvisCenter = _midpoint(leftPelvis, rightPelvis, t.camera_detection.posePoints.pelvisCenter);
+    final kneeCenter = _midpoint(leftKnee, rightKnee, t.camera_detection.posePoints.kneeCenter);
 
     return PoseAngleResult(
       angle: _angle(shoulderCenter.position, pelvisCenter.position, kneeCenter.position),

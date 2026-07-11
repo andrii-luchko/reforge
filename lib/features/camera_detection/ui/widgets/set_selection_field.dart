@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
 import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
 import 'package:reforge/shared/uikit/value_scroll_picker.dart';
@@ -26,16 +27,16 @@ class SetSelectionField extends StatelessWidget {
     final style = subheadH3Medium.copyWith(color: context.appTheme.beige100);
 
     return LabeledAppTextField(
-      label: 'Select set',
+      label: t.camera_detection.selectSet,
       field: PortalSelectField(
         controller: controller,
-        hintText: 'Select set',
+        hintText: t.camera_detection.selectSet,
         heightFactor: setList.length > 3 ? 3 : 2,
         contentBuilder: (context, close) {
           if (setList.isEmpty) {
             return Center(
               child: Text(
-                'No options to select',
+                t.camera_detection.noOptionsToSelect,
                 style: style,
               ),
             );
@@ -44,7 +45,7 @@ class SetSelectionField extends StatelessWidget {
           final possibleSets = setList
               .mapIndexed(
                 (index, set) => Center(
-                  child: Text('Set ${set.setNumber}', style: style),
+                  child: Text(t.camera_detection.selectedSetLabel(number: set.setNumber ?? ''), style: style),
                 ),
               )
               .toList();

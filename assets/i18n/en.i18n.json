@@ -625,6 +625,50 @@
             "descriptionMonthly": "Unlimited access to all premium features and exclusive content. No limits, just results."
         }
     },
+    "camera_detection": {
+        "title": "Camera",
+        "selectedSetLabel": "Set $number",
+        "selectSet": "Select set",
+        "noOptionsToSelect": "No options to select",
+        "analyzeImage": "Analyze image",
+        "analyzingTitle": "Analyzing Your Posture...",
+        "analyzingDescription": "We're detecting key body positions\nand movement patterns",
+        "analysisFailedTitle": "Analysis failed",
+        "analysisFailedDescription": "For accurate analysis, make sure your entire body is visible in the photo, including your head, arms, and legs.",
+        "tryAgain": "Try again",
+        "useCamera": "Use camera",
+        "uploadImage": "Upload image",
+        "uploadImageDescription": "Upload a clear full-body photo to get accurate posture results",
+        "confirm": "Confirm",
+        "confirming": "Confirming",
+        "successfullyUpdated": "Successfully updated",
+        "yourImage": "Your image",
+        "resetPoints": "Reset points",
+        "replaceImage": "Replace image",
+        "errors": {
+            "cannotCalculatePoseAngle": "Cannot calculate pose angle",
+            "selectSetFirst": "Select set first",
+            "lowConfidencePose": "Could not recognize the body clearly."
+        },
+        "posePoints": {
+            "head": "Head",
+            "leftShoulder": "Left shoulder",
+            "rightShoulder": "Right shoulder",
+            "leftPelvis": "Left pelvis",
+            "rightPelvis": "Right pelvis",
+            "leftKnee": "Left knee",
+            "rightKnee": "Right knee",
+            "leftFoot": "Left foot",
+            "rightFoot": "Right foot",
+            "pelvisCenter": "Pelvis center",
+            "shoulderCenter": "Shoulder center",
+            "kneeCenter": "Knee center"
+        },
+        "presets": {
+            "spine": "Spine",
+            "legs": "Legs"
+        }
+    },
     "notifications": {
         "pageTitle": "Notifications",
         "itemsCount": "$count items",

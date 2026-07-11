@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 @JsonEnum(fieldRename: FieldRename.snake)
 enum PosePointName {
@@ -15,17 +16,17 @@ enum PosePointName {
 }
 
 extension PosePointNameX on PosePointName {
-  String get label {
+  String label(Translations t) {
     return switch (this) {
-      PosePointName.head => 'Head',
-      PosePointName.leftShoulder => 'Left shoulder',
-      PosePointName.rightShoulder => 'Right shoulder',
-      PosePointName.leftPelvis => 'Left pelvis',
-      PosePointName.rightPelvis => 'Right pelvis',
-      PosePointName.leftKnee => 'Left knee',
-      PosePointName.rightKnee => 'Right knee',
-      PosePointName.leftFoot => 'Left foot',
-      PosePointName.rightFoot => 'Right foot',
+      PosePointName.head => t.camera_detection.posePoints.head,
+      PosePointName.leftShoulder => t.camera_detection.posePoints.leftShoulder,
+      PosePointName.rightShoulder => t.camera_detection.posePoints.rightShoulder,
+      PosePointName.leftPelvis => t.camera_detection.posePoints.leftPelvis,
+      PosePointName.rightPelvis => t.camera_detection.posePoints.rightPelvis,
+      PosePointName.leftKnee => t.camera_detection.posePoints.leftKnee,
+      PosePointName.rightKnee => t.camera_detection.posePoints.rightKnee,
+      PosePointName.leftFoot => t.camera_detection.posePoints.leftFoot,
+      PosePointName.rightFoot => t.camera_detection.posePoints.rightFoot,
     };
   }
 

@@ -6,6 +6,7 @@ import 'package:reforge/features/camera_detection/data/models/pose_data_point.da
 import 'package:reforge/features/camera_detection/domain/enums/pose_point_name.dart';
 import 'package:reforge/features/camera_detection/domain/pose_angle_calculator.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/contained_image_frame.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class PoseDetectionImage extends StatefulWidget {
   const PoseDetectionImage({
@@ -272,7 +273,7 @@ class _PosePointMarker extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 child: Text(
-                  point.name.label,
+                  point.name.label(t),
                   style: bodySRegular.copyWith(color: theme.beige100),
                 ),
               ),
