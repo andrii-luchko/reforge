@@ -34,7 +34,7 @@ class PrimaryButton extends StatelessWidget {
           );
     return PressableAnimation(
       scaleAmount: 0.98,
-      onTap: () {},
+      onTap: isActive ? () {} : null,
       child: Material(
         color: isActive ? appTheme.orangeButton : appTheme.beige800,
         borderRadius: borderRadius,

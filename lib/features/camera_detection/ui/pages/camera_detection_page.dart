@@ -1,19 +1,23 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/photo/enum/picker_option.dart';
 import 'package:reforge/core/photo/service/image_picker_service.dart';
 import 'package:reforge/core/photo/ui/image_source_picker_dialog.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
+import 'package:reforge/features/camera_detection/ui/widgets/analyze_image_dialog.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/contained_image_frame.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/pose_detection_image.dart';
+import 'package:reforge/features/camera_detection/ui/widgets/set_selection_field.dart';
 import 'package:reforge/features/camera_detection/ui/widgets/upload_image_widget.dart';
-import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_common/ui/widgets/workout_section.dart';
 import 'package:reforge/features/workout_instruction/ui/widgets/video_section.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
@@ -21,12 +25,12 @@ import 'package:reforge/shared/animations/painters/dashed_border_painter.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
+import 'package:reforge/shared/dialogs/app_dialog.dart';
+import 'package:reforge/shared/dialogs/default_dialog_header.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/text_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
-import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
-import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
-import 'package:reforge/shared/uikit/value_scroll_picker.dart';
+import 'package:toastification/toastification.dart';
 
 class CameraDetectionPage extends StatefulWidget {
   const CameraDetectionPage({super.key});
@@ -38,6 +42,8 @@ class CameraDetectionPage extends StatefulWidget {
 class _CameraDetectionPageState extends State<CameraDetectionPage> {
   final TextEditingController _setTextField = TextEditingController();
   final ValueNotifier<bool> _isDraggingPosePoint = ValueNotifier(false);
+  bool _isAnalyzeDialogOpen = false;
+  bool _isRetryDialogOpen = false;
 
   @override
   void dispose() {
@@ -48,113 +54,211 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
-        builder: (context, exerciseState) {
-          final activeExerciseCubit = context.read<ActiveExerciseCubit>();
-          final programExercise = activeExerciseCubit.programExercise;
-          final exerciseDetails = programExercise.exerciseDetails;
+    return BlocListener<CameraDetectionCubit, CameraDetectionState>(
+      listener: _onCameraDetectionStateChanged,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
 
-          return BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
-            builder: (context, cameraState) {
-              final possibleSets = exerciseState.sets.where((set) => !set.isDone && !set.isBusy).toList();
-              final selectedSet = possibleSets.firstWhereOrNull((set) => set.id == cameraState.selectedSetId);
+        body: BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
+          builder: (context, exerciseState) {
+            final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+            final programExercise = activeExerciseCubit.programExercise;
+            final exerciseDetails = programExercise.exerciseDetails;
 
-              if (selectedSet == null && _setTextField.text.isNotEmpty) {
-                _setTextField.clear();
-              } else if (selectedSet != null) {
-                _setTextField.text = 'Set ${selectedSet.setNumber}';
-              }
+            return BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
+              builder: (context, cameraState) {
+                final possibleSets = exerciseState.sets.where((set) => !set.isDone && !set.isBusy).toList();
+                final selectedSet = possibleSets.firstWhereOrNull((set) => set.id == cameraState.selectedSetId);
 
-              return DefaultBackground(
-                additionalAnimationsBehind: const [ParticlesWidget()],
-                body: ValueListenableBuilder(
-                  valueListenable: _isDraggingPosePoint,
-                  builder: (context, isDraggingPosePoint, child) {
-                    return CustomScrollView(
-                      physics: isDraggingPosePoint ? const NeverScrollableScrollPhysics() : null,
-                      slivers: [
-                        DefaultSliverAppBar(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          title: 'Camera',
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          sliver: SliverToBoxAdapter(
-                            child: VideoSection(
-                              videoUrl: exerciseDetails.videoInstructionUrl,
+                if (selectedSet == null && _setTextField.text.isNotEmpty) {
+                  _setTextField.clear();
+                } else if (selectedSet != null) {
+                  _setTextField.text = 'Set ${selectedSet.setNumber}';
+                }
+
+                return DefaultBackground(
+                  additionalAnimationsBehind: const [ParticlesWidget()],
+                  body: ValueListenableBuilder(
+                    valueListenable: _isDraggingPosePoint,
+                    builder: (context, isDraggingPosePoint, child) {
+                      return CustomScrollView(
+                        physics: isDraggingPosePoint ? const NeverScrollableScrollPhysics() : null,
+                        slivers: [
+                          DefaultSliverAppBar(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            title: 'Camera',
+                          ),
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            sliver: SliverToBoxAdapter(
+                              child: VideoSection(
+                                videoUrl: exerciseDetails.videoInstructionUrl,
+                              ),
                             ),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverToBoxAdapter(child: WorkoutSection(exercise: exerciseDetails)),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          sliver: SliverToBoxAdapter(
-                            child: SetSelectionField(
-                              controller: _setTextField,
-                              initialValue: selectedSet,
-                              setList: possibleSets,
-                              onChanged: (value) {
-                                context.read<CameraDetectionCubit>().selectSet(value.id);
-                                _setTextField.text = 'Set ${value.setNumber}';
-                              },
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            sliver: SliverToBoxAdapter(child: WorkoutSection(exercise: exerciseDetails)),
+                          ),
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            sliver: SliverToBoxAdapter(
+                              child: SetSelectionField(
+                                controller: _setTextField,
+                                initialValue: selectedSet,
+                                setList: possibleSets,
+                                onChanged: (value) {
+                                  context.read<CameraDetectionCubit>().selectSet(value.id);
+                                  _setTextField.text = 'Set ${value.setNumber}';
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                          sliver: SliverToBoxAdapter(
-                            child: ImageSection(
-                              state: cameraState,
-                              onPickImage: () => _pickImage(context),
-                              onPoseInteractionStart: () {
-                                _isDraggingPosePoint.value = true;
-                              },
-                              onPoseInteractionEnd: () {
-                                _isDraggingPosePoint.value = false;
-                              },
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                            sliver: SliverToBoxAdapter(
+                              child: ImageSection(
+                                state: cameraState,
+                                onPickImage: () => _pickImage(context),
+                                onPoseInteractionStart: () {
+                                  _isDraggingPosePoint.value = true;
+                                },
+                                onPoseInteractionEnd: () {
+                                  _isDraggingPosePoint.value = false;
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        const AppBottomPaddingWidget.sliver(),
-                      ],
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
-        builder: (context, cameraState) {
-          switch (cameraState) {
-            case CameraDetectionInitial():
-              return const SizedBox.shrink();
-
-            case CameraDetectionImageSelected():
-            case CameraDetectionAnalyzing():
-            case CameraDetectionAdjusting():
-            case CameraDetectionSavingResult():
-              return AppBottomPaddingWidget(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: PrimaryButton(
-                    text: _primaryButtonText(cameraState),
-                    iconAsset: _primaryButtonIcon(cameraState),
-                    onPressed: _primaryButtonAction(context, cameraState),
+                          const AppBottomPaddingWidget.sliver(),
+                        ],
+                      );
+                    },
                   ),
-                ).animateEntrance(),
-              );
-          }
-        },
+                );
+              },
+            );
+          },
+        ),
+        bottomNavigationBar: BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
+          builder: (context, cameraState) {
+            switch (cameraState) {
+              case CameraDetectionInitial():
+                return const SizedBox.shrink();
+
+              case CameraDetectionImageSelected():
+              case CameraDetectionAnalyzing():
+              case CameraDetectionAdjusting():
+              case CameraDetectionSavingResult():
+                return AppBottomPaddingWidget(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: PrimaryButton(
+                      text: _primaryButtonText(cameraState),
+                      iconAsset: _primaryButtonIcon(cameraState),
+                      onPressed: _primaryButtonAction(context, cameraState),
+                    ),
+                  ).animateEntrance(),
+                );
+            }
+          },
+        ),
       ),
+    );
+  }
+
+  void _onCameraDetectionStateChanged(BuildContext context, CameraDetectionState state) {
+    switch (state) {
+      case CameraDetectionAnalyzing():
+        _showAnalyzeDialog(context, state);
+
+      case CameraDetectionAdjusting(:final error) when error != null:
+        _closeAnalyzeDialog(context);
+        _showRetryDialog(context, error);
+
+      case CameraDetectionInitial() ||
+          CameraDetectionImageSelected() ||
+          CameraDetectionAdjusting() ||
+          CameraDetectionSavingResult():
+        _closeAnalyzeDialog(context);
+    }
+  }
+
+  void _showAnalyzeDialog(BuildContext context, CameraDetectionAnalyzing state) {
+    if (_isAnalyzeDialogOpen) return;
+
+    _isAnalyzeDialogOpen = true;
+    final cubit = context.read<CameraDetectionCubit>();
+
+    unawaited(
+      AppDialog.show<void>(
+        context,
+        barrierDismissible: false,
+        child: BlocProvider.value(
+          value: cubit,
+          child: AnalyzeImageDialog(
+            imagePath: state.imagePath,
+            originalImageSize: state.originalImageSize,
+            onClosePressed: cubit.cancelAnalysis,
+          ),
+        ),
+      ).whenComplete(() {
+        _isAnalyzeDialogOpen = false;
+      }),
+    );
+  }
+
+  void _closeAnalyzeDialog(BuildContext context) {
+    if (!_isAnalyzeDialogOpen) return;
+
+    _isAnalyzeDialogOpen = false;
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  void _showRetryDialog(BuildContext context, String error) {
+    if (_isRetryDialogOpen) return;
+
+    _isRetryDialogOpen = true;
+    final cubit = context.read<CameraDetectionCubit>();
+
+    unawaited(
+      AppDialog.show<bool?>(
+        context,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: .min,
+            mainAxisAlignment: .center,
+            children: [
+              const DefaultDialogHeader(title: 'Analysis failed'),
+              const SizedBox(
+                height: 16,
+              ),
+              Text(
+                'For accurate analysis, make sure your entire body is visible in the photo, including your head, arms, and legs.',
+                textAlign: TextAlign.center,
+                style: bodyLRegular.copyWith(color: context.appTheme.beige600),
+              ),
+              const SizedBox(height: 32),
+
+              PrimaryButton(
+                text: 'Try again',
+                iconAsset: Assets.images.icons.upload,
+                onPressed: cubit.retryAnalysis,
+              ),
+            ],
+          ),
+        ),
+      ).whenComplete(() {
+        final currentState = cubit.state;
+
+        if (currentState case CameraDetectionAdjusting(error: final currentError) when currentError != null) {
+          cubit.returnToSelectedImage();
+        }
+
+        _isRetryDialogOpen = false;
+      }),
     );
   }
 
@@ -226,8 +330,13 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
 
     activeExerciseCubit.updateSet(
       selectedSetId,
-      selectedSet.copyWith(degrees: double.parse(angle.toStringAsFixed(2))),
+      selectedSet.copyWith(degrees: angle.roundToDouble()),
     );
+
+    toastification.showSimpleToast(
+      'Successfully updated',
+    );
+
     cameraCubit.reset();
   }
 }
@@ -260,8 +369,7 @@ class ImageSection extends StatelessWidget {
             children: [
               Text('Your image', style: subheadH3Medium.copyWith(color: context.appTheme.beige100)),
 
-              if (state is CameraDetectionAdjusting) ...[
-                const SizedBox(width: 20),
+              if (state is CameraDetectionAdjusting && (state as CameraDetectionAdjusting).hasManualChange) ...[
                 AppTextButton(
                   onPressed: context.read<CameraDetectionCubit>().resetPoints,
                   text: 'Reset points',
@@ -400,65 +508,6 @@ class _SelectedImage extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class SetSelectionField extends StatelessWidget {
-  const SetSelectionField({
-    required this.controller,
-    required this.setList,
-    required this.onChanged,
-    this.initialValue,
-    super.key,
-  });
-
-  final TextEditingController controller;
-  final WorkoutSet? initialValue;
-  final List<WorkoutSet> setList;
-  final ValueChanged<WorkoutSet> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = subheadH3Medium.copyWith(color: context.appTheme.beige100);
-
-    return LabeledAppTextField(
-      label: 'Select set',
-      field: PortalSelectField(
-        controller: controller,
-        hintText: 'Select set',
-        heightFactor: setList.length > 3 ? 3 : 2,
-        contentBuilder: (context, close) {
-          if (setList.isEmpty) {
-            return Center(
-              child: Text(
-                'No options to select',
-                style: style,
-              ),
-            );
-          }
-
-          final possibleSets = setList
-              .mapIndexed(
-                (index, set) => Center(
-                  child: Text('Set ${set.setNumber}', style: style),
-                ),
-              )
-              .toList();
-
-          final indexFound = initialValue == null ? 0 : setList.indexOf(initialValue!);
-          final initialIndex = indexFound >= 0 ? indexFound : 0;
-
-          return ValueScrollPicker(
-            looping: false,
-            initialItem: initialIndex,
-            onSelectedItemChanged: (index) {
-              onChanged(setList[index]);
-            },
-            children: possibleSets,
-          );
-        },
-      ),
     );
   }
 }

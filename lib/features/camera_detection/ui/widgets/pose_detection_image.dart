@@ -288,7 +288,7 @@ class _PosePointMarker extends StatelessWidget {
             shape: BoxShape.circle,
             color: theme.orange500,
             border: Border.all(
-              color: point.isLowConfidence ? theme.beige100 : theme.beige100.withValues(alpha: 0.35),
+              color: point.isLowConfidence ? theme.orangeButton : theme.beige100.withValues(alpha: 0.35),
               width: point.isLowConfidence ? 2 : 1,
             ),
             boxShadow: [

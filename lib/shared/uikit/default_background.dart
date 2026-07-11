@@ -9,6 +9,7 @@ class DefaultBackground extends StatelessWidget {
     this.additionalAnimationsBehind = const [],
     this.additionalAnimationsOnTop = const [],
     this.additionalWidgetsAfterBody = const [],
+    this.isExpanded = true,
     super.key,
   });
 
@@ -17,37 +18,37 @@ class DefaultBackground extends StatelessWidget {
   final List<Widget> additionalAnimationsBehind;
   final List<Widget> additionalAnimationsOnTop;
   final List<Widget> additionalWidgetsAfterBody;
+  final bool isExpanded;
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
-            ),
+    final child = Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
           ),
-          ...additionalAnimationsBehind,
-          Positioned.fill(
-            child: Image.asset(
-              Assets.images.png.smoke.path,
-              fit: .fill,
-              opacity: const AlwaysStoppedAnimation<double>(0.2),
-            ),
+        ),
+        ...additionalAnimationsBehind,
+        Positioned.fill(
+          child: Image.asset(
+            Assets.images.png.smoke.path,
+            fit: .fill,
+            opacity: const AlwaysStoppedAnimation<double>(0.2),
           ),
+        ),
 
-          Positioned.fill(
-            child: Image.asset(
-              Assets.images.png.noiseAndTexture.path,
-              fit: .fill,
-            ),
+        Positioned.fill(
+          child: Image.asset(
+            Assets.images.png.noiseAndTexture.path,
+            fit: .fill,
           ),
-          ...additionalAnimationsOnTop,
-          body,
-          ...additionalWidgetsAfterBody,
-          ?loader,
-        ],
-      ),
+        ),
+        ...additionalAnimationsOnTop,
+        body,
+        ...additionalWidgetsAfterBody,
+        ?loader,
+      ],
     );
+    return isExpanded ? SizedBox.expand(child: child) : child;
   }
 }

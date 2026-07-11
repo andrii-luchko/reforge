@@ -18,5 +18,5 @@ sealed class PoseDataPoint with _$PoseDataPoint {
 
   factory PoseDataPoint.fromJson(Map<String, dynamic> json) => _$PoseDataPointFromJson(json);
 
-  bool get isLowConfidence => score < 0.99;
+  bool get isLowConfidence => score <= 0.25;
 }

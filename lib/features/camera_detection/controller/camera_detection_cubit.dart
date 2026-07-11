@@ -32,6 +32,7 @@ sealed class CameraDetectionState with _$CameraDetectionState {
     required String imagePath,
     required Size originalImageSize,
     required PoseDetectionPreset preset,
+    @Default(0.25) double displayProgress,
     int? selectedSetId,
   }) = CameraDetectionAnalyzing;
 
@@ -41,6 +42,7 @@ sealed class CameraDetectionState with _$CameraDetectionState {
     required PoseDetectionPreset preset,
     required List<PoseDataPoint> originalPoints,
     required List<PoseDataPoint> points,
+    @Default(false) bool hasManualChange,
     PoseAngleResult? angleResult,
     int? selectedSetId,
     String? error,
@@ -91,6 +93,12 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
 
   final PoseDetectionRepository _repository;
   final PoseAngleCalculator _angleCalculator = const PoseAngleCalculator();
+  Timer? _progressTimer;
+  int _analysisRunId = 0;
+
+  static const _minAnalyzeDuration = Duration(milliseconds: 1500);
+  static const _progressTickDuration = Duration(milliseconds: 80);
+  static const _completeProgressDuration = Duration(milliseconds: 450);
 
   Future<void> setImage(File file) async {
     final imageSize = await _readImageSize(file);
@@ -109,20 +117,87 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     final current = state;
     if (current is! CameraDetectionImageSelected) return;
 
+    await _runAnalysis(
+      imagePath: current.imagePath,
+      originalImageSize: current.originalImageSize,
+      preset: preset,
+      selectedSetId: current.selectedSetId,
+    );
+  }
+
+  Future<void> retryAnalysis() async {
+    final current = state;
+    if (current is! CameraDetectionAdjusting) return;
+
+    await _runAnalysis(
+      imagePath: current.imagePath,
+      originalImageSize: current.originalImageSize,
+      preset: current.preset,
+      selectedSetId: current.selectedSetId,
+    );
+  }
+
+  void cancelAnalysis() {
+    final current = state;
+    if (current is! CameraDetectionAnalyzing) return;
+
+    _analysisRunId++;
+    _stopProgressSimulation();
+
     emit(
-      CameraDetectionState.analyzing(
+      CameraDetectionState.imageSelected(
         imagePath: current.imagePath,
         originalImageSize: current.originalImageSize,
-        preset: preset,
         selectedSetId: current.selectedSetId,
       ),
     );
+  }
 
-    final result = await _repository.analyze(File(current.imagePath));
-    if (isClosed) return;
+  void returnToSelectedImage() {
+    final current = state;
+    if (current is! CameraDetectionAdjusting) return;
+
+    emit(
+      CameraDetectionState.imageSelected(
+        imagePath: current.imagePath,
+        originalImageSize: current.originalImageSize,
+        selectedSetId: current.selectedSetId,
+      ),
+    );
+  }
+
+  Future<void> _runAnalysis({
+    required String imagePath,
+    required Size originalImageSize,
+    required PoseDetectionPreset preset,
+    int? selectedSetId,
+  }) async {
+    final runId = ++_analysisRunId;
+    final startedAt = DateTime.now();
+
+    emit(
+      CameraDetectionState.analyzing(
+        imagePath: imagePath,
+        originalImageSize: originalImageSize,
+        preset: preset,
+        selectedSetId: selectedSetId,
+      ),
+    );
+
+    _startProgressSimulation();
+
+    final result = await _repository.analyze(File(imagePath));
+    await _waitForMinimumAnalyzeDuration(startedAt);
+
+    _stopProgressSimulation();
+
+    if (isClosed || runId != _analysisRunId) return;
 
     switch (result) {
       case Success(:final value):
+        await _completeProgress();
+        if (isClosed || runId != _analysisRunId) return;
+
         final angleResult = _angleCalculator.calculate(
           preset: preset,
           points: value,
@@ -130,13 +205,13 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
 
         emit(
           CameraDetectionState.adjusting(
-            imagePath: current.imagePath,
-            originalImageSize: current.originalImageSize,
+            imagePath: imagePath,
+            originalImageSize: originalImageSize,
             preset: preset,
             originalPoints: value,
             points: value,
             angleResult: angleResult,
-            selectedSetId: current.selectedSetId,
+            selectedSetId: selectedSetId,
             error: angleResult == null ? 'Cannot calculate pose angle' : null,
           ),
         );
@@ -144,15 +219,62 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
       case Failure(:final error):
         emit(
           CameraDetectionState.adjusting(
-            imagePath: current.imagePath,
-            originalImageSize: current.originalImageSize,
+            imagePath: imagePath,
+            originalImageSize: originalImageSize,
             preset: preset,
             originalPoints: const [],
             points: const [],
-            selectedSetId: current.selectedSetId,
+            selectedSetId: selectedSetId,
             error: error.toString(),
           ),
         );
+    }
+  }
+
+  void _startProgressSimulation() {
+    _progressTimer?.cancel();
+    _progressTimer = Timer.periodic(_progressTickDuration, (_) {
+      final current = state;
+      if (current is! CameraDetectionAnalyzing) return;
+
+      final nextProgress = current.displayProgress + (0.88 - current.displayProgress) * 0.08;
+
+      emit(
+        current.copyWith(
+          displayProgress: nextProgress.clamp(0, 0.88).toDouble(),
+        ),
+      );
+    });
+  }
+
+  void _stopProgressSimulation() {
+    _progressTimer?.cancel();
+    _progressTimer = null;
+  }
+
+  Future<void> _waitForMinimumAnalyzeDuration(DateTime startedAt) async {
+    final elapsed = DateTime.now().difference(startedAt);
+    final remaining = _minAnalyzeDuration - elapsed;
+
+    if (!remaining.isNegative) {
+      await Future<void>.delayed(remaining);
+    }
+  }
+
+  Future<void> _completeProgress() async {
+    final current = state;
+    if (current is! CameraDetectionAnalyzing) return;
+
+    const steps = 12;
+    final initialProgress = current.displayProgress;
+    final stepDuration = _completeProgressDuration ~/ steps;
+
+    for (var step = 1; step <= steps; step++) {
+      await Future<void>.delayed(stepDuration);
+      if (isClosed || state is! CameraDetectionAnalyzing) return;
+
+      final progress = initialProgress + (1 - initialProgress) * (step / steps);
+      emit((state as CameraDetectionAnalyzing).copyWith(displayProgress: progress));
     }
   }
 
@@ -194,6 +316,7 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     emit(
       current.copyWith(
         points: updatedPoints,
+        hasManualChange: true,
         angleResult: _angleCalculator.calculate(
           preset: current.preset,
           points: updatedPoints,
@@ -210,6 +333,7 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     emit(
       current.copyWith(
         points: current.originalPoints,
+        hasManualChange: false,
         angleResult: _angleCalculator.calculate(
           preset: current.preset,
           points: current.originalPoints,
@@ -235,17 +359,17 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
       return null;
     }
 
-    emit(
-      CameraDetectionState.savingResult(
-        imagePath: current.imagePath,
-        originalImageSize: current.originalImageSize,
-        preset: current.preset,
-        originalPoints: current.originalPoints,
-        points: current.points,
-        angleResult: angleResult,
-        selectedSetId: selectedSetId,
-      ),
-    );
+    // emit(
+    //   CameraDetectionState.savingResult(
+    //     imagePath: current.imagePath,
+    //     originalImageSize: current.originalImageSize,
+    //     preset: current.preset,
+    //     originalPoints: current.originalPoints,
+    //     points: current.points,
+    //     angleResult: angleResult,
+    //     selectedSetId: selectedSetId,
+    //   ),
+    // );
 
     return angleResult.angle;
   }
@@ -265,5 +389,11 @@ class CameraDetectionCubit extends Cubit<CameraDetectionState> {
     codec.dispose();
 
     return size;
+  }
+
+  @override
+  Future<void> close() {
+    _stopProgressSimulation();
+    return super.close();
   }
 }

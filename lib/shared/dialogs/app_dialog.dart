@@ -3,14 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 
 class AppDialog<T> extends StatelessWidget {
-  const AppDialog._({required this.child, super.key});
+  const AppDialog._({
+    required this.child,
+    this.backgroundColor,
+    super.key,
+  });
 
   final Widget child;
+  final Color? backgroundColor;
 
   static Future<T?> show<T>(
     BuildContext context, {
     required Widget child,
-
+    Color? backgroundColor,
     bool barrierDismissible = true,
   }) {
     return showGeneralDialog<T>(
@@ -23,7 +28,10 @@ class AppDialog<T> extends StatelessWidget {
       pageBuilder: (context, anim1, anim2) {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: AppDialog._(child: child),
+          child: AppDialog._(
+            backgroundColor: backgroundColor,
+            child: child,
+          ),
         );
       },
 
@@ -46,7 +54,7 @@ class AppDialog<T> extends StatelessWidget {
     final appTheme = context.appTheme;
     return Dialog(
       insetPadding: const .symmetric(horizontal: 16),
-      backgroundColor: appTheme.beige900,
+      backgroundColor: backgroundColor ?? appTheme.beige900,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: appTheme.strokeCard),
