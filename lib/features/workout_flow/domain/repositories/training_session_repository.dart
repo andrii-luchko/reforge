@@ -16,9 +16,7 @@ abstract interface class TrainingSessionRepository {
 
   Future<Result<WorkoutSession?>> getWorkoutSession(int workoutSessionId);
 
-  /// Fetches the full session details including all recorded exercise sessions and sets.
-  /// Used for restoring an interrupted workout.
-  Future<Result<WorkoutSessionDetailsDTO>> getWorkoutSessionDetails(int sessionId);
+  Future<Result<WorkoutSessionDetailsDTO?>> getWorkoutSessionDetails(int sessionId);
 
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId);
 

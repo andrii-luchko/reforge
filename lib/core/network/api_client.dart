@@ -155,6 +155,9 @@ abstract class ApiClient {
   @DELETE('/workout-sessions/{id}')
   Future<BaseResponse<dynamic>> deleteWorkoutSession(@Path('id') int workoutSessionId);
 
+  @GET('/workout-sessions/{sessionId}')
+  Future<BaseResponse<WorkoutSessionDetailsDTO?>> getWorkoutDetails(@Path('sessionId') int sessionId);
+
   @PATCH('/workout-sessions/{id}/complete')
   Future<BaseResponse<WorkoutSessionSummary>> completeWorkoutSession(
     @Path('id') int workoutSessionId,
@@ -221,9 +224,6 @@ abstract class ApiClient {
   Future<BaseResponse<CalendarData>> geMonthCalendar({
     @Query('month') required String month,
   });
-
-  @GET('/workout-sessions/{sessionId}')
-  Future<BaseResponse<WorkoutSessionDetailsDTO>> getWorkoutDetails(@Path('sessionId') int sessionId);
 
   // Lore / Jiku Plates
   @GET('/jiku-plates')

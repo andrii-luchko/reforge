@@ -70,6 +70,13 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
         emit(const WorkoutRestoreState.none());
         return;
       case Success(value: final details):
+        if (details == null) {
+          // Session is not exist — clean stale cache entry.
+          await _sessionCache.clearActiveSession();
+          emit(const WorkoutRestoreState.none());
+          return;
+        }
+
         if (details.status != WorkoutSessionStatus.active) {
           // Session is already closed on the backend — clean stale cache entry.
           await _sessionCache.clearActiveSession();

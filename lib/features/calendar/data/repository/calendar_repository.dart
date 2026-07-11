@@ -15,7 +15,7 @@ import 'package:reforge/features/workout_flow/data/models/workout_session_detail
 abstract interface class CalendarRepository {
   Future<Result<CalendarEntity>> getMonthCalendarData(DateTime month);
 
-  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(
+  Future<Result<TrainingDetailsEntity?>> getWorkoutDetails(
     int sessionId, {
     bool forceRefresh = false,
   });
@@ -32,6 +32,7 @@ class CalendarRepositoryImpl with RepositoryErrorHandler implements CalendarRepo
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
   final WorkoutDetailsLocalDataSource _localDataSource;
+
   @override
   Future<Result<CalendarEntity>> getMonthCalendarData(DateTime month) async {
     try {
@@ -47,7 +48,7 @@ class CalendarRepositoryImpl with RepositoryErrorHandler implements CalendarRepo
   }
 
   @override
-  Future<Result<TrainingDetailsEntity>> getWorkoutDetails(
+  Future<Result<TrainingDetailsEntity?>> getWorkoutDetails(
     int sessionId, {
     bool forceRefresh = false,
   }) async {
@@ -68,7 +69,8 @@ class CalendarRepositoryImpl with RepositoryErrorHandler implements CalendarRepo
         () => _apiClient.getWorkoutDetails(sessionId),
         label: 'getWorkoutDetails',
       );
-      final entity = response.data.toEntity(system);
+      final entity = response.data?.toEntity(system);
+
       _localDataSource.put(sessionId, entity);
 
       return Result.success(entity);
