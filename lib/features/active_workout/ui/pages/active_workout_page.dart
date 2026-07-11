@@ -117,7 +117,7 @@ class ActiveWorkoutPage extends StatelessWidget {
                             if (exerciseDetails.poseDetectionPreset != null)
                               AppIconButton(
                                 iconAsset: Assets.images.icons.cameraAlt,
-                                iconSize: 22,
+                                iconSize: 20,
                                 onPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
                               ),
                             Expanded(
