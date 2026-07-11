@@ -6,7 +6,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 
 class RankEntity {
   RankEntity({
-    required this.imageUrl,
+    required this.imageAsset,
     required this.japanRankName,
     required this.rankName,
     required this.faction,
@@ -15,7 +15,7 @@ class RankEntity {
     required this.maxXp,
   });
 
-  final String imageUrl;
+  final String imageAsset;
   final String japanRankName;
   final String rankName;
   final Faction faction;
@@ -36,7 +36,7 @@ class RankEntity {
   factory RankEntity.mockWith(Translations translations, [Faction? userFaction]) {
     final faction = userFaction ?? Faction.gakki;
     return RankEntity(
-      imageUrl: faction.rankCardAsset(),
+      imageAsset: faction.rankCardAsset(),
       japanRankName: translations.home.rank_label,
       rankName: translations.tiers.intermediate,
       faction: faction,

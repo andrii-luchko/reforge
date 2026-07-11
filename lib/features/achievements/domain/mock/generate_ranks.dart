@@ -21,7 +21,7 @@ class RanksGenerator {
       final currentXp = (maxXp * (0.2 + (i * 0.07))).toInt().clamp(0, maxXp);
 
       return RankEntity(
-        imageUrl: faction.rankCardAsset(),
+        imageAsset: faction.rankCardAsset(),
         japanRankName: t.home.rank_label,
         rankName: names[i % names.length],
         faction: faction,

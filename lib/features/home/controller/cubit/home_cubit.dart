@@ -98,7 +98,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     if (stats != null) {
       return RankEntity(
-        imageUrl: faction.rankCardAsset(),
+        imageAsset: faction.rankCardAsset(),
         japanRankName: japanRankName,
         rankName: rankName,
         faction: faction,

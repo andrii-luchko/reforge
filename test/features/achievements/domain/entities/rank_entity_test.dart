@@ -7,7 +7,7 @@ void main() {
     group('progress', () {
       test('returns xp divided by maxXp', () {
         final entity = RankEntity(
-          imageUrl: '',
+          imageAsset: '',
           rankName: 'Test',
           faction: Faction.gakki,
           lvl: 5,
@@ -20,7 +20,7 @@ void main() {
 
       test('clamps to 0 when xp is 0', () {
         final entity = RankEntity(
-          imageUrl: '',
+          imageAsset: '',
           rankName: 'Test',
           faction: Faction.gakki,
           lvl: 1,
@@ -33,7 +33,7 @@ void main() {
 
       test('clamps to 1 when xp >= maxXp', () {
         final entity = RankEntity(
-          imageUrl: '',
+          imageAsset: '',
           rankName: 'Test',
           faction: Faction.gakki,
           lvl: 10,
@@ -44,7 +44,7 @@ void main() {
         expect(entity.progress, 1);
 
         final entityOver = RankEntity(
-          imageUrl: '',
+          imageAsset: '',
           rankName: 'Test',
           faction: Faction.gakki,
           lvl: 10,
