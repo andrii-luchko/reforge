@@ -21,6 +21,7 @@ class AuthInterceptor extends Interceptor {
 
     if (tokens != null) {
       options.headers['Authorization'] = 'Bearer ${tokens.accessToken}';
+      options.extra[ApiExtraKeys.sentAccessToken] = tokens.accessToken;
     }
 
     handler.next(options);
