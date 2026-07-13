@@ -27,8 +27,7 @@ class ActiveWorkoutShell extends StatefulWidget {
   State<ActiveWorkoutShell> createState() => _ActiveWorkoutShellState();
 }
 
-class _ActiveWorkoutShellState extends State<ActiveWorkoutShell>
-    with WidgetsBindingObserver {
+class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBindingObserver {
   /// Syncs elapsed duration to Drift every 10 seconds to survive force-kills.
   Timer? _durationSyncTimer;
 
@@ -55,7 +54,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell>
 
     // Persist elapsed duration every 10 s so we don't lose it on force-kill
     _durationSyncTimer = Timer.periodic(_syncInterval, (_) {
-      final elapsed = context.read<TimerCubit>().state.duration;
+      final elapsed = timerCubit.state.duration;
       context.read<WorkoutFlowCubit>().syncDuration(elapsed);
     });
   }

@@ -91,7 +91,7 @@ class AvatarRankCard extends StatelessWidget {
         child: ClipPath(
           clipper: AvatarClipper(),
           child: Image.asset(
-            rank.imageUrl,
+            rank.imageAsset,
             fit: BoxFit.cover,
           ),
         ),
@@ -101,7 +101,7 @@ class AvatarRankCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Image.asset(
-        rank.imageUrl,
+        rank.imageAsset,
         fit: BoxFit.cover,
       ),
     );

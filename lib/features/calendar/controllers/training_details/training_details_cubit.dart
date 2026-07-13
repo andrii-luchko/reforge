@@ -30,6 +30,11 @@ class TrainingDetailsCubit extends Cubit<TrainingDetailsState> {
 
     switch (result) {
       case Success(value: final data):
+        if (data == null) {
+          emit(const TrainingDetailsState.empty());
+          return;
+        }
+
         emit(TrainingDetailsState.loaded(data));
       case Failure(:final error):
         emit(TrainingDetailsState.error(error.toString()));

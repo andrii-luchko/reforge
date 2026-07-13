@@ -43,6 +43,7 @@ class TrainingDetailsBody extends StatelessWidget {
         return state.map(
           initial: (_) => const _TrainingDetailsLoadingView(),
           loading: (_) => const _TrainingDetailsLoadingView(),
+          empty: (_) => const _TrainingDetailsEmptyView(),
           loaded: (s) => _TrainingDetailsContentView(data: s.data),
           error: (s) => _TrainingDetailsErrorView(message: s.message),
         );
@@ -118,6 +119,31 @@ class _TrainingDetailsLoadingView extends StatelessWidget {
   }
 }
 
+class _TrainingDetailsEmptyView extends StatelessWidget {
+  const _TrainingDetailsEmptyView();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: CustomScrollView(
+        slivers: [
+          DefaultSliverAppBar(
+            onPressed: () => Navigator.of(context).pop(),
+            title: t.training_details.title,
+          ),
+          SliverEmptyListMessage(
+            icon: Icons.auto_stories_outlined,
+            title: t.training_details.empty_title,
+            subtitle: t.training_details.empty_subtitle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _TrainingDetailsErrorView extends StatelessWidget {
   const _TrainingDetailsErrorView({required this.message});
 
@@ -134,15 +160,18 @@ class _TrainingDetailsErrorView extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
             title: t.training_details.title,
           ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: TrainingDetailsBody.horizontalPadding,
-              child: Center(
-                child: Text(
-                  message,
-                  style: subheadH3Medium.copyWith(color: context.appTheme.beige600),
-                  textAlign: TextAlign.center,
+          SliverPadding(
+            padding: TrainingDetailsBody.horizontalPadding.copyWith(bottom: 16),
+            sliver: SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: TrainingDetailsBody.horizontalPadding,
+                child: Center(
+                  child: Text(
+                    message,
+                    style: subheadH3Medium.copyWith(color: context.appTheme.beige600),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),

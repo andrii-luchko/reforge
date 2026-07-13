@@ -1,3 +1,4 @@
+import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 
@@ -9,6 +10,7 @@ class ExerciseDetailsEntity {
     required this.key,
 
     required this.metrics,
+    required this.poseDetectionPreset,
 
     required this.isTiered,
     required this.tiers,
@@ -24,6 +26,7 @@ class ExerciseDetailsEntity {
   final String key;
 
   final List<WorkoutMetric> metrics;
+  final PoseDetectionPreset? poseDetectionPreset;
 
   final bool isTiered;
   final List<Tier> tiers;
@@ -44,6 +47,6 @@ class ExerciseDetailsEntity {
 
   @override
   String toString() {
-    return 'ExerciseDetailsEntity(\nid: $id,\n name: $name,\n description: $description,\n key: $key,\n metrics: $metrics, \nisTiered: $isTiered,\n tiers: $tiers,\n videoInstructionUrl: $videoInstructionUrl, \nthumbnailInstructionUrl: $thumbnailInstructionUrl, \ninstructionsSteps: $instructionsSteps)';
+    return 'ExerciseDetailsEntity(\nid: $id,\n name: $name,\n description: $description,\n key: $key,\n metrics: $metrics, \nposeDetectionPreset: $poseDetectionPreset, \nisTiered: $isTiered,\n tiers: $tiers,\n videoInstructionUrl: $videoInstructionUrl, \nthumbnailInstructionUrl: $thumbnailInstructionUrl, \ninstructionsSteps: $instructionsSteps)';
   }
 }

@@ -4,19 +4,19 @@ import 'package:reforge/features/calendar/domain/entity/training_details_entity.
 
 abstract interface class WorkoutDetailsLocalDataSource {
   TrainingDetailsEntity? get(int sessionId);
-  void put(int sessionId, TrainingDetailsEntity entity);
+  void put(int sessionId, TrainingDetailsEntity? entity);
   void remove(int sessionId);
 }
 
 @LazySingleton(as: WorkoutDetailsLocalDataSource)
 class WorkoutDetailsLocalDataSourceImpl implements WorkoutDetailsLocalDataSource {
-  final _cache = <int, TrainingDetailsEntity>{};
+  final _cache = <int, TrainingDetailsEntity?>{};
 
   @override
   TrainingDetailsEntity? get(int sessionId) => _cache[sessionId];
 
   @override
-  void put(int sessionId, TrainingDetailsEntity entity) {
+  void put(int sessionId, TrainingDetailsEntity? entity) {
     _cache[sessionId] = entity;
   }
 

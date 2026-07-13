@@ -16,6 +16,7 @@ import 'package:reforge/features/achievements/data/models/achievement_badge_dto.
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
 import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';
+import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
@@ -154,11 +155,20 @@ abstract class ApiClient {
   @DELETE('/workout-sessions/{id}')
   Future<BaseResponse<dynamic>> deleteWorkoutSession(@Path('id') int workoutSessionId);
 
+  @GET('/workout-sessions/{sessionId}')
+  Future<BaseResponse<WorkoutSessionDetailsDTO?>> getWorkoutDetails(@Path('sessionId') int sessionId);
+
   @PATCH('/workout-sessions/{id}/complete')
   Future<BaseResponse<WorkoutSessionSummary>> completeWorkoutSession(
     @Path('id') int workoutSessionId,
     @Body() CompleteWorkoutSessionRequest request,
   );
+
+  @POST('/pose-detection/detect')
+  @MultiPart()
+  Future<BaseResponse<List<PoseDataPoint>>> detectPose({
+    @Part(name: 'image') required File file,
+  });
 
   //Training quiz
   @GET('/user-workout-readiness/users/{id}/check')
@@ -214,9 +224,6 @@ abstract class ApiClient {
   Future<BaseResponse<CalendarData>> geMonthCalendar({
     @Query('month') required String month,
   });
-
-  @GET('/workout-sessions/{sessionId}')
-  Future<BaseResponse<WorkoutSessionDetailsDTO>> getWorkoutDetails(@Path('sessionId') int sessionId);
 
   // Lore / Jiku Plates
   @GET('/jiku-plates')

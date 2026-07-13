@@ -44,7 +44,7 @@ sealed class ProgressionStep with _$ProgressionStep {
 
   RankEntity toDomain(Faction faction) {
     return RankEntity(
-      imageUrl: faction.rankCardAsset(),
+      imageAsset: faction.rankCardAsset(),
       japanRankName: japanRank,
       rankName: rank,
       faction: faction,

@@ -158,7 +158,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
       if (!sameFaction || !sameName) return rank;
 
       return RankEntity(
-        imageUrl: rank.imageUrl,
+        imageAsset: rank.imageAsset,
         japanRankName: rank.japanRankName,
         rankName: rank.rankName,
         faction: rank.faction,

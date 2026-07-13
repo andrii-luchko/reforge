@@ -60,9 +60,9 @@
         "step_count": "Step $active/$total",
         "saved_successfully": "Saved successfully",
         "factions": {
-            "gakki": "Gakki",
-            "gyohyo": "Gyōhyō",
-            "serien": "Seiren",
+            "gakki": "Hōjōshi",
+            "gyohyo": "Yūkon",
+            "serien": "Nagisabe",
             "gakki_description": "The path of Power",
             "gyohyo_description": "The path of Stamina",
             "serien_description": "The path of Agility"
@@ -497,17 +497,17 @@
                 "description": "Measures consistency and volume.\nXP increases through total workout completion and tonnage."
             },
             "sensho": {
-                "title": "Sensho",
+                "title": "Waza",
                 "subtitle": "The Stroke of War",
                 "description": "Measures efficiency relative to potential.\nXP scales based on how close performance is to the target goal."
             },
             "kobokai": {
-                "title": "Kobokai",
+                "title": "Shōgen Tanda",
                 "subtitle": "The Workshop Unleashed",
                 "description": "Measures cumulative lifetime effort.\nAwards XP for hitting large milestones (e.g., 100k kg lifted)."
             },
             "kannuki": {
-                "title": "Kannuki",
+                "title": "Taga",
                 "subtitle": "The Soul-Forge Gate-Locks",
                 "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
             }
@@ -623,6 +623,50 @@
             "descriptionLifetime": "Lifetime access to all features, all factions, and exclusive status.",
             "descriptionAnnual": "Save more than 40% compared to the monthly plan. Full access to all features and all factions.",
             "descriptionMonthly": "Unlimited access to all premium features and exclusive content. No limits, just results."
+        }
+    },
+    "camera_detection": {
+        "title": "Camera",
+        "selectedSetLabel": "Set $number",
+        "selectSet": "Select set",
+        "noOptionsToSelect": "No options to select",
+        "analyzeImage": "Analyze image",
+        "analyzingTitle": "Analyzing Your Posture...",
+        "analyzingDescription": "We're detecting key body positions\nand movement patterns",
+        "analysisFailedTitle": "Analysis failed",
+        "analysisFailedDescription": "For accurate analysis, make sure your entire body is visible in the photo, including your head, arms, and legs.",
+        "tryAgain": "Try again",
+        "useCamera": "Use camera",
+        "uploadImage": "Upload image",
+        "uploadImageDescription": "Upload a clear full-body photo to get accurate posture results",
+        "confirm": "Confirm",
+        "confirming": "Confirming",
+        "successfullyUpdated": "Successfully updated",
+        "yourImage": "Your image",
+        "resetPoints": "Reset points",
+        "replaceImage": "Replace image",
+        "errors": {
+            "cannotCalculatePoseAngle": "Cannot calculate pose angle",
+            "selectSetFirst": "Select set first",
+            "lowConfidencePose": "Could not recognize the body clearly."
+        },
+        "posePoints": {
+            "head": "Head",
+            "leftShoulder": "Left shoulder",
+            "rightShoulder": "Right shoulder",
+            "leftPelvis": "Left pelvis",
+            "rightPelvis": "Right pelvis",
+            "leftKnee": "Left knee",
+            "rightKnee": "Right knee",
+            "leftFoot": "Left foot",
+            "rightFoot": "Right foot",
+            "pelvisCenter": "Pelvis center",
+            "shoulderCenter": "Shoulder center",
+            "kneeCenter": "Knee center"
+        },
+        "presets": {
+            "spine": "Spine",
+            "legs": "Legs"
         }
     },
     "notifications": {
