@@ -6,6 +6,7 @@ import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 /// A UI-isolate client for communicating with the [FlutterBackgroundService].
@@ -76,13 +77,25 @@ class RunningServiceClient {
 
     _service.on('sensor_error').listen((event) {
       if (event != null && event['message'] != null) {
-        _metricsController.addError(event['message'] as String);
+        _metricsController.addError(
+          RunningServiceException(
+            code: event['code'] as String? ?? 'sensor_stream_error',
+            message: event['message'] as String,
+            isFatal: event['isFatal'] as bool? ?? false,
+          ),
+        );
       }
     });
 
     _service.on('fatal_error').listen((event) {
       if (event != null && event['message'] != null) {
-        _metricsController.addError(event['message'] as String);
+        _metricsController.addError(
+          RunningServiceException(
+            code: event['code'] as String? ?? 'background_service_failed',
+            message: event['message'] as String,
+            isFatal: event['isFatal'] as bool? ?? true,
+          ),
+        );
       }
     });
   }

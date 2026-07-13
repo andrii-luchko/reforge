@@ -11,6 +11,7 @@ import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
@@ -222,6 +223,19 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       _onMetricsReceived,
       onError: (Object e) {
         logger.e('RunningTrackerCubit: tracking stream error: $e');
+        if (e case RunningServiceException(:final isFatal) when isFatal) {
+          _serviceClient.endSession();
+          emit(
+            state.copyWith(
+              phase: RunningPhase.overview,
+              mode: null,
+              isPaused: true,
+              currentLap: null,
+              error: e.message,
+            ),
+          );
+          return;
+        }
         emit(state.copyWith(error: e.toString()));
       },
     );

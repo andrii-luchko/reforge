@@ -23,8 +23,23 @@ class SensorUnavailableException implements Exception {
   final Object? cause;
 
   @override
-  String toString() =>
-      'SensorUnavailableException: $sensor is not available. cause=$cause';
+  String toString() => 'SensorUnavailableException: $sensor is not available. cause=$cause';
+}
+
+/// A tracking failure transported between the background isolate and the UI.
+class RunningServiceException implements Exception {
+  const RunningServiceException({
+    required this.code,
+    required this.message,
+    required this.isFatal,
+  });
+
+  final String code;
+  final String message;
+  final bool isFatal;
+
+  @override
+  String toString() => message;
 }
 
 /// Thrown when a critical write to the local database fails.
@@ -44,8 +59,7 @@ class DatabaseWriteException implements Exception {
   final Object? cause;
 
   @override
-  String toString() =>
-      'DatabaseWriteException: $operation failed. cause=$cause';
+  String toString() => 'DatabaseWriteException: $operation failed. cause=$cause';
 }
 
 /// Thrown when the background service fails to start within the handshake
@@ -54,6 +68,5 @@ class ServiceStartTimeoutException implements Exception {
   const ServiceStartTimeoutException();
 
   @override
-  String toString() =>
-      'ServiceStartTimeoutException: background service did not signal ready in time.';
+  String toString() => 'ServiceStartTimeoutException: background service did not signal ready in time.';
 }

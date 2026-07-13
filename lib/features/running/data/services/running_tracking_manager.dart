@@ -9,6 +9,7 @@ import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
@@ -68,69 +69,81 @@ class RunningSessionManager {
     _workoutSessionId = sessionId;
     _programExerciseId = programExerciseId;
 
-    // Check for an interrupted session lap in the DB
-    final inProgressLap = await _repository.getInProgressLap(sessionId);
+    try {
+      // Check for an interrupted session lap in the DB
+      final inProgressLap = await _repository.getInProgressLap(sessionId);
 
-    RunningMetrics? initialOffset;
+      RunningMetrics? initialOffset;
 
-    if (inProgressLap != null) {
-      // Resume existing lap
-      _currentDbSetId = inProgressLap.id;
-      _currentLapIndex = inProgressLap.setNumber - 1;
+      if (inProgressLap != null) {
+        // Resume existing lap
+        _currentDbSetId = inProgressLap.id;
+        _currentLapIndex = inProgressLap.setNumber - 1;
 
-      if (inProgressLap.distanceMeters != null || inProgressLap.durationSeconds != null) {
-        initialOffset = RunningMetrics(
-          distanceMeters: inProgressLap.distanceMeters ?? 0.0,
-          durationSeconds: inProgressLap.durationSeconds ?? 0,
-          avgSpeedKmH: inProgressLap.avgSpeedKmH ?? 0.0,
-          currentSpeedKmH: inProgressLap.currentSpeedKmH ?? 0.0,
-          avgPaceMinKm: inProgressLap.avgPaceMinKm ?? 0.0,
-          currentPaceMinKm: inProgressLap.currentPaceMinKm ?? 0.0,
-          stepCount: inProgressLap.stepCount ?? 0,
+        if (inProgressLap.distanceMeters != null || inProgressLap.durationSeconds != null) {
+          initialOffset = RunningMetrics(
+            distanceMeters: inProgressLap.distanceMeters ?? 0.0,
+            durationSeconds: inProgressLap.durationSeconds ?? 0,
+            avgSpeedKmH: inProgressLap.avgSpeedKmH ?? 0.0,
+            currentSpeedKmH: inProgressLap.currentSpeedKmH ?? 0.0,
+            avgPaceMinKm: inProgressLap.avgPaceMinKm ?? 0.0,
+            currentPaceMinKm: inProgressLap.currentPaceMinKm ?? 0.0,
+            stepCount: inProgressLap.stepCount ?? 0,
+          );
+        }
+        logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
+      } else {
+        // Start a fresh lap
+        final lastLap = await _repository.getLastLap(sessionId);
+        _currentLapIndex = lastLap?.setNumber ?? 0;
+
+        final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)
+            ? _limits![_currentLapIndex]
+            : null;
+        _currentDbSetId = await _repository.createNewActiveSet(
+          sessionId: _workoutSessionId!,
+          programExerciseId: _programExerciseId!,
+          setNumber: _currentLapIndex + 1,
+          trackingMode: mode.dbValue,
+          programSegmentId: currentLimit?.segmentId,
+          segmentType: currentLimit?.activityType.name,
         );
+        logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
       }
-      logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
-    } else {
-      // Start a fresh lap
-      final lastLap = await _repository.getLastLap(sessionId);
-      _currentLapIndex = lastLap?.setNumber ?? 0;
-      
-      final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
-      _currentDbSetId = await _repository.createNewActiveSet(
-        sessionId: _workoutSessionId!,
-        programExerciseId: _programExerciseId!,
-        setNumber: _currentLapIndex + 1,
-        trackingMode: mode.dbValue,
-        programSegmentId: currentLimit?.segmentId,
-        segmentType: currentLimit?.activityType.name,
+
+      final engine = _getEngineForMode(mode);
+
+      await engine?.start(initialOffset: initialOffset);
+
+      _metricsSub = engine?.metricsStream.listen(
+        _onMetricsReceived,
+        onError: (Object e, StackTrace st) {
+          logger.e('RunningSessionManager: engine stream error', e, st);
+          // Propagate typed errors to the UI (RunningTrackerCubit) so it can
+          // show an appropriate message. We do NOT stop the session — the
+          // engine's internal ticker keeps time even when the sensor fails.
+          if (e is SensorUnavailableException) {
+            endSession();
+          }
+          _controller.addError(e, st);
+        },
+        // CRITICAL: never cancel on first error. A GPS glitch or temporary
+        // sensor hiccup should not terminate the entire stream pipeline.
+        cancelOnError: false,
       );
-      logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
+      _startSnapshotTimer();
+
+      if (startPaused) {
+        engine?.pause();
+      }
+
+      logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
+    } on Object {
+      // A failed start must not leave the manager in a state where every
+      // subsequent start is ignored because [_currentMode] is already set.
+      endSession();
+      rethrow;
     }
-
-    final engine = _getEngineForMode(mode);
-
-    await engine?.start(initialOffset: initialOffset);
-
-    _metricsSub = engine?.metricsStream.listen(
-      _onMetricsReceived,
-      onError: (Object e, StackTrace st) {
-        logger.e('RunningSessionManager: engine stream error', e, st);
-        // Propagate typed errors to the UI (RunningTrackerCubit) so it can
-        // show an appropriate message. We do NOT stop the session — the
-        // engine's internal ticker keeps time even when the sensor fails.
-        _controller.addError(e, st);
-      },
-      // CRITICAL: never cancel on first error. A GPS glitch or temporary
-      // sensor hiccup should not terminate the entire stream pipeline.
-      cancelOnError: false,
-    );
-    _startSnapshotTimer();
-
-    if (startPaused) {
-      engine?.pause();
-    }
-
-    logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
   }
 
   void pauseSession() {

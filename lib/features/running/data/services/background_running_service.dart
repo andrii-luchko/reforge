@@ -14,6 +14,7 @@ import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
@@ -137,7 +138,12 @@ Future<void> onStart(ServiceInstance service) async {
               // forwarded to the UI as a 'sensor_error' event. The session
               // continues — the timer keeps running even without sensor data.
               logger.e('Background: metrics stream error', e, st);
-              service.invoke('sensor_error', {'message': e.toString()});
+              final isFatal = e is SensorUnavailableException;
+              service.invoke('sensor_error', {
+                'code': isFatal ? 'sensor_unavailable' : 'sensor_stream_error',
+                'message': e.toString(),
+                'isFatal': isFatal,
+              });
             },
             cancelOnError: false,
           );
@@ -164,7 +170,11 @@ Future<void> onStart(ServiceInstance service) async {
           );
         } on Exception catch (e, st) {
           logger.e('Background: Error in start_session', e, st);
-          service.invoke('sensor_error', {'message': e.toString()});
+          service.invoke('sensor_error', {
+            'code': 'session_start_failed',
+            'message': e.toString(),
+            'isFatal': true,
+          });
         }
       });
 
@@ -228,7 +238,11 @@ Future<void> onStart(ServiceInstance service) async {
       // An unhandled exception escaped all individual try/catch blocks.
       // This is a fatal error for the background isolate.
       logger.e('Background: FATAL unhandled error. Stopping service.', error, stack);
-      service.invoke('fatal_error', {'message': error.toString()});
+      service.invoke('fatal_error', {
+        'code': 'background_service_failed',
+        'message': error.toString(),
+        'isFatal': true,
+      });
       await service.stopSelf();
     },
   );
