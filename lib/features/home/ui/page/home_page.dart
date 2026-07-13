@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
@@ -34,11 +33,11 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       backgroundColor: Colors.transparent,
       floatingActionButtonLocation: .endTop,
-      floatingActionButton: kDebugMode
-          ? FloatingActionButton(
-              onPressed: () async {},
-            )
-          : null,
+      // floatingActionButton: kDebugMode
+      //     ? FloatingActionButton(
+      //         onPressed: () async {},
+      //       )
+      //     : null,
       body: DefaultBackground(
         body: const HomeBody(),
         additionalAnimationsOnTop: [

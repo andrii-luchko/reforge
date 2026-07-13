@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
+import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
 import 'package:reforge/features/notifications/domain/entities/notification_entity.dart';
 import 'package:reforge/features/notifications/domain/mock/notification_generator.dart';
 import 'package:reforge/features/notifications/ui/widgets/notification_list_section.dart';
@@ -31,8 +32,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(_cubit.loadNotifications());
-    _scrollController.addListener(_onScroll);
+    unawaited(_init());
   }
 
   @override
@@ -41,6 +41,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ..removeListener(_onScroll)
       ..dispose();
     super.dispose();
+  }
+
+  Future<void> _init() async {
+    unawaited(context.read<NotificationPermissionCubit>().requestPermission());
+    unawaited(_cubit.loadNotifications());
+
+    _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {

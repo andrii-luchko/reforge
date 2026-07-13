@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
@@ -33,15 +34,12 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
     try {
       final startDate = period.range.start.toUtc().toIso8601String();
       final endDate = period.range.end.toUtc().toIso8601String();
-      final result = await makeRequest(
-        () => _apiClient.getUserStats(startDate: startDate, endDate: endDate),
-        label: 'getUserStats',
-      );
+      final result = await _apiClient.getUserStats(startDate: startDate, endDate: endDate);
 
       final stats = result.data.toDomain();
       return Result.success(stats);
-    } on AppNetworkException catch (error, stackTrace) {
-      if (error.statusCode == 500) {
+    } on DioException catch (error, stackTrace) {
+      if (error.response?.statusCode == 500) {
         //typical problem from backend for a new user. just return null;
 
         return const Result.success(null);
