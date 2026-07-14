@@ -44,7 +44,7 @@ Future<void> initializeBackgroundService() async {
       isForegroundMode: true,
       foregroundServiceTypes: [
         AndroidForegroundType.location,
-        AndroidForegroundType.dataSync,
+        AndroidForegroundType.health,
       ],
       notificationChannelId: RunningConstants.notificationChannelId,
       initialNotificationTitle: RunningConstants.notificationTitle,
