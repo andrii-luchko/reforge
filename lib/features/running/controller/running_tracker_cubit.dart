@@ -218,7 +218,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           _serviceClient.endSession();
           emit(
             state.copyWith(
-              phase: RunningPhase.overview,
+              phase: RunningPhase.finished,
               mode: null,
               isPaused: true,
               currentLap: null,
