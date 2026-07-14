@@ -51,7 +51,10 @@ class RunningOverviewPage extends StatelessWidget {
 
         BlocListener<RunningTrackerCubit, RunningTrackerState>(
           listenWhen: (previous, current) =>
-              current.phase == .overview && !previous.isPermissionGranted && current.isPermissionGranted,
+              current.phase == .overview &&
+              !current.isPaused &&
+              !previous.isPermissionGranted &&
+              current.isPermissionGranted,
 
           listener: (context, state) async {
             final runningCubit = context.read<RunningTrackerCubit>();

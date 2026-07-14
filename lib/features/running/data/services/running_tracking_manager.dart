@@ -62,7 +62,10 @@ class RunningSessionManager {
     required int programExerciseId,
     bool startPaused = false,
   }) async {
-    if (_currentMode != null) return;
+    if (_currentMode != null) {
+      if (startPaused) pauseSession();
+      return;
+    }
 
     _currentMode = mode;
     _limits = limits;

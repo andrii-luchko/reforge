@@ -58,7 +58,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     final lap = await _repository.getInProgressLap(workoutSessionId);
     final lastLap = await _repository.getLastLap(workoutSessionId);
 
-    if (isServiceRunning || lastLap != null) {
+    if (isServiceRunning || lap != null) {
       // Background restore logic: jump to active but paused
       final modeStr = lap?.trackingMode ?? lastLap?.trackingMode ?? RunningMode.gps.dbValue;
       final mode = RunningMode.values.firstWhere(
@@ -92,12 +92,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         ),
       );
 
-      // We call startSession, which either spins up the service (if killed)
-      // or just attaches metrics if it is already running.
-      await _subscribeToTracking(mode);
-      // Wait for service to process before pausing
-      await Future.delayed(const Duration(milliseconds: 300));
-      _serviceClient.pauseSession(); // Pause it safely
+      await _subscribeToTracking(mode, startPaused: true);
 
       logger.d('RunningTrackerCubit: restored tracking (mode: ${mode.dbValue}) paused');
     } else {
@@ -127,6 +122,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   Future<void> startLap() async {
+    if (state.phase != RunningPhase.overview) return;
+
     final mode = state.mode;
     if (mode == null) return;
 
@@ -139,7 +136,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         error: null,
       ),
     );
-
     await _subscribeToTracking(mode);
     logger.d('RunningTrackerCubit: started tracking (mode: ${mode.dbValue})');
   }
@@ -147,14 +143,14 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   void pauseLap() {
     if (!state.isPaused) {
       _serviceClient.pauseSession();
-      emit(state.copyWith(isPaused: true));
+      emit(state.copyWith(isPaused: true, error: null));
     }
   }
 
   Future<void> resumeLap() async {
     if (state.isPaused) {
       _serviceClient.resumeSession();
-      emit(state.copyWith(isPaused: false));
+      emit(state.copyWith(isPaused: false, error: null));
     }
   }
 
@@ -167,14 +163,13 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     if (state.isSubmitting) return;
 
     _serviceClient.suspendSessionForSummary();
-
     emit(
       state.copyWith(
         isPaused: true,
         currentLap: null,
+        error: null,
       ),
     );
-
     goToSummary();
   }
 
@@ -197,7 +192,10 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     return true;
   }
 
-  Future<void> _subscribeToTracking(RunningMode mode) async {
+  Future<void> _subscribeToTracking(
+    RunningMode mode, {
+    bool startPaused = false,
+  }) async {
     await _metricsSub?.cancel();
     await _eventsSub?.cancel();
 
@@ -211,13 +209,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           ),
         )
         .toList();
-
-    await _serviceClient.startSession(
-      mode: mode,
-      limits: limits,
-      sessionId: workoutSessionId,
-      programExerciseId: programExercise.id,
-    );
 
     _metricsSub = _serviceClient.metricsStream.listen(
       _onMetricsReceived,
@@ -244,6 +235,14 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       onError: (Object e) {
         logger.e('RunningTrackerCubit: events stream error: $e');
       },
+    );
+
+    await _serviceClient.startSession(
+      mode: mode,
+      limits: limits,
+      sessionId: workoutSessionId,
+      programExerciseId: programExercise.id,
+      startPaused: startPaused,
     );
   }
 

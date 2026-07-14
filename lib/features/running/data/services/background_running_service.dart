@@ -87,6 +87,7 @@ Future<void> onStart(ServiceInstance service) async {
           final sessionId = event['sessionId'] as int;
           final programExerciseId = event['programExerciseId'] as int;
           final modeStr = event['mode'] as String;
+          final startPaused = event['startPaused'] as bool? ?? false;
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
 
           final rawLimits = event['limits'] as List<dynamic>? ?? [];
@@ -104,16 +105,8 @@ Future<void> onStart(ServiceInstance service) async {
             );
           }).toList();
 
-          // Teleport Guard
-          await _handleSessionRestore(sessionId);
-
-          await manager.startSession(
-            mode: mode,
-            limits: limits,
-            sessionId: sessionId,
-            programExerciseId: programExerciseId,
-          );
-
+          // Attach first: a synchronous startup error or first metric must not
+          // be lost between manager.startSession() and stream subscription.
           await metricsSub?.cancel();
           metricsSub = manager.metricsStream.listen(
             (metrics) {
@@ -168,7 +161,18 @@ Future<void> onStart(ServiceInstance service) async {
             },
             cancelOnError: false,
           );
-        } on Exception catch (e, st) {
+
+          // Teleport Guard
+          await _handleSessionRestore(sessionId);
+
+          await manager.startSession(
+            mode: mode,
+            limits: limits,
+            sessionId: sessionId,
+            programExerciseId: programExerciseId,
+            startPaused: startPaused,
+          );
+        } on Object catch (e, st) {
           logger.e('Background: Error in start_session', e, st);
           service.invoke('sensor_error', {
             'code': 'session_start_failed',
@@ -182,8 +186,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('pause_session').listen((_) {
         try {
           manager.pauseSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in pause_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in pause_session', e, st);
         }
       });
 
@@ -191,8 +195,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('resume_session').listen((_) async {
         try {
           await manager.resumeSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in resume_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in resume_session', e, st);
         }
       });
 
@@ -200,8 +204,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('suspend_session').listen((_) async {
         try {
           await manager.suspendSessionForSummary();
-        } on Exception catch (e) {
-          logger.e('Background: Error in suspend_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in suspend_session', e, st);
         }
       });
 
@@ -209,8 +213,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('force_next_lap').listen((_) {
         try {
           manager.forceNextLap();
-        } on Exception catch (e) {
-          logger.e('Background: Error in force_next_lap: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in force_next_lap', e, st);
         }
       });
 
@@ -220,8 +224,8 @@ Future<void> onStart(ServiceInstance service) async {
           await metricsSub?.cancel();
           await eventsSub?.cancel();
           manager.endSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in stop_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in stop_session', e, st);
         } finally {
           await service.stopSelf();
         }

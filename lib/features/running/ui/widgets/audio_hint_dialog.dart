@@ -115,7 +115,7 @@ class WalkAudioHintDialog extends StatelessWidget {
               children: [
                 TextSpan(text: t.running.audio_hint.slow_down_part1),
                 TextSpan(
-                  text: '\n${walkDuration.toDigital}\n',
+                  text: '\n${walkDuration.toDigital()}\n',
                   style: subheadH2Medium.copyWith(
                     color: theme.orange400,
                     fontSize: 16,
