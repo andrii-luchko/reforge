@@ -4,17 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/text_style_extension.dart';
+import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/rhombus_painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/gradient_text_header.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_guide.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 const double designWidth = 358;
@@ -79,10 +80,14 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
 class ImmortalForcesCard extends StatelessWidget {
   const ImmortalForcesCard({
     required this.users,
+    this.guideKeys,
+    this.guideTooltips,
     super.key,
   });
 
   final List<ImmortalForgeEntity> users;
+  final ImmortalForgesGuideKeys? guideKeys;
+  final Map<ImmortalForgeRank, Widget>? guideTooltips;
 
   ImmortalForgeEntity? _getUserByRank(int rank) {
     return users.where((u) => u.rank == rank).firstOrNull;
@@ -133,7 +138,7 @@ class ImmortalForcesCard extends StatelessWidget {
                       Center(
                         child: LeaderBoardAvatar(
                           size: const Size(84, 84),
-                          borderGradientColors: getGradientByRank(1, context),
+                          borderGradientColors: 1.immortalForgeGradient(context),
                           imageUrl: userRank1.avatarUrl,
                         ),
                       ),
@@ -149,6 +154,44 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[2] != null) _RankAvatar(user: ranks[2]!, alignment: const Alignment(0.85, -0.9)),
                     if (ranks[3] != null) _RankAvatar(user: ranks[3]!, alignment: const Alignment(-0.85, 0.9)),
                     if (ranks[4] != null) _RankAvatar(user: ranks[4]!, alignment: const Alignment(0.85, 0.9)),
+
+                    if (guideKeys != null && guideTooltips != null) ...[
+                      if (ranks[0] != null)
+                        _RankShowcaseTarget(
+                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.daizosho),
+                          tooltip: guideTooltips![ImmortalForgeRank.daizosho]!,
+                          alignment: const Alignment(0, 0.2),
+                          size: const Size(140, 190),
+                        ),
+                      if (ranks[1] != null)
+                        _RankShowcaseTarget(
+                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.might),
+                          tooltip: guideTooltips![ImmortalForgeRank.might]!,
+                          alignment: const Alignment(-1.0, -1.3),
+                          size: const Size(128, 128),
+                        ),
+                      if (ranks[2] != null)
+                        _RankShowcaseTarget(
+                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.judgement),
+                          tooltip: guideTooltips![ImmortalForgeRank.judgement]!,
+                          alignment: const Alignment(1.0, -1.3),
+                          size: const Size(128, 128),
+                        ),
+                      if (ranks[3] != null)
+                        _RankShowcaseTarget(
+                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.strife),
+                          tooltip: guideTooltips![ImmortalForgeRank.strife]!,
+                          alignment: const Alignment(-1.0, 1.3),
+                          size: const Size(128, 128),
+                        ),
+                      if (ranks[4] != null)
+                        _RankShowcaseTarget(
+                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.burden),
+                          tooltip: guideTooltips![ImmortalForgeRank.burden]!,
+                          alignment: const Alignment(1.0, 1.3),
+                          size: const Size(120, 126),
+                        ),
+                    ],
                   ],
                 ),
               ),
@@ -187,7 +230,7 @@ class _RankLabel extends StatelessWidget {
               child: Align(
                 alignment: const Alignment(0, -0.1),
                 child: Text(
-                  topFiveTitlesByRank(rank),
+                  rank.immortalForgeTitle,
                   style: subheadH5Medium.copyWith(
                     color: context.appTheme.beige100,
                     fontSize: 14,
@@ -221,7 +264,41 @@ class _RankAvatar extends StatelessWidget {
       child: LeaderBoardAvatar(
         size: const Size(62, 62),
         imageUrl: user.avatarUrl,
-        borderGradientColors: getGradientByRank(user.rank, context),
+        borderGradientColors: user.rank.immortalForgeGradient(context),
+      ),
+    );
+  }
+}
+
+class _RankShowcaseTarget extends StatelessWidget {
+  const _RankShowcaseTarget({
+    required this.showcaseKey,
+    required this.tooltip,
+    required this.alignment,
+    required this.size,
+  });
+
+  final GlobalKey showcaseKey;
+  final Widget tooltip;
+  final Alignment alignment;
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: alignment,
+      child: IgnorePointer(
+        child: Showcase.withWidget(
+          overlayColor: context.appTheme.beige1000,
+          overlayOpacity: 0.97,
+          key: showcaseKey,
+          scope: ImmortalForgesGuideKeys.scope,
+          targetPadding: const EdgeInsets.all(4),
+          container: tooltip,
+          targetBorderRadius: .circular(16),
+          disableMovingAnimation: true,
+          child: SizedBox.fromSize(size: size),
+        ),
       ),
     );
   }

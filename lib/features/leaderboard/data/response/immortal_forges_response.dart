@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/leaderboard/data/models/immortal_forges_user.dart';
+import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
 
 part 'immortal_forges_response.freezed.dart';
 part 'immortal_forges_response.g.dart';
@@ -19,19 +19,11 @@ sealed class ImmortalForgesResponse with _$ImmortalForgesResponse {
 extension ImmortalForgesMapper on ImmortalForgesResponse {
   List<ImmortalForgeEntity> toDomain() {
     if (data.isEmpty) return [];
-    final roles = {
-      'artificer': 1,
-      'might': 2,
-      'judgement': 3,
-      'strife': 4,
-      'burden': 5,
-    };
-
     // ignore: omit_local_variable_types
     final List<ImmortalForgeEntity> leaders = [];
 
-    roles.forEach((apiKey, rank) {
-      final userData = data[apiKey];
+    for (final forge in ImmortalForgeRank.values) {
+      final userData = data[forge.apiRole];
       if (userData != null) {
         leaders.add(
           ImmortalForgeEntity(
@@ -39,12 +31,12 @@ extension ImmortalForgesMapper on ImmortalForgesResponse {
             email: userData.email ?? '',
             avatarUrl: userData.avatarUrl,
             score: userData.score,
-            rank: rank,
-            title: topFiveTitlesByRank(rank),
+            rank: forge.rank,
+            title: forge.title,
           ),
         );
       }
-    });
+    }
 
     return leaders;
   }

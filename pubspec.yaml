@@ -59,6 +59,7 @@ dependencies:
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^8.1.0
   skeletonizer: ^2.1.2
+  showcaseview: ^5.1.0
 
   
   intl: ^0.20.2 
@@ -179,4 +180,3 @@ flutter:
     - assets/audio/
    
    
-

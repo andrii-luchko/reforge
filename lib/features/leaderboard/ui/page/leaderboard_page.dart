@@ -12,6 +12,7 @@ import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.da
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/leaderboard_mode.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/factions_leaderboard_view.dart';
+import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_guide.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/users_leaderboard_view.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -20,6 +21,7 @@ import 'package:reforge/shared/animations/rising_aura_effect.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
@@ -31,10 +33,13 @@ class LeaderboardPage extends StatefulWidget {
 class _LeaderboardPageState extends State<LeaderboardPage> {
   final ValueNotifier<LeaderboardMode> _leaderboardModeNotifier = ValueNotifier(.users);
   final ScrollController _scrollController = ScrollController();
+  final ImmortalForgesGuideKeys _immortalForgesGuideKeys = ImmortalForgesGuideKeys();
+  late final ShowcaseView _showcaseView;
 
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register(scope: ImmortalForgesGuideKeys.scope);
     _scrollController.addListener(_onScroll);
   }
 
@@ -43,7 +48,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
+    _showcaseView.unregister();
     super.dispose();
+  }
+
+  void _startImmortalForgesGuide(List<GlobalKey> keys) {
+    _showcaseView.startShowCase(keys);
   }
 
   void _onScroll() {
@@ -132,7 +142,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       valueListenable: _leaderboardModeNotifier,
                       builder: (context, mode, child) {
                         return mode == LeaderboardMode.users
-                            ? const UsersLeaderboardView()
+                            ? UsersLeaderboardView(
+                                guideKeys: _immortalForgesGuideKeys,
+                                onStartGuide: _startImmortalForgesGuide,
+                              )
                             : const FactionsLeaderboardView();
                       },
                     ),

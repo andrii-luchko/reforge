@@ -12,4 +12,6 @@ sealed class ImmortalForgesState with _$ImmortalForgesState {
   }) = _ImmortalForgesState;
 
   List<ImmortalForgeEntity> get currentList => forgeData[selectedFaction] ?? [];
+
+  bool get areAllFactionsLoaded => !isLoading && error == null && Faction.values.every(forgeData.containsKey);
 }
