@@ -125,15 +125,14 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[4] != null) const _RankLabel(rank: 5, alignment: Alignment(0.9, 0.2)),
                     if (ranks[3] != null) const _RankLabel(rank: 4, alignment: Alignment(-0.9, 0.2)),
 
-                    if (ranks.isNotEmpty)
-                      const Center(
-                        child: GradientLine(),
-                      ),
+                    const Center(
+                      child: GradientLine(),
+                    ),
 
                     if (userRank1 != null) ...[
                       Center(
                         child: LeaderBoardAvatar(
-                          size: const Size(88, 88),
+                          size: const Size(84, 84),
                           borderGradientColors: getGradientByRank(1, context),
                           imageUrl: userRank1.avatarUrl,
                         ),
@@ -178,18 +177,20 @@ class _RankLabel extends StatelessWidget {
       alignment: alignment,
       child: IntrinsicWidth(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 107, minHeight: 33, maxHeight: 33),
+          constraints: const BoxConstraints(minWidth: 108, minHeight: 33, maxHeight: 33),
           child: CustomPaint(
             painter: RhombusPainter(
               strokeGradientColors: isMainLeader ? [const Color(0xFFD4AD38), const Color(0xFF5D4B17)] : null,
             ),
             child: Padding(
               padding: const .symmetric(horizontal: 12),
-              child: Center(
+              child: Align(
+                alignment: const Alignment(0, -0.1),
                 child: Text(
                   topFiveTitlesByRank(rank),
                   style: subheadH5Medium.copyWith(
                     color: context.appTheme.beige100,
+                    fontSize: 14,
                     height: 1,
                   ),
                   strutStyle: subheadH5Medium.strut,

@@ -20,7 +20,7 @@ class FactionWidget extends StatelessWidget {
 
           textAlign: .center,
 
-          style: avatarBaseStyle.copyWith(color: context.appTheme.beige900),
+          style: avatarBaseStyle.copyWith(color: context.appTheme.beige800),
         ),
       ),
     );
