@@ -26,6 +26,17 @@ class SensorUnavailableException implements Exception {
   String toString() => 'SensorUnavailableException: $sensor is not available. cause=$cause';
 }
 
+/// A recoverable failure in a tracking sensor stream.
+class SensorStreamException implements Exception {
+  const SensorStreamException(this.sensor, {this.cause});
+
+  final String sensor;
+  final Object? cause;
+
+  @override
+  String toString() => 'SensorStreamException: $sensor stream failed. cause=$cause';
+}
+
 /// A tracking failure transported between the background isolate and the UI.
 class RunningServiceException implements Exception {
   const RunningServiceException({

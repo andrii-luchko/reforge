@@ -20,6 +20,8 @@ class GpsTrackingEngine implements TrackingEngine {
   int _lastProcessedMs = 0; // wall-clock time of the last successful Kalman update
   static const int _gpsStallTimeoutMs = 5000;
   RouteCoordinate? _lastSmoothedPoint;
+  RouteCoordinate? _lastAcceptedRawPoint;
+  int? _lastAcceptedTimestampMs;
   bool _isPaused = false;
 
   final _kalmanFilter = KalmanLocationFilter();
@@ -29,13 +31,14 @@ class GpsTrackingEngine implements TrackingEngine {
 
   @override
   Future<void> start({RunningMetrics? initialOffset}) async {
-    if (initialOffset != null) {
-      _totalDistance = initialOffset.distanceMeters;
-      _durationSec = initialOffset.durationSeconds;
-    }
+    _totalDistance = initialOffset?.distanceMeters ?? 0;
+    _durationSec = initialOffset?.durationSeconds ?? 0;
 
     _isPaused = false;
     _lastSmoothedPoint = null;
+    _lastAcceptedRawPoint = null;
+    _lastAcceptedTimestampMs = null;
+    _lastProcessedMs = 0;
     _kalmanFilter.reset();
 
     // Start 1-sec ticker for time and pace updates
@@ -55,15 +58,24 @@ class GpsTrackingEngine implements TrackingEngine {
           (pos) {
             if (_isPaused) return;
 
+            if (pos.accuracy > RunningConstants.maxGpsAccuracyMeters) {
+              return;
+            }
+
+            final timestampMs = pos.timestamp.millisecondsSinceEpoch;
+            if (_isImplausibleRawJump(pos, timestampMs)) return;
+
             // Process the raw point through Kalman Filter
-            _kalmanFilter.process(
+            final updateResult = _kalmanFilter.process(
               lat: pos.latitude,
               lng: pos.longitude,
               accuracy: pos.accuracy,
-              timestampMs: pos.timestamp.millisecondsSinceEpoch,
+              timestampMs: timestampMs,
             );
 
-            if (!_kalmanFilter.hasValidState) return;
+            if (updateResult == KalmanUpdateResult.ignoredStale || updateResult == KalmanUpdateResult.rejectedOutlier) {
+              return;
+            }
 
             _lastProcessedMs = DateTime.now().millisecondsSinceEpoch;
 
@@ -71,12 +83,17 @@ class GpsTrackingEngine implements TrackingEngine {
             final smoothedLng = _kalmanFilter.longitude;
             final smoothedHeading = _kalmanFilter.heading;
 
-            if (_lastSmoothedPoint == null) {
+            if (updateResult == KalmanUpdateResult.initialized || _lastSmoothedPoint == null) {
               _lastSmoothedPoint = RouteCoordinate(
                 latitude: smoothedLat,
                 longitude: smoothedLng,
                 heading: smoothedHeading,
               );
+              _lastAcceptedRawPoint = RouteCoordinate(
+                latitude: pos.latitude,
+                longitude: pos.longitude,
+              );
+              _lastAcceptedTimestampMs = timestampMs;
               return;
             }
 
@@ -98,17 +115,23 @@ class GpsTrackingEngine implements TrackingEngine {
               // Emit immediately to make the map and metrics feel responsive
               // _emitMetrics();
             }
+
+            _lastAcceptedRawPoint = RouteCoordinate(
+              latitude: pos.latitude,
+              longitude: pos.longitude,
+            );
+            _lastAcceptedTimestampMs = timestampMs;
           },
           onError: (Object e, StackTrace st) {
             // GPS errors are recoverable (signal lost, brief hardware glitch).
             // We log and continue — the ticker keeps time even without position.
             // If the OS revokes permission entirely, the next position event
-            // will throw again, and we'll log it again. That is acceptable.
+            // is fatal for this tracking session.
             logger.e('GpsTrackingEngine: position stream error', e, st);
-            _controller.addError(
-              SensorUnavailableException('gps', cause: e),
-              st,
-            );
+            final error = e is PermissionDeniedException || e is LocationServiceDisabledException
+                ? SensorUnavailableException('gps', cause: e)
+                : SensorStreamException('gps', cause: e);
+            _controller.addError(error, st);
           },
           // CRITICAL: do NOT cancel the subscription on a single error.
           // GPS signal can be temporarily lost (tunnel, indoors) and restored.
@@ -153,6 +176,10 @@ class GpsTrackingEngine implements TrackingEngine {
   void resume() {
     _isPaused = false;
     _lastSmoothedPoint = null;
+    _lastAcceptedRawPoint = null;
+    _lastAcceptedTimestampMs = null;
+    _lastProcessedMs = 0;
+    _kalmanFilter.reset();
   }
 
   @override
@@ -166,6 +193,8 @@ class GpsTrackingEngine implements TrackingEngine {
     _totalDistance = 0;
     _durationSec = 0;
     _lastSmoothedPoint = null;
+    _lastAcceptedRawPoint = null;
+    _lastAcceptedTimestampMs = null;
     _lastProcessedMs = 0;
     _kalmanFilter.reset();
   }
@@ -187,5 +216,23 @@ class GpsTrackingEngine implements TrackingEngine {
         accuracy: LocationAccuracy.high,
       );
     }
+  }
+
+  bool _isImplausibleRawJump(Position position, int timestampMs) {
+    final lastPoint = _lastAcceptedRawPoint;
+    final lastTimestampMs = _lastAcceptedTimestampMs;
+    if (lastPoint == null || lastTimestampMs == null) return false;
+
+    final elapsedMs = timestampMs - lastTimestampMs;
+    if (elapsedMs <= 0) return false;
+
+    final distanceMeters = Geolocator.distanceBetween(
+      lastPoint.latitude,
+      lastPoint.longitude,
+      position.latitude,
+      position.longitude,
+    );
+    final speedKmH = distanceMeters / (elapsedMs / 1000) * 3.6;
+    return speedKmH > RunningConstants.maxHumanSpeedKmh;
   }
 }

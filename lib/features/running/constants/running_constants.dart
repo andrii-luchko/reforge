@@ -22,6 +22,9 @@ class RunningConstants {
   /// GPS coordinate is considered valid (before Kalman filter).
   static const double gpsDistanceFilterMeters = 2;
 
+  /// A point less accurate than this cannot reliably contribute to run distance.
+  static const double maxGpsAccuracyMeters = 50;
+
   /// Default camera zoom level when actively tracking the user on the map.
   static const double mapCameraZoomActive = 17.5;
 
