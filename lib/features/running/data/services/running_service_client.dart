@@ -6,6 +6,7 @@ import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 
 /// A UI-isolate client for communicating with the [FlutterBackgroundService].
@@ -76,13 +77,25 @@ class RunningServiceClient {
 
     _service.on('sensor_error').listen((event) {
       if (event != null && event['message'] != null) {
-        _metricsController.addError(event['message'] as String);
+        _metricsController.addError(
+          RunningServiceException(
+            code: event['code'] as String? ?? 'sensor_stream_error',
+            message: event['message'] as String,
+            isFatal: event['isFatal'] as bool? ?? false,
+          ),
+        );
       }
     });
 
     _service.on('fatal_error').listen((event) {
       if (event != null && event['message'] != null) {
-        _metricsController.addError(event['message'] as String);
+        _metricsController.addError(
+          RunningServiceException(
+            code: event['code'] as String? ?? 'background_service_failed',
+            message: event['message'] as String,
+            isFatal: event['isFatal'] as bool? ?? true,
+          ),
+        );
       }
     });
   }
@@ -96,33 +109,26 @@ class RunningServiceClient {
     required List<LapLimit> limits,
     required int sessionId,
     required int programExerciseId,
+    bool startPaused = false,
   }) async {
-    _currentMode = mode;
     await initialize();
 
     final isServiceRunning = await _service.isRunning();
     if (!isServiceRunning) {
+      final serviceReady = _service.on('service_ready').first;
       await _service.startService();
-
-      // ── Handshake: wait until the background isolate is fully ready ──────
-      // The background isolate sends 'service_ready' as the very last step of
-      // onStart(), after all event listeners are registered. Waiting for this
-      // event guarantees that 'start_session' won't arrive before the isolate
-      // is listening for it (Race Condition fix).
-      // A 5-second timeout guards against the service failing to start.
-      await _service
-          .on('service_ready')
-          .first
-          .timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => null,
-          );
+      await serviceReady.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => null,
+      );
     }
 
+    _currentMode = mode;
     _service.invoke('start_session', {
       'sessionId': sessionId,
       'programExerciseId': programExerciseId,
       'mode': mode.name,
+      'startPaused': startPaused,
       'limits': limits
           .map(
             (l) => {
@@ -136,24 +142,16 @@ class RunningServiceClient {
     });
   }
 
-  void pauseSession() {
-    _service.invoke('pause_session');
-  }
+  void pauseSession() => _service.invoke('pause_session', const {});
 
-  void resumeSession() {
-    _service.invoke('resume_session');
-  }
+  void resumeSession() => _service.invoke('resume_session', const {});
 
-  void suspendSessionForSummary() {
-    _service.invoke('suspend_session');
-  }
+  void suspendSessionForSummary() => _service.invoke('suspend_session', const {});
 
-  void forceNextLap() {
-    _service.invoke('force_next_lap');
-  }
+  void forceNextLap() => _service.invoke('force_next_lap', const {});
 
   void endSession() {
     _currentMode = null;
-    _service.invoke('stop_session');
+    _service.invoke('stop_session', const {});
   }
 }

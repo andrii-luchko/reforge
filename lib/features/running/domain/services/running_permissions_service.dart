@@ -3,9 +3,15 @@ import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/services/android_location_readiness_service.dart';
 
 @lazySingleton
 class RunningPermissionsService {
+  RunningPermissionsService({AndroidLocationReadinessService? locationReadinessService})
+    : _locationReadinessService = locationReadinessService ?? AndroidLocationReadinessService();
+
+  final AndroidLocationReadinessService _locationReadinessService;
+
   /// Requests the necessary permissions for the given [RunningMode].
   Future<bool> requestPermissionsForMode(RunningMode mode) async {
     try {
@@ -15,6 +21,12 @@ class RunningPermissionsService {
       };
 
       if (isGranted) {
+        // This must happen while the mode picker is still backed by a visible
+        // Activity. The native SettingsClient can then display its resolution
+        // dialog without starting a location stream or waiting for a GPS fix.
+        if (mode == RunningMode.gps && !await _locationReadinessService.ensureHighAccuracyEnabled()) {
+          return false;
+        }
         await _requestRequiredBackgroundNotifications();
       }
 

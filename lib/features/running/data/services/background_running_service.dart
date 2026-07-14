@@ -14,6 +14,7 @@ import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
+import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
@@ -43,7 +44,7 @@ Future<void> initializeBackgroundService() async {
       isForegroundMode: true,
       foregroundServiceTypes: [
         AndroidForegroundType.location,
-        AndroidForegroundType.dataSync,
+        AndroidForegroundType.health,
       ],
       notificationChannelId: RunningConstants.notificationChannelId,
       initialNotificationTitle: RunningConstants.notificationTitle,
@@ -86,6 +87,7 @@ Future<void> onStart(ServiceInstance service) async {
           final sessionId = event['sessionId'] as int;
           final programExerciseId = event['programExerciseId'] as int;
           final modeStr = event['mode'] as String;
+          final startPaused = event['startPaused'] as bool? ?? false;
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
 
           final rawLimits = event['limits'] as List<dynamic>? ?? [];
@@ -103,16 +105,8 @@ Future<void> onStart(ServiceInstance service) async {
             );
           }).toList();
 
-          // Teleport Guard
-          await _handleSessionRestore(sessionId);
-
-          await manager.startSession(
-            mode: mode,
-            limits: limits,
-            sessionId: sessionId,
-            programExerciseId: programExerciseId,
-          );
-
+          // Attach first: a synchronous startup error or first metric must not
+          // be lost between manager.startSession() and stream subscription.
           await metricsSub?.cancel();
           metricsSub = manager.metricsStream.listen(
             (metrics) {
@@ -137,7 +131,12 @@ Future<void> onStart(ServiceInstance service) async {
               // forwarded to the UI as a 'sensor_error' event. The session
               // continues — the timer keeps running even without sensor data.
               logger.e('Background: metrics stream error', e, st);
-              service.invoke('sensor_error', {'message': e.toString()});
+              final isFatal = e is SensorUnavailableException;
+              service.invoke('sensor_error', {
+                'code': isFatal ? 'sensor_unavailable' : 'sensor_stream_error',
+                'message': e.toString(),
+                'isFatal': isFatal,
+              });
             },
             cancelOnError: false,
           );
@@ -162,9 +161,24 @@ Future<void> onStart(ServiceInstance service) async {
             },
             cancelOnError: false,
           );
-        } on Exception catch (e, st) {
+
+          // Teleport Guard
+          await _handleSessionRestore(sessionId);
+
+          await manager.startSession(
+            mode: mode,
+            limits: limits,
+            sessionId: sessionId,
+            programExerciseId: programExerciseId,
+            startPaused: startPaused,
+          );
+        } on Object catch (e, st) {
           logger.e('Background: Error in start_session', e, st);
-          service.invoke('sensor_error', {'message': e.toString()});
+          service.invoke('sensor_error', {
+            'code': 'session_start_failed',
+            'message': e.toString(),
+            'isFatal': true,
+          });
         }
       });
 
@@ -172,8 +186,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('pause_session').listen((_) {
         try {
           manager.pauseSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in pause_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in pause_session', e, st);
         }
       });
 
@@ -181,8 +195,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('resume_session').listen((_) async {
         try {
           await manager.resumeSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in resume_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in resume_session', e, st);
         }
       });
 
@@ -190,8 +204,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('suspend_session').listen((_) async {
         try {
           await manager.suspendSessionForSummary();
-        } on Exception catch (e) {
-          logger.e('Background: Error in suspend_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in suspend_session', e, st);
         }
       });
 
@@ -199,8 +213,8 @@ Future<void> onStart(ServiceInstance service) async {
       service.on('force_next_lap').listen((_) {
         try {
           manager.forceNextLap();
-        } on Exception catch (e) {
-          logger.e('Background: Error in force_next_lap: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in force_next_lap', e, st);
         }
       });
 
@@ -210,8 +224,8 @@ Future<void> onStart(ServiceInstance service) async {
           await metricsSub?.cancel();
           await eventsSub?.cancel();
           manager.endSession();
-        } on Exception catch (e) {
-          logger.e('Background: Error in stop_session: $e');
+        } on Exception catch (e, st) {
+          logger.e('Background: Error in stop_session', e, st);
         } finally {
           await service.stopSelf();
         }
@@ -228,7 +242,11 @@ Future<void> onStart(ServiceInstance service) async {
       // An unhandled exception escaped all individual try/catch blocks.
       // This is a fatal error for the background isolate.
       logger.e('Background: FATAL unhandled error. Stopping service.', error, stack);
-      service.invoke('fatal_error', {'message': error.toString()});
+      service.invoke('fatal_error', {
+        'code': 'background_service_failed',
+        'message': error.toString(),
+        'isFatal': true,
+      });
       await service.stopSelf();
     },
   );

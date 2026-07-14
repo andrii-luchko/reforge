@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
@@ -60,6 +63,9 @@ void main() {
   setUp(() {
     mockRepository = MockSubscriptionRepository();
     mockUserCubit = MockUserCubit();
+    when(() => mockRepository.subscriptionUpdates).thenAnswer((_) => const Stream.empty());
+    when(() => mockUserCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(() => mockUserCubit.state).thenReturn(const UserState.initial());
   });
 
   group('SubscriptionCubit', () {
@@ -306,6 +312,32 @@ void main() {
         seed: () => SubscriptionState(offerings: createTestOfferings()),
         act: (cubit) => cubit.checkSubscriptionStatus(),
         expect: () => <SubscriptionState>[],
+      );
+    });
+
+    group('subscriptionUpdates', () {
+      late StreamController<SubscriptionEntity?> updates;
+
+      blocTest<SubscriptionCubit, SubscriptionState>(
+        'updates the current subscription from RevenueCat listener events',
+        build: () {
+          updates = StreamController<SubscriptionEntity?>();
+          when(() => mockRepository.subscriptionUpdates).thenAnswer((_) => updates.stream);
+          addTearDown(updates.close);
+          return SubscriptionCubit(mockRepository, mockUserCubit);
+        },
+        seed: () => SubscriptionState(offerings: createTestOfferings()),
+        act: (cubit) async {
+          updates.add(createTestSubscription());
+          await Future<void>.delayed(Duration.zero);
+        },
+        expect: () => [
+          isA<SubscriptionState>().having(
+            (state) => state.currentSubscription?.isActive,
+            'currentSubscription.isActive',
+            true,
+          ),
+        ],
       );
     });
   });

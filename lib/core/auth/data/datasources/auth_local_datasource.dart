@@ -7,9 +7,10 @@ abstract interface class AuthLocalDataSource {
   Future<AuthTokens?> getTokens();
   Future<void> clearTokens();
   Future<bool> hasAccessToken();
-
-  Future<bool> isQuizFinished();
 }
+
+const _keyAccessToken = 'access_token';
+const _keyRefreshToken = 'refresh_token';
 
 @Injectable(as: AuthLocalDataSource)
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
@@ -18,28 +19,23 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final FlutterSecureStorage _secureStorage;
 
   @override
-  Future<bool> isQuizFinished() async {
-    final isQuizFinished = await _secureStorage.read(key: 'quiz_finished');
-
-    return bool.parse(isQuizFinished ?? 'false');
-  }
-
-  @override
   Future<void> saveTokens(AuthTokens tokens) async {
-    await _secureStorage.write(key: 'access_token', value: tokens.accessToken);
-    await _secureStorage.write(key: 'refresh_token', value: tokens.refreshToken);
-    // await _secureStorage.write(key: 'expires_at', value: tokens.expiresAt.toIso8601String());
+    await Future.wait([
+      _secureStorage.write(key: _keyAccessToken, value: tokens.accessToken),
+      _secureStorage.write(key: _keyRefreshToken, value: tokens.refreshToken),
+    ]);
   }
 
   @override
   Future<AuthTokens?> getTokens() async {
-    final accessToken = await _secureStorage.read(key: 'access_token');
-    final refreshToken = await _secureStorage.read(key: 'refresh_token');
-    // final expiresAtStr = await _secureStorage.read(key: 'expires_at');
+    final results = await Future.wait([
+      _secureStorage.read(key: _keyAccessToken),
+      _secureStorage.read(key: _keyRefreshToken),
+    ]);
 
-    // if (accessToken == null || refreshToken == null || expiresAtStr == null) {
-    //   return null;
-    // }
+    final accessToken = results[0];
+    final refreshToken = results[1];
+
     if (accessToken == null || refreshToken == null) {
       return null;
     }
@@ -47,19 +43,19 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     return AuthTokens(
       accessToken: accessToken,
       refreshToken: refreshToken,
-      // expiresAt: DateTime.parse(expiresAtStr),
     );
   }
 
   @override
   Future<void> clearTokens() async {
-    await _secureStorage.deleteAll();
+    await Future.wait([
+      _secureStorage.delete(key: _keyAccessToken),
+      _secureStorage.delete(key: _keyRefreshToken),
+    ]);
   }
 
   @override
   Future<bool> hasAccessToken() async {
-    final token = await _secureStorage.read(key: 'access_token');
-
-    return token != null;
+    return _secureStorage.containsKey(key: _keyAccessToken);
   }
 }

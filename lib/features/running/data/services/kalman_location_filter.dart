@@ -4,6 +4,8 @@ import 'dart:math' as math;
 
 import 'package:reforge/features/running/constants/running_constants.dart';
 
+enum KalmanUpdateResult { initialized, accepted, rejectedOutlier, ignoredStale }
+
 /// A proper Kalman filter for GPS-based running tracking.
 ///
 /// State model: constant-velocity motion in a local East-North tangent
@@ -65,7 +67,7 @@ class KalmanLocationFilter {
   }
 
   /// Processes a raw GPS point and updates the internal filtered state.
-  void process({
+  KalmanUpdateResult process({
     required double lat,
     required double lng,
     required double accuracy,
@@ -89,11 +91,11 @@ class KalmanLocationFilter {
         [0.0, 0.0, 0.0, 4.0],
       ];
       _timestampMs = timestampMs;
-      return;
+      return KalmanUpdateResult.initialized;
     }
 
     final dtMs = timestampMs - _timestampMs!;
-    if (dtMs <= 0) return; // stale or duplicate point, ignore
+    if (dtMs <= 0) return KalmanUpdateResult.ignoredStale;
     final dt = dtMs / 1000.0;
 
     // Project the raw fix into the local ENU meter plane.
@@ -151,7 +153,7 @@ class KalmanLocationFilter {
       _x = xPred;
       _p = pPred;
       _timestampMs = timestampMs;
-      return;
+      return KalmanUpdateResult.rejectedOutlier;
     }
 
     // ---------------- UPDATE ----------------
@@ -159,6 +161,7 @@ class KalmanLocationFilter {
     _x = _addVec(xPred, _matVec(k, y));
     _p = _matMul(_matSub(_identity(4), _matMul(k, h)), pPred);
     _timestampMs = timestampMs;
+    return KalmanUpdateResult.accepted;
   }
 
   /// The currently filtered latitude.

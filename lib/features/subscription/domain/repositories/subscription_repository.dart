@@ -4,6 +4,8 @@ import 'package:reforge/features/subscription/domain/entity/subscription_offerin
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 
 abstract interface class SubscriptionRepository {
+  Stream<SubscriptionEntity?> get subscriptionUpdates;
+
   Future<Result<void>> login(int id);
   Future<Result<void>> logout();
   Future<Result<SubscriptionOfferings>> getOfferings();

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:injectable/injectable.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
@@ -12,8 +14,37 @@ import 'package:reforge/features/subscription/domain/entity/subscription_package
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/features/subscription/domain/repositories/subscription_repository.dart' as domain;
 
-@Injectable(as: domain.SubscriptionRepository)
+@Singleton(as: domain.SubscriptionRepository)
 class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.SubscriptionRepository {
+  SubscriptionRepositoryImpl() {
+    Purchases.addCustomerInfoUpdateListener(_onCustomerInfoUpdated);
+  }
+
+  final _subscriptionUpdates = StreamController<SubscriptionEntity?>.broadcast();
+  List<SubscriptionPackage>? _packages;
+  String? _fallbackRcPackageGroupId;
+
+  @override
+  Stream<SubscriptionEntity?> get subscriptionUpdates => _subscriptionUpdates.stream;
+
+  void _onCustomerInfoUpdated(CustomerInfo info) {
+    _subscriptionUpdates.add(
+      mapCustomerInfo(
+        info,
+        packages: _packages,
+        fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
+      ),
+    );
+  }
+
+  void _setSubscriptionContext({
+    List<SubscriptionPackage>? packages,
+    String? fallbackRcPackageGroupId,
+  }) {
+    _packages = packages;
+    _fallbackRcPackageGroupId = fallbackRcPackageGroupId;
+  }
+
   @override
   Future<Result<SubscriptionOfferings>> getOfferings() async {
     try {
@@ -76,6 +107,10 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     String? fallbackRcPackageGroupId,
   }) async {
     try {
+      _setSubscriptionContext(
+        packages: packages,
+        fallbackRcPackageGroupId: fallbackRcPackageGroupId,
+      );
       final info = await makeRequest(
         Purchases.getCustomerInfo,
         label: 'getCurrentSubscription',
@@ -99,6 +134,10 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     String? fallbackRcPackageGroupId,
   }) async {
     try {
+      _setSubscriptionContext(
+        packages: packages,
+        fallbackRcPackageGroupId: fallbackRcPackageGroupId,
+      );
       final info = await makeRequest(
         Purchases.restorePurchases,
         label: 'restorePurchases',

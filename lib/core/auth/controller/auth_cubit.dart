@@ -10,6 +10,7 @@ import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 import 'package:reforge/core/auth/data/repositories/auth_repository.dart';
 import 'package:reforge/core/auth/domain/repositories/auth_repository.dart' as domain;
+import 'package:reforge/core/auth/session/auth_session_controller.dart';
 
 part 'auth_cubit.freezed.dart';
 part 'auth_state.dart';
@@ -19,12 +20,19 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit(
     this._authRepository,
     this._analytics,
+    this._sessionController,
   ) : super(const AuthState.loading()) {
+    _sessionSubscription = _sessionController.invalidations.listen((_) {
+      unawaited(_analytics.setUserId(null));
+      emit(const AuthState.unauthenticated());
+    });
     unawaited(_initialize());
   }
 
   final domain.AuthRepository _authRepository;
   final AnalyticsService _analytics;
+  final AuthSessionController _sessionController;
+  late final StreamSubscription<SessionEndReason> _sessionSubscription;
 
   String _errorMessage(Exception e) => e is AppException ? e.message : e.toString();
 
@@ -125,5 +133,11 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthState.error(_errorMessage(error)));
         emit(currentState);
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _sessionSubscription.cancel();
+    return super.close();
   }
 }

@@ -23,11 +23,13 @@ part 'subscription_state.dart';
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repository, this._userCubit) : super(const SubscriptionState()) {
     _userSubscription = _userCubit.stream.listen(_onUserChanges);
+    _subscriptionUpdatesSubscription = _repository.subscriptionUpdates.listen(_onSubscriptionUpdated);
   }
 
   final domain.SubscriptionRepository _repository;
   final UserCubit _userCubit;
   StreamSubscription<UserState>? _userSubscription;
+  StreamSubscription<SubscriptionEntity?>? _subscriptionUpdatesSubscription;
 
   /// Cross-platform fallback: when subscription was bought on another platform,
   /// RC returns different productIdentifier; backend's rcPackageGroupId allows
@@ -50,6 +52,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       deleted: (value) => _repository.logout(),
       orElse: () {},
     );
+  }
+
+  void _onSubscriptionUpdated(SubscriptionEntity? subscription) {
+    if (state.offerings == null) return;
+    emit(state.copyWith(currentSubscription: subscription));
   }
 
   Future<void> loadOfferings() async {
@@ -169,6 +176,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   @override
   Future<void> close() {
     unawaited(_userSubscription?.cancel());
+    unawaited(_subscriptionUpdatesSubscription?.cancel());
     return super.close();
   }
 }

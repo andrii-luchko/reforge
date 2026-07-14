@@ -3,4 +3,6 @@ abstract final class ApiExtraKeys {
 
   static const String requiresAuth = 'requiresAuth';
   static const String authRefreshRequest = 'authRefreshRequest';
+  static const String sentAccessToken = 'sentAccessToken';
+  static const String retryCount = 'retryCount';
 }
