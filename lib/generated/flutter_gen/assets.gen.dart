@@ -260,6 +260,42 @@ class $AssetsImagesIconsGen {
 class $AssetsImagesPngGen {
   const $AssetsImagesPngGen();
 
+  /// File path: assets/images/png/Hojoshi1.jpg
+  AssetGenImage get hojoshi1 => const AssetGenImage('assets/images/png/Hojoshi1.jpg');
+
+  /// File path: assets/images/png/Hojoshi2.jpg
+  AssetGenImage get hojoshi2 => const AssetGenImage('assets/images/png/Hojoshi2.jpg');
+
+  /// File path: assets/images/png/Hojoshi3.jpg
+  AssetGenImage get hojoshi3 => const AssetGenImage('assets/images/png/Hojoshi3.jpg');
+
+  /// File path: assets/images/png/Hojoshi4.jpg
+  AssetGenImage get hojoshi4 => const AssetGenImage('assets/images/png/Hojoshi4.jpg');
+
+  /// File path: assets/images/png/Hojoshi5.jpg
+  AssetGenImage get hojoshi5 => const AssetGenImage('assets/images/png/Hojoshi5.jpg');
+
+  /// File path: assets/images/png/Hojoshi6.jpg
+  AssetGenImage get hojoshi6 => const AssetGenImage('assets/images/png/Hojoshi6.jpg');
+
+  /// File path: assets/images/png/Nagisabe1.jpg
+  AssetGenImage get nagisabe1 => const AssetGenImage('assets/images/png/Nagisabe1.jpg');
+
+  /// File path: assets/images/png/Nagisabe2.jpg
+  AssetGenImage get nagisabe2 => const AssetGenImage('assets/images/png/Nagisabe2.jpg');
+
+  /// File path: assets/images/png/Nagisabe3.jpg
+  AssetGenImage get nagisabe3 => const AssetGenImage('assets/images/png/Nagisabe3.jpg');
+
+  /// File path: assets/images/png/Nagisabe4.jpg
+  AssetGenImage get nagisabe4 => const AssetGenImage('assets/images/png/Nagisabe4.jpg');
+
+  /// File path: assets/images/png/Nagisabe5.jpg
+  AssetGenImage get nagisabe5 => const AssetGenImage('assets/images/png/Nagisabe5.jpg');
+
+  /// File path: assets/images/png/Nagisabe6.jpg
+  AssetGenImage get nagisabe6 => const AssetGenImage('assets/images/png/Nagisabe6.jpg');
+
   /// File path: assets/images/png/avatar.jpg
   AssetGenImage get avatar => const AssetGenImage('assets/images/png/avatar.jpg');
 
@@ -320,8 +356,38 @@ class $AssetsImagesPngGen {
   /// File path: assets/images/png/user_pointer.png
   AssetGenImage get userPointer => const AssetGenImage('assets/images/png/user_pointer.png');
 
+  /// File path: assets/images/png/yukon1.jpg
+  AssetGenImage get yukon1 => const AssetGenImage('assets/images/png/yukon1.jpg');
+
+  /// File path: assets/images/png/yukon2.jpg
+  AssetGenImage get yukon2 => const AssetGenImage('assets/images/png/yukon2.jpg');
+
+  /// File path: assets/images/png/yukon3.jpg
+  AssetGenImage get yukon3 => const AssetGenImage('assets/images/png/yukon3.jpg');
+
+  /// File path: assets/images/png/yukon4.jpg
+  AssetGenImage get yukon4 => const AssetGenImage('assets/images/png/yukon4.jpg');
+
+  /// File path: assets/images/png/yukon5.jpg
+  AssetGenImage get yukon5 => const AssetGenImage('assets/images/png/yukon5.jpg');
+
+  /// File path: assets/images/png/yukon6.jpg
+  AssetGenImage get yukon6 => const AssetGenImage('assets/images/png/yukon6.jpg');
+
   /// List of all assets
   List<AssetGenImage> get values => [
+    hojoshi1,
+    hojoshi2,
+    hojoshi3,
+    hojoshi4,
+    hojoshi5,
+    hojoshi6,
+    nagisabe1,
+    nagisabe2,
+    nagisabe3,
+    nagisabe4,
+    nagisabe5,
+    nagisabe6,
     avatar,
     badge,
     factionGakki,
@@ -342,6 +408,12 @@ class $AssetsImagesPngGen {
     smoke,
     splashLogo,
     userPointer,
+    yukon1,
+    yukon2,
+    yukon3,
+    yukon4,
+    yukon5,
+    yukon6,
   ];
 }
 

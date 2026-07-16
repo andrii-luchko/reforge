@@ -51,10 +51,10 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {
-    if (!isInitial && state.statsMap.containsKey(period)) {
-      emit(state.copyWith(period: period));
-      return;
-    }
+    // if (!isInitial && state.statsMap.containsKey(period)) {
+    //   emit(state.copyWith(period: period));
+    //   return;
+    // }
 
     if (!isInitial) {
       emit(state.copyWith(isStatsLoading: true, period: period));
@@ -93,12 +93,12 @@ class HomeCubit extends Cubit<HomeState> {
 
   RankEntity _createRank(OnboardedUser? user, [UserStats? stats]) {
     final faction = user?.mainFaction ?? Faction.gakki;
-    final japanRankName = user?.japanRank ?? t.home.rank_label;
-    final rankName = user?.rank ?? t.tiers.beginner;
+    final japanRankName = user?.japanRank ?? t.home.default_japanese_rank_name;
+    final rankName = user?.rank ?? t.home.default_rank_name;
 
     if (stats != null) {
       return RankEntity(
-        imageAsset: faction.rankCardAsset(),
+        imageAsset: faction.rankCardAsset(stats.level),
         japanRankName: japanRankName,
         rankName: rankName,
         faction: faction,

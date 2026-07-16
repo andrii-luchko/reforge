@@ -14,13 +14,13 @@ class FactionWidget extends StatelessWidget {
       clipper: SharpFactionClipper(),
       child: Container(
         color: context.appTheme.beige400,
-        padding: const .only(top: 4, bottom: 6.5, left: 5, right: 48),
+        padding: const .only(top: 4, bottom: 4, left: 8, right: 48),
         child: Text(
           faction,
 
           textAlign: .center,
 
-          style: avatarBaseStyle.copyWith(color: context.appTheme.beige900),
+          style: avatarBaseStyle.copyWith(color: context.appTheme.beige800),
         ),
       ),
     );

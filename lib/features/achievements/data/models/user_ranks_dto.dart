@@ -10,7 +10,7 @@ part 'user_ranks_dto.g.dart';
 sealed class UserRankData with _$UserRankData {
   const factory UserRankData({
     required int id,
-    required String username,
+    required String? username,
     required RankInfo currentRank,
     required List<ProgressionStep> progression,
   }) = _UserRankData;
@@ -44,7 +44,8 @@ sealed class ProgressionStep with _$ProgressionStep {
 
   RankEntity toDomain(Faction faction) {
     return RankEntity(
-      imageAsset: faction.rankCardAsset(),
+      //TODO(Masayoshi): 0 for now cause we dont know real user rank here
+      imageAsset: faction.rankCardAsset(0),
       japanRankName: japanRank,
       rankName: rank,
       faction: faction,
