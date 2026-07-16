@@ -60,10 +60,15 @@ class FactionContainer extends StatelessWidget {
           ),
         ),
 
-        Text(
-          '$text faction',
-          style: CardConfig.thirtyTextStyle.copyWith(
-            color: context.appTheme.beige100,
+        FittedBox(
+          child: Text(
+            '$text faction',
+            maxLines: 1,
+            overflow: .ellipsis,
+            textAlign: .center,
+            style: CardConfig.thirtyTextStyle.copyWith(
+              color: context.appTheme.beige100,
+            ),
           ),
         ),
       ],

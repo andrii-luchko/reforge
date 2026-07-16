@@ -44,44 +44,51 @@ class NotchedFactionLeaderboardCard extends CustomPainter {
   NotchedFactionLeaderboardCard({
     required this.strokeGradient,
     this.backgroundColor,
-
     this.fillGradient,
+    this.drawFill = true,
+    this.drawStroke = true,
   });
 
   final Color? backgroundColor;
   final Gradient? fillGradient;
   final Gradient strokeGradient;
+  final bool drawFill;
+  final bool drawStroke;
 
   @override
   void paint(Canvas canvas, Size size) {
     final scaledPath = FactionPathFactory.getNotchedPath(size);
     final bounds = scaledPath.getBounds();
 
-    if (backgroundColor != null) {
+    if (drawFill && backgroundColor != null) {
       final fillPaint = Paint()
         ..color = backgroundColor!
         ..style = PaintingStyle.fill;
       canvas.drawPath(scaledPath, fillPaint);
     }
 
-    if (fillGradient != null) {
+    if (drawFill && fillGradient != null) {
       final gradientPaint = Paint()
         ..shader = fillGradient!.createShader(bounds)
         ..style = PaintingStyle.fill;
       canvas.drawPath(scaledPath, gradientPaint);
     }
 
-    final strokePaint = Paint()
-      ..shader = strokeGradient.createShader(bounds)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawPath(scaledPath, strokePaint);
+    if (drawStroke) {
+      final strokePaint = Paint()
+        ..shader = strokeGradient.createShader(bounds)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+      canvas.drawPath(scaledPath, strokePaint);
+    }
   }
 
   @override
   bool shouldRepaint(covariant NotchedFactionLeaderboardCard oldDelegate) {
     return oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.fillGradient != fillGradient ||
-        oldDelegate.strokeGradient != strokeGradient;
+        oldDelegate.strokeGradient != strokeGradient ||
+        oldDelegate.drawFill != drawFill ||
+        oldDelegate.drawStroke != drawStroke;
   }
 }

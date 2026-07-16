@@ -24,7 +24,6 @@ class CardConfig {
   static const Size factionImageSize = Size(77.59, 90);
   static const Size factionAnimationSize = Size(30, 90);
   static const Size scoreBoxSize = Size(100, 45);
-  static const double scoreWidth = 140;
   static const double trophySize = 14;
 
   static const TextStyle mainTextStyle = subheadH1Medium;
@@ -174,39 +173,42 @@ class FactionLeaderboardCard extends StatelessWidget {
                 ),
                 child: SizedBox(
                   width: CardConfig.width,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: FactionContainer(
-                          faction: firstFaction.faction,
-                          isUserFaction: firstFaction.faction == userFaction,
-                          isWinning: isFirstWinning,
-                        ),
-                      ),
-
-                      Center(
-                        child: SizedBox(
-                          width: CardConfig.scoreWidth,
-                          child: ScoreWidget(
-                            firstFactionScore: firstScore,
-                            secondFactionScore: secondScore,
-                            winnerTitle: firstScore == secondScore
-                                ? 'No leader'
-                                : (firstScore > secondScore
-                                      ? firstFaction.faction.title(t)
-                                      : secondFaction.faction.title(t)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FactionContainer(
+                            faction: firstFaction.faction,
+                            isUserFaction: firstFaction.faction == userFaction,
+                            isWinning: isFirstWinning,
                           ),
                         ),
-                      ),
 
-                      Expanded(
-                        child: FactionContainer(
-                          faction: secondFaction.faction,
-                          isUserFaction: secondFaction.faction == userFaction,
-                          isWinning: isSecondWinning,
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: ScoreWidget(
+                              firstFactionScore: firstScore,
+                              secondFactionScore: secondScore,
+                              winnerTitle: firstScore == secondScore
+                                  ? 'No leader'
+                                  : (firstScore > secondScore
+                                        ? firstFaction.faction.title(t)
+                                        : secondFaction.faction.title(t)),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+
+                        Expanded(
+                          child: FactionContainer(
+                            faction: secondFaction.faction,
+                            isUserFaction: secondFaction.faction == userFaction,
+                            isWinning: isSecondWinning,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -237,8 +239,16 @@ class _FactionLeaderboardCardBase extends StatelessWidget {
               backgroundColor: appTheme.beige900,
               fillGradient: appTheme.factionCardFillGradient,
               strokeGradient: appTheme.strokeTag,
+              drawStroke: false,
             ),
-            child: child,
+            foregroundPainter: NotchedFactionLeaderboardCard(
+              strokeGradient: appTheme.strokeTag,
+              drawFill: false,
+            ),
+            child: ClipPath(
+              clipper: FactionCardClipper(),
+              child: child,
+            ),
           ),
         ),
       ),

@@ -33,12 +33,12 @@ class RankEntity {
     return RankEntity.mockWith(t, userFaction);
   }
 
-  factory RankEntity.mockWith(Translations translations, [Faction? userFaction]) {
+  factory RankEntity.mockWith(Translations t, [Faction? userFaction]) {
     final faction = userFaction ?? Faction.gakki;
     return RankEntity(
-      imageAsset: faction.rankCardAsset(),
-      japanRankName: translations.home.rank_label,
-      rankName: translations.tiers.intermediate,
+      imageAsset: faction.rankCardAsset(1),
+      japanRankName: t.home.default_japanese_rank_name,
+      rankName: t.home.default_rank_name,
       faction: faction,
       lvl: 1,
       xp: 10,
