@@ -28,19 +28,22 @@ class RunningPermissionDeniedPage extends StatelessWidget {
               const Spacer(),
               Icon(
                 Icons.settings_suggest_rounded,
-                size: 80,
+                size: 90,
                 color: theme.beige500,
               ),
               const SizedBox(height: 24),
               Text(
                 t.running.permission.title,
-                style: titleH3Regular.copyWith(color: theme.beige100),
+                style: subheadH1Medium.copyWith(
+                  color: theme.beige100,
+                  fontSize: 24,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
                 t.running.permission.description,
-                style: bodyMRegular.copyWith(color: theme.beige400),
+                style: bodyLRegular.copyWith(color: theme.beige400),
                 textAlign: TextAlign.center,
               ),
               const Spacer(),
@@ -58,7 +61,6 @@ class RunningPermissionDeniedPage extends StatelessWidget {
                 text: t.running.permission.cancel,
                 onPressed: () => context.read<RunningTrackerCubit>().cancelPermissionRequest(),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),

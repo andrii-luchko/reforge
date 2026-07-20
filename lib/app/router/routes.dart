@@ -737,7 +737,7 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
         }
 
         // ── Running exercise ─────────────────────────────────────────────
-        if (programExercise.exerciseDetails.isRunningExercise) {
+        if (programExercise.isRunningExercise) {
           final restoredSets = flowState.isRestoredSession ? flowState.restoredSets[programExercise.id] : null;
 
           return MultiBlocProvider(

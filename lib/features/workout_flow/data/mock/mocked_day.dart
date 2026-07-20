@@ -27,7 +27,7 @@ final List<ExerciseDetailsDTO> newMockExercises = [
     description:
         'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
     key: 'angle',
-
+    type: 3,
     metrics: ['angleDeg'],
     poseDetectionPreset: 'spine',
     videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
@@ -52,6 +52,7 @@ final List<ExerciseDetailsDTO> newMockExercises = [
   const ExerciseDetailsDTO(
     id: 2,
     name: 'High Intensity Burpees',
+    type: 1,
     description:
         'A full-body exercise used in strength training and as an aerobic exercise. Great for burning calories quickly.',
     key: 'burpees',
@@ -65,6 +66,7 @@ final List<ExerciseDetailsDTO> newMockExercises = [
   const ExerciseDetailsDTO(
     id: 3,
     name: 'Weighted Twists',
+    type: 1,
     description:
         'A core exercise that targets the obliques and abdominals. Improves rotational strength and stability.',
     key: 'twists',

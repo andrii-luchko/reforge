@@ -80,7 +80,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       ),
     );
 
-    if (programExercise.exerciseDetails.isRunningExercise) {
+    if (programExercise.isRunningExercise) {
       _dbSub = _localWorkoutRepo.watchActiveRunningSets(workoutSessionId).listen(_onDbRunningSetsChanged);
     }
   }
