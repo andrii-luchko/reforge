@@ -6,8 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 @module
 abstract class LocalStorageModule {
+  static const _legacyCachedUserProfileKey = 'cached_user_profile';
+
   @preResolve
-  Future<SharedPreferences> get sharedPreferences => SharedPreferences.getInstance();
+  Future<SharedPreferences> get sharedPreferences async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_legacyCachedUserProfileKey);
+    return preferences;
+  }
 
   @preResolve
   Future<FlutterSecureStorage> get secureStorage async {

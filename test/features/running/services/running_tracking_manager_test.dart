@@ -151,8 +151,6 @@ void main() {
         programExerciseId: 111,
         setNumber: 1,
         trackingMode: RunningMode.gps.dbValue,
-        programSegmentId: null,
-        segmentType: null,
       ),
     ).called(1);
 

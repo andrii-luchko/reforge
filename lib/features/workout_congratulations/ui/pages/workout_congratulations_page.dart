@@ -109,7 +109,7 @@ class _WorkoutCongratulationsPageState extends State<WorkoutCongratulationsPage>
                 const Spacer(),
                 if (isShowingAchievement)
                   AchievementContentWidget(
-                    key: ValueKey('achievement_${_milestoneIndex}'),
+                    key: ValueKey('achievement_$_milestoneIndex'),
                     milestone: summary.earnedMilestones[_milestoneIndex],
                   ).animateEntrance()
                 else

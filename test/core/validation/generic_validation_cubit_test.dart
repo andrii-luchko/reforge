@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
@@ -13,8 +15,7 @@ void main() {
       ),
       act: (cubit) => cubit.onChanged('valid'),
       expect: () => [
-        isA<GenericValidationInitial<String>>()
-            .having((s) => s.value, 'value', 'valid'),
+        isA<GenericValidationInitial<String>>().having((s) => s.value, 'value', 'valid'),
       ],
     );
 
@@ -41,8 +42,7 @@ void main() {
       ),
       act: (cubit) => cubit.onChanged('any'),
       expect: () => [
-        isA<GenericValidationInitial<String>>()
-            .having((s) => s.value, 'value', 'any'),
+        isA<GenericValidationInitial<String>>().having((s) => s.value, 'value', 'any'),
       ],
     );
 
@@ -55,10 +55,8 @@ void main() {
       ),
       act: (cubit) => cubit.save(),
       expect: () => [
-        isA<GenericValidationLoading<String>>()
-            .having((s) => s.value, 'value', 'valid'),
-        isA<GenericValidationSuccess<String>>()
-            .having((s) => s.value, 'value', 'valid'),
+        isA<GenericValidationLoading<String>>().having((s) => s.value, 'value', 'valid'),
+        isA<GenericValidationSuccess<String>>().having((s) => s.value, 'value', 'valid'),
       ],
     );
 
@@ -88,12 +86,32 @@ void main() {
       ),
       act: (cubit) => cubit.save(),
       expect: () => [
-        isA<GenericValidationLoading<String>>()
-            .having((s) => s.value, 'value', 'valid'),
+        isA<GenericValidationLoading<String>>().having((s) => s.value, 'value', 'valid'),
         isA<GenericExternalError<String>>()
             .having((s) => s.value, 'value', 'valid')
             .having((s) => s.error, 'error', contains('Network error')),
       ],
     );
+
+    test('save ignores a duplicate submission while loading', () async {
+      final completer = Completer<void>();
+      var calls = 0;
+      final cubit = GenericValidationCubit<String>(
+        initialValue: 'valid',
+        onSave: (_) {
+          calls++;
+          return completer.future;
+        },
+      );
+
+      final firstSave = cubit.save();
+      await Future<void>.delayed(Duration.zero);
+      await cubit.save();
+      expect(calls, 1);
+
+      completer.complete();
+      await firstSave;
+      await cubit.close();
+    });
   });
 }

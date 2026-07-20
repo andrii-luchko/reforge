@@ -13,7 +13,7 @@ abstract interface class UserRepository {
   /// Takes a full UpdateProfileRequest with all required fields
   Future<Result<User>> updateProfile(UpdateProfileRequest request);
 
-  Future<Result<void>> updateUserEmail({required String email, required int userId});
+  Future<Result<String>> updateUserEmail({required String email, required int userId});
 
   /// Delete the current user
   Future<Result<void>> deleteUser();

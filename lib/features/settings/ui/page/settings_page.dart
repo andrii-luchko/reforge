@@ -8,6 +8,7 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
@@ -242,13 +243,19 @@ class SettingsGroup extends StatelessWidget {
         );
 
         if (pickedData.option == PickerOption.deletePhoto) {
-          await userCubit.deleteUserAvatar();
+          final updateResult = await userCubit.deleteUserAvatar();
+          if (updateResult case Failure(:final error)) {
+            if (context.mounted) toastification.showErrorToast(error.toString(), context);
+          }
           return;
         }
 
         final file = pickedData.file;
         if (file != null) {
-          return userCubit.uploadUserAvatar(file);
+          final updateResult = await userCubit.uploadUserAvatar(file);
+          if (updateResult case Failure(:final error)) {
+            if (context.mounted) toastification.showErrorToast(error.toString(), context);
+          }
         }
       },
       onError: (_, _) {},

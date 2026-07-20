@@ -6,6 +6,8 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/data/repositories/achievements_repository.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
@@ -17,10 +19,17 @@ part 'achievements_cubit.freezed.dart';
 
 @injectable
 class AchievementsCubit extends Cubit<AchievementsState> {
-  AchievementsCubit(this._repository, this._analytics) : super(const AchievementsState());
+  AchievementsCubit(this._repository, this._analytics, this._userCubit) : super(const AchievementsState()) {
+    unawaited(_onUserChanged(_userCubit.currentOnboardedUser));
+    _userSubscription = _userCubit.onboardedUserChanges.listen((user) => unawaited(_onUserChanged(user)));
+  }
 
   final AchievementsRepository _repository;
   final AnalyticsService _analytics;
+  final UserCubit _userCubit;
+  StreamSubscription<OnboardedUser?>? _userSubscription;
+  OnboardedUser? _lastUser;
+  int _userRevision = 0;
 
   Future<void> init() async {
     setUserFaction();
@@ -29,10 +38,37 @@ class AchievementsCubit extends Cubit<AchievementsState> {
   }
 
   void setUserFaction() {
-    final userFaction = _repository.getUserFaction();
+    final userFaction = _userCubit.currentOnboardedUser?.mainFaction;
 
     if (userFaction != null) {
       emit(state.copyWith(selectedFaction: userFaction));
+    }
+  }
+
+  Future<void> _onUserChanged(OnboardedUser? user) async {
+    final previousUser = _lastUser;
+    if (previousUser?.id != user?.id) _userRevision++;
+    _lastUser = user;
+
+    if (user == null) {
+      emit(const AchievementsState());
+      return;
+    }
+
+    final faction = user.mainFaction;
+    if (faction == null) return;
+
+    if (previousUser != null && previousUser.id != user.id) {
+      emit(AchievementsState(selectedFaction: faction));
+      return;
+    }
+
+    if (state.selectedFaction == faction) return;
+    final ranksWereOpened = state.ranks.isNotEmpty;
+    emit(state.copyWith(selectedFaction: faction));
+
+    if (ranksWereOpened && state.selectedRanks.isEmpty) {
+      await loadRanks();
     }
   }
 
@@ -41,7 +77,9 @@ class AchievementsCubit extends Cubit<AchievementsState> {
 
     emit(state.copyWith(isLoading: true, error: null));
 
+    final revision = _userRevision;
     final result = await _repository.getUserAttributes();
+    if (revision != _userRevision) return;
 
     switch (result) {
       case Success(value: final attributes):
@@ -66,7 +104,9 @@ class AchievementsCubit extends Cubit<AchievementsState> {
 
     emit(state.copyWith(isLoading: true, error: null));
 
+    final revision = _userRevision;
     final result = await _repository.getUserBadges();
+    if (revision != _userRevision) return;
     switch (result) {
       case Success(value: final badges):
         emit(
@@ -123,7 +163,9 @@ class AchievementsCubit extends Cubit<AchievementsState> {
 
     final faction = state.selectedFaction;
 
+    final revision = _userRevision;
     final result = await _repository.getUserRanks(faction);
+    if (revision != _userRevision) return;
     switch (result) {
       case Success(value: final newRanks):
         final updatedRanks = Map<Faction, List<RankEntity>>.from(state.ranks);
@@ -167,5 +209,11 @@ class AchievementsCubit extends Cubit<AchievementsState> {
         maxXp: currentRank.maxXp,
       );
     }).toList();
+  }
+
+  @override
+  Future<void> close() async {
+    await _userSubscription?.cancel();
+    return super.close();
   }
 }

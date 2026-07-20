@@ -20,6 +20,8 @@ class GenericValidationCubit<T> extends Cubit<GenericValidationState<T>> {
   }
 
   Future<void> save() async {
+    if (state.isLoading) return;
+
     final error = validator?.call(state.value);
     if (error != null) {
       emit(GenericValidationError(state.value, error));

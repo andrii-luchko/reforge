@@ -11,7 +11,7 @@ abstract interface class UserRemoteDataSource {
   Future<void> deleteUser();
   Future<void> deleteUserById(int id);
   Future<String> uploadUserAvatar(File file);
-  Future<void> updateUserEmail(String email, int userId);
+  Future<String> updateUserEmail(String email, int userId);
 }
 
 @Injectable(as: UserRemoteDataSource)
@@ -51,8 +51,8 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<User> updateUserEmail(String email, int userId) async {
+  Future<String> updateUserEmail(String email, int userId) async {
     final response = await _apiClient.updateCurrentUserEmail(userId, email);
-    return response.data;
+    return response.data.email;
   }
 }
