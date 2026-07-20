@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:reforge/core/database/database.dart';
@@ -80,7 +82,6 @@ Future<void> configureBackgroundDependencies() async {
 
   // ── Audio Feedback ─────────────────────────────────────────────────────────
   final audioService = AudioFeedbackService();
-  await audioService.init();
   backgroundGetIt.registerSingleton<AudioFeedbackService>(audioService);
 
   // ── Session manager ────────────────────────────────────────────────────────
@@ -93,4 +94,8 @@ Future<void> configureBackgroundDependencies() async {
       audioService,
     ),
   );
+
+  // Audio is optional for tracking. Preload it after the essential graph is
+  // ready so a slow iOS audio plugin cannot delay the service handshake.
+  unawaited(audioService.init());
 }

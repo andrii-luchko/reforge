@@ -23,8 +23,8 @@ abstract interface class TrackingEngine {
   /// Resumes metric emission.
   void resume();
 
-  /// Stops the engine permanently and releases all sensor resources.
-  void stop();
+  /// Stops the engine and waits until all sensor resources are released.
+  Future<void> stop();
 
   /// Resets accumulated metrics (distance, steps, duration) to zero.
   void reset();

@@ -45,15 +45,16 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
 
   void _startCountdown() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_currentCount > 0) {
-        setState(() {
-          _currentCount--;
-        });
-        unawaited(HapticFeedback.mediumImpact());
-      } else {
+      if (_currentCount <= 1) {
         timer.cancel();
+        setState(() => _currentCount = 0);
+        unawaited(HapticFeedback.mediumImpact());
         _onCountdownFinished();
+        return;
       }
+
+      setState(() => _currentCount--);
+      unawaited(HapticFeedback.mediumImpact());
     });
   }
 

@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:reforge/app/di/background_injector.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/constants/running_constants.dart';
+import 'package:reforge/features/running/data/services/running_service_protocol.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
@@ -59,8 +60,7 @@ Future<void> initializeBackgroundService() async {
 
 @pragma('vm:entry-point')
 Future<void> onStart(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized();
-  WidgetsFlutterBinding.ensureInitialized();
+  final bootstrapStopwatch = Stopwatch()..start();
 
   // ── Global safety net ─────────────────────────────────────────────────────
   // Any unhandled exception inside the background isolate that escapes all
@@ -68,48 +68,63 @@ Future<void> onStart(ServiceInstance service) async {
   // stop the service cleanly rather than leaving it in a zombie state.
   await runZonedGuarded(
     () async {
+      _logBackground('on_start_entered');
+      DartPluginRegistrant.ensureInitialized();
+      WidgetsFlutterBinding.ensureInitialized();
+
+      final dependenciesStartedAt = DateTime.now();
+      _logBackground('dependencies_begin');
       await configureBackgroundDependencies();
+      _logBackground('dependencies_elapsedMs=${DateTime.now().difference(dependenciesStartedAt).inMilliseconds}');
       final manager = backgroundGetIt<RunningSessionManager>();
       StreamSubscription<RunningMetrics>? metricsSub;
       StreamSubscription<RunningEvent>? eventsSub;
+      Timer? firstMetricTimer;
+      var firstMetricForwarded = false;
 
-      // 1. Ping-Pong
-      service.on('ping').listen((_) {
-        service.invoke('pong', {
-          'isRunning': manager.currentMode != null,
-        });
-      });
-
-      // 2. Start / Restore Session
+      // 1. Start / Restore Session
       service.on('start_session').listen((event) async {
         if (event == null) return;
+        _logBackground(
+          'start_session_received payloadTypes= '
+          'sessionId:${event['sessionId']?.runtimeType},'
+          'programExerciseId:${event['programExerciseId']?.runtimeType}',
+        );
         try {
-          final sessionId = event['sessionId'] as int;
-          final programExerciseId = event['programExerciseId'] as int;
-          final modeStr = event['mode'] as String;
-          final startPaused = event['startPaused'] as bool? ?? false;
+          final sessionId = RunningServiceProtocol.requiredInt(event, 'sessionId');
+          final programExerciseId = RunningServiceProtocol.requiredInt(event, 'programExerciseId');
+          final modeStr = RunningServiceProtocol.requiredString(event, 'mode');
+          final startPaused = RunningServiceProtocol.optionalBool(event, 'startPaused', fallback: false);
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
 
-          final rawLimits = event['limits'] as List<dynamic>? ?? [];
-          final limits = rawLimits.map((l) {
-            final map = l as Map<String, dynamic>;
-            final metricName = map['metric'] as String;
+          final rawLimits = RunningServiceProtocol.optionalList(event, 'limits');
+          final limits = rawLimits.map((rawLimit) {
+            final map = RunningServiceProtocol.stringMap(rawLimit, key: 'limits[]');
+            final metricName = RunningServiceProtocol.requiredString(map, 'metric');
             return LapLimit(
               metric: WorkoutMetric.values.firstWhere((m) => m.name == metricName),
-              limitValue: (map['limitValue'] as num).toDouble(),
-              segmentId: map['segmentId'] as int?,
+              limitValue: RunningServiceProtocol.requiredDouble(map, 'limitValue'),
+              segmentId: RunningServiceProtocol.optionalInt(map, 'segmentId'),
               activityType: SegmentActivity.values.firstWhere(
-                (a) => a.name == (map['activityType'] as String?),
+                (a) => a.name == RunningServiceProtocol.optionalString(map, 'activityType'),
                 orElse: () => SegmentActivity.run,
               ),
             );
           }).toList();
+
+          firstMetricForwarded = false;
+          firstMetricTimer?.cancel();
 
           // Attach first: a synchronous startup error or first metric must not
           // be lost between manager.startSession() and stream subscription.
           await metricsSub?.cancel();
           metricsSub = manager.metricsStream.listen(
             (metrics) {
+              if (!firstMetricForwarded) {
+                firstMetricForwarded = true;
+                firstMetricTimer?.cancel();
+                _logBackground('first_metric_forwarded');
+              }
               service.invoke('metrics', {
                 'distanceMeters': metrics.distanceMeters,
                 'durationSeconds': metrics.durationSeconds,
@@ -165,6 +180,7 @@ Future<void> onStart(ServiceInstance service) async {
           // Teleport Guard
           await _handleSessionRestore(sessionId);
 
+          _logBackground('manager_start_begin mode=$mode startPaused=$startPaused');
           await manager.startSession(
             mode: mode,
             limits: limits,
@@ -172,18 +188,27 @@ Future<void> onStart(ServiceInstance service) async {
             programExerciseId: programExerciseId,
             startPaused: startPaused,
           );
+          _logBackground('manager_start_complete');
+
+          if (!firstMetricForwarded && !startPaused) {
+            firstMetricTimer = Timer(const Duration(seconds: 3), () {
+              if (firstMetricForwarded) return;
+              _logBackground('first_metric_timeout', error: true);
+            });
+          }
         } on Object catch (e, st) {
           logger.e('Background: Error in start_session', e, st);
           service.invoke('sensor_error', {
-            'code': 'session_start_failed',
+            'code': e is ServiceProtocolException ? 'service_protocol_error' : 'session_start_failed',
             'message': e.toString(),
             'isFatal': true,
           });
         }
       });
 
-      // 3. Pause
+      // 2. Pause
       service.on('pause_session').listen((_) {
+        _logBackground('pause_session_received');
         try {
           manager.pauseSession();
         } on Exception catch (e, st) {
@@ -191,8 +216,9 @@ Future<void> onStart(ServiceInstance service) async {
         }
       });
 
-      // 4. Resume
+      // 3. Resume
       service.on('resume_session').listen((_) async {
+        _logBackground('resume_session_received');
         try {
           await manager.resumeSession();
         } on Exception catch (e, st) {
@@ -200,8 +226,9 @@ Future<void> onStart(ServiceInstance service) async {
         }
       });
 
-      // 5. Suspend for Summary (Free run stop logic)
+      // 4. Suspend for Summary (Free run stop logic)
       service.on('suspend_session').listen((_) async {
+        _logBackground('suspend_session_received');
         try {
           await manager.suspendSessionForSummary();
         } on Exception catch (e, st) {
@@ -209,8 +236,9 @@ Future<void> onStart(ServiceInstance service) async {
         }
       });
 
-      // 6. Force Next Lap (Manual skip)
+      // 5. Force Next Lap (Manual skip)
       service.on('force_next_lap').listen((_) {
+        _logBackground('force_next_lap_received');
         try {
           manager.forceNextLap();
         } on Exception catch (e, st) {
@@ -218,25 +246,50 @@ Future<void> onStart(ServiceInstance service) async {
         }
       });
 
-      // 7. Stop (End and dispose)
+      // 6. Stop the session. Android also tears down its foreground service;
+      // iOS keeps the initialized worker idle for the next workout.
       service.on('stop_session').listen((_) async {
+        _logBackground('stop_session_received');
         try {
-          await metricsSub?.cancel();
-          await eventsSub?.cancel();
-          manager.endSession();
-        } on Exception catch (e, st) {
+          firstMetricTimer?.cancel();
+          firstMetricTimer = null;
+          firstMetricForwarded = false;
+
+          final currentMetricsSub = metricsSub;
+          final currentEventsSub = eventsSub;
+          metricsSub = null;
+          eventsSub = null;
+
+          await currentMetricsSub?.cancel();
+          await currentEventsSub?.cancel();
+          await manager.endSession();
+        } on Object catch (e, st) {
           logger.e('Background: Error in stop_session', e, st);
-        } finally {
+          service.invoke('fatal_error', {
+            'code': 'session_stop_failed',
+            'message': e.toString(),
+            'isFatal': true,
+          });
           await service.stopSelf();
+          return;
+        }
+
+        if (Platform.isAndroid) {
+          _logBackground('session_stopped worker_shutdown_android');
+          await service.stopSelf();
+        } else {
+          _logBackground('session_stopped worker_idle_ios');
         }
       });
 
-      // ── Handshake: Signal that the isolate is fully initialized ────────────
-      // This MUST be the last line of the setup block. The UI-side
-      // RunningServiceClient waits for this event before sending 'start_session'.
-      // Without it, there is a race condition where the command arrives before
-      // the listeners above are registered.
-      service.invoke('service_ready');
+      // Diagnostic only. The client never waits for this event.
+      _logBackground('listeners_registered');
+      service.invoke('service_ready', {
+        'timestamp': DateTime.now().toIso8601String(),
+        'protocolVersion': 1,
+        'bootstrapElapsedMs': bootstrapStopwatch.elapsedMilliseconds,
+      });
+      _logBackground('service_ready_sent');
     },
     (error, stack) async {
       // An unhandled exception escaped all individual try/catch blocks.
@@ -250,6 +303,15 @@ Future<void> onStart(ServiceInstance service) async {
       await service.stopSelf();
     },
   );
+}
+
+void _logBackground(String stage, {bool error = false}) {
+  final message = '[BackgroundRunningService][${DateTime.now().toIso8601String()}] $stage';
+  if (error) {
+    logger.e(message);
+  } else {
+    logger.d(message);
+  }
 }
 
 Future<void> _handleSessionRestore(int sessionId) async {

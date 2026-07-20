@@ -1,5 +1,7 @@
 // ignore_for_file: comment_references
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
@@ -58,6 +60,7 @@ class RunningOverviewPage extends StatelessWidget {
 
           listener: (context, state) async {
             final runningCubit = context.read<RunningTrackerCubit>();
+            unawaited(runningCubit.warmUpTracking());
 
             if (context.mounted) {
               if (!runningCubit.hasSeenAudioHint) {
@@ -70,6 +73,8 @@ class RunningOverviewPage extends StatelessWidget {
 
                 if (started ?? false) {
                   await runningCubit.startLap();
+                } else {
+                  runningCubit.cancelStart();
                 }
               }
             }

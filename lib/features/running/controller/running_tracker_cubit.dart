@@ -44,6 +44,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
   StreamSubscription<RunningMetrics>? _metricsSub;
   StreamSubscription<RunningEvent>? _eventsSub;
+  bool _hasSentStopSession = false;
 
   ExerciseSegmentEntity? get currentSegment => programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
 
@@ -54,23 +55,33 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   Future<void> init() async {
-    final isServiceRunning = await _serviceClient.isRunning;
     final lap = await _repository.getInProgressLap(workoutSessionId);
-    final lastLap = await _repository.getLastLap(workoutSessionId);
 
-    if (isServiceRunning || lap != null) {
+    if (lap != null) {
       // Background restore logic: jump to active but paused
-      final modeStr = lap?.trackingMode ?? lastLap?.trackingMode ?? RunningMode.gps.dbValue;
+      final modeStr = lap.trackingMode ?? RunningMode.gps.dbValue;
       final mode = RunningMode.values.firstWhere(
         (m) => m.dbValue == modeStr,
         orElse: () => RunningMode.gps,
       );
 
       // Calculate real activity from playlist
-      final index = lap != null ? (lap.setNumber - 1) : (lastLap?.setNumber ?? 0);
+      final index = lap.setNumber - 1;
       final activity = (index < programExercise.segments.length)
           ? programExercise.segments[index].activity
           : SegmentActivity.run;
+
+      final restoredLap = ExerciseLap(
+        driftSetId: lap.id,
+        lapNumber: index + 1,
+        distanceMeters: lap.distanceMeters ?? 0.0,
+        durationSeconds: lap.durationSeconds ?? 0,
+        avgSpeedKmH: lap.avgSpeedKmH ?? 0.0,
+        currentSpeedKmH: lap.currentSpeedKmH ?? 0.0,
+        avgPaceMinKm: lap.avgPaceMinKm ?? 0.0,
+        currentPaceMinKm: lap.currentPaceMinKm ?? 0.0,
+        activity: activity,
+      );
 
       emit(
         state.copyWith(
@@ -78,21 +89,17 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           mode: mode,
           isPaused: true,
           error: null,
-          currentLap: ExerciseLap(
-            driftSetId: lap?.id ?? 0,
-            lapNumber: index + 1,
-            distanceMeters: lap?.distanceMeters ?? 0.0,
-            durationSeconds: lap?.durationSeconds ?? 0,
-            avgSpeedKmH: lap?.avgSpeedKmH ?? 0.0,
-            currentSpeedKmH: lap?.currentSpeedKmH ?? 0.0,
-            avgPaceMinKm: lap?.avgPaceMinKm ?? 0.0,
-            currentPaceMinKm: lap?.currentPaceMinKm ?? 0.0,
-            activity: activity,
-          ),
+          currentLap: restoredLap,
         ),
       );
 
-      await _subscribeToTracking(mode, startPaused: true);
+      try {
+        await _subscribeToTracking(mode, startPaused: true);
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningTrackerCubit: failed to restore tracking', error, stackTrace);
+        await _handleStartFailure(error);
+        return;
+      }
 
       logger.d('RunningTrackerCubit: restored tracking (mode: ${mode.dbValue}) paused');
     } else {
@@ -106,7 +113,18 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   void cancelPermissionRequest() {
-    emit(state.copyWith(phase: RunningPhase.overview));
+    cancelStart();
+  }
+
+  void cancelStart() {
+    emit(
+      state.copyWith(
+        phase: RunningPhase.overview,
+        mode: null,
+        isPermissionGranted: false,
+        error: null,
+      ),
+    );
   }
 
   Future<void> askPermissions() async {
@@ -120,6 +138,9 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       emit(state.copyWith(isPermissionGranted: true));
     }
   }
+
+  /// Best-effort worker warm-up. It never starts a tracking engine.
+  Future<void> warmUpTracking() => _serviceClient.warmUp();
 
   Future<void> startLap() async {
     if (state.phase != RunningPhase.overview) return;
@@ -136,7 +157,15 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         error: null,
       ),
     );
-    await _subscribeToTracking(mode);
+
+    try {
+      await _subscribeToTracking(mode);
+    } on Object catch (error, stackTrace) {
+      logger.e('RunningTrackerCubit: failed to start tracking', error, stackTrace);
+      await _handleStartFailure(error);
+      return;
+    }
+
     logger.d('RunningTrackerCubit: started tracking (mode: ${mode.dbValue})');
   }
 
@@ -188,7 +217,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   Future<bool> finishExercise() async {
-    _stopTracking();
+    await _stopTracking();
     return true;
   }
 
@@ -196,6 +225,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     RunningMode mode, {
     bool startPaused = false,
   }) async {
+    // A real start failure may be retried by the same Cubit instance.
+    _hasSentStopSession = false;
     await _metricsSub?.cancel();
     await _eventsSub?.cancel();
 
@@ -215,12 +246,14 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       onError: (Object e) {
         logger.e('RunningTrackerCubit: tracking stream error: $e');
         if (e case RunningServiceException(:final isFatal) when isFatal) {
-          _serviceClient.endSession();
+          unawaited(_stopTracking());
+          final failedDuringStart = state.phase == RunningPhase.overview;
           emit(
             state.copyWith(
-              phase: RunningPhase.finished,
+              phase: failedDuringStart ? RunningPhase.overview : RunningPhase.finished,
               mode: null,
-              isPaused: true,
+              isPermissionGranted: false,
+              isPaused: !failedDuringStart,
               currentLap: null,
               error: e.message,
             ),
@@ -279,17 +312,40 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     );
   }
 
-  void _stopTracking() {
-    _serviceClient.endSession();
-    unawaited(_metricsSub?.cancel());
-    unawaited(_eventsSub?.cancel());
+  Future<void> _stopTracking() async {
+    if (!_hasSentStopSession) {
+      _hasSentStopSession = true;
+      _serviceClient.endSession();
+    }
+
+    final metricsSub = _metricsSub;
+    final eventsSub = _eventsSub;
     _metricsSub = null;
     _eventsSub = null;
+
+    await metricsSub?.cancel();
+    await eventsSub?.cancel();
+  }
+
+  Future<void> _handleStartFailure(Object error) async {
+    await _stopTracking();
+    if (!isClosed) {
+      emit(
+        state.copyWith(
+          phase: RunningPhase.overview,
+          mode: null,
+          isPermissionGranted: false,
+          isPaused: false,
+          currentLap: null,
+          error: error.toString(),
+        ),
+      );
+    }
   }
 
   @override
   Future<void> close() async {
-    _stopTracking();
+    await _stopTracking();
     return super.close();
   }
 }

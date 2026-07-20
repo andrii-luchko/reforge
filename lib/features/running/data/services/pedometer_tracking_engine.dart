@@ -54,7 +54,7 @@ class PedometerTrackingEngine implements TrackingEngine {
         // This is FATAL for this session: no point retrying.
         if (e is PlatformException && e.code == '3') {
           logger.e('PedometerTrackingEngine: sensor unavailable (code 3). Stopping.', e, st);
-          stop();
+          unawaited(stop());
           _controller.addError(
             SensorUnavailableException('pedometer', cause: e),
             st,
@@ -120,15 +120,24 @@ class PedometerTrackingEngine implements TrackingEngine {
   }
 
   @override
-  void stop() {
-    unawaited(_stepSub?.cancel());
-    _stepSub = null;
-    unawaited(_statusSub?.cancel());
-    _statusSub = null;
-    unawaited(_iosKeepAliveSub?.cancel());
-    _iosKeepAliveSub = null;
+  Future<void> stop() async {
     _tickTimer?.cancel();
     _tickTimer = null;
+
+    final stepCancellation = _stepSub?.cancel();
+    final statusCancellation = _statusSub?.cancel();
+    final iosKeepAliveCancellation = _iosKeepAliveSub?.cancel();
+
+    _stepSub = null;
+    _statusSub = null;
+    _iosKeepAliveSub = null;
+
+    await Future.wait([
+      ?stepCancellation,
+      ?statusCancellation,
+      ?iosKeepAliveCancellation,
+    ]);
+
     _isPaused = false;
     logger.d('PedometerTrackingEngine: stopped');
   }
@@ -159,8 +168,8 @@ class PedometerTrackingEngine implements TrackingEngine {
   }
 
   /// Dispose when the singleton is torn down (e.g. during testing).
-  void dispose() {
-    stop();
-    unawaited(_controller.close());
+  Future<void> dispose() async {
+    await stop();
+    await _controller.close();
   }
 }

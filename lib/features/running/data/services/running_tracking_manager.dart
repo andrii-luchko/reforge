@@ -42,6 +42,7 @@ class RunningSessionManager {
   int? _programExerciseId;
   int? _currentDbSetId;
   Timer? _snapshotTimer;
+  Future<void>? _endSessionFuture;
 
   // ── Public API for Cubit ───────────────────────────────────────────────────
 
@@ -62,8 +63,14 @@ class RunningSessionManager {
     required int programExerciseId,
     bool startPaused = false,
   }) async {
+    final endingSession = _endSessionFuture;
+    if (endingSession != null) await endingSession;
+
     if (_currentMode != null) {
-      if (startPaused) pauseSession();
+      logger.w(
+        'RunningSessionManager: startSession ignored because a session '
+        'is already initialized. Use pauseSession/resumeSession instead.',
+      );
       return;
     }
 
@@ -115,9 +122,7 @@ class RunningSessionManager {
       }
 
       final engine = _getEngineForMode(mode);
-
-      await engine?.start(initialOffset: initialOffset);
-
+      await _metricsSub?.cancel();
       _metricsSub = engine?.metricsStream.listen(
         _onMetricsReceived,
         onError: (Object e, StackTrace st) {
@@ -126,7 +131,7 @@ class RunningSessionManager {
           // show an appropriate message. We do NOT stop the session — the
           // engine's internal ticker keeps time even when the sensor fails.
           if (e is SensorUnavailableException) {
-            endSession();
+            unawaited(endSession());
           }
           _controller.addError(e, st);
         },
@@ -134,6 +139,10 @@ class RunningSessionManager {
         // sensor hiccup should not terminate the entire stream pipeline.
         cancelOnError: false,
       );
+
+      // Subscribe before start so synchronous engine errors or an immediate
+      // first metric cannot be lost during initialization.
+      await engine?.start(initialOffset: initialOffset);
       _startSnapshotTimer();
 
       if (startPaused) {
@@ -144,7 +153,7 @@ class RunningSessionManager {
     } on Object {
       // A failed start must not leave the manager in a state where every
       // subsequent start is ignored because [_currentMode] is already set.
-      endSession();
+      await endSession();
       rethrow;
     }
   }
@@ -210,13 +219,35 @@ class RunningSessionManager {
     unawaited(_handleLapCompletion());
   }
 
-  void endSession() {
-    unawaited(_metricsSub?.cancel());
+  Future<void> endSession() async {
+    final inFlight = _endSessionFuture;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    final future = _endSessionInternal();
+    _endSessionFuture = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_endSessionFuture, future)) {
+        _endSessionFuture = null;
+      }
+    }
+  }
+
+  Future<void> _endSessionInternal() async {
+    final metricsSub = _metricsSub;
     _metricsSub = null;
+
     _snapshotTimer?.cancel();
     _snapshotTimer = null;
 
-    _getEngineForMode(_currentMode)?.stop();
+    final engine = _getEngineForMode(_currentMode);
+
+    await metricsSub?.cancel();
+    await engine?.stop();
 
     _currentMode = null;
     _limits = null;
@@ -224,6 +255,8 @@ class RunningSessionManager {
     _programExerciseId = null;
     _currentLapIndex = 0;
     _currentDbSetId = null;
+    _latestMetrics = null;
+    _isCompletingLap = false;
     logger.d('RunningSessionManager: Session ended');
   }
 

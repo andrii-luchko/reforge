@@ -23,6 +23,8 @@ class GpsTrackingEngine implements TrackingEngine {
   RouteCoordinate? _lastAcceptedRawPoint;
   int? _lastAcceptedTimestampMs;
   bool _isPaused = false;
+  bool _hasLoggedFirstTick = false;
+  bool _hasLoggedFirstPosition = false;
 
   final _kalmanFilter = KalmanLocationFilter();
 
@@ -31,6 +33,10 @@ class GpsTrackingEngine implements TrackingEngine {
 
   @override
   Future<void> start({RunningMetrics? initialOffset}) async {
+    logger.d(
+      '[GpsTrackingEngine][${DateTime.now().toIso8601String()}] start '
+      'initialDuration=${initialOffset?.durationSeconds ?? 0}',
+    );
     _totalDistance = initialOffset?.distanceMeters ?? 0;
     _durationSec = initialOffset?.durationSeconds ?? 0;
 
@@ -39,12 +45,18 @@ class GpsTrackingEngine implements TrackingEngine {
     _lastAcceptedRawPoint = null;
     _lastAcceptedTimestampMs = null;
     _lastProcessedMs = 0;
+    _hasLoggedFirstTick = false;
+    _hasLoggedFirstPosition = false;
     _kalmanFilter.reset();
 
     // Start 1-sec ticker for time and pace updates
     _ticker?.cancel();
     _ticker = Timer.periodic(RunningConstants.engineTickInterval, (_) {
       if (_isPaused) return;
+      if (!_hasLoggedFirstTick) {
+        _hasLoggedFirstTick = true;
+        logger.d('[GpsTrackingEngine][${DateTime.now().toIso8601String()}] first_tick');
+      }
       _durationSec++;
       _emitMetrics();
     });
@@ -57,6 +69,14 @@ class GpsTrackingEngine implements TrackingEngine {
         ).listen(
           (pos) {
             if (_isPaused) return;
+
+            if (!_hasLoggedFirstPosition) {
+              _hasLoggedFirstPosition = true;
+              logger.d(
+                '[GpsTrackingEngine][${DateTime.now().toIso8601String()}] '
+                'first_position accuracy=${pos.accuracy}',
+              );
+            }
 
             if (pos.accuracy > RunningConstants.maxGpsAccuracyMeters) {
               return;
@@ -183,9 +203,15 @@ class GpsTrackingEngine implements TrackingEngine {
   }
 
   @override
-  void stop() {
+  Future<void> stop() async {
     _ticker?.cancel();
-    unawaited(_positionSub?.cancel());
+    _ticker = null;
+
+    final positionSub = _positionSub;
+    _positionSub = null;
+    await positionSub?.cancel();
+
+    _isPaused = false;
   }
 
   @override

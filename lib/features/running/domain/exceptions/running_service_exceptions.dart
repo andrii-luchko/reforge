@@ -73,11 +73,21 @@ class DatabaseWriteException implements Exception {
   String toString() => 'DatabaseWriteException: $operation failed. cause=$cause';
 }
 
-/// Thrown when the background service fails to start within the handshake
-/// timeout window.
-class ServiceStartTimeoutException implements Exception {
-  const ServiceStartTimeoutException();
+/// Thrown when an isolate message does not match the running service protocol.
+class ServiceProtocolException implements Exception {
+  const ServiceProtocolException({
+    required this.key,
+    required this.expectedType,
+    required this.actualValue,
+  });
+
+  final String key;
+  final String expectedType;
+  final Object? actualValue;
 
   @override
-  String toString() => 'ServiceStartTimeoutException: background service did not signal ready in time.';
+  String toString() {
+    final actualType = actualValue?.runtimeType.toString() ?? 'null';
+    return 'Invalid running service payload: "$key" must be $expectedType, got $actualType.';
+  }
 }

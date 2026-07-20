@@ -51,7 +51,7 @@ class MockPedometerTrackingEngine implements TrackingEngine {
   }
 
   @override
-  void stop() {
+  Future<void> stop() async {
     _tickTimer?.cancel();
     _tickTimer = null;
     _isPaused = false;
@@ -92,8 +92,8 @@ class MockPedometerTrackingEngine implements TrackingEngine {
     );
   }
 
-  void dispose() {
-    stop();
-    unawaited(_controller.close());
+  Future<void> dispose() async {
+    await stop();
+    await _controller.close();
   }
 }
