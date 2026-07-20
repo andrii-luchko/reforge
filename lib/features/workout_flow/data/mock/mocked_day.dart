@@ -1,6 +1,3 @@
-// ignore_for_file: prefer_first
-import 'dart:convert';
-
 import 'package:reforge/features/workout_common/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_flow/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
@@ -79,10 +76,11 @@ final List<ExerciseDetailsDTO> newMockExercises = [
 ];
 
 final ProgramDayEntity mockProgramDay = ProgramDayDTO(
-  id: 0,
-  name: 'Loading Workout Program...',
+  id: 30,
+  name: 'Day 1 with Intervals',
   dayNumber: 1,
   exercises: [
+    // Standard Exercises...
     ProgramExerciseDTO(
       id: 1,
       order: 1,
@@ -90,180 +88,105 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
       sets: 4,
       exerciseDetails: newMockExercises[0],
     ),
+    // The Segmented/Mega Exercise
     ProgramExerciseDTO(
-      id: 2,
+      id: 110,
       order: 2,
-      executionMode: ExecutionMode.standard.name,
-      sets: 3,
-      exerciseDetails: newMockExercises[1],
+      executionMode: 'segmented',
+      sets: 2,
+      exerciseDetails: const ExerciseDetailsDTO(
+        id: 4,
+        name: 'Running Intervals',
+        type: 2,
+        key: 'running',
+        metrics: ['durationSec', 'distanceM', 'speedKmH'],
+        videoInstructionUrl: 'https://video.url/running',
+        thumbnailInstructionUrl: 'https://thumb.url/running',
+        description: 'Cardiovascular endurance exercise that improves heart health.',
+      ),
+      segments: const [
+        ExerciseSegmentDTO(
+          id: 1,
+          order: 1,
+          activity: 'run',
+          targetMetric: 'distance',
+          label: 'Sprint block',
+          distanceM: 100,
+        ),
+        ExerciseSegmentDTO(
+          id: 2,
+          order: 2,
+          activity: 'walk',
+          targetMetric: 'duration',
+          label: 'Rest block',
+          durationSec: 60,
+        ),
+      ],
     ),
     ProgramExerciseDTO(
-      id: 3,
+      id: 111,
       order: 3,
-      executionMode: ExecutionMode.standard.name,
-      sets: 3,
-      exerciseDetails: newMockExercises[2],
+      executionMode: 'segmented',
+      sets: 2,
+      exerciseDetails: const ExerciseDetailsDTO(
+        id: 45,
+        name: 'Running Intervals',
+        type: 2,
+        key: 'running',
+        metrics: ['durationSec', 'distanceM', 'speedKmH'],
+        videoInstructionUrl: 'https://video.url/running',
+        thumbnailInstructionUrl: 'https://thumb.url/running',
+        description: 'Cardiovascular endurance exercise that improves heart health.',
+      ),
+      segments: const [
+        ExerciseSegmentDTO(
+          id: 1,
+          order: 1,
+          activity: 'run',
+          targetMetric: 'distance',
+          label: 'Sprint block',
+          distanceM: 100,
+        ),
+        ExerciseSegmentDTO(
+          id: 2,
+          order: 2,
+          activity: 'walk',
+          targetMetric: 'duration',
+          label: 'Rest block',
+          durationSec: 60,
+        ),
+      ],
     ),
   ],
 ).toEntity();
 
-final parsedMockedDay = ProgramDayDTO.fromJson(
-  jsonDecode('''
-{
 
-"id": 30,
+// final ProgramDayEntity mockProgramDay = ProgramDayDTO(
+//   id: 0,
+//   name: 'Loading Workout Program...',
+//   dayNumber: 1,
+//   exercises: [
+//     ProgramExerciseDTO(
+//       id: 1,
+//       order: 1,
+//       executionMode: ExecutionMode.standard.name,
+//       sets: 4,
+//       exerciseDetails: newMockExercises[0],
+//     ),
+//     ProgramExerciseDTO(
+//       id: 2,
+//       order: 2,
+//       executionMode: ExecutionMode.standard.name,
+//       sets: 3,
+//       exerciseDetails: newMockExercises[1],
+//     ),
+//     ProgramExerciseDTO(
+//       id: 3,
+//       order: 3,
+//       executionMode: ExecutionMode.standard.name,
+//       sets: 3,
+//       exerciseDetails: newMockExercises[2],
+//     ),
+//   ],
+// ).toEntity();
 
-"programId": 15,
-
-"exerciseTypeId": 2,
-
-"dayNumber": 1,
-
-"name": "Day 1",
-
-"createdAt": "2026-06-25T14:00:53.983Z",
-
-"updatedAt": "2026-06-25T14:00:53.983Z",
-
-"exercises": [
-
-{
-
-"id": 110,
-
-"programDayId": 30,
-
-"exerciseId": 4,
-
-"order": 1,
-
-"sets": 2,
-
-"executionMode": "segmented",
-
-"tier": null,
-
-"reps": null,
-
-"durationSec": null,
-
-"weightKg": null,
-
-"angleDeg": null,
-
-"speedKmH": null,
-
-"distanceM": null,
-
-"createdAt": "2026-06-25T14:00:53.983Z",
-
-"updatedAt": "2026-06-25T14:00:53.983Z",
-
-"exercise": {
-
-"id": 4,
-
-"factionId": 3,
-
-"type": 2,
-
-"fileUploadType": null,
-
-"isTiered": false,
-
-"isPoseDetectionEnabled": false,
-
-"poseDetectionPreset": null,
-
-"name": "Running",
-
-"description": "Cardiovascular endurance exercise that improves heart health and stamina.",
-
-"key": "running",
-
-"metrics": [
-
-"durationSec",
-
-"distanceM",
-
-"speedKmH"
-
-],
-
-"staticData": {},
-
-"videoInstructionUrl": "https://video.url/running",
-
-"thumbnailInstructionUrl": "https://thumb.url/running",
-
-"createdAt": "2025-12-22T16:03:19.119Z",
-
-"updatedAt": "2025-12-22T16:03:19.119Z"
-
-},
-
-"segments": [
-
-{
-
-"id": 1,
-
-"workoutProgramExerciseId": 110,
-
-"order": 1,
-
-"activity": "run",
-
-"targetMetric": "distance",
-
-"role": "work",
-
-"distanceM": 100,
-
-"durationSec": null,
-
-"label": "1231231dsa",
-
-"createdAt": "2026-06-25T14:00:53.983Z",
-
-"updatedAt": "2026-06-25T14:00:54.819Z"
-
-},
-
-{
-
-"id": 2,
-
-"workoutProgramExerciseId": 110,
-
-"order": 2,
-
-"activity": "walk",
-
-"targetMetric": "duration",
-
-"role": "work",
-
-"distanceM": null,
-
-"durationSec": 60,
-
-"label": "dsadsadas",
-
-"createdAt": "2026-06-25T14:00:53.983Z",
-
-"updatedAt": "2026-06-25T14:00:54.927Z"
-
-}
-
-]
-
-}
-
-]
-
-}
-''')
-      as Map<String, dynamic>,
-);

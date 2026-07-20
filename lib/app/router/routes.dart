@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/app_router.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/root/ui/page/root_page.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
@@ -59,10 +58,7 @@ import 'package:reforge/features/splash/ui/pages/splash_page.dart';
 import 'package:reforge/features/subscription/ui/pages/change_plan_page.dart';
 import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
-import 'package:reforge/features/workout_congratulations/controllers/workout_congratulations/workout_congratulations_cubit.dart';
-import 'package:reforge/features/workout_congratulations/ui/pages/workout_achievement_page.dart';
-import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_shell.dart';
-import 'package:reforge/features/workout_congratulations/ui/pages/workout_summary_page.dart';
+import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
 import 'package:reforge/features/workout_details/ui/pages/scheduled_workout_details_page.dart';
 import 'package:reforge/features/workout_details/ui/pages/workout_details_page.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
@@ -615,12 +611,7 @@ class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
     ),
     TypedGoRoute<CameraDetectionPageRoute>(path: '/camera-detection'),
     TypedGoRoute<StartRunningPageRoute>(path: '/start-running'),
-    TypedShellRoute<WorkoutCongratulationsShellRoute>(
-      routes: [
-        TypedGoRoute<WorkoutSummaryPageRoute>(path: '/workout-summary'),
-        TypedGoRoute<WorkoutAchievementPageRoute>(path: '/workout-achievements'),
-      ],
-    ),
+    TypedGoRoute<WorkoutCongratulationsPageRoute>(path: '/workout-congratulations'),
   ],
 )
 class WorkoutShellRoute extends ShellRouteData {
@@ -806,33 +797,17 @@ class StartRunningPageRoute extends GoRouteData with $StartRunningPageRoute {
   }
 }
 
-class WorkoutCongratulationsShellRoute extends ShellRouteData {
+class WorkoutCongratulationsPageRoute extends GoRouteData with $WorkoutCongratulationsPageRoute {
+  const WorkoutCongratulationsPageRoute();
+
   @override
-  Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
-    final summary = context.read<WorkoutFlowCubit>().state.summary;
-    logger.d('WorkoutCongratulationsShell - summary: $summary, isNull: ${summary == null}');
-
-    return BlocProvider(
-      create: (context) => di.getIt<WorkoutCongratulationsCubit>(
-        param1: summary,
-      ),
-      child: WorkoutCongratulationsShell(child: navigator),
-    );
+  String? redirect(BuildContext context, GoRouterState state) {
+    return context.read<WorkoutFlowCubit>().state.summary == null ? const HomePageRoute().location : null;
   }
-}
 
-class WorkoutAchievementPageRoute extends GoRouteData with $WorkoutAchievementPageRoute {
-  const WorkoutAchievementPageRoute({
-    required this.milestoneIndex,
-  });
-
-  final int milestoneIndex;
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return WorkoutAchievementPage(
-      key: ValueKey(milestoneIndex),
-      milestoneIndex: milestoneIndex,
-    );
+    return const WorkoutCongratulationsPage();
   }
 }
 
@@ -843,15 +818,6 @@ class PayWallPageRoute extends GoRouteData with $PayWallPageRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return const PaywallPage();
-  }
-}
-
-class WorkoutSummaryPageRoute extends GoRouteData with $WorkoutSummaryPageRoute {
-  const WorkoutSummaryPageRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) {
-    return const WorkoutSummaryPage();
   }
 }
 

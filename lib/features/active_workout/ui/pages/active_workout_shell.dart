@@ -118,12 +118,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
               if (summary == null) {
                 const HomePageRoute().go(context);
               } else {
-                // Navigate based on whether there are milestones
-                if (summary.earnedMilestones.isNotEmpty) {
-                  const WorkoutAchievementPageRoute(milestoneIndex: 0).go(context);
-                } else {
-                  const WorkoutSummaryPageRoute().go(context);
-                }
+                const WorkoutCongratulationsPageRoute().go(context);
               }
               unawaited(context.read<UserCubit>().refreshUser());
               return;

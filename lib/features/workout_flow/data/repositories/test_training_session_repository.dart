@@ -4,7 +4,7 @@ import 'package:reforge/features/workout_common/domain/entities/workout_summary_
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_flow/data/mock/mocked_day.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
+
 import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
 import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_flow/domain/entities/program_day_entity.dart';
@@ -15,7 +15,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
 
   @override
   Future<Result<ProgramDayEntity?>> getWorkoutByDay(int day) async {
-    return Result.success(parsedMockedDay.toEntity());
+    return Result.success(mockProgramDay);
   }
 
   @override
@@ -35,7 +35,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
         WorkoutSession(
           id: 1,
           userId: 1,
-          workoutProgramDayId: parsedMockedDay.id,
+          workoutProgramDayId: mockProgramDay.id,
           duration: 0,
           status: WorkoutSessionStatus.active,
           totalXpEarned: 0,
@@ -51,7 +51,7 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
     return Result.success(
       WorkoutSessionDetailsDTO(
         id: sessionId,
-        workoutProgramDayId: parsedMockedDay.id,
+        workoutProgramDayId: mockProgramDay.id,
         duration: 0,
         status: WorkoutSessionStatus.active,
         totalXpEarned: 0,
@@ -113,34 +113,34 @@ class TestTrainingSessionRepository implements TrainingSessionRepository {
         duration: workoutSessionDuration,
         totalXpEarned: 150,
         earnedMilestones: const [
-          UserWorkoutMilestoneEntity(
-            id: 1,
-            name: 'Milestone 1',
-            tier: 3,
-            iconUrl:
-                'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
-          ),
-          UserWorkoutMilestoneEntity(
-            id: 1,
-            name: 'Milestone 1',
-            tier: 3,
-            iconUrl:
-                'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
-          ),
-          UserWorkoutMilestoneEntity(
-            id: 1,
-            name: 'Milestone 1',
-            tier: 3,
-            iconUrl:
-                'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
-          ),
-          UserWorkoutMilestoneEntity(
-            id: 1,
-            name: 'Milestone 1',
-            tier: 3,
-            iconUrl:
-                'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
-          ),
+          // UserWorkoutMilestoneEntity(
+          //   id: 1,
+          //   name: 'Milestone 1',
+          //   tier: 3,
+          //   iconUrl:
+          //       'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
+          // ),
+          // UserWorkoutMilestoneEntity(
+          //   id: 1,
+          //   name: 'Milestone 11',
+          //   tier: 3,
+          //   iconUrl:
+          //       'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-2.svg',
+          // ),
+          // UserWorkoutMilestoneEntity(
+          //   id: 1,
+          //   name: 'Milestone 21',
+          //   tier: 3,
+          //   iconUrl:
+          //       'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-1.svg',
+          // ),
+          // UserWorkoutMilestoneEntity(
+          //   id: 1,
+          //   name: 'Milestone31',
+          //   tier: 3,
+          //   iconUrl:
+          //       'https://nwzhgomphrebuzumrxrr.supabase.co/storage/v1/object/public/milestone_bucket/bench-1rm-3.svg',
+          // ),
         ],
         isLevelUp: false,
         currentLevel: 5,
