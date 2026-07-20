@@ -1,18 +1,12 @@
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/domain/enums/rank.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
-import 'package:reforge/generated/i18n/translations.g.dart';
 
 class RanksGenerator {
   RanksGenerator._();
 
   static List<RankEntity> generateRanks(Faction faction) {
-    final names = <String>[
-      t.tiers.beginner,
-      t.tiers.intermediate,
-      t.tiers.advanced,
-      t.tiers.elite,
-      t.tiers.factionLeader,
-    ];
+    const ranks = Rank.values;
 
     return List.generate(10, (i) {
       final level = 10 + (i * 7);
@@ -20,10 +14,14 @@ class RanksGenerator {
 
       final currentXp = (maxXp * (0.2 + (i * 0.07))).toInt().clamp(0, maxXp);
 
+      final rank = ranks[i % ranks.length];
+
+      final imageAsset = rank.imageAsset(faction);
+
       return RankEntity(
-        imageAsset: faction.rankCardAsset(level),
-        japanRankName: t.home.rank_label,
-        rankName: names[i % names.length],
+        imageAsset: imageAsset,
+        japanRankName: rank.japaneseName,
+        rankName: rank.englishName,
         faction: faction,
         lvl: level,
         xp: currentXp,

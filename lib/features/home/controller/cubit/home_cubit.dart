@@ -8,6 +8,7 @@ import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/domain/enums/rank.dart';
 import 'package:reforge/features/home/data/repository/home_repository.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
@@ -95,10 +96,10 @@ class HomeCubit extends Cubit<HomeState> {
     final faction = user?.mainFaction ?? Faction.gakki;
     final japanRankName = user?.japanRank ?? t.home.default_japanese_rank_name;
     final rankName = user?.rank ?? t.home.default_rank_name;
-
+    final rank = Rank.fromJapaneseString(japanRankName);
     if (stats != null) {
       return RankEntity(
-        imageAsset: faction.rankCardAsset(stats.level),
+        imageAsset: rank.imageAsset(faction),
         japanRankName: japanRankName,
         rankName: rankName,
         faction: faction,

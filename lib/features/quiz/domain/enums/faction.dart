@@ -81,44 +81,4 @@ extension FactionExtension on Faction {
         return Assets.images.png.factionSeiren.path;
     }
   }
-
-  String rankCardAsset(int level) {
-    final factionAssets = switch (this) {
-      Faction.gakki => [
-        Assets.images.png.hojoshi1,
-        Assets.images.png.hojoshi2,
-        Assets.images.png.hojoshi3,
-        Assets.images.png.hojoshi4,
-        Assets.images.png.hojoshi5,
-        Assets.images.png.hojoshi6,
-      ],
-      Faction.gyohyo => [
-        Assets.images.png.yukon1,
-        Assets.images.png.yukon2,
-        Assets.images.png.yukon3,
-        Assets.images.png.yukon4,
-        Assets.images.png.yukon5,
-        Assets.images.png.yukon6,
-      ],
-      Faction.seiren => [
-        Assets.images.png.nagisabe1,
-        Assets.images.png.nagisabe2,
-        Assets.images.png.nagisabe3,
-        Assets.images.png.nagisabe4,
-        Assets.images.png.nagisabe5,
-        Assets.images.png.nagisabe6,
-      ],
-    };
-
-    final index = switch (level) {
-      < 10 => 0,
-      < 20 => 1,
-      < 30 => 2,
-      < 50 => 3,
-      < 70 => 4,
-      _ => 5,
-    };
-
-    return factionAssets[index].path;
-  }
 }
