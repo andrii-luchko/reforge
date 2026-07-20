@@ -33,12 +33,25 @@ class DefaultSliverAppBar extends StatelessWidget {
             onPressed: onPressed,
           ),
         ),
-
         actions: [
           Skeleton.keep(
-            child: Text(
-              title,
-              style: subheadH1Medium.copyWith(color: appTheme.beige100),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final screenWidth = MediaQuery.sizeOf(context).width;
+                final availableWidth = screenWidth - 32 - 56 - 16;
+                return Container(
+                  constraints: BoxConstraints(maxWidth: availableWidth),
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                      maxLines: 1,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],

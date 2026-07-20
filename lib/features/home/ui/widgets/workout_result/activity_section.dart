@@ -6,6 +6,7 @@ import 'package:reforge/features/home/ui/widgets/workout_result/activity_tile.da
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ActivitySection extends StatelessWidget {
   const ActivitySection({
@@ -104,7 +105,15 @@ class _ActivityCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppIconButton(iconAsset: icon),
+            Skeleton.replace(
+              replacement: const Bone(
+                width: 56,
+                height: 56,
+                shape: .circle,
+              ),
+
+              child: AppIconButton(iconAsset: icon),
+            ),
             const SizedBox(height: 20),
             Text(title, style: subheadH3Medium.copyWith(color: appTheme.beige100)),
             const SizedBox(height: 8),

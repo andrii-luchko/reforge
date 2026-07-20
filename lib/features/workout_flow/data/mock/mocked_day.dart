@@ -6,18 +6,18 @@ import 'package:reforge/features/workout_flow/domain/entities/program_day_entity
 
 final List<ExerciseDetailsDTO> newMockExercises = [
   // ID 1: Barbell Deadlift
-  // const ExerciseDetailsDTO(
-  //   id: 1,
-  //   name: 'Barbell Deadlift',
-  //   description:
-  //       'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
-  //   key: 'deadlift',
-
-  //   metrics: ['weightKg', 'reps'],
-  //   videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-  //   thumbnailInstructionUrl:
-  //       'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
-  // ),
+  const ExerciseDetailsDTO(
+    id: 1,
+    name: 'Barbell Deadlift',
+    description:
+        'The ultimate full-body compound movement. Targets the posterior chain, including hamstrings, glutes, and lower back.',
+    key: 'deadlift',
+    type: 1,
+    metrics: ['weightKg', 'reps'],
+    videoInstructionUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    thumbnailInstructionUrl:
+        'https://hardtokillfitness.co/cdn/shop/articles/deadlifts-9728886.png?v=1755466823&width=1500',
+  ),
   const ExerciseDetailsDTO(
     id: 1,
     name: 'Some angle exercise',
@@ -80,7 +80,6 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
   name: 'Day 1 with Intervals',
   dayNumber: 1,
   exercises: [
-    // Standard Exercises...
     ProgramExerciseDTO(
       id: 1,
       order: 1,
@@ -88,13 +87,21 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
       sets: 4,
       exerciseDetails: newMockExercises[0],
     ),
-    // The Segmented/Mega Exercise
+
     ProgramExerciseDTO(
-      id: 110,
+      id: 2,
       order: 2,
+      executionMode: ExecutionMode.standard.name,
+      sets: 4,
+      exerciseDetails: newMockExercises[1],
+    ),
+
+    const ProgramExerciseDTO(
+      id: 110,
+      order: 3,
       executionMode: 'segmented',
       sets: 2,
-      exerciseDetails: const ExerciseDetailsDTO(
+      exerciseDetails: ExerciseDetailsDTO(
         id: 4,
         name: 'Running Intervals',
         type: 2,
@@ -104,10 +111,10 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
         thumbnailInstructionUrl: 'https://thumb.url/running',
         description: 'Cardiovascular endurance exercise that improves heart health.',
       ),
-      segments: const [
+      segments: [
         ExerciseSegmentDTO(
           id: 1,
-          order: 1,
+          order: 4,
           activity: 'run',
           targetMetric: 'distance',
           label: 'Sprint block',
@@ -123,12 +130,12 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
         ),
       ],
     ),
-    ProgramExerciseDTO(
+    const ProgramExerciseDTO(
       id: 111,
-      order: 3,
+      order: 5,
       executionMode: 'segmented',
       sets: 2,
-      exerciseDetails: const ExerciseDetailsDTO(
+      exerciseDetails: ExerciseDetailsDTO(
         id: 4,
         name: 'Running Intervals',
         type: 2,
@@ -138,7 +145,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
         thumbnailInstructionUrl: 'https://thumb.url/running',
         description: 'Cardiovascular endurance exercise that improves heart health.',
       ),
-      segments: const [
+      segments: [
         ExerciseSegmentDTO(
           id: 3,
           order: 1,

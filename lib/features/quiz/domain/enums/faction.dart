@@ -81,4 +81,15 @@ extension FactionExtension on Faction {
         return Assets.images.png.factionSeiren.path;
     }
   }
+
+  String workoutDetailsTitle(Translations t) {
+    switch (this) {
+      case Faction.gakki:
+        return t.workout_details.power_title;
+      case Faction.gyohyo:
+        return t.workout_details.endurance_title;
+      case Faction.seiren:
+        return t.workout_details.flexibility_title;
+    }
+  }
 }

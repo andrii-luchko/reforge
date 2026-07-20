@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -90,14 +91,28 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
 
               const SizedBox(width: 16),
 
-              AppIconButton(
-                iconAsset: Assets.images.icons.calendar,
-                onPressed: () => const CalendarPageRoute().push<void>(context),
+              Skeleton.replace(
+                replacement: const Bone(
+                  width: 56,
+                  height: 56,
+                  shape: .circle,
+                ),
+                child: AppIconButton(
+                  iconAsset: Assets.images.icons.calendar,
+                  onPressed: () => const CalendarPageRoute().push<void>(context),
+                ).animateEntrance(),
               ),
               const SizedBox(width: 8),
-              AppIconButton(
-                iconAsset: Assets.images.icons.bell,
-                onPressed: () => const NotificationsPageRoute().push<void>(context),
+              Skeleton.replace(
+                replacement: const Bone(
+                  width: 56,
+                  height: 56,
+                  shape: .circle,
+                ),
+                child: AppIconButton(
+                  iconAsset: Assets.images.icons.bell,
+                  onPressed: () => const NotificationsPageRoute().push<void>(context),
+                ).animateEntrance(),
               ),
             ],
           ),
