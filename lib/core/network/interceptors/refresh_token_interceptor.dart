@@ -4,7 +4,7 @@ import 'package:reforge/core/auth/session/auth_session_controller.dart';
 import 'package:reforge/core/auth/session/token_refresh_service.dart';
 import 'package:reforge/core/network/api_extra_keys.dart';
 
-class RefreshTokenInterceptor extends QueuedInterceptor {
+class RefreshTokenInterceptor extends Interceptor {
   RefreshTokenInterceptor({
     required Dio dio,
     required AuthLocalDataSource localDataSource,

@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/core/auth/data/models/auth_tokens.dart';
 
 abstract interface class AuthLocalDataSource {
+  Future<void> writeAccessToken(String accessToken);
   Future<void> saveTokens(AuthTokens tokens);
   Future<AuthTokens?> getTokens();
   Future<void> clearTokens();
@@ -52,6 +53,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       _secureStorage.delete(key: _keyAccessToken),
       _secureStorage.delete(key: _keyRefreshToken),
     ]);
+  }
+
+  @override
+  Future<void> writeAccessToken(String accessToken) async {
+    await _secureStorage.write(key: _keyAccessToken, value: accessToken);
   }
 
   @override
