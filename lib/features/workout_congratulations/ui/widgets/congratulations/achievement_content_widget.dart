@@ -19,14 +19,14 @@ class AchievementContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = milestone.iconUrl;
-    final baseStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
+    final baseStyle = bodyLRegular.copyWith(
       height: 1.5,
       color: context.appTheme.beige600,
     );
 
-    final accentStyle = baseStyle?.copyWith(
+    final accentStyle = baseStyle.copyWith(
       color: context.appTheme.beige100,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w700,
     );
 
     return SingleChildScrollView(
