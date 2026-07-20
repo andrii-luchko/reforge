@@ -52,8 +52,14 @@ class RunningSessionManager {
   RunningMode? get currentMode => _currentMode;
 
   /// Fetches historical route points for the session.
-  Future<List<RouteCoordinate>> getRoutePoints(int sessionId) {
-    return _repository.getRoutePoints(sessionId);
+  Future<List<RouteCoordinate>> getRoutePoints({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return _repository.getRoutePoints(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
   }
 
   Future<void> startSession({
@@ -81,7 +87,10 @@ class RunningSessionManager {
 
     try {
       // Check for an interrupted session lap in the DB
-      final inProgressLap = await _repository.getInProgressLap(sessionId);
+      final inProgressLap = await _repository.getInProgressLapForExercise(
+        sessionId: sessionId,
+        programExerciseId: programExerciseId,
+      );
 
       RunningMetrics? initialOffset;
 
@@ -104,7 +113,10 @@ class RunningSessionManager {
         logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
       } else {
         // Start a fresh lap
-        final lastLap = await _repository.getLastLap(sessionId);
+        final lastLap = await _repository.getLastLap(
+          sessionId: sessionId,
+          programExerciseId: programExerciseId,
+        );
         _currentLapIndex = lastLap?.setNumber ?? 0;
 
         final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)

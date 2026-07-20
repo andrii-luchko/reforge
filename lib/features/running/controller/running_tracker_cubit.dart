@@ -55,7 +55,10 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   Future<void> init() async {
-    final lap = await _repository.getInProgressLap(workoutSessionId);
+    final lap = await _repository.getInProgressLapForExercise(
+      sessionId: workoutSessionId,
+      programExerciseId: programExercise.id,
+    );
 
     if (lap != null) {
       // Background restore logic: jump to active but paused

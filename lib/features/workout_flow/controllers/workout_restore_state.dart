@@ -25,9 +25,9 @@ sealed class WorkoutRestoreState with _$WorkoutRestoreState {
   const factory WorkoutRestoreState.restoring() = WorkoutRestoreRestoring;
 
   /// Restore complete — [WorkoutFlowCubit] has been populated.
-  /// Navigate to the exercise at [resumeExerciseId].
+  /// Navigate to the program exercise at [resumeProgramExerciseId].
   const factory WorkoutRestoreState.restored({
-    required int resumeExerciseId,
+    required int resumeProgramExerciseId,
   }) = WorkoutRestoreRestored;
 
   /// No interrupted session found, or the user chose to abandon it.

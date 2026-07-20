@@ -21,8 +21,18 @@ void main() {
     pedometer = SynchronousMetricEngine();
     gps = SynchronousMetricEngine();
 
-    when(() => repository.getInProgressLap(any())).thenAnswer((_) async => null);
-    when(() => repository.getLastLap(any())).thenAnswer((_) async => null);
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+      ),
+    ).thenAnswer((_) async => null);
+    when(
+      () => repository.getLastLap(
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+      ),
+    ).thenAnswer((_) async => null);
     when(
       () => repository.createNewActiveSet(
         sessionId: any(named: 'sessionId'),
@@ -116,6 +126,36 @@ void main() {
     expect((await nextMetric).durationSeconds, 1);
     expect(gps.startCalls, 2);
     expect(gps.stopCalls, 1);
+    await manager.endSession();
+  });
+
+  test('starts lap numbering from one for another program exercise in the same session', () async {
+    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+
+    await manager.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      sessionId: 10,
+      programExerciseId: 111,
+    );
+
+    verify(
+      () => repository.getLastLap(
+        sessionId: 10,
+        programExerciseId: 111,
+      ),
+    ).called(1);
+    verify(
+      () => repository.createNewActiveSet(
+        sessionId: 10,
+        programExerciseId: 111,
+        setNumber: 1,
+        trackingMode: RunningMode.gps.dbValue,
+        programSegmentId: null,
+        segmentType: null,
+      ),
+    ).called(1);
+
     await manager.endSession();
   });
 }

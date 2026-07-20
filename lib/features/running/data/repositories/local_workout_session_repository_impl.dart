@@ -11,8 +11,14 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   final WorkoutDatabase _db;
 
   @override
-  Stream<List<ActiveRunningSet>> watchActiveRunningSets(int sessionId) {
-    return _db.watchSetsForSession(sessionId);
+  Stream<List<ActiveRunningSet>> watchActiveRunningSets({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return _db.watchSetsForExercise(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
   }
 
   @override
@@ -24,20 +30,20 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
     int? programSegmentId,
     String? segmentType,
   }) async {
-    await _db.into(_db.activeRunningSets).insert(
-      ActiveRunningSetsCompanion.insert(
-        sessionId: sessionId,
-        programExerciseId: programExerciseId,
-        setNumber: setNumber,
-        isBusy: const drift.Value(true),
-        isDone: const drift.Value(false),
-        trackingMode: drift.Value(trackingMode),
-        programSegmentId: drift.Value(programSegmentId),
-        segmentType: segmentType != null ? drift.Value(segmentType) : const drift.Value.absent(),
-      ),
-    );
-    final row = await _db.getInProgressLap(sessionId);
-    return row!.id;
+    return _db
+        .into(_db.activeRunningSets)
+        .insert(
+          ActiveRunningSetsCompanion.insert(
+            sessionId: sessionId,
+            programExerciseId: programExerciseId,
+            setNumber: setNumber,
+            isBusy: const drift.Value(true),
+            isDone: const drift.Value(false),
+            trackingMode: drift.Value(trackingMode),
+            programSegmentId: drift.Value(programSegmentId),
+            segmentType: segmentType != null ? drift.Value(segmentType) : const drift.Value.absent(),
+          ),
+        );
   }
 
   @override
@@ -76,7 +82,9 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
     required double longitude,
     required double heading,
   }) async {
-    await _db.into(_db.sessionRoutePoints).insert(
+    await _db
+        .into(_db.sessionRoutePoints)
+        .insert(
           SessionRoutePointsCompanion.insert(
             sessionId: sessionId,
             setId: drift.Value(setId),
@@ -89,29 +97,61 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   }
 
   @override
-  Future<List<RouteCoordinate>> getRoutePoints(int sessionId) async {
-    final query = _db.select(_db.sessionRoutePoints)
-      ..where((tbl) => tbl.sessionId.equals(sessionId))
-      ..orderBy([(t) => drift.OrderingTerm(expression: t.timestamp)]);
+  Future<List<RouteCoordinate>> getRoutePoints({
+    required int sessionId,
+    required int programExerciseId,
+  }) async {
+    final query =
+        _db.select(_db.sessionRoutePoints).join([
+            drift.innerJoin(
+              _db.activeRunningSets,
+              _db.sessionRoutePoints.setId.equalsExp(_db.activeRunningSets.id),
+            ),
+          ])
+          ..where(
+            _db.sessionRoutePoints.sessionId.equals(sessionId) &
+                _db.activeRunningSets.programExerciseId.equals(programExerciseId),
+          )
+          ..orderBy([drift.OrderingTerm(expression: _db.sessionRoutePoints.timestamp)]);
 
-    final points = await query.get();
+    final rows = await query.get();
+    final points = rows.map((row) => row.readTable(_db.sessionRoutePoints));
     return points
-        .map((p) => RouteCoordinate(
-              latitude: p.latitude,
-              longitude: p.longitude,
-              heading: p.heading ?? 0.0,
-            ))
+        .map(
+          (p) => RouteCoordinate(
+            latitude: p.latitude,
+            longitude: p.longitude,
+            heading: p.heading ?? 0.0,
+          ),
+        )
         .toList();
   }
 
   @override
-  Future<ActiveRunningSet?> getInProgressLap(int sessionId) {
-    return _db.getInProgressLap(sessionId);
+  Future<ActiveRunningSet?> getInProgressLapForExercise({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return _db.getInProgressLapForExercise(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
   }
 
   @override
-  Future<ActiveRunningSet?> getLastLap(int sessionId) {
-    return _db.getLastLap(sessionId);
+  Future<ActiveRunningSet?> getAnyInProgressLapForSession(int sessionId) {
+    return _db.getAnyInProgressLapForSession(sessionId);
+  }
+
+  @override
+  Future<ActiveRunningSet?> getLastLap({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return _db.getLastLap(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
   }
 
   @override

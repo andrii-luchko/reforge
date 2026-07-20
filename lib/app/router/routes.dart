@@ -703,14 +703,14 @@ class ActiveWorkoutsShellRoute extends ShellRouteData {
 }
 
 class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
-  const ActiveWorkoutPageRoute({required this.exerciseId});
+  const ActiveWorkoutPageRoute({required this.programExerciseId});
 
-  final int exerciseId;
+  final int programExerciseId;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return BlocBuilder<WorkoutFlowCubit, WorkoutFlowState>(
-      key: ValueKey(exerciseId),
+      key: ValueKey(programExerciseId),
       builder: (context, flowState) {
         final workoutSessionId = flowState.workoutSessionId;
         final programDay = flowState.programDay;
@@ -720,7 +720,7 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
         }
 
         final programExercise = programDay.exercises.firstWhereOrNull(
-          (e) => e.exerciseDetails.id == exerciseId,
+          (exercise) => exercise.id == programExerciseId,
         );
 
         if (programExercise == null) {

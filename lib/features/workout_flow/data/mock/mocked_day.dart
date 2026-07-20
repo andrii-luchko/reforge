@@ -129,7 +129,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
       executionMode: 'segmented',
       sets: 2,
       exerciseDetails: const ExerciseDetailsDTO(
-        id: 45,
+        id: 4,
         name: 'Running Intervals',
         type: 2,
         key: 'running',
@@ -140,7 +140,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
       ),
       segments: const [
         ExerciseSegmentDTO(
-          id: 1,
+          id: 3,
           order: 1,
           activity: 'run',
           targetMetric: 'distance',
@@ -148,7 +148,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
           distanceM: 100,
         ),
         ExerciseSegmentDTO(
-          id: 2,
+          id: 4,
           order: 2,
           activity: 'walk',
           targetMetric: 'duration',
@@ -159,7 +159,6 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
     ),
   ],
 ).toEntity();
-
 
 // final ProgramDayEntity mockProgramDay = ProgramDayDTO(
 //   id: 0,
@@ -189,4 +188,3 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
 //     ),
 //   ],
 // ).toEntity();
-

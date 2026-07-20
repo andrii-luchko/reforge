@@ -4,8 +4,11 @@ import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 /// Repository for managing the local/offline state of a workout session (Drift).
 /// Used by the running tracker to take snapshots and coordinate active laps.
 abstract interface class LocalWorkoutSessionRepository {
-  /// Returns a stream of ActiveRunningSets for the given workout session.
-  Stream<List<ActiveRunningSet>> watchActiveRunningSets(int sessionId);
+  /// Returns the running sets owned by one program exercise in a workout session.
+  Stream<List<ActiveRunningSet>> watchActiveRunningSets({
+    required int sessionId,
+    required int programExerciseId,
+  });
 
   /// Creates a new active set in the database for tracking.
   Future<int> createNewActiveSet({
@@ -41,14 +44,26 @@ abstract interface class LocalWorkoutSessionRepository {
     required double heading,
   });
 
-  /// Fetches all historical GPS points for a given session.
-  Future<List<RouteCoordinate>> getRoutePoints(int sessionId);
+  /// Fetches GPS points owned by one program exercise in a workout session.
+  Future<List<RouteCoordinate>> getRoutePoints({
+    required int sessionId,
+    required int programExerciseId,
+  });
 
-  /// Returns the in-progress (isBusy = true) running set/lap, if any.
-  Future<ActiveRunningSet?> getInProgressLap(int sessionId);
+  /// Returns the in-progress lap for one program exercise, if any.
+  Future<ActiveRunningSet?> getInProgressLapForExercise({
+    required int sessionId,
+    required int programExerciseId,
+  });
 
-  /// Returns the last lap (highest setNumber) for this session, regardless of status.
-  Future<ActiveRunningSet?> getLastLap(int sessionId);
+  /// Returns any in-progress lap in the session for restore discovery only.
+  Future<ActiveRunningSet?> getAnyInProgressLapForSession(int sessionId);
+
+  /// Returns the last lap for one program exercise, regardless of status.
+  Future<ActiveRunningSet?> getLastLap({
+    required int sessionId,
+    required int programExerciseId,
+  });
 
   /// Marks the set as completely synced to the backend.
   Future<void> markSetAsDone(int setId);

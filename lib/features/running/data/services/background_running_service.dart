@@ -178,7 +178,7 @@ Future<void> onStart(ServiceInstance service) async {
           );
 
           // Teleport Guard
-          await _handleSessionRestore(sessionId);
+          await _handleSessionRestore(sessionId, programExerciseId);
 
           _logBackground('manager_start_begin mode=$mode startPaused=$startPaused');
           await manager.startSession(
@@ -314,10 +314,13 @@ void _logBackground(String stage, {bool error = false}) {
   }
 }
 
-Future<void> _handleSessionRestore(int sessionId) async {
+Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
   try {
     final repo = backgroundGetIt<LocalWorkoutSessionRepository>();
-    final inProgressLap = await repo.getInProgressLap(sessionId);
+    final inProgressLap = await repo.getInProgressLapForExercise(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
     if (inProgressLap == null) return;
 
     final lastSnapshotAt = inProgressLap.lastSnapshotAt;
@@ -334,7 +337,10 @@ Future<void> _handleSessionRestore(int sessionId) async {
 
     // Rule 2: Teleport Guard (GPS only)
     if (inProgressLap.trackingMode == RunningMode.gps.dbValue && staleness.inSeconds > 0) {
-      final points = await repo.getRoutePoints(sessionId);
+      final points = await repo.getRoutePoints(
+        sessionId: sessionId,
+        programExerciseId: programExerciseId,
+      );
       final lastPos = points.lastOrNull;
       if (lastPos != null) {
         final currentPos = await Geolocator.getCurrentPosition(

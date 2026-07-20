@@ -117,7 +117,12 @@ void main() {
   });
 
   test('idle worker without an in-progress lap does not trigger restore', () async {
-    when(() => repository.getInProgressLap(10)).thenAnswer((_) async => null);
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => null);
 
     await cubit.init();
 
@@ -135,7 +140,12 @@ void main() {
   });
 
   test('restore shows paused active state before command dispatch finishes', () async {
-    when(() => repository.getInProgressLap(10)).thenAnswer((_) async => _activeLap);
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => _activeLap);
     final dispatched = Completer<void>();
     when(
       () => service.startSession(
