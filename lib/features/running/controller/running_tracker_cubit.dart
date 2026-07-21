@@ -254,7 +254,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           emit(
             state.copyWith(
               phase: failedDuringStart ? RunningPhase.overview : RunningPhase.finished,
-              mode: null,
+              mode: failedDuringStart ? null : state.mode,
               isPermissionGranted: false,
               isPaused: !failedDuringStart,
               currentLap: null,

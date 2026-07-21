@@ -142,15 +142,12 @@ Future<void> onStart(ServiceInstance service) async {
               });
             },
             onError: (Object e, StackTrace st) {
-              // Engine errors (SensorUnavailableException, GPS dropout) are
-              // forwarded to the UI as a 'sensor_error' event. The session
-              // continues — the timer keeps running even without sensor data.
               logger.e('Background: metrics stream error', e, st);
-              final isFatal = e is SensorUnavailableException;
+              final payload = _sensorErrorPayload(e);
               service.invoke('sensor_error', {
-                'code': isFatal ? 'sensor_unavailable' : 'sensor_stream_error',
-                'message': e.toString(),
-                'isFatal': isFatal,
+                'code': payload.code,
+                'message': payload.message,
+                'isFatal': payload.isFatal,
               });
             },
             cancelOnError: false,
@@ -198,9 +195,22 @@ Future<void> onStart(ServiceInstance service) async {
           }
         } on Object catch (e, st) {
           logger.e('Background: Error in start_session', e, st);
+          final payload = switch (e) {
+            ServiceProtocolException() => (
+              code: 'service_protocol_error',
+              message: 'The tracking service returned invalid data.',
+              isFatal: true,
+            ),
+            TrackingEngineFailureException() => _sensorErrorPayload(e),
+            _ => (
+              code: 'session_start_failed',
+              message: 'The tracking session could not be started.',
+              isFatal: true,
+            ),
+          };
           service.invoke('sensor_error', {
-            'code': e is ServiceProtocolException ? 'service_protocol_error' : 'session_start_failed',
-            'message': e.toString(),
+            'code': payload.code,
+            'message': payload.message,
             'isFatal': true,
           });
         }
@@ -366,4 +376,36 @@ Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
   } on Exception catch (e, st) {
     logger.e('Background: Error in _handleSessionRestore', e, st);
   }
+}
+
+({String code, String message, bool isFatal}) _sensorErrorPayload(Object error) {
+  if (error case TrackingEngineFailureException(:final reason)) {
+    return (
+      code: switch (reason) {
+        TrackingEngineFailureReason.locationServiceDisabled => 'location_service_disabled',
+        TrackingEngineFailureReason.locationPermissionDenied => 'location_permission_denied',
+        TrackingEngineFailureReason.motionPermissionDenied => 'motion_permission_denied',
+        TrackingEngineFailureReason.sensorUnavailable => 'sensor_unavailable',
+        TrackingEngineFailureReason.streamClosed => 'sensor_stream_closed',
+        TrackingEngineFailureReason.unrecoverableStreamFailure => 'sensor_stream_failed',
+      },
+      message: switch (reason) {
+        TrackingEngineFailureReason.locationServiceDisabled =>
+          'Location services were turned off. Tracking has stopped.',
+        TrackingEngineFailureReason.locationPermissionDenied =>
+          'Location permission was removed. Tracking has stopped.',
+        TrackingEngineFailureReason.motionPermissionDenied => 'Motion permission was removed. Tracking has stopped.',
+        TrackingEngineFailureReason.sensorUnavailable => 'A required tracking sensor is unavailable.',
+        TrackingEngineFailureReason.streamClosed ||
+        TrackingEngineFailureReason.unrecoverableStreamFailure => 'The tracking sensor stopped unexpectedly.',
+      },
+      isFatal: true,
+    );
+  }
+
+  return (
+    code: 'sensor_stream_error',
+    message: 'A tracking sensor is temporarily unavailable.',
+    isFatal: false,
+  );
 }

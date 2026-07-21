@@ -7,13 +7,31 @@ import 'package:reforge/features/running/data/services/kalman_location_filter.da
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
+import 'package:reforge/features/running/domain/services/running_sensor_availability.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
 class GpsTrackingEngine implements TrackingEngine {
+  GpsTrackingEngine({
+    RunningSensorAvailability? sensorAvailability,
+    GeolocatorPlatform? geolocator,
+    Duration healthCheckInterval = RunningConstants.sensorHealthCheckInterval,
+  }) : _sensorAvailability = sensorAvailability ?? RunningSensorAvailabilityService(),
+       _geolocator = geolocator ?? GeolocatorPlatform.instance,
+       _healthCheckInterval = healthCheckInterval;
+
   final _controller = StreamController<RunningMetrics>.broadcast();
+  final RunningSensorAvailability _sensorAvailability;
+  final GeolocatorPlatform _geolocator;
+  final Duration _healthCheckInterval;
 
   Timer? _ticker;
+  Timer? _healthTimer;
+  // ignore: cancel_subscriptions, canceled by the idempotent stop/dispose path
   StreamSubscription<Position>? _positionSub;
+  // ignore: cancel_subscriptions, canceled by the idempotent stop/dispose path
+  StreamSubscription<ServiceStatus>? _serviceStatusSub;
+  Future<void>? _healthCheckInFlight;
+  Future<void>? _stopFuture;
 
   double _totalDistance = 0;
   int _durationSec = 0;
@@ -23,6 +41,10 @@ class GpsTrackingEngine implements TrackingEngine {
   RouteCoordinate? _lastAcceptedRawPoint;
   int? _lastAcceptedTimestampMs;
   bool _isPaused = false;
+  bool _isRunning = false;
+  bool _isStopping = false;
+  bool _terminalFailureSent = false;
+  int _generation = 0;
   bool _hasLoggedFirstTick = false;
   bool _hasLoggedFirstPosition = false;
 
@@ -33,6 +55,13 @@ class GpsTrackingEngine implements TrackingEngine {
 
   @override
   Future<void> start({RunningMetrics? initialOffset}) async {
+    if (_isRunning) return;
+    final stopping = _stopFuture;
+    if (stopping != null) await stopping;
+
+    final failure = await _checkAvailabilityForStart();
+    if (failure != null) throw failure;
+
     logger.d(
       '[GpsTrackingEngine][${DateTime.now().toIso8601String()}] start '
       'initialDuration=${initialOffset?.durationSeconds ?? 0}',
@@ -48,115 +77,142 @@ class GpsTrackingEngine implements TrackingEngine {
     _hasLoggedFirstTick = false;
     _hasLoggedFirstPosition = false;
     _kalmanFilter.reset();
+    _terminalFailureSent = false;
+    _isStopping = false;
+    _isRunning = true;
+    final generation = ++_generation;
 
-    // Start 1-sec ticker for time and pace updates
-    _ticker?.cancel();
-    _ticker = Timer.periodic(RunningConstants.engineTickInterval, (_) {
-      if (_isPaused) return;
-      if (!_hasLoggedFirstTick) {
-        _hasLoggedFirstTick = true;
-        logger.d('[GpsTrackingEngine][${DateTime.now().toIso8601String()}] first_tick');
-      }
-      _durationSec++;
-      _emitMetrics();
-    });
-
-    // Start GPS stream
-    await _positionSub?.cancel();
-    _positionSub =
-        Geolocator.getPositionStream(
-          locationSettings: _getFitnessLocationSettings(),
-        ).listen(
-          (pos) {
-            if (_isPaused) return;
-
-            if (!_hasLoggedFirstPosition) {
-              _hasLoggedFirstPosition = true;
-              logger.d(
-                '[GpsTrackingEngine][${DateTime.now().toIso8601String()}] '
-                'first_position accuracy=${pos.accuracy}',
-              );
-            }
-
-            if (pos.accuracy > RunningConstants.maxGpsAccuracyMeters) {
-              return;
-            }
-
-            final timestampMs = pos.timestamp.millisecondsSinceEpoch;
-            if (_isImplausibleRawJump(pos, timestampMs)) return;
-
-            // Process the raw point through Kalman Filter
-            final updateResult = _kalmanFilter.process(
-              lat: pos.latitude,
-              lng: pos.longitude,
-              accuracy: pos.accuracy,
-              timestampMs: timestampMs,
+    try {
+      _serviceStatusSub = _geolocator.getServiceStatusStream().listen(
+        (status) {
+          if (status == ServiceStatus.disabled) {
+            _failOnce(
+              const TrackingEngineFailureException(
+                engine: TrackingEngineType.gps,
+                dependency: TrackingDependency.location,
+                reason: TrackingEngineFailureReason.locationServiceDisabled,
+              ),
             );
+          } else {
+            unawaited(_runHealthCheck(generation));
+          }
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          logger.w('GpsTrackingEngine: location service status stream error: $error', error, stackTrace);
+        },
+        cancelOnError: false,
+      );
 
-            if (updateResult == KalmanUpdateResult.ignoredStale || updateResult == KalmanUpdateResult.rejectedOutlier) {
-              return;
-            }
+      _positionSub = _geolocator
+          .getPositionStream(locationSettings: _getFitnessLocationSettings())
+          .listen(
+            (pos) {
+              if (!_isRunning || _terminalFailureSent || _isPaused) return;
 
-            _lastProcessedMs = DateTime.now().millisecondsSinceEpoch;
+              if (!_hasLoggedFirstPosition) {
+                _hasLoggedFirstPosition = true;
+                logger.d(
+                  '[GpsTrackingEngine][${DateTime.now().toIso8601String()}] '
+                  'first_position accuracy=${pos.accuracy}',
+                );
+              }
 
-            final smoothedLat = _kalmanFilter.latitude;
-            final smoothedLng = _kalmanFilter.longitude;
-            final smoothedHeading = _kalmanFilter.heading;
+              if (pos.accuracy > RunningConstants.maxGpsAccuracyMeters) {
+                return;
+              }
 
-            if (updateResult == KalmanUpdateResult.initialized || _lastSmoothedPoint == null) {
-              _lastSmoothedPoint = RouteCoordinate(
-                latitude: smoothedLat,
-                longitude: smoothedLng,
-                heading: smoothedHeading,
+              final timestampMs = pos.timestamp.millisecondsSinceEpoch;
+              if (_isImplausibleRawJump(pos, timestampMs)) return;
+
+              // Process the raw point through Kalman Filter
+              final updateResult = _kalmanFilter.process(
+                lat: pos.latitude,
+                lng: pos.longitude,
+                accuracy: pos.accuracy,
+                timestampMs: timestampMs,
               );
+
+              if (updateResult == KalmanUpdateResult.ignoredStale ||
+                  updateResult == KalmanUpdateResult.rejectedOutlier) {
+                return;
+              }
+
+              _lastProcessedMs = DateTime.now().millisecondsSinceEpoch;
+
+              final smoothedLat = _kalmanFilter.latitude;
+              final smoothedLng = _kalmanFilter.longitude;
+              final smoothedHeading = _kalmanFilter.heading;
+
+              if (updateResult == KalmanUpdateResult.initialized || _lastSmoothedPoint == null) {
+                _lastSmoothedPoint = RouteCoordinate(
+                  latitude: smoothedLat,
+                  longitude: smoothedLng,
+                  heading: smoothedHeading,
+                );
+                _lastAcceptedRawPoint = RouteCoordinate(
+                  latitude: pos.latitude,
+                  longitude: pos.longitude,
+                );
+                _lastAcceptedTimestampMs = timestampMs;
+                return;
+              }
+
+              final distanceDelta = _geolocator.distanceBetween(
+                _lastSmoothedPoint!.latitude,
+                _lastSmoothedPoint!.longitude,
+                smoothedLat,
+                smoothedLng,
+              );
+
+              if (distanceDelta > RunningConstants.gpsDistanceFilterMeters) {
+                _totalDistance += distanceDelta;
+                _lastSmoothedPoint = RouteCoordinate(
+                  latitude: smoothedLat,
+                  longitude: smoothedLng,
+                  heading: smoothedHeading,
+                );
+
+                // Emit immediately to make the map and metrics feel responsive
+                // _emitMetrics();
+              }
+
               _lastAcceptedRawPoint = RouteCoordinate(
                 latitude: pos.latitude,
                 longitude: pos.longitude,
               );
               _lastAcceptedTimestampMs = timestampMs;
-              return;
-            }
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              unawaited(_handlePositionError(error, stackTrace, generation));
+            },
+            onDone: () => _handleUnexpectedStreamDone(generation),
+            // Temporary Core Location failures do not close the native stream.
+            cancelOnError: false,
+          );
 
-            final distanceDelta = Geolocator.distanceBetween(
-              _lastSmoothedPoint!.latitude,
-              _lastSmoothedPoint!.longitude,
-              smoothedLat,
-              smoothedLng,
-            );
-
-            if (distanceDelta > RunningConstants.gpsDistanceFilterMeters) {
-              _totalDistance += distanceDelta;
-              _lastSmoothedPoint = RouteCoordinate(
-                latitude: smoothedLat,
-                longitude: smoothedLng,
-                heading: smoothedHeading,
-              );
-
-              // Emit immediately to make the map and metrics feel responsive
-              // _emitMetrics();
-            }
-
-            _lastAcceptedRawPoint = RouteCoordinate(
-              latitude: pos.latitude,
-              longitude: pos.longitude,
-            );
-            _lastAcceptedTimestampMs = timestampMs;
-          },
-          onError: (Object e, StackTrace st) {
-            // GPS errors are recoverable (signal lost, brief hardware glitch).
-            // We log and continue — the ticker keeps time even without position.
-            // If the OS revokes permission entirely, the next position event
-            // is fatal for this tracking session.
-            logger.e('GpsTrackingEngine: position stream error', e, st);
-            final error = e is PermissionDeniedException || e is LocationServiceDisabledException
-                ? SensorUnavailableException('gps', cause: e)
-                : SensorStreamException('gps', cause: e);
-            _controller.addError(error, st);
-          },
-          // CRITICAL: do NOT cancel the subscription on a single error.
-          // GPS signal can be temporarily lost (tunnel, indoors) and restored.
-          cancelOnError: false,
-        );
+      _ticker = Timer.periodic(RunningConstants.engineTickInterval, (_) {
+        if (!_isRunning || _terminalFailureSent || _isPaused) return;
+        if (!_hasLoggedFirstTick) {
+          _hasLoggedFirstTick = true;
+          logger.d('[GpsTrackingEngine][${DateTime.now().toIso8601String()}] first_tick');
+        }
+        _durationSec++;
+        _emitMetrics();
+      });
+      _healthTimer = Timer.periodic(
+        _healthCheckInterval,
+        (_) => unawaited(_runHealthCheck(generation)),
+      );
+    } on Object catch (error) {
+      await stop();
+      if (error is TrackingEngineFailureException) rethrow;
+      throw TrackingEngineFailureException(
+        engine: TrackingEngineType.gps,
+        dependency: TrackingDependency.location,
+        reason: TrackingEngineFailureReason.unrecoverableStreamFailure,
+        cause: error,
+      );
+    }
   }
 
   void _emitMetrics() {
@@ -189,11 +245,13 @@ class GpsTrackingEngine implements TrackingEngine {
 
   @override
   void pause() {
+    if (!_isRunning || _terminalFailureSent) return;
     _isPaused = true;
   }
 
   @override
   void resume() {
+    if (!_isRunning || _terminalFailureSent) return;
     _isPaused = false;
     _lastSmoothedPoint = null;
     _lastAcceptedRawPoint = null;
@@ -203,15 +261,43 @@ class GpsTrackingEngine implements TrackingEngine {
   }
 
   @override
-  Future<void> stop() async {
+  Future<void> stop() {
+    final inFlight = _stopFuture;
+    if (inFlight != null) return inFlight;
+
+    final future = _stopInternal();
+    _stopFuture = future;
+    unawaited(
+      future.then<void>(
+        (_) => _clearStopFuture(future),
+        onError: (Object _, StackTrace _) => _clearStopFuture(future),
+      ),
+    );
+    return future;
+  }
+
+  Future<void> _stopInternal() async {
+    _isStopping = true;
+    _isRunning = false;
+    _generation++;
     _ticker?.cancel();
     _ticker = null;
+    _healthTimer?.cancel();
+    _healthTimer = null;
 
     final positionSub = _positionSub;
+    final serviceStatusSub = _serviceStatusSub;
     _positionSub = null;
-    await positionSub?.cancel();
-
-    _isPaused = false;
+    _serviceStatusSub = null;
+    try {
+      await Future.wait([
+        if (positionSub != null) positionSub.cancel(),
+        if (serviceStatusSub != null) serviceStatusSub.cancel(),
+      ]);
+    } finally {
+      _isPaused = false;
+      _isStopping = false;
+    }
   }
 
   @override
@@ -252,7 +338,7 @@ class GpsTrackingEngine implements TrackingEngine {
     final elapsedMs = timestampMs - lastTimestampMs;
     if (elapsedMs <= 0) return false;
 
-    final distanceMeters = Geolocator.distanceBetween(
+    final distanceMeters = _geolocator.distanceBetween(
       lastPoint.latitude,
       lastPoint.longitude,
       position.latitude,
@@ -260,5 +346,138 @@ class GpsTrackingEngine implements TrackingEngine {
     );
     final speedKmH = distanceMeters / (elapsedMs / 1000) * 3.6;
     return speedKmH > RunningConstants.maxHumanSpeedKmh;
+  }
+
+  Future<TrackingEngineFailureException?> _checkAvailabilityForStart() async {
+    try {
+      return await _sensorAvailability.gpsFailure();
+    } on Object catch (error) {
+      return TrackingEngineFailureException(
+        engine: TrackingEngineType.gps,
+        dependency: TrackingDependency.location,
+        reason: TrackingEngineFailureReason.unrecoverableStreamFailure,
+        cause: error,
+      );
+    }
+  }
+
+  Future<void> _runHealthCheck(int generation) {
+    final inFlight = _healthCheckInFlight;
+    if (inFlight != null) return inFlight;
+
+    final future = _runHealthCheckInternal(generation);
+    _healthCheckInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_healthCheckInFlight, future)) _healthCheckInFlight = null;
+    });
+  }
+
+  Future<void> _runHealthCheckInternal(int generation) async {
+    if (!_isCurrentRun(generation)) return;
+    try {
+      final failure = await _sensorAvailability.gpsFailure();
+      if (_isCurrentRun(generation) && failure != null) {
+        _failOnce(failure);
+      }
+    } on Object catch (error, stackTrace) {
+      logger.w('GpsTrackingEngine: health check failed: $error', error, stackTrace);
+    }
+  }
+
+  Future<void> _handlePositionError(
+    Object error,
+    StackTrace stackTrace,
+    int generation,
+  ) async {
+    if (!_isCurrentRun(generation)) return;
+    logger.e('GpsTrackingEngine: position stream error', error, stackTrace);
+
+    if (error is PermissionDeniedException) {
+      _failOnce(
+        TrackingEngineFailureException(
+          engine: TrackingEngineType.gps,
+          dependency: TrackingDependency.location,
+          reason: TrackingEngineFailureReason.locationPermissionDenied,
+          cause: error,
+        ),
+        stackTrace,
+      );
+      return;
+    }
+    if (error is LocationServiceDisabledException) {
+      _failOnce(
+        TrackingEngineFailureException(
+          engine: TrackingEngineType.gps,
+          dependency: TrackingDependency.location,
+          reason: TrackingEngineFailureReason.locationServiceDisabled,
+          cause: error,
+        ),
+        stackTrace,
+      );
+      return;
+    }
+
+    try {
+      final failure = await _sensorAvailability.gpsFailure();
+      if (!_isCurrentRun(generation)) return;
+      if (failure != null) {
+        _failOnce(
+          TrackingEngineFailureException(
+            engine: failure.engine,
+            dependency: failure.dependency,
+            reason: failure.reason,
+            cause: error,
+          ),
+          stackTrace,
+        );
+        return;
+      }
+    } on Object catch (healthError, healthStackTrace) {
+      logger.w(
+        'GpsTrackingEngine: could not classify position error: $healthError',
+        healthError,
+        healthStackTrace,
+      );
+    }
+
+    if (_isCurrentRun(generation)) {
+      _controller.addError(SensorStreamException('gps', cause: error), stackTrace);
+    }
+  }
+
+  void _handleUnexpectedStreamDone(int generation) {
+    if (!_isCurrentRun(generation) || _isStopping) return;
+    _failOnce(
+      const TrackingEngineFailureException(
+        engine: TrackingEngineType.gps,
+        dependency: TrackingDependency.location,
+        reason: TrackingEngineFailureReason.streamClosed,
+      ),
+    );
+  }
+
+  bool _isCurrentRun(int generation) {
+    return _isRunning && !_terminalFailureSent && generation == _generation;
+  }
+
+  void _failOnce(
+    TrackingEngineFailureException failure, [
+    StackTrace? stackTrace,
+  ]) {
+    if (!_isRunning || _terminalFailureSent) return;
+    _terminalFailureSent = true;
+    logger.e('GpsTrackingEngine: terminal failure', failure, stackTrace);
+    _controller.addError(failure, stackTrace ?? StackTrace.current);
+    unawaited(stop());
+  }
+
+  void _clearStopFuture(Future<void> future) {
+    if (identical(_stopFuture, future)) _stopFuture = null;
+  }
+
+  /// Dispose when the singleton is torn down (e.g. during testing).
+  Future<void> dispose() async {
+    await stop();
+    await _controller.close();
   }
 }

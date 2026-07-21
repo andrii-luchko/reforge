@@ -137,16 +137,7 @@ class RunningSessionManager {
       await _metricsSub?.cancel();
       _metricsSub = engine?.metricsStream.listen(
         _onMetricsReceived,
-        onError: (Object e, StackTrace st) {
-          logger.e('RunningSessionManager: engine stream error', e, st);
-          // Propagate typed errors to the UI (RunningTrackerCubit) so it can
-          // show an appropriate message. We do NOT stop the session — the
-          // engine's internal ticker keeps time even when the sensor fails.
-          if (e is SensorUnavailableException) {
-            unawaited(endSession());
-          }
-          _controller.addError(e, st);
-        },
+        onError: _onEngineError,
         // CRITICAL: never cancel on first error. A GPS glitch or temporary
         // sensor hiccup should not terminate the entire stream pipeline.
         cancelOnError: false,
@@ -162,6 +153,11 @@ class RunningSessionManager {
       }
 
       logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
+    } on TrackingEngineFailureException {
+      // A failed preflight can happen after the active DB row was restored or
+      // created. Finalize it before returning the startup failure.
+      await _endSession(finalizeCurrentLap: true);
+      rethrow;
     } on Object {
       // A failed start must not leave the manager in a state where every
       // subsequent start is ignored because [_currentMode] is already set.
@@ -231,14 +227,16 @@ class RunningSessionManager {
     unawaited(_handleLapCompletion());
   }
 
-  Future<void> endSession() async {
+  Future<void> endSession() => _endSession();
+
+  Future<void> _endSession({bool finalizeCurrentLap = false}) async {
     final inFlight = _endSessionFuture;
     if (inFlight != null) {
       await inFlight;
       return;
     }
 
-    final future = _endSessionInternal();
+    final future = _endSessionInternal(finalizeCurrentLap: finalizeCurrentLap);
     _endSessionFuture = future;
     try {
       await future;
@@ -249,7 +247,15 @@ class RunningSessionManager {
     }
   }
 
-  Future<void> _endSessionInternal() async {
+  Future<void> _endSessionInternal({required bool finalizeCurrentLap}) async {
+    final dbSetId = finalizeCurrentLap ? _currentDbSetId : null;
+    if (finalizeCurrentLap) {
+      // Claim the active row before awaiting engine shutdown so lap completion
+      // cannot finalize or replace it concurrently.
+      _isCompletingLap = true;
+      _currentDbSetId = null;
+    }
+
     final metricsSub = _metricsSub;
     _metricsSub = null;
 
@@ -258,9 +264,61 @@ class RunningSessionManager {
 
     final engine = _getEngineForMode(_currentMode);
 
-    await metricsSub?.cancel();
-    await engine?.stop();
+    if (finalizeCurrentLap) {
+      try {
+        await metricsSub?.cancel();
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningSessionManager: failed to cancel terminal metrics subscription', error, stackTrace);
+      }
+      try {
+        await engine?.stop();
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningSessionManager: failed to stop terminal engine', error, stackTrace);
+      }
+    } else {
+      await metricsSub?.cancel();
+      await engine?.stop();
+    }
 
+    if (finalizeCurrentLap && dbSetId != null) {
+      await _writeDriftSnapshot(dbSetId);
+      try {
+        await _repository.markSetAsFinishedLocally(dbSetId);
+      } on Object catch (error, stackTrace) {
+        // The engine is already terminal. Cleanup and user notification must
+        // still complete even if final DB persistence fails.
+        logger.e(
+          'RunningSessionManager: failed to finalize lap after engine failure',
+          error,
+          stackTrace,
+        );
+      }
+    }
+
+    _clearSessionState();
+    logger.d('RunningSessionManager: Session ended');
+  }
+
+  // ── Private ────────────────────────────────────────────────────────────────
+
+  void _onEngineError(Object error, StackTrace stackTrace) {
+    logger.e('RunningSessionManager: engine stream error', error, stackTrace);
+    if (error is TrackingEngineFailureException) {
+      unawaited(_handleTerminalEngineFailure(error, stackTrace));
+      return;
+    }
+    _controller.addError(error, stackTrace);
+  }
+
+  Future<void> _handleTerminalEngineFailure(
+    TrackingEngineFailureException error,
+    StackTrace stackTrace,
+  ) async {
+    await _endSession(finalizeCurrentLap: true);
+    _controller.addError(error, stackTrace);
+  }
+
+  void _clearSessionState() {
     _currentMode = null;
     _limits = null;
     _workoutSessionId = null;
@@ -269,10 +327,7 @@ class RunningSessionManager {
     _currentDbSetId = null;
     _latestMetrics = null;
     _isCompletingLap = false;
-    logger.d('RunningSessionManager: Session ended');
   }
-
-  // ── Private ────────────────────────────────────────────────────────────────
 
   /// Evaluates if the current metric has reached the target limit for the active lap.
   void _onMetricsReceived(RunningMetrics rawMetrics) {

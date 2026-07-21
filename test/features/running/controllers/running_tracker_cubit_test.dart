@@ -183,6 +183,39 @@ void main() {
 
     verify(() => service.endSession()).called(1);
   });
+
+  test('terminal engine failure stops tracking and opens summary', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    when(
+      () => service.startSession(
+        mode: any(named: 'mode'),
+        limits: any(named: 'limits'),
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+        startPaused: any(named: 'startPaused'),
+      ),
+    ).thenAnswer((_) async {});
+
+    await cubit.startLap();
+    metrics.addError(
+      const RunningServiceException(
+        code: 'location_service_disabled',
+        message: 'Location services were turned off. Tracking has stopped.',
+        isFatal: true,
+      ),
+      StackTrace.current,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.mode, isNull);
+    expect(cubit.state.currentLap, isNull);
+    expect(cubit.state.error, 'Location services were turned off. Tracking has stopped.');
+    verify(() => service.endSession()).called(1);
+
+    await metrics.close();
+  });
 }
 
 class MockRunningServiceClient extends Mock implements RunningServiceClient {}

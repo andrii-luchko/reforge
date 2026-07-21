@@ -7,6 +7,11 @@ class RunningConstants {
   /// to prevent data loss in case of a crash.
   static const Duration dbSnapshotInterval = Duration(seconds: 5);
 
+  /// How often active engines verify permissions and mandatory platform
+  /// services. This catches plugins that silently stop delivering events after
+  /// a permission is revoked.
+  static const Duration sensorHealthCheckInterval = Duration(seconds: 3);
+
   /// Average human stride length in meters, used by the pedometer engine.
   static const double defaultStrideMeters = 0.78;
 

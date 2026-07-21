@@ -136,6 +136,35 @@ void main() {
     expect(result.currentSegmentIndex, 1);
     expect(result.segmentId, 99);
   });
+
+  test('forwards stable terminal sensor failure details', () async {
+    await client.initialize();
+    final streamError = _firstError(client.metricsStream);
+
+    controllers['sensor_error']!.add({
+      'code': 'location_service_disabled',
+      'message': 'Location services were turned off. Tracking has stopped.',
+      'isFatal': true,
+    });
+
+    final error = await streamError as RunningServiceException;
+    expect(error.code, 'location_service_disabled');
+    expect(error.message, 'Location services were turned off. Tracking has stopped.');
+    expect(error.isFatal, true);
+  });
+}
+
+Future<Object> _firstError(Stream<Object?> stream) {
+  final completer = Completer<Object>();
+  late StreamSubscription<Object?> subscription;
+  subscription = stream.listen(
+    (_) {},
+    onError: (Object error) {
+      if (!completer.isCompleted) completer.complete(error);
+      unawaited(subscription.cancel());
+    },
+  );
+  return completer.future;
 }
 
 class MockFlutterBackgroundService extends Mock implements FlutterBackgroundService {}
