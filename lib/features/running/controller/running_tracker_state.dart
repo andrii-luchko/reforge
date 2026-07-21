@@ -9,6 +9,13 @@ sealed class RunningTrackerState with _$RunningTrackerState {
   const factory RunningTrackerState({
     @Default(RunningPhase.overview) RunningPhase phase,
 
+    /// Lifecycle of the actual engine/background session. This is independent
+    /// from [phase], which only chooses the rendered page.
+    @Default(RunningSessionStatus.idle) RunningSessionStatus sessionStatus,
+
+    /// Durable description of the failure that permanently closed tracking.
+    RunningSessionFailure? terminalFailure,
+
     /// Selected tracking mode. Null until the user picks one.
     RunningMode? mode,
 
@@ -36,4 +43,18 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// Non-null when an error has occurred. Cleared on the next action.
     String? error,
   }) = _RunningTrackerState;
+
+  bool get canReturnToActive {
+    return phase == RunningPhase.finished && sessionStatus == RunningSessionStatus.suspended;
+  }
+
+  bool get canControlTracking => sessionStatus == RunningSessionStatus.running;
+}
+
+@freezed
+sealed class RunningSessionFailure with _$RunningSessionFailure {
+  const factory RunningSessionFailure({
+    required String code,
+    required String message,
+  }) = _RunningSessionFailure;
 }

@@ -10,6 +10,7 @@ import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
+import 'package:reforge/features/running/domain/enums/running_session_status.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
@@ -68,6 +69,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.starting);
     expect(cubit.state.isPaused, false);
 
     dispatched.complete();
@@ -81,6 +83,7 @@ void main() {
     cubit.cancelStart();
 
     expect(cubit.state.phase, RunningPhase.overview);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.idle);
     verifyNever(
       () => service.startSession(
         mode: any(named: 'mode'),
@@ -112,6 +115,8 @@ void main() {
     await cubit.startLap();
 
     expect(cubit.state.phase, RunningPhase.overview);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.idle);
+    expect(cubit.state.terminalFailure, isNull);
     expect(cubit.state.mode, isNull);
     expect(cubit.state.error, 'Could not start');
   });
@@ -127,6 +132,7 @@ void main() {
     await cubit.init();
 
     expect(cubit.state.phase, RunningPhase.overview);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.idle);
     verifyNever(() => service.isRunning);
     verifyNever(
       () => service.startSession(
@@ -161,6 +167,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
     expect(cubit.state.isPaused, true);
     expect(cubit.state.currentLap?.durationSeconds, 12);
 
@@ -177,6 +184,38 @@ void main() {
     ).called(1);
   });
 
+  test('terminal failure turns a restored suspended session into terminated', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => _activeLap);
+    _stubSuccessfulStart(service);
+
+    await cubit.init();
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
+
+    metrics.addError(
+      const RunningServiceException(
+        code: 'location_permission_denied',
+        message: 'Location permission was removed. Tracking has stopped.',
+        isFatal: true,
+      ),
+      StackTrace.current,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.terminated);
+    expect(cubit.state.terminalFailure?.code, 'location_permission_denied');
+    expect(cubit.state.canReturnToActive, false);
+
+    await metrics.close();
+  });
+
   test('finishExercise followed by close sends stop_session once', () async {
     await cubit.finishExercise();
     await cubit.close();
@@ -184,7 +223,7 @@ void main() {
     verify(() => service.endSession()).called(1);
   });
 
-  test('terminal engine failure stops tracking and opens summary', () async {
+  test('first metric confirms that a starting session is running', () async {
     final metrics = StreamController<RunningMetrics>.broadcast();
     when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
     when(
@@ -198,6 +237,23 @@ void main() {
     ).thenAnswer((_) async {});
 
     await cubit.startLap();
+    expect(cubit.state.sessionStatus, RunningSessionStatus.starting);
+
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.sessionStatus, RunningSessionStatus.running);
+    expect(cubit.state.currentLap?.durationSeconds, 1);
+
+    await metrics.close();
+  });
+
+  test('terminal failure before the first metric returns to overview', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    _stubSuccessfulStart(service);
+
+    await cubit.startLap();
     metrics.addError(
       const RunningServiceException(
         code: 'location_service_disabled',
@@ -208,14 +264,122 @@ void main() {
     );
     await Future<void>.delayed(Duration.zero);
 
-    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.phase, RunningPhase.overview);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.terminated);
     expect(cubit.state.mode, isNull);
+    expect(cubit.state.terminalFailure?.code, 'location_service_disabled');
     expect(cubit.state.currentLap, isNull);
     expect(cubit.state.error, 'Location services were turned off. Tracking has stopped.');
     verify(() => service.endSession()).called(1);
 
     await metrics.close();
   });
+
+  test('runtime terminal failure opens non-resumable summary and blocks controls', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    _stubSuccessfulStart(service);
+
+    await cubit.startLap();
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    metrics.addError(
+      const RunningServiceException(
+        code: 'motion_permission_denied',
+        message: 'Motion permission was removed. Tracking has stopped.',
+        isFatal: true,
+      ),
+      StackTrace.current,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.terminated);
+    expect(cubit.state.mode, RunningMode.gps);
+    expect(cubit.state.canReturnToActive, false);
+    expect(cubit.state.terminalFailure?.code, 'motion_permission_denied');
+
+    cubit
+      ..goToActive()
+      ..pauseLap();
+    await cubit.resumeLap();
+    await cubit.forceNextLap();
+    await cubit.endWorkout();
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    verifyNever(() => service.pauseSession());
+    verifyNever(() => service.resumeSession());
+    verifyNever(() => service.forceNextLap());
+    verifyNever(() => service.suspendSessionForSummary());
+    verify(() => service.endSession()).called(1);
+
+    await metrics.close();
+  });
+
+  test('normal summary remains resumable', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    _stubSuccessfulStart(service);
+
+    await cubit.startLap();
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    await cubit.endWorkout();
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
+    expect(cubit.state.canReturnToActive, true);
+    expect(cubit.state.terminalFailure, isNull);
+
+    cubit.goToActive();
+    expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
+
+    await cubit.resumeLap();
+    expect(cubit.state.sessionStatus, RunningSessionStatus.running);
+    expect(cubit.state.isPaused, false);
+    verify(service.suspendSessionForSummary).called(1);
+    verify(service.resumeSession).called(1);
+
+    await metrics.close();
+  });
+
+  test('recoverable error does not change the session lifecycle', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    _stubSuccessfulStart(service);
+
+    await cubit.startLap();
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    metrics.addError(
+      const RunningServiceException(
+        code: 'sensor_stream_error',
+        message: 'A tracking sensor is temporarily unavailable.',
+        isFatal: false,
+      ),
+      StackTrace.current,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.sessionStatus, RunningSessionStatus.running);
+    expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.terminalFailure, isNull);
+
+    await metrics.close();
+  });
+}
+
+void _stubSuccessfulStart(MockRunningServiceClient service) {
+  when(
+    () => service.startSession(
+      mode: any(named: 'mode'),
+      limits: any(named: 'limits'),
+      sessionId: any(named: 'sessionId'),
+      programExerciseId: any(named: 'programExerciseId'),
+      startPaused: any(named: 'startPaused'),
+    ),
+  ).thenAnswer((_) async {});
 }
 
 class MockRunningServiceClient extends Mock implements RunningServiceClient {}
@@ -268,4 +432,14 @@ final _programExercise = ProgramExerciseEntity(
       durationSec: 60,
     ),
   ],
+);
+
+const _metric = RunningMetrics(
+  distanceMeters: 1,
+  durationSeconds: 1,
+  avgSpeedKmH: 1,
+  currentSpeedKmH: 1,
+  avgPaceMinKm: 1,
+  currentPaceMinKm: 1,
+  stepCount: 1,
 );

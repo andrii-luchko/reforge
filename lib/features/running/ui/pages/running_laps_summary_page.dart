@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/timer/controller/timer_cubit.dart';
 import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
@@ -93,14 +96,10 @@ class RunningLapsSummaryPage extends StatelessWidget {
                       ),
                     ),
 
-                    SecondaryButton(
-                      text: t.running.summary.back_to_running,
-                      onPressed: cubit.goToActive,
-                    ),
-                    const SizedBox(height: 12),
-                    PrimaryButton(
-                      text: t.running.summary.finish_exercise,
-                      onPressed: state.isSubmitting ? null : () => unawaited(_onFinishExercise(context, cubit)),
+                    RunningSummaryFooter(
+                      state: state,
+                      onBackToRunning: cubit.goToActive,
+                      onFinishExercise: state.isSubmitting ? null : () => unawaited(_onFinishExercise(context, cubit)),
                     ),
                   ],
                 ),
@@ -118,5 +117,65 @@ class RunningLapsSummaryPage extends StatelessWidget {
 
     final timerDuration = context.read<TimerCubit>().state.duration;
     await context.read<WorkoutFlowCubit>().nextExercise(timerDuration);
+  }
+}
+
+class RunningSummaryFooter extends StatelessWidget {
+  const RunningSummaryFooter({
+    required this.state,
+    required this.onBackToRunning,
+    required this.onFinishExercise,
+    super.key,
+  });
+
+  final RunningTrackerState state;
+  final VoidCallback onBackToRunning;
+  final VoidCallback? onFinishExercise;
+
+  @override
+  Widget build(BuildContext context) {
+    final terminalFailure = state.terminalFailure;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (terminalFailure != null) ...[
+          Container(
+            key: const ValueKey('running_terminal_failure'),
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.appTheme.red400.withValues(alpha: 0.12),
+              border: Border.all(color: context.appTheme.red400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.error_outline, color: context.appTheme.red400),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    terminalFailure.message,
+                    style: bodyLRegular.copyWith(color: context.appTheme.beige100),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if (state.canReturnToActive) ...[
+          SecondaryButton(
+            text: t.running.summary.back_to_running,
+            onPressed: onBackToRunning,
+          ),
+          const SizedBox(height: 12),
+        ],
+        PrimaryButton(
+          text: t.running.summary.finish_exercise,
+          onPressed: onFinishExercise,
+        ),
+      ],
+    );
   }
 }
