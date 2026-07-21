@@ -242,7 +242,7 @@ class UserCubit extends Cubit<UserState> {
     return Result.error(Exception('User not loaded'));
   }
 
-  Future<Result<User>> updateBodyWeight(int bodyWeight) async {
+  Future<Result<User>> updateBodyWeight(double bodyWeight) async {
     if (state case final Loaded currentState) {
       final oldUser = currentState.user;
       emit(UserState.updating(oldUser));

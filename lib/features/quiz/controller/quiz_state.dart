@@ -9,7 +9,7 @@ sealed class QuizState with _$QuizState {
 
     @Default(MeasurementSystem.metric) MeasurementSystem measurementSystem,
 
-    int? bodyWeight,
+    double? bodyWeight,
 
     MainGoal? mainGoal,
 

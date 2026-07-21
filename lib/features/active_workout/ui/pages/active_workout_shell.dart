@@ -137,7 +137,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
       child: Stack(
         children: [
           Scaffold(
-            resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: true,
             extendBodyBehindAppBar: true,
             appBar: ActiveWorkoutAppBar(
               onClosePressed: () async => onClosePressed(context),

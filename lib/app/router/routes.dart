@@ -426,7 +426,7 @@ class SettingsHeightAndWeightPageRoute extends GoRouteData with $SettingsHeightA
     return SettingsScreenWithAnalytics(
       event: SettingsNavigation.eventFor(ProfileSettings.heightAndWeight),
       child: HeightAndWeightPage(
-        weight: onboarded.displayedWeight,
+        weight: onboarded.bodyWeight,
         system: onboarded.measurementSystem,
       ),
     );

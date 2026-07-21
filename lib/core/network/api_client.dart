@@ -108,7 +108,7 @@ abstract class ApiClient {
   Future<BaseResponse<User>> updateWorkoutDays(@Body() UpdateWorkoutDaysRequest request);
 
   @PATCH('/users/me')
-  Future<BaseResponse<User>> updateBodyWeight(@BodyExtra('bodyweight') int bodyWeight);
+  Future<BaseResponse<User>> updateBodyWeight(@BodyExtra('bodyweight') double bodyWeight);
 
   @PATCH('/users/me')
   Future<BaseResponse<User>> updateNotificationSettings(@Body() UpdateNotificationsRequest request);

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/constants/workout_constants.dart';
+import 'package:reforge/app/theme/app_theme.dart';
+import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
@@ -10,11 +12,11 @@ import 'package:reforge/core/validation/widgets/generic_save_listener.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
+import 'package:reforge/features/workout_common/ui/widgets/uikit/workout_field.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
-import 'package:reforge/shared/pickers/decimal_scroll_piker.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
+import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
-import 'package:reforge/shared/uikit/fields/portal_select_picker.dart';
 
 class HeightAndWeightPage extends StatelessWidget {
   const HeightAndWeightPage({
@@ -53,7 +55,7 @@ class HeightAndWeightPage extends StatelessWidget {
   Future<void> onSave(double? value, UserCubit cubit) async {
     if (value == null) return;
     final result = await cubit.updateBodyWeight(
-      value.toStorageWeight(system).toInt(),
+      value.roundWeight(),
     );
 
     if (result case Failure(error: final e)) {
@@ -87,9 +89,9 @@ class HeightAndWeightContent extends StatelessWidget {
           },
           builder: (context, value) {
             return SliverToBoxAdapter(
-              child: WeightSelectField(
+              child: WeightInputField(
                 measurementSystem: system,
-                value: value.weight,
+                weightKg: value.weight,
                 errorText: value.error,
                 onChanged: cubit.onChanged,
               ),
@@ -111,9 +113,9 @@ class HeightAndWeightContent extends StatelessWidget {
   }
 }
 
-class WeightSelectField extends StatefulWidget {
-  const WeightSelectField({
-    required this.value,
+class WeightInputField extends StatefulWidget {
+  const WeightInputField({
+    required this.weightKg,
     required this.measurementSystem,
     required this.onChanged,
     this.label,
@@ -122,69 +124,133 @@ class WeightSelectField extends StatefulWidget {
     super.key,
   });
 
-  final double? value;
+  final double? weightKg;
   final MeasurementSystem measurementSystem;
   final String? label;
   final String? hintText;
   final String? errorText;
-  final ValueChanged<double> onChanged;
+  final ValueChanged<double?> onChanged;
 
   @override
-  State<WeightSelectField> createState() => _WeightSelectFieldState();
+  State<WeightInputField> createState() => _WeightInputFieldState();
 }
 
-class _WeightSelectFieldState extends State<WeightSelectField> {
+class _WeightInputFieldState extends State<WeightInputField> {
   late TextEditingController _controller;
+  late FocusNode _focusNode;
+  double? _lastEmittedWeightKg;
 
-  String _formatValue(double val) {
-    final unit = widget.measurementSystem.weightSymbol(t);
-
-    final formattedNum = val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
-    return '$formattedNum $unit';
+  String _formatValue(double weightKg) {
+    return weightKg.toDisplayWeight(widget.measurementSystem).formatWeight();
   }
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.value != null ? _formatValue(widget.value!) : '');
+    _controller = TextEditingController(
+      text: widget.weightKg != null ? _formatValue(widget.weightKg!) : '',
+    );
+    _focusNode = FocusNode()..addListener(_handleFocusChanged);
   }
 
   @override
-  void didUpdateWidget(WeightSelectField oldWidget) {
+  void didUpdateWidget(WeightInputField oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.value != oldWidget.value) {
-      final newText = widget.value != null ? _formatValue(widget.value!) : '';
-      _controller.text = newText;
+    final systemChanged = widget.measurementSystem != oldWidget.measurementSystem;
+    final weightChanged = widget.weightKg != oldWidget.weightKg;
+    final isExternalWeightChange = weightChanged && widget.weightKg != _lastEmittedWeightKg;
+
+    if (systemChanged || (isExternalWeightChange && !_focusNode.hasFocus)) {
+      _syncController();
     }
   }
 
   @override
   void dispose() {
+    _focusNode
+      ..removeListener(_handleFocusChanged)
+      ..dispose();
     _controller.dispose();
     super.dispose();
   }
 
+  void _handleFocusChanged() {
+    if (!_focusNode.hasFocus) {
+      _syncController();
+    }
+  }
+
+  void _syncController() {
+    final text = widget.weightKg != null ? _formatValue(widget.weightKg!) : '';
+    _controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+    _lastEmittedWeightKg = null;
+  }
+
+  void _handleChanged(String text) {
+    final displayWeight = double.tryParse(text);
+    if (displayWeight == null) {
+      _lastEmittedWeightKg = null;
+      widget.onChanged(null);
+      return;
+    }
+
+    final weightKg = displayWeight.toStorageWeight(widget.measurementSystem);
+    _lastEmittedWeightKg = weightKg;
+    widget.onChanged(weightKg);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final maxWeight = WorkoutConstants.maxWeight(widget.measurementSystem);
+    final maxLength = maxWeight.toInt().toString().length + 3;
+    final unit = widget.measurementSystem.weightSymbol(t);
+
     return LabeledAppTextField(
       label: widget.label ?? t.quiz.steps.body_weight.select_body_weight_label,
-      field: PortalSelectField(
+      field: AppTextField(
         controller: _controller,
-
+        focusNode: _focusNode,
         hintText: widget.hintText ?? t.quiz.steps.body_weight.select_body_weight_label,
         errorText: widget.errorText,
-        contentBuilder: (context, _) {
-          return DecimalScrollPicker(
-            initialValue: widget.value ?? 0.0,
-            unitSuffix: widget.measurementSystem.weightSymbol(t),
-            start: WorkoutConstants.minWeight,
-            end: WorkoutConstants.maxWeight(widget.measurementSystem),
-            step: WorkoutConstants.weightStep(widget.measurementSystem),
-            onChanged: widget.onChanged,
-          );
-        },
+        onChanged: _handleChanged,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          const DecimalTextInputFormatter(),
+          LengthLimitingTextInputFormatter(maxLength),
+          _MaxValueTextInputFormatter(maxWeight),
+        ],
+        suffixIcon: Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Center(
+            widthFactor: 1,
+            child: Text(
+              unit,
+              style: bodyLRegular.copyWith(color: context.appTheme.beige600),
+            ),
+          ),
+        ),
       ),
     );
+  }
+}
+
+class _MaxValueTextInputFormatter extends TextInputFormatter {
+  const _MaxValueTextInputFormatter(this.maxValue);
+
+  final double maxValue;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty || newValue.text == '.') return newValue;
+
+    final value = double.tryParse(newValue.text);
+    return value != null && value >= WorkoutConstants.minWeight && value <= maxValue ? newValue : oldValue;
   }
 }

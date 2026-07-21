@@ -62,7 +62,7 @@ sealed class User with _$User {
 extension OnboardedUserX on OnboardedUser {
   double? get displayedWeight {
     if (bodyWeight == null) return null;
-    return bodyWeight!.toDisplayWeight(measurementSystem).truncateToDouble();
+    return bodyWeight!.toDisplayWeight(measurementSystem).roundWeight();
   }
 
   Faction? get mainFaction {

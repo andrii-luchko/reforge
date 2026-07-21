@@ -118,7 +118,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
   }
 
   @override
-  Future<Result<User>> updateBodyWeight(int bodyWeight) async {
+  Future<Result<User>> updateBodyWeight(double bodyWeight) async {
     try {
       final response = await makeRequest(
         () => _apiClient.updateBodyWeight(bodyWeight),

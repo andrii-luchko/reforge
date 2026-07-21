@@ -9,6 +9,6 @@ abstract interface class ProfileRepository {
   Future<Result<User>> updateBirthDate(DateTime birthDate);
   Future<Result<User>> updateMeasurementSystem(MeasurementSystem measurementSystem);
   Future<Result<User>> updateWorkoutDays({int? workoutsPerWeek, List<int>? specificDays});
-  Future<Result<User>> updateBodyWeight(int bodyWeight);
+  Future<Result<User>> updateBodyWeight(double bodyWeight);
   Future<Result<User>> updateNotificationSettings({bool? remindersEnabled, bool? announcementsEnabled});
 }

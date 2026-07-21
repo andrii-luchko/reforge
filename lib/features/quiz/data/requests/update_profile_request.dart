@@ -29,7 +29,7 @@ sealed class UpdateProfileRequest with _$UpdateProfileRequest {
     @JsonKey(name: 'experiencedLevel') TrainingLevel? trainingLevel,
     @JsonKey(name: 'workoutsPerWeek') int? workoutDaysPerWeek,
     @JsonKey(name: 'specificDays') List<int>? specificWorkoutDays,
-    @JsonKey(name: 'bodyweight') int? bodyWeight,
+    @JsonKey(name: 'bodyweight') double? bodyWeight,
     Gender? gender,
   }) = _UpdateProfileRequest;
 
