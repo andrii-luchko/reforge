@@ -167,28 +167,28 @@ class ImmortalForcesCard extends StatelessWidget {
                         _RankShowcaseTarget(
                           showcaseKey: guideKeys!.rank(ImmortalForgeRank.might),
                           tooltip: guideTooltips![ImmortalForgeRank.might]!,
-                          alignment: const Alignment(-1.0, -1.3),
+                          alignment: const Alignment(-1, -1.3),
                           size: const Size(128, 128),
                         ),
                       if (ranks[2] != null)
                         _RankShowcaseTarget(
                           showcaseKey: guideKeys!.rank(ImmortalForgeRank.judgement),
                           tooltip: guideTooltips![ImmortalForgeRank.judgement]!,
-                          alignment: const Alignment(1.0, -1.3),
+                          alignment: const Alignment(1, -1.3),
                           size: const Size(128, 128),
                         ),
                       if (ranks[3] != null)
                         _RankShowcaseTarget(
                           showcaseKey: guideKeys!.rank(ImmortalForgeRank.strife),
                           tooltip: guideTooltips![ImmortalForgeRank.strife]!,
-                          alignment: const Alignment(-1.0, 1.3),
+                          alignment: const Alignment(-1, 1.3),
                           size: const Size(128, 128),
                         ),
                       if (ranks[4] != null)
                         _RankShowcaseTarget(
                           showcaseKey: guideKeys!.rank(ImmortalForgeRank.burden),
                           tooltip: guideTooltips![ImmortalForgeRank.burden]!,
-                          alignment: const Alignment(1.0, 1.3),
+                          alignment: const Alignment(1, 1.3),
                           size: const Size(120, 126),
                         ),
                     ],

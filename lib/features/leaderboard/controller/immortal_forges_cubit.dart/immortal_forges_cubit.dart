@@ -62,7 +62,7 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
     }
 
     if (!state.forgeData.containsKey(faction)) {
-      await _fetchData(faction);
+      await _fetchFaction(faction);
     }
   }
 
