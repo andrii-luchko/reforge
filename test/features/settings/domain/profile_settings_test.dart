@@ -16,17 +16,18 @@ OnboardedUser createTestUser({
   DateTime? birthDate,
 }) {
   return User.onboarded(
-    id: 1,
-    email: email ?? 'test@example.com',
-    bodyWeight: bodyWeight,
-    measurementSystem: measurementSystem,
-    factionId: 1,
-    secondaryFactionId: 2,
-    birthDate: birthDate ?? DateTime(1990, 1, 15),
-    workoutsPerWeek: 3,
-    userName: userName,
-    avatarUrl: avatarUrl,
-  ) as OnboardedUser;
+        id: 1,
+        email: email ?? 'test@example.com',
+        bodyWeight: bodyWeight,
+        measurementSystem: measurementSystem,
+        factionId: 1,
+        secondaryFactionId: 2,
+        birthDate: birthDate ?? DateTime(1990, 1, 15),
+        workoutsPerWeek: 3,
+        userName: userName,
+        avatarUrl: avatarUrl,
+      )
+      as OnboardedUser;
 }
 
 void main() {
@@ -80,9 +81,7 @@ void main() {
     test('heightAndWeight returns displayed weight with symbol when bodyWeight set', () {
       final user = createTestUser(bodyWeight: 70);
       final result = ProfileSettings.heightAndWeight.getDisplayValue(user, t);
-      expect(result, isNotNull);
-      expect(result, contains('70'));
-      expect(result, contains(t.measure_system.weight.metric_symbol));
+      expect(result, '70 ${t.measure_system.weight.metric_symbol}');
     });
 
     test('heightAndWeight returns null when bodyWeight is null', () {
@@ -98,6 +97,12 @@ void main() {
       final result = ProfileSettings.heightAndWeight.getDisplayValue(user, t);
       expect(result, isNotNull);
       expect(result, contains(t.measure_system.weight.imperial_symbol));
+    });
+
+    test('heightAndWeight shows at most two decimal places', () {
+      final user = createTestUser(bodyWeight: 70.555);
+      final result = ProfileSettings.heightAndWeight.getDisplayValue(user, t);
+      expect(result, '70.56 ${t.measure_system.weight.metric_symbol}');
     });
   });
 }

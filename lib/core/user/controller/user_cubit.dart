@@ -39,6 +39,21 @@ class UserCubit extends Cubit<UserState> {
   final AnalyticsService _analytics;
   StreamSubscription<AuthState>? _authSubscription;
 
+  OnboardedUser? get currentOnboardedUser => switch (state.userOrNull) {
+    final OnboardedUser user => user,
+    _ => null,
+  };
+
+  Stream<OnboardedUser?> get onboardedUserChanges => stream
+      .where((state) => state is Loaded || state is Initial || state is Deleted)
+      .map(
+        (state) => switch (state) {
+          Loaded(:final user) when user is OnboardedUser => user,
+          _ => null,
+        },
+      )
+      .distinct();
+
   Future<void> _onAuthStateChanged(AuthState state) async {
     await state.when(
       authenticated: (_) => _loadUserProfile(),
@@ -56,13 +71,7 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<void> _loadUserProfile() async {
-    final cachedUser = _userSessionService.currentUser;
-
-    if (cachedUser != null) {
-      emit(UserState.loaded(cachedUser));
-    } else {
-      emit(const UserState.loading());
-    }
+    emit(const UserState.loading());
 
     final result = await _userRepository.getCurrentUser();
 
@@ -160,11 +169,19 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<Result<User>> updateUsername(String username) async {
-    if (state case final Loaded currentState) {
-      final oldUser = currentState.user;
+    if (state case Loaded(user: final OnboardedUser oldUser)) {
       emit(UserState.updating(oldUser));
       final result = await _profileRepository.updateUsername(username);
-      return _updateUser(result, oldUser);
+      switch (result) {
+        case Success(value: final updatedUsername):
+          return _updateUser(
+            Result.success(oldUser.copyWith(userName: updatedUsername)),
+            oldUser,
+          );
+        case Failure(:final error):
+          emit(UserState.loaded(oldUser));
+          return Result.error(error);
+      }
     }
     return Result.error(Exception('User not loaded'));
   }
@@ -225,7 +242,7 @@ class UserCubit extends Cubit<UserState> {
     return Result.error(Exception('User not loaded'));
   }
 
-  Future<Result<User>> updateBodyWeight(int bodyWeight) async {
+  Future<Result<User>> updateBodyWeight(double bodyWeight) async {
     if (state case final Loaded currentState) {
       final oldUser = currentState.user;
       emit(UserState.updating(oldUser));
@@ -251,54 +268,52 @@ class UserCubit extends Cubit<UserState> {
   Future<Result<User>> _updateUser(Result<User> result, User oldUser) async {
     switch (result) {
       case Success(value: final updatedUser):
-        await _userSessionService.saveUser(updatedUser);
-        if (updatedUser case final OnboardedUser onboarded) {
+        final normalizedUser = updatedUser.copyWith(email: updatedUser.email ?? oldUser.email);
+        await _userSessionService.saveUser(normalizedUser);
+        if (normalizedUser case final OnboardedUser onboarded) {
           unawaited(_setUserAnalyticsProperties(onboarded));
         }
-        emit(UserState.loaded(updatedUser.copyWith(email: oldUser.email)));
-        return result;
+        emit(UserState.loaded(normalizedUser));
+        return Result.success(normalizedUser);
 
       case Failure(:final error):
-        emit(UserState.error(error.toString()));
-
         emit(UserState.loaded(oldUser));
-        return result;
+        return Result.error(error);
     }
   }
 
-  Future<void> uploadUserAvatar(File file) async {
-    final currentState = state;
-
+  Future<Result<User>> uploadUserAvatar(File file) async {
     final result = await _userRepository.uploadUserAvatar(file);
 
     switch (result) {
       case Success(value: final url):
         logger.d(result);
-        await updateAvatarURL(url);
+        return updateAvatarURL(url);
       case Failure(:final error):
-        emit(UserState.error(error.toString()));
-        emit(currentState);
+        return Result.error(error);
     }
   }
 
-  Future<void> deleteUserAvatar() async {
-    await updateAvatarURL('undefined/bench-1rm-1.png');
-  }
+  Future<Result<User>> deleteUserAvatar() => updateAvatarURL('undefined/bench-1rm-1.png');
 
   Future<Result<User>> updateEmail(String newEmail) async {
     final currentState = state;
     if (currentState is! Loaded) return Result.error(Exception('User not loaded'));
+    final normalizedEmail = newEmail.trim();
+    if (normalizedEmail == currentState.user.email) {
+      return Result.success(currentState.user);
+    }
+
+    emit(UserState.updating(currentState.user));
     final result = await _userRepository.updateUserEmail(
-      email: newEmail,
+      email: normalizedEmail,
       userId: currentState.user.id,
     );
 
     switch (result) {
-      case Success():
-        await _userSessionService.saveUser(currentState.user.copyWith(email: newEmail));
-        emit(UserState.loaded(currentState.user.copyWith(email: newEmail)));
-
-        return Result.success(currentState.user.copyWith(email: newEmail));
+      case Success(value: final updatedEmail):
+        final updatedUser = currentState.user.copyWith(email: updatedEmail);
+        return _updateUser(Result.success(updatedUser), currentState.user);
 
       case Failure(:final error):
         emit(UserState.loaded(currentState.user));

@@ -63,7 +63,7 @@ class QuizCubit extends Cubit<QuizState> {
     emit(state.copyWith(measurementSystem: system));
   }
 
-  void setBodyWeight(int bodyWeight) {
+  void setBodyWeight(double? bodyWeight) {
     emit(state.copyWith(bodyWeight: bodyWeight));
   }
 
@@ -135,7 +135,7 @@ class QuizCubit extends Cubit<QuizState> {
     final answers = QuizAnswers(
       dateOfBirth: state.dateOfBirth!,
       measurementSystem: state.measurementSystem,
-      bodyWeight: state.bodyWeight!,
+      bodyWeight: state.bodyWeight!.roundWeight(),
       mainGoal: state.mainGoal!,
       trainingLevel: state.trainingLevel!,
       workoutDaysPerWeek: state.workoutDaysPerWeek!,
@@ -148,11 +148,8 @@ class QuizCubit extends Cubit<QuizState> {
 
     switch (result) {
       case Success(value: _):
-        final weightInKg = answers.measurementSystem == MeasurementSystem.metric
-            ? answers.bodyWeight.toDouble()
-            : MeasureSystemValues.toKg(answers.bodyWeight.toDouble());
         final ageGroupVal = AnonymizationHelpers.ageGroup(answers.dateOfBirth);
-        final weightRangeVal = AnonymizationHelpers.weightBucket(weightInKg);
+        final weightRangeVal = AnonymizationHelpers.weightBucket(answers.bodyWeight);
 
         unawaited(
           _analytics.logEvent(

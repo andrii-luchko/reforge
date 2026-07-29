@@ -8,7 +8,6 @@ import 'package:reforge/features/active_workout/ui/widgets/active_workout_page/a
 import 'package:reforge/features/active_workout/ui/widgets/dynamic_workout_form.dart';
 import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
 import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
-
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';

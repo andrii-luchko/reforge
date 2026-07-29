@@ -93,6 +93,13 @@ extension WeightConverter on double {
       MeasurementSystem.imperial => MeasureSystemValues.toKg(this),
     };
   }
+
+  double roundWeight() => double.parse(toStringAsFixed(2));
+
+  String formatWeight() {
+    final rounded = roundWeight();
+    return rounded % 1 == 0 ? rounded.toInt().toString() : rounded.toString();
+  }
 }
 
 extension DistanceConverter on double {

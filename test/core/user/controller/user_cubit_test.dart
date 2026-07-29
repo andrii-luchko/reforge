@@ -51,6 +51,7 @@ void main() {
     mockAnalytics = MockAnalyticsService();
     when(() => mockAnalytics.setUserId(any())).thenAnswer((_) async {});
     when(() => mockAnalytics.setUserProperty(any(), any())).thenAnswer((_) async {});
+    when(() => mockUserSessionService.clearUser()).thenAnswer((_) async {});
     authStreamController = StreamController<AuthState>.broadcast();
     // Use stream that never emits to avoid _onAuthStateChanged overwriting seeded state
     when(() => mockAuthCubit.stream).thenAnswer((_) => authStreamController.stream);
@@ -70,6 +71,35 @@ void main() {
   );
 
   group('UserCubit', () {
+    blocTest<UserCubit, UserState>(
+      'authenticated startup waits for the server and never emits a cached user',
+      build: () {
+        final serverUser = testUser.copyWith(email: 'server@example.com');
+        when(() => mockUserSessionService.currentUser).thenReturn(testUser);
+        when(() => mockUserSessionService.saveUser(any())).thenAnswer((_) async {});
+        when(() => mockUserRepository.getCurrentUser()).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          return Result.success(serverUser);
+        });
+        return createCubit();
+      },
+      act: (cubit) async {
+        authStreamController.add(
+          const AuthState.authenticated(
+            tokens: AuthTokens(accessToken: 'a', refreshToken: 'r'),
+          ),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+      },
+      expect: () => [
+        isA<Loading>(),
+        isA<Loaded>().having((state) => state.user.email, 'email', 'server@example.com'),
+      ],
+      verify: (_) {
+        verifyNever(() => mockUserSessionService.currentUser);
+      },
+    );
+
     blocTest<UserCubit, UserState>(
       'refreshUser emits loaded when repository succeeds',
       build: () {
@@ -142,8 +172,9 @@ void main() {
     blocTest<UserCubit, UserState>(
       'updateUsername emits loaded with updated user',
       build: () {
-        final updatedUser = testUser.copyWith(userName: 'newname');
-        when(() => mockProfileRepository.updateUsername(any())).thenAnswer((_) async => Result.success(updatedUser));
+        when(() => mockProfileRepository.updateUsername(any())).thenAnswer(
+          (_) async => const Result.success('server-name'),
+        );
         when(() => mockUserSessionService.saveUser(any())).thenAnswer((_) async {});
         return createCubit();
       },
@@ -151,12 +182,15 @@ void main() {
       act: (cubit) => cubit.updateUsername('newname'),
       expect: () => [
         isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
-        predicate<UserState>(_isLoaded),
+        isA<Loaded>()
+            .having((state) => state.user, 'user type', isA<OnboardedUser>())
+            .having((state) => (state.user as OnboardedUser).userName, 'username', 'server-name')
+            .having((state) => (state.user as OnboardedUser).factionId, 'faction', testUser.factionId),
       ],
     );
 
     blocTest<UserCubit, UserState>(
-      'updateUsername when repository fails emits error then restores',
+      'updateUsername when repository fails restores the loaded user',
       build: () {
         when(() => mockProfileRepository.updateUsername(any())).thenAnswer(
           (_) async => Result.error(Exception('Network error')),
@@ -167,7 +201,6 @@ void main() {
       act: (cubit) => cubit.updateUsername('newname'),
       expect: () => [
         isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
-        predicate<UserState>(_isError),
         predicate<UserState>(_isLoaded),
       ],
     );
@@ -180,21 +213,45 @@ void main() {
             email: any(named: 'email'),
             userId: any(named: 'userId'),
           ),
-        ).thenAnswer((_) async => const Result.success(null));
+        ).thenAnswer((_) async => const Result.success('new@example.com'));
         when(() => mockUserSessionService.saveUser(any())).thenAnswer((_) async {});
         return createCubit();
       },
       seed: () => UserState.loaded(testUser),
       act: (cubit) => cubit.updateEmail('new@example.com'),
       expect: () => [
-        predicate<UserState>(_isLoaded),
+        isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
+        isA<Loaded>().having((state) => state.user.email, 'email', 'new@example.com'),
       ],
+      verify: (_) {
+        final savedUser = verify(() => mockUserSessionService.saveUser(captureAny())).captured.single as User;
+        expect(savedUser, isA<OnboardedUser>());
+        expect(savedUser.id, testUser.id);
+        expect((savedUser as OnboardedUser).factionId, testUser.factionId);
+        expect(savedUser.email, 'new@example.com');
+      },
+    );
+
+    blocTest<UserCubit, UserState>(
+      'updateEmail trims input and skips the request when email is unchanged',
+      build: createCubit,
+      seed: () => UserState.loaded(testUser),
+      act: (cubit) => cubit.updateEmail('  test@example.com  '),
+      expect: () => <UserState>[],
+      verify: (_) {
+        verifyNever(
+          () => mockUserRepository.updateUserEmail(
+            email: any(named: 'email'),
+            userId: any(named: 'userId'),
+          ),
+        );
+        verifyNever(() => mockUserSessionService.saveUser(any()));
+      },
     );
 
     blocTest<UserCubit, UserState>(
       'updateEmail when repository fails restores state and returns error',
       build: () {
-        when(() => mockUserRepository.getCurrentUser()).thenAnswer((_) async => Result.success(testUser));
         when(
           () => mockUserRepository.updateUserEmail(
             email: any(named: 'email'),
@@ -204,20 +261,14 @@ void main() {
           (_) async => Result.error(Exception('Email already in use')),
         );
         when(() => mockUserSessionService.saveUser(any())).thenAnswer((_) async {});
-        when(() => mockUserSessionService.currentUser).thenReturn(null);
         return createCubit();
       },
-      act: (cubit) async {
-        authStreamController.add(
-          const AuthState.authenticated(
-            tokens: AuthTokens(accessToken: 'a', refreshToken: 'r'),
-          ),
-        );
-        await Future.delayed(const Duration(milliseconds: 200));
-        await cubit.updateEmail('new@example.com');
-      },
-      skip: 1,
-      expect: () => [predicate<UserState>(_isLoaded)],
+      seed: () => UserState.loaded(testUser),
+      act: (cubit) => cubit.updateEmail('new@example.com'),
+      expect: () => [
+        isA<UserState>().having((s) => s.maybeMap(updating: (_) => true, orElse: () => false), 'updating', true),
+        predicate<UserState>(_isLoaded),
+      ],
     );
   });
 }

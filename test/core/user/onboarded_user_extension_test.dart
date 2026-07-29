@@ -46,7 +46,12 @@ void main() {
           bodyWeight: 70,
           measurementSystem: MeasurementSystem.imperial,
         );
-        expect(user.displayedWeight, 154); // 70 kg -> ~154 lbs, truncated
+        expect(user.displayedWeight, 154.32);
+      });
+
+      test('rounds metric weight to two decimal places', () {
+        final user = createUser(bodyWeight: 70.555);
+        expect(user.displayedWeight, 70.56);
       });
     });
 

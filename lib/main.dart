@@ -40,7 +40,7 @@ void main() async {
       runApp(
         ToastificationWrapper(
           config: const ToastificationConfig(
-            maxToastLimit: 3,
+            maxToastLimit: 1,
           ),
           child: TranslationProvider(
             child: const App(),

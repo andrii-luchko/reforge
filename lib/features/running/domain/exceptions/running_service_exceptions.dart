@@ -5,25 +5,44 @@
 /// rather than showing raw `PlatformException` or `SqliteException` text.
 library;
 
-/// Thrown when a hardware sensor required for tracking is unavailable.
-///
-/// Examples:
-/// - Step counter not present on the device (simulator, some tablets).
-/// - Pedometer permission denied.
-///
-/// This is a *non-recoverable* error for the current session — the engine
-/// cannot produce metrics without the sensor.
-class SensorUnavailableException implements Exception {
-  const SensorUnavailableException(this.sensor, {this.cause});
+/// Tracking engine that can no longer produce valid metrics for this session.
+enum TrackingEngineType { gps, pedometer }
 
-  /// Human-readable sensor name, e.g. 'pedometer', 'gps'.
-  final String sensor;
+/// Required platform dependency whose loss stopped a tracking engine.
+enum TrackingDependency { location, motion }
 
-  /// Original platform exception, if any.
+/// Stable, transport-safe reason why a tracking engine stopped.
+enum TrackingEngineFailureReason {
+  locationServiceDisabled,
+  locationPermissionDenied,
+  motionPermissionDenied,
+  sensorUnavailable,
+  streamClosed,
+  unrecoverableStreamFailure,
+}
+
+/// A terminal tracking failure.
+///
+/// Once emitted through the engine metrics stream, no more metrics will be
+/// produced by that engine instance until a new session is started.
+class TrackingEngineFailureException implements Exception {
+  const TrackingEngineFailureException({
+    required this.engine,
+    required this.dependency,
+    required this.reason,
+    this.cause,
+  });
+
+  final TrackingEngineType engine;
+  final TrackingDependency dependency;
+  final TrackingEngineFailureReason reason;
   final Object? cause;
 
   @override
-  String toString() => 'SensorUnavailableException: $sensor is not available. cause=$cause';
+  String toString() {
+    return 'TrackingEngineFailureException: ${engine.name} stopped because '
+        '${dependency.name}/${reason.name}. cause=$cause';
+  }
 }
 
 /// A recoverable failure in a tracking sensor stream.
@@ -73,11 +92,21 @@ class DatabaseWriteException implements Exception {
   String toString() => 'DatabaseWriteException: $operation failed. cause=$cause';
 }
 
-/// Thrown when the background service fails to start within the handshake
-/// timeout window.
-class ServiceStartTimeoutException implements Exception {
-  const ServiceStartTimeoutException();
+/// Thrown when an isolate message does not match the running service protocol.
+class ServiceProtocolException implements Exception {
+  const ServiceProtocolException({
+    required this.key,
+    required this.expectedType,
+    required this.actualValue,
+  });
+
+  final String key;
+  final String expectedType;
+  final Object? actualValue;
 
   @override
-  String toString() => 'ServiceStartTimeoutException: background service did not signal ready in time.';
+  String toString() {
+    final actualType = actualValue?.runtimeType.toString() ?? 'null';
+    return 'Invalid running service payload: "$key" must be $expectedType, got $actualType.';
+  }
 }

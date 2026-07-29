@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 
 /// Requests the Android system settings required for high-accuracy location.
@@ -8,6 +9,8 @@ import 'package:reforge/app/utils/logger/logger.dart';
 /// Unlike a position stream, this does not wait for a GPS fix. Android's
 /// `SettingsClient` either confirms that the requested settings are already
 /// available or displays its resolution dialog while the app has an Activity.
+
+@injectable
 class AndroidLocationReadinessService {
   static const _channel = MethodChannel('com.reforgestudios.reforge/location_readiness');
 

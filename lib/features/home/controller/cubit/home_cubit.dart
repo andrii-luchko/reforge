@@ -7,7 +7,9 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/domain/enums/rank.dart';
 import 'package:reforge/features/home/data/repository/home_repository.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
@@ -19,15 +21,20 @@ part 'home_cubit.freezed.dart';
 
 @injectable
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit(this._repository, this._analytics) : super(const HomeState());
+  HomeCubit(this._repository, this._analytics, this._userCubit) : super(const HomeState()) {
+    _onUserChanged(_userCubit.currentOnboardedUser);
+    _userSubscription = _userCubit.onboardedUserChanges.listen(_onUserChanged);
+  }
 
   final HomeRepository _repository;
   final AnalyticsService _analytics;
+  final UserCubit _userCubit;
+  StreamSubscription<OnboardedUser?>? _userSubscription;
+  OnboardedUser? _lastUser;
+  int _userRevision = 0;
 
   Future<void> loadInitialData() async {
     emit(state.copyWith(isLoading: true, error: null));
-
-    _loadUserData();
 
     try {
       await loadStatsByPeriod(state.period, isInitial: true);
@@ -43,24 +50,63 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  void _loadUserData() {
-    final userResult = _repository.getUserData();
-    if (userResult != null) {
-      emit(state.copyWith(user: userResult));
+  void _onUserChanged(OnboardedUser? user) {
+    final previousUser = _lastUser;
+    if (previousUser?.id != user?.id) _userRevision++;
+    _lastUser = user;
+
+    if (user == null) {
+      emit(const HomeState());
+      return;
     }
+
+    if (previousUser != null && previousUser.id != user.id) {
+      emit(HomeState(user: user));
+      return;
+    }
+
+    final rankProfileChanged =
+        previousUser == null ||
+        previousUser.factionId != user.factionId ||
+        previousUser.rank != user.rank ||
+        previousUser.japanRank != user.japanRank;
+
+    emit(
+      state.copyWith(
+        user: user,
+        rank: rankProfileChanged
+            ? _createRank(
+                user,
+                state.currentStats,
+                previousRank: state.rank,
+              )
+            : state.rank,
+      ),
+    );
   }
 
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {
-    // if (!isInitial && state.statsMap.containsKey(period)) {
-    //   emit(state.copyWith(period: period));
-    //   return;
-    // }
+    if (!isInitial && state.statsMap.containsKey(period)) {
+      emit(
+        state.copyWith(
+          period: period,
+          rank: _createRank(
+            state.user,
+            state.statsMap[period],
+            previousRank: state.rank,
+          ),
+        ),
+      );
+      return;
+    }
 
     if (!isInitial) {
       emit(state.copyWith(isStatsLoading: true, period: period));
     }
 
+    final revision = _userRevision;
     final statsResult = await _repository.getUserStats(period);
+    if (revision != _userRevision) return;
 
     switch (statsResult) {
       case Success(value: final stats):
@@ -69,7 +115,13 @@ class HomeCubit extends Cubit<HomeState> {
           updatedMap[period] = stats;
         }
 
-        final rank = _createRank(state.user, stats);
+        final rank = stats == null && state.rank != null
+            ? state.rank
+            : _createRank(
+                state.user,
+                stats ?? updatedMap[period],
+                previousRank: state.rank,
+              );
 
         emit(
           state.copyWith(
@@ -80,35 +132,37 @@ class HomeCubit extends Cubit<HomeState> {
         );
 
       case Failure(:final error):
-        final rank = _createRank(state.user);
         emit(
           state.copyWith(
             error: error.toString(),
-            rank: rank,
             isStatsLoading: false,
           ),
         );
     }
   }
 
-  RankEntity _createRank(OnboardedUser? user, [UserStats? stats]) {
-    final faction = user?.mainFaction ?? Faction.gakki;
-    final japanRankName = user?.japanRank ?? t.home.default_japanese_rank_name;
-    final rankName = user?.rank ?? t.home.default_rank_name;
+  RankEntity? _createRank(
+    OnboardedUser? user,
+    UserStats? stats, {
+    RankEntity? previousRank,
+  }) {
+    if (user == null) return previousRank;
 
-    if (stats != null) {
-      return RankEntity(
-        imageAsset: faction.rankCardAsset(stats.level),
-        japanRankName: japanRankName,
-        rankName: rankName,
-        faction: faction,
-        lvl: stats.level,
-        xp: stats.currentXp,
-        maxXp: stats.totalXp,
-      );
-    } else {
-      return RankEntity.mock(faction);
-    }
+    final faction = user.mainFaction ?? Faction.gakki;
+    final japanRankName = user.japanRank ?? t.home.default_japanese_rank_name;
+    final rankName = user.rank ?? t.home.default_rank_name;
+    final rank = Rank.fromJapaneseString(japanRankName);
+    if (stats == null && previousRank == null) return null;
+
+    return RankEntity(
+      imageAsset: rank.imageAsset(faction),
+      japanRankName: japanRankName,
+      rankName: rankName,
+      faction: faction,
+      lvl: stats?.level ?? previousRank?.lvl,
+      xp: stats?.currentXp ?? previousRank?.xp,
+      maxXp: stats?.totalXp ?? previousRank?.maxXp,
+    );
   }
 
   void changePeriod(StatsPeriod period) {
@@ -123,5 +177,11 @@ class HomeCubit extends Cubit<HomeState> {
 
   void onStartWorkoutTap() {
     unawaited(_analytics.logEvent(AnalyticsEvents.homeStartWorkoutClick));
+  }
+
+  @override
+  Future<void> close() async {
+    await _userSubscription?.cancel();
+    return super.close();
   }
 }

@@ -45,7 +45,7 @@ FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthSta
         loaded: (user) {
           final target = user.map(
             newUser: (_) => const QuizPageRoute().location,
-            // onboarded: (_) => const QuizPageRoute().location,
+            //onboarded: (_) => const QuizPageRoute().location,
             onboarded: (_) => const HomePageRoute().location,
           );
 

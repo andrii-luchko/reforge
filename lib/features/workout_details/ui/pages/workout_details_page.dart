@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/workout_details/ui/widgets/details_page/workout_details_body.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
@@ -34,6 +37,17 @@ class _WorkoutDetailsPageState extends State<WorkoutDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+
+    final userFaction =
+        context.read<UserCubit>().state.maybeMap(
+          orElse: () => Faction.gakki,
+          loaded: (state) => state.user.maybeMap(
+            orElse: () => Faction.gakki,
+            onboarded: (u) => Faction.fromId(u.factionId),
+          ),
+        ) ??
+        Faction.gakki;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
@@ -44,7 +58,7 @@ class _WorkoutDetailsPageState extends State<WorkoutDetailsPage> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Text(
-              t.workout_details.title,
+              userFaction.workoutDetailsTitle(t),
               style: subheadH1Medium.copyWith(color: appTheme.beige100),
             ),
           ),

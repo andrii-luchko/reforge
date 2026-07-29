@@ -1,4 +1,6 @@
+import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_flow/data/enums/execution_mode.dart';
+import 'package:reforge/features/workout_flow/data/enums/exercise_type.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
 
@@ -20,6 +22,25 @@ class ProgramExerciseEntity {
   final ExecutionMode executionMode;
   final ExerciseDetailsEntity exerciseDetails;
   final List<ExerciseSegmentEntity> segments;
+
+  /// Whether this exercise should use the running workout flow.
+  ///
+  /// Segments and the exercise key are explicit running signals. For exercises
+  /// without either of them, the backend metrics are used first. A time-only
+  /// exercise is treated as running only when it is also an endurance exercise.
+  bool get isRunningExercise {
+    if (segments.isNotEmpty) return true;
+
+    final metrics = exerciseDetails.metrics;
+    final hasTime = metrics.contains(WorkoutMetric.time);
+    final hasDistance = metrics.contains(WorkoutMetric.distance);
+    final hasPace = metrics.contains(WorkoutMetric.pace);
+
+    if (hasDistance && (hasTime || hasPace)) return true;
+    if (hasTime && exerciseDetails.type == ExerciseType.endurance) return true;
+
+    return exerciseDetails.key.toLowerCase().contains('run');
+  }
 
   @override
   String toString() {

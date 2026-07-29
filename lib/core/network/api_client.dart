@@ -12,6 +12,8 @@ import 'package:reforge/core/auth/data/requests/sign_up_request.dart';
 import 'package:reforge/core/auth/data/requests/sign_with_provider_request.dart';
 import 'package:reforge/core/auth/data/requests/signin_request.dart';
 import 'package:reforge/core/network/api_extra_keys.dart';
+import 'package:reforge/core/user/data/models/update_user_email_response.dart';
+import 'package:reforge/core/user/data/models/update_username_response.dart';
 import 'package:reforge/features/achievements/data/models/achievement_badge_dto.dart';
 import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
 import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
@@ -88,7 +90,7 @@ abstract class ApiClient {
   Future<BaseResponse<User>> getCurrentUser();
 
   @PATCH('/users/me')
-  Future<BaseResponse<User>> updateUsername(@BodyExtra('username') String username);
+  Future<BaseResponse<UpdateUsernameResponse>> updateUsername(@BodyExtra('username') String username);
 
   @PATCH('/users/me')
   Future<BaseResponse<User>> updateAvatar(@BodyExtra('avatarUrl') String avatarUrl);
@@ -106,13 +108,16 @@ abstract class ApiClient {
   Future<BaseResponse<User>> updateWorkoutDays(@Body() UpdateWorkoutDaysRequest request);
 
   @PATCH('/users/me')
-  Future<BaseResponse<User>> updateBodyWeight(@BodyExtra('bodyweight') int bodyWeight);
+  Future<BaseResponse<User>> updateBodyWeight(@BodyExtra('bodyweight') double bodyWeight);
 
   @PATCH('/users/me')
   Future<BaseResponse<User>> updateNotificationSettings(@Body() UpdateNotificationsRequest request);
 
   @PATCH('/users/{id}/email')
-  Future<BaseResponse<User>> updateCurrentUserEmail(@Path('id') int id, @BodyExtra('email') String email);
+  Future<BaseResponse<UpdateUserEmailResponse>> updateCurrentUserEmail(
+    @Path('id') int id,
+    @BodyExtra('email') String email,
+  );
 
   @DELETE('/users/me')
   Future<void> deleteUser();

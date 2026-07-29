@@ -1,10 +1,8 @@
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
-import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
 import 'package:reforge/features/leaderboard/data/response/leaderboard_users_response.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
@@ -17,16 +15,13 @@ abstract interface class LeaderboardRepositoryI {
 
   Future<Result<List<ImmortalForgeEntity>>> getImmortalForgesForFaction(Faction faction);
 
-  Faction? getUserFaction();
-
   Future<Result<List<LeaderboardFactionModel>>> getFactionsLeaderboard();
 }
 
 @Injectable(as: LeaderboardRepositoryI)
 class LeaderboardRepositoryImpl with RepositoryErrorHandler implements LeaderboardRepositoryI {
-  const LeaderboardRepositoryImpl(this._apiClient, this._userSessionService);
+  const LeaderboardRepositoryImpl(this._apiClient);
 
-  final UserSessionService _userSessionService;
   final ApiClient _apiClient;
 
   @override
@@ -95,13 +90,5 @@ class LeaderboardRepositoryImpl with RepositoryErrorHandler implements Leaderboa
     } on Exception catch (e) {
       return Result.error(e);
     }
-  }
-
-  @override
-  Faction? getUserFaction() {
-    return _userSessionService.currentUser?.map(
-      newUser: (_) => null,
-      onboarded: (u) => Faction.fromId(u.factionId),
-    );
   }
 }

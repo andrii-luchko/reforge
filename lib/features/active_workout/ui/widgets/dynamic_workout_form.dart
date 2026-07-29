@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/app/utils/extensions/string_extensions.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
@@ -68,7 +67,7 @@ class _DynamicWorkoutFormState extends State<DynamicWorkoutForm> {
               controller: _controller,
               initialTier: widget.selectedTier,
               onTearChanged: (value) {
-                _controller.text = value.title.toCapitalized();
+                _controller.text = value.displayTitle;
                 widget.onTierChanged(value);
               },
             ),

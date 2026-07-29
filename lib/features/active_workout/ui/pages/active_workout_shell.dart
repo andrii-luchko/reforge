@@ -118,12 +118,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
               if (summary == null) {
                 const HomePageRoute().go(context);
               } else {
-                // Navigate based on whether there are milestones
-                if (summary.earnedMilestones.isNotEmpty) {
-                  const WorkoutAchievementPageRoute(milestoneIndex: 0).go(context);
-                } else {
-                  const WorkoutSummaryPageRoute().go(context);
-                }
+                const WorkoutCongratulationsPageRoute().go(context);
               }
               unawaited(context.read<UserCubit>().refreshUser());
               return;
@@ -134,7 +129,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
             if (currentExercise == null) return;
 
             ActiveWorkoutPageRoute(
-              exerciseId: currentExercise.exerciseDetails.id,
+              programExerciseId: currentExercise.id,
             ).go(context);
           },
         ),
@@ -142,7 +137,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
       child: Stack(
         children: [
           Scaffold(
-            resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: true,
             extendBodyBehindAppBar: true,
             appBar: ActiveWorkoutAppBar(
               onClosePressed: () async => onClosePressed(context),

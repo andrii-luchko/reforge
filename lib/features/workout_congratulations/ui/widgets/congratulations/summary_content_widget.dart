@@ -17,9 +17,44 @@ class SummaryContentWidget extends StatelessWidget {
   });
 
   final int? newLevel;
-  final double? xpProgress;
+  final double xpProgress;
   final int xpEarned;
+  final int timeSpentSec;
 
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        spacing: 32,
+        children: [
+          CenteredTitleSection(
+            title: t.workout_congratulations.title,
+            subtitle: t.workout_congratulations.subtitle,
+          ),
+          WorkoutSummaryStatsCard(
+            newLevel: newLevel,
+            xpProgress: xpProgress,
+            xpEarned: xpEarned,
+            timeSpentSec: timeSpentSec,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class WorkoutSummaryStatsCard extends StatelessWidget {
+  const WorkoutSummaryStatsCard({
+    required this.newLevel,
+    required this.xpProgress,
+    required this.xpEarned,
+    required this.timeSpentSec,
+    super.key,
+  });
+
+  final int? newLevel;
+  final double xpProgress;
+  final int xpEarned;
   final int timeSpentSec;
 
   String _formatDuration(Duration duration) {
@@ -27,20 +62,14 @@ class SummaryContentWidget extends StatelessWidget {
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
 
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    } else if (minutes > 0) {
-      return '${minutes}m ${seconds}s';
-    } else {
-      return '${seconds}s';
-    }
+    if (hours > 0) return '${hours}h ${minutes}m';
+    if (minutes > 0) return '${minutes}m ${seconds}s';
+    return '${seconds}s';
   }
 
   @override
   Widget build(BuildContext context) {
-    final appTheme = context.appTheme;
     final items = <Widget>[];
-
     var itemNumber = 1;
 
     if (newLevel != null) {
@@ -63,17 +92,13 @@ class SummaryContentWidget extends StatelessWidget {
             child: Row(
               spacing: 16,
               children: [
-                Flexible(
-                  child: HorizontalXPBar(
-                    progress: xpProgress ?? 0.2,
-                  ),
-                ),
+                Flexible(child: HorizontalXPBar(progress: xpProgress)),
                 Text(
                   '+${xpEarned.toString().replaceAllMapped(
                     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                    (m) => '${m[1]},',
+                    (match) => '${match[1]},',
                   )} XP',
-                  style: subheadH8Semibold.copyWith(color: appTheme.beige100),
+                  style: subheadH8Semibold.copyWith(color: context.appTheme.beige100),
                 ),
               ],
             ),
@@ -82,23 +107,12 @@ class SummaryContentWidget extends StatelessWidget {
       )
       ..add(
         SummaryRowWidget(
-          number: itemNumber++,
+          number: itemNumber,
           title: t.workout_congratulations.duration,
           tag: AppTag(text: _formatDuration(Duration(seconds: timeSpentSec))),
         ),
       );
 
-    return SingleChildScrollView(
-      child: Column(
-        spacing: 32,
-        children: [
-          CenteredTitleSection(
-            title: t.workout_congratulations.title,
-            subtitle: t.workout_congratulations.subtitle,
-          ),
-          StaggeredSummaryCard(items: items),
-        ],
-      ),
-    );
+    return StaggeredSummaryCard(items: items);
   }
 }

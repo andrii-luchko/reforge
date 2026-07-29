@@ -80,13 +80,19 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       ),
     );
 
-    if (programExercise.exerciseDetails.isRunningExercise) {
-      _dbSub = _localWorkoutRepo.watchActiveRunningSets(workoutSessionId).listen(_onDbRunningSetsChanged);
+    if (programExercise.isRunningExercise) {
+      _dbSub = _localWorkoutRepo
+          .watchActiveRunningSets(
+            sessionId: workoutSessionId,
+            programExerciseId: programExercise.id,
+          )
+          .listen(_onDbRunningSetsChanged);
     }
   }
 
   void _onDbRunningSetsChanged(List<ActiveRunningSet> rows) {
-    final mappedSets = rows.map((row) {
+    final exerciseRows = rows.where((row) => row.programExerciseId == programExercise.id).toList();
+    final mappedSets = exerciseRows.map((row) {
       return WorkoutSet(
         id: row.id,
         distance: (row.distanceMeters ?? 0) / 1000,
@@ -101,12 +107,13 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     emit(state.copyWith(sets: mappedSets, isSendingSet: _syncingRowIds.isNotEmpty));
 
-    final pendingSync = rows.where((r) => r.readyToSync).toList();
+    final pendingSync = exerciseRows.where((r) => r.readyToSync).toList();
     // ignore: cascade_invocations
     pendingSync.forEach(_syncRunningSegment);
   }
 
   Future<void> _syncRunningSegment(ActiveRunningSet row) async {
+    if (row.programExerciseId != programExercise.id) return;
     if (_syncingRowIds.contains(row.id)) return;
     _syncingRowIds.add(row.id);
 

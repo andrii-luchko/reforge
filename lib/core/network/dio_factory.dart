@@ -50,8 +50,9 @@ class DioFactory {
       if (kDebugMode)
         LogInterceptor(
           requestBody: true,
-          responseBody: true,
+          requestHeader: false,
           responseHeader: false,
+          responseBody: true,
         ),
     ]);
 

@@ -1,3 +1,4 @@
+import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/utils/helpers/date_locale_helper.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -40,7 +41,9 @@ extension ProfileSettingsX on ProfileSettings {
       ProfileSettings.email => user.email,
       ProfileSettings.dateOfBirth => formatDate(user.birthDate),
       ProfileSettings.heightAndWeight =>
-        user.bodyWeight == null ? null : '${user.displayedWeight} ${user.measurementSystem.weightSymbol(t)}',
+        user.bodyWeight == null
+            ? null
+            : '${user.displayedWeight!.formatWeight()} ${user.measurementSystem.weightSymbol(t)}',
     };
   }
 

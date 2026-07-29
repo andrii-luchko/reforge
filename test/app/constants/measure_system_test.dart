@@ -76,6 +76,16 @@ void main() {
       final result = 2.20462.toStorageWeight(domain.MeasurementSystem.imperial);
       expect(result, closeTo(1.0, 0.001));
     });
+
+    test('roundWeight rounds to two decimal places', () {
+      expect(70.555.roundWeight(), 70.56);
+    });
+
+    test('formatWeight removes trailing zeroes', () {
+      expect(70.0.formatWeight(), '70');
+      expect(70.5.formatWeight(), '70.5');
+      expect(70.555.formatWeight(), '70.56');
+    });
   });
 
   group('DistanceConverter', () {

@@ -1,6 +1,7 @@
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
+import 'package:reforge/features/workout_flow/data/enums/exercise_type.dart';
 
 class ExerciseDetailsEntity {
   const ExerciseDetailsEntity({
@@ -18,13 +19,14 @@ class ExerciseDetailsEntity {
     required this.videoInstructionUrl,
     required this.thumbnailInstructionUrl,
     required this.instructionsSteps,
+    this.type,
   });
 
   final int id;
   final String name;
   final String description;
   final String key;
-
+  final ExerciseType? type;
   final List<WorkoutMetric> metrics;
   final PoseDetectionPreset? poseDetectionPreset;
 
@@ -34,16 +36,6 @@ class ExerciseDetailsEntity {
   final String? videoInstructionUrl;
   final String? thumbnailInstructionUrl;
   final Map<String, String> instructionsSteps;
-
-  /// True when this exercise requires running tracking (GPS or pedometer).
-  ///
-  /// An exercise is considered a running exercise if its metrics include
-  /// [WorkoutMetric.distance] AND at least one of [WorkoutMetric.time] or
-  /// [WorkoutMetric.pace]. This is the single source of truth for the entire
-  /// codebase — use this getter rather than checking metrics manually.
-  bool get isRunningExercise =>
-      metrics.contains(WorkoutMetric.distance) &&
-      (metrics.contains(WorkoutMetric.time) || metrics.contains(WorkoutMetric.pace));
 
   @override
   String toString() {

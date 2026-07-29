@@ -104,13 +104,13 @@ class UserRepositoryImpl with RepositoryErrorHandler implements UserRepository {
   }
 
   @override
-  Future<Result<void>> updateUserEmail({required String email, required int userId}) async {
+  Future<Result<String>> updateUserEmail({required String email, required int userId}) async {
     try {
-      await makeRequest(
+      final updatedEmail = await makeRequest(
         () => _remoteDataSource.updateUserEmail(email, userId),
         label: 'updateUserEmail',
       );
-      return const Result.success(null);
+      return Result.success(updatedEmail);
     } on Exception catch (e) {
       return Result.error(e);
     }

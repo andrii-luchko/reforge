@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
@@ -9,21 +11,23 @@ import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
 import '../../../core/analytics/mocks/mock_analytics_service.dart';
+import '../../../core/user/mocks/mock_user_cubit.dart';
 import '../../../helpers/test_setup.dart';
 import '../mocks/mock_home_repository.dart';
 
-OnboardedUser createTestOnboardedUser({int factionId = 1}) {
+OnboardedUser createTestOnboardedUser({int factionId = 1, String userName = 'TestUser'}) {
   return User.onboarded(
-    id: 1,
-    email: 'test@example.com',
-    bodyWeight: 70,
-    measurementSystem: MeasurementSystem.metric,
-    factionId: factionId,
-    secondaryFactionId: 2,
-    birthDate: DateTime(1990, 1, 15),
-    workoutsPerWeek: 3,
-    userName: 'TestUser',
-  ) as OnboardedUser;
+        id: 1,
+        email: 'test@example.com',
+        bodyWeight: 70,
+        measurementSystem: MeasurementSystem.metric,
+        factionId: factionId,
+        secondaryFactionId: 2,
+        birthDate: DateTime(1990, 1, 15),
+        workoutsPerWeek: 3,
+        userName: userName,
+      )
+      as OnboardedUser;
 }
 
 UserStats createTestUserStats() => UserStatsX.mock();
@@ -31,6 +35,7 @@ UserStats createTestUserStats() => UserStatsX.mock();
 void main() {
   late MockHomeRepository mockRepository;
   late MockAnalyticsService mockAnalytics;
+  late MockUserCubit mockUserCubit;
 
   setUpAll(() {
     initTestTranslations();
@@ -40,8 +45,11 @@ void main() {
   setUp(() {
     mockRepository = MockHomeRepository();
     mockAnalytics = MockAnalyticsService();
+    mockUserCubit = MockUserCubit();
     when(() => mockAnalytics.logEvent(any(), any())).thenAnswer((_) async {});
     when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
+    when(() => mockUserCubit.currentOnboardedUser).thenReturn(null);
+    when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => const Stream.empty());
   });
 
   group('HomeCubit', () {
@@ -49,11 +57,10 @@ void main() {
       test('Success emits user, statsMap, rank, isLoading false', () async {
         final user = createTestOnboardedUser();
         final stats = createTestUserStats();
-        when(() => mockRepository.getUserData()).thenReturn(user);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.success(stats));
+        when(() => mockUserCubit.currentOnboardedUser).thenReturn(user);
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         expect(cubit.state.user, user);
@@ -66,28 +73,25 @@ void main() {
         expect(cubit.state.error, isNull);
       });
 
-      test('partial: getUserData null, getUserStats Success emits statsMap with Faction.gakki fallback', () async {
+      test('partial: no user keeps rank empty even when stats succeed', () async {
         final stats = createTestUserStats();
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.success(stats));
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         expect(cubit.state.user, isNull);
         expect(cubit.state.statsMap[StatsPeriod.lastWeek], stats);
-        expect(cubit.state.rank, isNotNull);
-        expect(cubit.state.rank!.faction, Faction.gakki);
+        expect(cubit.state.rank, isNull);
         expect(cubit.state.isLoading, false);
       });
 
       test('Error emits error and isLoading false', () async {
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.error(Exception('Network error')));
+        when(
+          () => mockRepository.getUserStats(StatsPeriod.lastWeek),
+        ).thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         expect(cubit.state.error, isNotNull);
@@ -98,11 +102,9 @@ void main() {
     group('loadStatsByPeriod', () {
       test('cache hit does not call repository', () async {
         final stats = createTestUserStats();
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.success(stats));
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         await cubit.loadStatsByPeriod(StatsPeriod.lastWeek);
@@ -112,13 +114,12 @@ void main() {
 
       test('cache miss Success emits statsMap and rank', () async {
         final stats = createTestUserStats();
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.success(stats));
-        when(() => mockRepository.getUserStats(StatsPeriod.lastMonth))
-            .thenAnswer((_) async => Result.success(UserStatsX.mock(level: 6)));
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+        when(
+          () => mockRepository.getUserStats(StatsPeriod.lastMonth),
+        ).thenAnswer((_) async => Result.success(UserStatsX.mock(level: 6)));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         await cubit.loadStatsByPeriod(StatsPeriod.lastMonth);
@@ -129,29 +130,53 @@ void main() {
         expect(cubit.state.isStatsLoading, false);
       });
 
-      test('cache miss Error emits error and isStatsLoading false', () async {
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.error(Exception('Network error')));
+      test('cache miss Error preserves the last valid rank', () async {
+        final user = createTestOnboardedUser();
+        final stats = createTestUserStats();
+        when(() => mockUserCubit.currentOnboardedUser).thenReturn(user);
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+        when(
+          () => mockRepository.getUserStats(StatsPeriod.lastMonth),
+        ).thenAnswer((_) async => Result.error(Exception('Network error')));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
-        await cubit.loadStatsByPeriod(StatsPeriod.lastWeek);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
+        await cubit.loadInitialData();
+        final validRank = cubit.state.rank;
+        await cubit.loadStatsByPeriod(StatsPeriod.lastMonth);
 
         expect(cubit.state.error, isNotNull);
         expect(cubit.state.isStatsLoading, false);
+        expect(cubit.state.rank, same(validRank));
+      });
+
+      test('null stats response preserves the last valid rank', () async {
+        final user = createTestOnboardedUser();
+        final stats = createTestUserStats();
+        var calls = 0;
+        when(() => mockUserCubit.currentOnboardedUser).thenReturn(user);
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async {
+          calls++;
+          return calls == 1 ? Result.success(stats) : const Result.success(null);
+        });
+
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
+        await cubit.loadInitialData();
+        final validRank = cubit.state.rank;
+        await cubit.loadStatsByPeriod(StatsPeriod.lastWeek, isInitial: true);
+
+        expect(cubit.state.rank, same(validRank));
       });
     });
 
     group('changePeriod', () {
       test('calls loadStatsByPeriod with period', () async {
         final stats = createTestUserStats();
-        when(() => mockRepository.getUserData()).thenReturn(null);
-        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek))
-            .thenAnswer((_) async => Result.success(stats));
-        when(() => mockRepository.getUserStats(StatsPeriod.yearToDate))
-            .thenAnswer((_) async => Result.success(UserStatsX.mock(level: 7)));
+        when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+        when(
+          () => mockRepository.getUserStats(StatsPeriod.yearToDate),
+        ).thenAnswer((_) async => Result.success(UserStatsX.mock(level: 7)));
 
-        final cubit = HomeCubit(mockRepository, mockAnalytics);
+        final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
 
         cubit.changePeriod(StatsPeriod.yearToDate);
@@ -161,15 +186,65 @@ void main() {
         expect(cubit.state.statsMap[StatsPeriod.yearToDate]!.level, 7);
       });
     });
+
+    test('name change updates the user without rebuilding rank or reloading stats', () async {
+      final changes = StreamController<OnboardedUser?>.broadcast();
+      final initialUser = createTestOnboardedUser();
+      final stats = createTestUserStats();
+      when(() => mockUserCubit.currentOnboardedUser).thenReturn(initialUser);
+      when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => changes.stream);
+      when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+
+      final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
+      await cubit.loadInitialData();
+      final validRank = cubit.state.rank;
+      final updatedUser = initialUser.copyWith(userName: 'Updated');
+      changes.add(updatedUser);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.user, updatedUser);
+      expect(cubit.state.rank, same(validRank));
+      verify(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).called(1);
+
+      await cubit.close();
+      await changes.close();
+    });
+
+    test('faction change preserves rank progress without reloading stats and clears on logout', () async {
+      final changes = StreamController<OnboardedUser?>.broadcast();
+      final initialUser = createTestOnboardedUser();
+      final stats = createTestUserStats();
+      when(() => mockUserCubit.currentOnboardedUser).thenReturn(initialUser);
+      when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => changes.stream);
+      when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+
+      final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
+      await cubit.loadInitialData();
+      final validRank = cubit.state.rank!;
+      final updatedUser = initialUser.copyWith(factionId: Faction.gyohyo.id);
+      changes.add(updatedUser);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.rank?.faction, Faction.gyohyo);
+      expect(cubit.state.rank?.lvl, validRank.lvl);
+      expect(cubit.state.rank?.xp, validRank.xp);
+      expect(cubit.state.rank?.maxXp, validRank.maxXp);
+      verify(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).called(1);
+
+      changes.add(null);
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state, const HomeState());
+
+      await cubit.close();
+      await changes.close();
+    });
   });
 
   group('HomeState', () {
     group('currentStats', () {
       test('returns statsMap value for current period', () {
         final stats = createTestUserStats();
-        const state = HomeState(
-          
-        );
+        const state = HomeState();
         final stateWithStats = state.copyWith(
           statsMap: {StatsPeriod.lastWeek: stats},
         );

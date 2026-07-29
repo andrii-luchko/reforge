@@ -4,7 +4,10 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/core/user/data/models/user_subscription.dart' as user_model;
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
@@ -52,6 +55,16 @@ SubscriptionEntity createTestSubscription({
     matchedPackage: matchedPackage,
   );
 }
+
+OnboardedUser createTestUser({user_model.UserSubscription? subscription, String? email}) => OnboardedUser(
+  id: 1,
+  email: email,
+  measurementSystem: MeasurementSystem.metric,
+  factionId: 1,
+  birthDate: DateTime(1990),
+  workoutsPerWeek: 3,
+  subscription: subscription,
+);
 
 void main() {
   late MockSubscriptionRepository mockRepository;
@@ -339,6 +352,55 @@ void main() {
           ),
         ],
       );
+    });
+
+    test('reacts only to identity and subscription changes', () async {
+      final userChanges = StreamController<UserState>.broadcast();
+      final initialUser = createTestUser(email: 'old@example.com');
+      when(() => mockUserCubit.state).thenReturn(UserState.loaded(initialUser));
+      when(() => mockUserCubit.stream).thenAnswer((_) => userChanges.stream);
+      when(() => mockRepository.login(1)).thenAnswer((_) async => const Result.success(null));
+      when(() => mockRepository.logout()).thenAnswer((_) async => const Result.success(null));
+      when(() => mockRepository.getOfferings()).thenAnswer((_) async => Result.success(createTestOfferings()));
+      when(
+        () => mockRepository.getCurrentSubscription(packages: any(named: 'packages')),
+      ).thenAnswer((_) async => const Result.success(null));
+
+      final cubit = SubscriptionCubit(mockRepository, mockUserCubit);
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockRepository.login(1)).called(1);
+      verify(() => mockRepository.getOfferings()).called(1);
+
+      userChanges.add(UserState.loaded(initialUser.copyWith(email: 'new@example.com')));
+      await Future<void>.delayed(Duration.zero);
+      verifyNever(() => mockRepository.login(1));
+      verifyNever(() => mockRepository.getOfferings());
+
+      final subscription = user_model.UserSubscription(
+        id: 10,
+        isActive: true,
+        expiresAt: DateTime(2030),
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        package: const user_model.Package(
+          id: 5,
+          name: 'Premium',
+          rcProductId: 'premium',
+          rcPackageGroupId: 'premium-group',
+        ),
+      );
+      userChanges.add(UserState.loaded(initialUser.copyWith(subscription: subscription)));
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockRepository.getOfferings()).called(1);
+      verifyNever(() => mockRepository.login(1));
+
+      userChanges.add(const UserState.initial());
+      await Future<void>.delayed(Duration.zero);
+      verify(() => mockRepository.logout()).called(1);
+      expect(cubit.state, const SubscriptionState());
+
+      await cubit.close();
+      await userChanges.close();
     });
   });
 }

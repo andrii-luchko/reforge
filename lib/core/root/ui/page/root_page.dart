@@ -35,8 +35,8 @@ class _RootPageState extends State<RootPage> {
             switch (restoreState) {
               case WorkoutRestorePending():
                 _showRestoreDialog(ctx, restoreState);
-              case WorkoutRestoreRestored(:final resumeExerciseId):
-                ActiveWorkoutPageRoute(exerciseId: resumeExerciseId).go(ctx);
+              case WorkoutRestoreRestored(:final resumeProgramExerciseId):
+                ActiveWorkoutPageRoute(programExerciseId: resumeProgramExerciseId).go(ctx);
               case WorkoutRestoreError(:final message):
                 toastification.showErrorToast(message, ctx);
               default:

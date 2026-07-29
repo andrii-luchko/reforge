@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/app/utils/extensions/string_extensions.dart';
 import 'package:reforge/features/workout_common/models/tier.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
@@ -35,7 +34,7 @@ class TierSelectionField extends StatelessWidget {
           final possibleTiers = tiersList
               .map(
                 (tier) => Center(
-                  child: Text(tier.title.toCapitalized(), style: style),
+                  child: Text(tier.displayTitle, style: style),
                 ),
               )
               .toList();

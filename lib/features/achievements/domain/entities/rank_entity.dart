@@ -1,5 +1,6 @@
 // ignore_for_file: sort_constructors_first
 
+import 'package:reforge/features/achievements/domain/enums/rank.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -35,8 +36,10 @@ class RankEntity {
 
   factory RankEntity.mockWith(Translations t, [Faction? userFaction]) {
     final faction = userFaction ?? Faction.gakki;
+
+    final rank = Rank.fromJapaneseString(t.home.default_japanese_rank_name);
     return RankEntity(
-      imageAsset: faction.rankCardAsset(1),
+      imageAsset: rank.imageAsset(faction),
       japanRankName: t.home.default_japanese_rank_name,
       rankName: t.home.default_rank_name,
       faction: faction,

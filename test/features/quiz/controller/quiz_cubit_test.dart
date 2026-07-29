@@ -85,9 +85,21 @@ void main() {
       blocTest<QuizCubit, QuizState>(
         'setBodyWeight emits state with weight',
         build: createCubit,
-        act: (cubit) => cubit.setBodyWeight(75),
+        act: (cubit) => cubit.setBodyWeight(75.25),
         expect: () => [
-          isA<QuizState>().having((s) => s.bodyWeight, 'bodyWeight', 75),
+          isA<QuizState>().having((s) => s.bodyWeight, 'bodyWeight', 75.25),
+        ],
+      );
+
+      blocTest<QuizCubit, QuizState>(
+        'changing measurement system preserves canonical weight',
+        build: createCubit,
+        seed: () => const QuizState(bodyWeight: 70.25),
+        act: (cubit) => cubit.setMeasurementSystem(MeasurementSystem.imperial),
+        expect: () => [
+          isA<QuizState>()
+              .having((s) => s.measurementSystem, 'measurementSystem', MeasurementSystem.imperial)
+              .having((s) => s.bodyWeight, 'bodyWeight', 70.25),
         ],
       );
 
@@ -286,6 +298,32 @@ void main() {
     });
 
     group('onSubmit', () {
+      test('submits canonical kilograms rounded to two decimals', () async {
+        when(() => mockRepository.submitQuiz(any())).thenAnswer((_) async => const Result.success(null));
+        final cubit = createCubit();
+        addTearDown(cubit.close);
+
+        cubit
+          ..setDateOfBirth(DateTime(1990, 1, 15))
+          ..setMeasurementSystem(MeasurementSystem.imperial)
+          ..setBodyWeight(69.853168)
+          ..setMainGoal(MainGoal.buildStrength)
+          ..setTrainingLevel(TrainingLevel.beginner)
+          ..setWorkoutDays(3)
+          ..setSpecificDays([
+            WeekDay.monday,
+            WeekDay.tuesday,
+            WeekDay.wednesday,
+          ])
+          ..setMainFaction(Faction.gakki);
+
+        await cubit.onSubmit();
+
+        final answers = verify(() => mockRepository.submitQuiz(captureAny())).captured.single as QuizAnswers;
+        expect(answers.measurementSystem, MeasurementSystem.imperial);
+        expect(answers.bodyWeight, 69.85);
+      });
+
       blocTest<QuizCubit, QuizState>(
         'does not call repository when form incomplete',
         build: createCubit,

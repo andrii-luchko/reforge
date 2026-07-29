@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/app/utils/validators/email.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/core/validation/generic_validation_cubit.dart';
@@ -11,6 +12,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:reforge/shared/uikit/fields/labeled_text_filed.dart';
+import 'package:toastification/toastification.dart';
 
 class EmailPage extends StatelessWidget {
   const EmailPage({required this.initialEmail, super.key});
@@ -27,7 +29,14 @@ class EmailPage extends StatelessWidget {
         onSave: (value) => onSave(value, userCubit),
       ),
       child: GenericSaveListener<String?>(
-        child: BaseSettingsEditPage(title: ProfileSettings.email.title(t), body: const EmailContent()),
+        onSuccess: () {
+          toastification.showSimpleToast(t.common.saved_successfully, alignment: .center);
+          Navigator.of(context).pop();
+        },
+        child: BaseSettingsEditPage(
+          title: ProfileSettings.email.title(t),
+          body: EmailContent(initialEmail: initialEmail),
+        ),
       ),
     );
   }
@@ -45,7 +54,9 @@ class EmailPage extends StatelessWidget {
 }
 
 class EmailContent extends StatelessWidget {
-  const EmailContent({super.key});
+  const EmailContent({required this.initialEmail, super.key});
+
+  final String? initialEmail;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +69,7 @@ class EmailContent extends StatelessWidget {
           ({String? email, String? error})
         >(
           selector: (state) {
-            final error = state is GenericValidationError ? state.error : null;
+            final error = state is GenericValidationError<String?> ? state.error : null;
             return (email: state.value, error: error);
           },
           builder: (context, value) {
@@ -79,9 +90,18 @@ class EmailContent extends StatelessWidget {
           hasScrollBody: false,
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: SecondaryButton(
-              text: t.common.save_changes_button,
-              onPressed: cubit.save,
+            child: BlocBuilder<GenericValidationCubit<String?>, GenericValidationState<String?>>(
+              builder: (context, state) {
+                final normalizedValue = state.value?.trim();
+                final normalizedInitial = initialEmail?.trim();
+                final hasValidationError = state is GenericValidationError<String?>;
+                final canSave = !state.isLoading && !hasValidationError && normalizedValue != normalizedInitial;
+
+                return SecondaryButton(
+                  text: t.common.save_changes_button,
+                  onPressed: canSave ? cubit.save : null,
+                );
+              },
             ),
           ),
         ),

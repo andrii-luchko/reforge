@@ -36,7 +36,7 @@ class ActiveWorkoutAppBar extends StatelessWidget implements PreferredSizeWidget
                 return GestureDetector(
                   onTap: state.isRunning
                       ? context.read<TimerCubit>().pauseTimer
-                      : context.read<TimerCubit>().startTimer,
+                      : context.read<TimerCubit>().resumeTimer,
                   child: AppTimer(
                     isPaused: !state.isRunning,
                     totalSeconds: state.duration,

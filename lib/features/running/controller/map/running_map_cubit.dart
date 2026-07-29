@@ -16,11 +16,13 @@ class RunningMapCubit extends Cubit<RunningMapState> {
     this._repository,
     this._serviceClient,
     @factoryParam this.workoutSessionId,
+    @factoryParam this.programExerciseId,
   ) : super(const RunningMapState());
 
   final LocalWorkoutSessionRepository _repository;
   final RunningServiceClient _serviceClient;
   final int workoutSessionId;
+  final int programExerciseId;
 
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<RunningMetrics>? _metricsSub;
@@ -28,7 +30,10 @@ class RunningMapCubit extends Cubit<RunningMapState> {
   Future<void> init() async {
     try {
       // Load historical points from the repository
-      final points = await _repository.getRoutePoints(workoutSessionId);
+      final points = await _repository.getRoutePoints(
+        sessionId: workoutSessionId,
+        programExerciseId: programExerciseId,
+      );
       final lastPoint = points.lastOrNull;
 
       emit(

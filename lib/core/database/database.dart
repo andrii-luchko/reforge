@@ -19,7 +19,6 @@ extension ActiveRunningSetX on ActiveRunningSet {
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(
-
     WorkoutSessionCache,
     #remoteSessionId,
     onDelete: KeyAction.cascade,
@@ -130,8 +129,14 @@ class WorkoutDatabase extends _$WorkoutDatabase {
 
   // ── Existing methods ──────────────────────────────────────────────────────
 
-  Stream<List<ActiveRunningSet>> watchSetsForSession(int sessionId) {
-    return (select(activeRunningSets)..where((t) => t.sessionId.equals(sessionId))).watch();
+  Stream<List<ActiveRunningSet>> watchSetsForExercise({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return (select(activeRunningSets)..where(
+          (t) => t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId),
+        ))
+        .watch();
   }
 
   Future<void> updateActiveSetMetrics({
@@ -194,21 +199,40 @@ class WorkoutDatabase extends _$WorkoutDatabase {
 
   // ── Running-specific methods ──────────────────────────────────────────────
 
-  /// Returns the currently in-progress lap for [sessionId] (isBusy=true,
-  /// isDone=false), or null if no lap is active.
-  ///
-  /// Used during session restore to recover the last unfinished lap.
-  Future<ActiveRunningSet?> getInProgressLap(int sessionId) {
+  /// Returns the currently in-progress lap for one program exercise.
+  Future<ActiveRunningSet?> getInProgressLapForExercise({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return (select(activeRunningSets)
+          ..where(
+            (t) =>
+                t.sessionId.equals(sessionId) &
+                t.programExerciseId.equals(programExerciseId) &
+                t.isBusy.equals(true) &
+                t.isDone.equals(false),
+          )
+          ..limit(1))
+        .getSingleOrNull();
+  }
+
+  /// Returns any in-progress lap for session-level restore discovery.
+  Future<ActiveRunningSet?> getAnyInProgressLapForSession(int sessionId) {
     return (select(activeRunningSets)
           ..where((t) => t.sessionId.equals(sessionId) & t.isBusy.equals(true) & t.isDone.equals(false))
           ..limit(1))
         .getSingleOrNull();
   }
 
-  /// Returns the last lap (highest setNumber) for [sessionId].
-  Future<ActiveRunningSet?> getLastLap(int sessionId) {
+  /// Returns the last lap (highest setNumber) for one program exercise.
+  Future<ActiveRunningSet?> getLastLap({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
     return (select(activeRunningSets)
-          ..where((t) => t.sessionId.equals(sessionId))
+          ..where(
+            (t) => t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId),
+          )
           ..orderBy([(t) => OrderingTerm(expression: t.setNumber, mode: OrderingMode.desc)])
           ..limit(1))
         .getSingleOrNull();
@@ -243,11 +267,16 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     );
   }
 
-  /// Returns all completed laps ([isDone]=true) for a given [sessionId],
-  /// ordered by [setNumber] ascending.
-  Future<List<ActiveRunningSet>> getCompletedLapsForSession(int sessionId) {
+  /// Returns completed laps for one program exercise, ordered by set number.
+  Future<List<ActiveRunningSet>> getCompletedLapsForExercise({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
     return (select(activeRunningSets)
-          ..where((t) => t.sessionId.equals(sessionId) & t.isDone.equals(true))
+          ..where(
+            (t) =>
+                t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId) & t.isDone.equals(true),
+          )
           ..orderBy([(t) => OrderingTerm.asc(t.setNumber)]))
         .get();
   }

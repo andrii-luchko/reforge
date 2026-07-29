@@ -2,32 +2,21 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
-import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
-import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 
+// ignore: one_member_abstracts
 abstract interface class HomeRepository {
-  OnboardedUser? getUserData();
   Future<Result<UserStats?>> getUserStats(StatsPeriod period);
 }
 
 @Injectable(as: HomeRepository)
 class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
-  HomeRepositoryImpl(this._apiClient, this._userSessionService);
+  HomeRepositoryImpl(this._apiClient);
 
   final ApiClient _apiClient;
-  final UserSessionService _userSessionService;
-
-  @override
-  OnboardedUser? getUserData() {
-    return _userSessionService.currentUser?.map(
-      newUser: (_) => null,
-      onboarded: (u) => u,
-    );
-  }
 
   @override
   Future<Result<UserStats?>> getUserStats(StatsPeriod period) async {

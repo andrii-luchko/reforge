@@ -97,6 +97,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
       restoredDurationSec: durationSec,
       restoredSets: restoredSets,
       currentExerciseIndex: startIndex,
+      summary: null,
       error: null,
     );
     logger.d(newState);
@@ -109,7 +110,7 @@ class WorkoutFlowCubit extends Cubit<WorkoutFlowState> {
     final workoutProgramDayId = state.programDay?.id;
     if (workoutProgramDayId == null) return;
 
-    emit(state.copyWith(isStartingWorkout: true, error: null));
+    emit(state.copyWith(isStartingWorkout: true, summary: null, error: null));
 
     final result = await _repository.startWorkoutSession(workoutProgramDayId);
 

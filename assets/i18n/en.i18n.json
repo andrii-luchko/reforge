@@ -146,7 +146,7 @@
             },
             "body_weight": {
                 "title": "What's your current body weight",
-                "select_body_weight_label": "Select your body weight"
+                "select_body_weight_label": "Enter your body weight"
             },
             "main_goal": {
                 "title": "What's your main training goal?",
@@ -428,7 +428,9 @@
         "selectTier": "Select tier"
     },
     "workout_details": {
-        "title": "Power Builder Routine",
+        "power_title": "Power Builder Routine",
+        "endurance_title": "Stamina Builder Routine",
+        "flexibility_title": "Agility Builder Routine",
         "startWorkout": "Start Workout",
         "exercise_count": {
             "one": "$n Exercise",

@@ -42,6 +42,7 @@ class RunningSessionManager {
   int? _programExerciseId;
   int? _currentDbSetId;
   Timer? _snapshotTimer;
+  Future<void>? _endSessionFuture;
 
   // ── Public API for Cubit ───────────────────────────────────────────────────
 
@@ -51,8 +52,14 @@ class RunningSessionManager {
   RunningMode? get currentMode => _currentMode;
 
   /// Fetches historical route points for the session.
-  Future<List<RouteCoordinate>> getRoutePoints(int sessionId) {
-    return _repository.getRoutePoints(sessionId);
+  Future<List<RouteCoordinate>> getRoutePoints({
+    required int sessionId,
+    required int programExerciseId,
+  }) {
+    return _repository.getRoutePoints(
+      sessionId: sessionId,
+      programExerciseId: programExerciseId,
+    );
   }
 
   Future<void> startSession({
@@ -62,8 +69,14 @@ class RunningSessionManager {
     required int programExerciseId,
     bool startPaused = false,
   }) async {
+    final endingSession = _endSessionFuture;
+    if (endingSession != null) await endingSession;
+
     if (_currentMode != null) {
-      if (startPaused) pauseSession();
+      logger.w(
+        'RunningSessionManager: startSession ignored because a session '
+        'is already initialized. Use pauseSession/resumeSession instead.',
+      );
       return;
     }
 
@@ -74,7 +87,10 @@ class RunningSessionManager {
 
     try {
       // Check for an interrupted session lap in the DB
-      final inProgressLap = await _repository.getInProgressLap(sessionId);
+      final inProgressLap = await _repository.getInProgressLapForExercise(
+        sessionId: sessionId,
+        programExerciseId: programExerciseId,
+      );
 
       RunningMetrics? initialOffset;
 
@@ -97,7 +113,10 @@ class RunningSessionManager {
         logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
       } else {
         // Start a fresh lap
-        final lastLap = await _repository.getLastLap(sessionId);
+        final lastLap = await _repository.getLastLap(
+          sessionId: sessionId,
+          programExerciseId: programExerciseId,
+        );
         _currentLapIndex = lastLap?.setNumber ?? 0;
 
         final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)
@@ -115,25 +134,18 @@ class RunningSessionManager {
       }
 
       final engine = _getEngineForMode(mode);
-
-      await engine?.start(initialOffset: initialOffset);
-
+      await _metricsSub?.cancel();
       _metricsSub = engine?.metricsStream.listen(
         _onMetricsReceived,
-        onError: (Object e, StackTrace st) {
-          logger.e('RunningSessionManager: engine stream error', e, st);
-          // Propagate typed errors to the UI (RunningTrackerCubit) so it can
-          // show an appropriate message. We do NOT stop the session — the
-          // engine's internal ticker keeps time even when the sensor fails.
-          if (e is SensorUnavailableException) {
-            endSession();
-          }
-          _controller.addError(e, st);
-        },
+        onError: _onEngineError,
         // CRITICAL: never cancel on first error. A GPS glitch or temporary
         // sensor hiccup should not terminate the entire stream pipeline.
         cancelOnError: false,
       );
+
+      // Subscribe before start so synchronous engine errors or an immediate
+      // first metric cannot be lost during initialization.
+      await engine?.start(initialOffset: initialOffset);
       _startSnapshotTimer();
 
       if (startPaused) {
@@ -141,10 +153,15 @@ class RunningSessionManager {
       }
 
       logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
+    } on TrackingEngineFailureException {
+      // A failed preflight can happen after the active DB row was restored or
+      // created. Finalize it before returning the startup failure.
+      await _endSession(finalizeCurrentLap: true);
+      rethrow;
     } on Object {
       // A failed start must not leave the manager in a state where every
       // subsequent start is ignored because [_currentMode] is already set.
-      endSession();
+      await endSession();
       rethrow;
     }
   }
@@ -210,24 +227,107 @@ class RunningSessionManager {
     unawaited(_handleLapCompletion());
   }
 
-  void endSession() {
-    unawaited(_metricsSub?.cancel());
+  Future<void> endSession() => _endSession();
+
+  Future<void> _endSession({bool finalizeCurrentLap = false}) async {
+    final inFlight = _endSessionFuture;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    final future = _endSessionInternal(finalizeCurrentLap: finalizeCurrentLap);
+    _endSessionFuture = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_endSessionFuture, future)) {
+        _endSessionFuture = null;
+      }
+    }
+  }
+
+  Future<void> _endSessionInternal({required bool finalizeCurrentLap}) async {
+    final dbSetId = finalizeCurrentLap ? _currentDbSetId : null;
+    if (finalizeCurrentLap) {
+      // Claim the active row before awaiting engine shutdown so lap completion
+      // cannot finalize or replace it concurrently.
+      _isCompletingLap = true;
+      _currentDbSetId = null;
+    }
+
+    final metricsSub = _metricsSub;
     _metricsSub = null;
+
     _snapshotTimer?.cancel();
     _snapshotTimer = null;
 
-    _getEngineForMode(_currentMode)?.stop();
+    final engine = _getEngineForMode(_currentMode);
 
+    if (finalizeCurrentLap) {
+      try {
+        await metricsSub?.cancel();
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningSessionManager: failed to cancel terminal metrics subscription', error, stackTrace);
+      }
+      try {
+        await engine?.stop();
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningSessionManager: failed to stop terminal engine', error, stackTrace);
+      }
+    } else {
+      await metricsSub?.cancel();
+      await engine?.stop();
+    }
+
+    if (finalizeCurrentLap && dbSetId != null) {
+      await _writeDriftSnapshot(dbSetId);
+      try {
+        await _repository.markSetAsFinishedLocally(dbSetId);
+      } on Object catch (error, stackTrace) {
+        // The engine is already terminal. Cleanup and user notification must
+        // still complete even if final DB persistence fails.
+        logger.e(
+          'RunningSessionManager: failed to finalize lap after engine failure',
+          error,
+          stackTrace,
+        );
+      }
+    }
+
+    _clearSessionState();
+    logger.d('RunningSessionManager: Session ended');
+  }
+
+  // ── Private ────────────────────────────────────────────────────────────────
+
+  void _onEngineError(Object error, StackTrace stackTrace) {
+    logger.e('RunningSessionManager: engine stream error', error, stackTrace);
+    if (error is TrackingEngineFailureException) {
+      unawaited(_handleTerminalEngineFailure(error, stackTrace));
+      return;
+    }
+    _controller.addError(error, stackTrace);
+  }
+
+  Future<void> _handleTerminalEngineFailure(
+    TrackingEngineFailureException error,
+    StackTrace stackTrace,
+  ) async {
+    await _endSession(finalizeCurrentLap: true);
+    _controller.addError(error, stackTrace);
+  }
+
+  void _clearSessionState() {
     _currentMode = null;
     _limits = null;
     _workoutSessionId = null;
     _programExerciseId = null;
     _currentLapIndex = 0;
     _currentDbSetId = null;
-    logger.d('RunningSessionManager: Session ended');
+    _latestMetrics = null;
+    _isCompletingLap = false;
   }
-
-  // ── Private ────────────────────────────────────────────────────────────────
 
   /// Evaluates if the current metric has reached the target limit for the active lap.
   void _onMetricsReceived(RunningMetrics rawMetrics) {

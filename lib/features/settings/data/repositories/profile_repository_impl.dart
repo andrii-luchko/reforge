@@ -16,14 +16,13 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
   final ApiClient _apiClient;
 
   @override
-  Future<Result<User>> updateUsername(String username) async {
+  Future<Result<String>> updateUsername(String username) async {
     try {
       final response = await makeRequest(
         () => _apiClient.updateUsername(username),
         label: 'updateUsername',
       );
-      final user = response.data;
-      return Result.success(user);
+      return Result.success(response.data.username);
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -119,7 +118,7 @@ class ProfileRepositoryImpl with RepositoryErrorHandler implements ProfileReposi
   }
 
   @override
-  Future<Result<User>> updateBodyWeight(int bodyWeight) async {
+  Future<Result<User>> updateBodyWeight(double bodyWeight) async {
     try {
       final response = await makeRequest(
         () => _apiClient.updateBodyWeight(bodyWeight),

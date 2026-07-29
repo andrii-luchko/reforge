@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/achievements/data/enum/rank_status.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/domain/enums/rank.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 
 part 'user_ranks_dto.freezed.dart';
@@ -43,9 +44,10 @@ sealed class ProgressionStep with _$ProgressionStep {
   factory ProgressionStep.fromJson(Map<String, dynamic> json) => _$ProgressionStepFromJson(json);
 
   RankEntity toDomain(Faction faction) {
+    final rankE = Rank.fromJapaneseString(japanRank);
+
     return RankEntity(
-      //TODO(Masayoshi): 0 for now cause we dont know real user rank here
-      imageAsset: faction.rankCardAsset(0),
+      imageAsset: rankE.imageAsset(faction),
       japanRankName: japanRank,
       rankName: rank,
       faction: faction,

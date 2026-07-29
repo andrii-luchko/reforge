@@ -3,6 +3,7 @@ import 'package:reforge/features/camera_detection/domain/enums/pose_detection_pr
 import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
 
 import 'package:reforge/features/workout_common/models/tier.dart';
+import 'package:reforge/features/workout_flow/data/enums/exercise_type.dart';
 import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
@@ -18,6 +19,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
     required int id,
     required String name,
     required String description,
+    required int type,
     required String key,
 
     @Default([]) List<String> metrics,
@@ -50,7 +52,7 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       name: name,
       description: description,
       key: key,
-
+      type: ExerciseType.fromInt(type),
       metrics: metrics.map(_mapStringToMetric).whereType<WorkoutMetric>().toList(),
       poseDetectionPreset: _mapPoseDetectionPreset(poseDetectionPreset),
       isTiered: isTiered,

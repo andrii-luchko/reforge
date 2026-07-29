@@ -7,6 +7,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
 import 'package:reforge/features/workout_common/models/workout_set.dart';
 import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
@@ -32,11 +33,13 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
   WorkoutRestoreCubit(
     this._sessionCache,
     this._repository,
+    this._localWorkoutRepository,
     this._flowCubit,
   ) : super(const WorkoutRestoreState.idle());
 
   final WorkoutSessionCacheRepository _sessionCache;
   final TrainingSessionRepository _repository;
+  final LocalWorkoutSessionRepository _localWorkoutRepository;
 
   /// Injected so restore can populate the active-workout cubit directly.
   final WorkoutFlowCubit _flowCubit;
@@ -123,13 +126,19 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     }
 
     final restoredSets = _buildRestoredSetsMap(details);
-    final resumeIndex = _findLastExerciseWithSets(programDay, restoredSets);
+    final inProgressLap = await _localWorkoutRepository.getAnyInProgressLapForSession(pending.sessionId);
+    final inProgressIndex = inProgressLap == null
+        ? -1
+        : programDay.sortedExercises.indexWhere(
+            (exercise) => exercise.id == inProgressLap.programExerciseId,
+          );
+    final resumeIndex = inProgressIndex >= 0 ? inProgressIndex : _findLastExerciseWithSets(programDay, restoredSets);
     final resumeExercise = programDay.sortedExercises[resumeIndex];
 
     logger.d(
       'WorkoutRestoreCubit: restoring session ${pending.sessionId} '
       '— resuming at exercise index $resumeIndex '
-      '(id: ${resumeExercise.exerciseDetails.id})',
+      '(programExerciseId: ${resumeExercise.id})',
     );
 
     // Populate the active-workout cubit so it's ready when we navigate.
@@ -141,7 +150,7 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       startIndex: resumeIndex,
     );
 
-    emit(WorkoutRestoreState.restored(resumeExerciseId: resumeExercise.exerciseDetails.id));
+    emit(WorkoutRestoreState.restored(resumeProgramExerciseId: resumeExercise.id));
   }
 
   /// Cancels the interrupted session on the backend (best-effort) and clears

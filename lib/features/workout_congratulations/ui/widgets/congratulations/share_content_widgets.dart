@@ -1,14 +1,11 @@
 // ignore_for_file: prefer_match_file_name
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/summary_content_widget.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/centered_title_section.dart';
-import 'package:reforge/shared/horizontal_xp_bar.dart';
 import 'package:reforge/shared/sunrays_image_container.dart';
-import 'package:reforge/shared/uikit/app_tag.dart';
-import 'package:reforge/shared/uikit/staggered_summary_card.dart';
 
 class AchievementShareContent extends StatelessWidget {
   const AchievementShareContent({
@@ -66,69 +63,13 @@ class SummaryShareContent extends StatelessWidget {
   });
 
   final int? newLevel;
-  final double? xpProgress;
+  final double xpProgress;
   final int xpEarned;
-
   final int timeSpentSec;
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-
-    return hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
-  }
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final items = <Widget>[];
-
-    var itemNumber = 1;
-
-    if (newLevel != null) {
-      items.add(
-        SummaryRowWidget(
-          number: itemNumber++,
-          title: t.workout_congratulations.new_level,
-          tag: AppTag(text: '$newLevel ${t.common.lv}'),
-        ),
-      );
-    }
-
-    items
-      ..add(
-        SummaryRowWidget(
-          number: itemNumber++,
-          title: t.workout_congratulations.xp_earned,
-          tag: Expanded(
-            flex: 2,
-            child: Row(
-              spacing: 8,
-              children: [
-                Flexible(
-                  child: HorizontalXPBar(
-                    progress: xpProgress ?? 0.2,
-                  ),
-                ),
-                Text(
-                  '+${xpEarned.toString().replaceAllMapped(
-                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                    (m) => '${m[1]},',
-                  )} XP',
-                  style: subheadH8Semibold.copyWith(color: appTheme.beige100),
-                ),
-              ],
-            ),
-          ),
-        ),
-      )
-      ..add(
-        SummaryRowWidget(
-          number: itemNumber++,
-          title: t.workout_congratulations.duration,
-          tag: AppTag(text: _formatDuration(Duration(seconds: timeSpentSec))),
-        ),
-      );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -163,7 +104,12 @@ class SummaryShareContent extends StatelessWidget {
           child: FittedBox(
             child: SizedBox(
               width: 400,
-              child: StaggeredSummaryCard(items: items),
+              child: WorkoutSummaryStatsCard(
+                newLevel: newLevel,
+                xpProgress: xpProgress,
+                xpEarned: xpEarned,
+                timeSpentSec: timeSpentSec,
+              ),
             ),
           ),
         ),

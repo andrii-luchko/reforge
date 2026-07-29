@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
@@ -12,6 +14,7 @@ import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/page/base_edit_page.dart';
 import 'package:reforge/features/settings/ui/widgets/notification_switcher.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:toastification/toastification.dart';
 
 class SettingsNotificationPage extends StatelessWidget {
   const SettingsNotificationPage({super.key});
@@ -176,15 +179,21 @@ class _NotificationTogglesContent extends StatelessWidget {
   }
 
   Future<void> _onRemindersChanged(BuildContext context, bool value) async {
-    await context.read<UserCubit>().updateNotificationSettings(
+    final result = await context.read<UserCubit>().updateNotificationSettings(
       remindersEnabled: value,
     );
+    if (result case Failure(:final error)) {
+      if (context.mounted) toastification.showErrorToast(error.toString(), context);
+    }
   }
 
   Future<void> _onAnnouncementsChanged(BuildContext context, bool value) async {
-    await context.read<UserCubit>().updateNotificationSettings(
+    final result = await context.read<UserCubit>().updateNotificationSettings(
       announcementsEnabled: value,
     );
+    if (result case Failure(:final error)) {
+      if (context.mounted) toastification.showErrorToast(error.toString(), context);
+    }
   }
 }
 

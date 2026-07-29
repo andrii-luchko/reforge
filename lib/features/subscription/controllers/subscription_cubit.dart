@@ -8,6 +8,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/core/user/data/models/user_subscription.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
@@ -19,10 +20,13 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 part 'subscription_cubit.freezed.dart';
 part 'subscription_state.dart';
 
+typedef _UserSubscriptionProjection = ({int id, UserSubscription? subscription});
+
 @injectable
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repository, this._userCubit) : super(const SubscriptionState()) {
-    _userSubscription = _userCubit.stream.listen(_onUserChanges);
+    unawaited(_onUserChanges(_userCubit.state));
+    _userSubscription = _userCubit.stream.listen((state) => unawaited(_onUserChanges(state)));
     _subscriptionUpdatesSubscription = _repository.subscriptionUpdates.listen(_onSubscriptionUpdated);
   }
 
@@ -30,6 +34,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   final UserCubit _userCubit;
   StreamSubscription<UserState>? _userSubscription;
   StreamSubscription<SubscriptionEntity?>? _subscriptionUpdatesSubscription;
+  _UserSubscriptionProjection? _lastUser;
+  int _userRevision = 0;
 
   /// Cross-platform fallback: when subscription was bought on another platform,
   /// RC returns different productIdentifier; backend's rcPackageGroupId allows
@@ -43,15 +49,37 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   Future<void> _onUserChanges(UserState state) async {
-    await state.maybeMap(
-      loaded: (value) async {
-        await _repository.login(value.user.id);
-        await loadOfferings();
-      },
-      initial: (value) => _repository.logout(),
-      deleted: (value) => _repository.logout(),
-      orElse: () {},
-    );
+    final projection = switch (state) {
+      Loaded(:final user) => (
+        id: user.id,
+        subscription: user is OnboardedUser ? user.subscription : null,
+      ),
+      Initial() || Deleted() => null,
+      _ => _lastUser,
+    };
+
+    if (projection == _lastUser) return;
+    final previous = _lastUser;
+    _lastUser = projection;
+    final revision = ++_userRevision;
+
+    if (projection == null) {
+      if (previous != null) await _repository.logout();
+      if (revision != _userRevision) return;
+      emit(const SubscriptionState());
+      return;
+    }
+
+    if (previous == null || previous.id != projection.id) {
+      await _repository.login(projection.id);
+      if (revision != _userRevision) return;
+      await loadOfferings();
+      return;
+    }
+
+    if (previous.subscription != projection.subscription) {
+      await loadOfferings();
+    }
   }
 
   void _onSubscriptionUpdated(SubscriptionEntity? subscription) {
@@ -60,9 +88,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   Future<void> loadOfferings() async {
+    final revision = _userRevision;
     emit(state.copyWith(isLoading: true, error: null));
 
     final offeringsResult = await _repository.getOfferings();
+    if (revision != _userRevision) return;
     SubscriptionEntity? currentSubscription;
     switch (offeringsResult) {
       case Success(value: final offerings):
@@ -70,6 +100,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
           packages: offerings.packages,
           fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
         );
+        if (revision != _userRevision) return;
         switch (subscriptionResult) {
           case Success(value: final sub):
             currentSubscription = sub;
