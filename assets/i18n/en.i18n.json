@@ -389,33 +389,35 @@
             "immortal": "IMMORTAL",
             "forges": "FORGES",
             "noLeaders": "No leaders in $faction yet",
-            "beFirst": "Be the first to claim the title!",
-            "guide": {
-                "helpLabel": "Learn about the Immortal Forges",
-                "back": "Back",
-                "next": "Next",
-                "skip": "Skip",
-                "factionTitle": "Choose your Forge",
-                "factionDescription": "Each faction measures a different aspect of performance: Strength, Running, or Flexibility.",
-                "overviewTitle": "Immortal Forges",
-                "overviewDescription": "Every workout is a battle for glory. Compete against your fellow faction members across the Immortal Forges, conquer the leaderboards, and forge your legacy as the next Daizōshō.",
-                "forgesTitle": "Immortal Forges and Daizōshō",
-                "forgesDescription": "The Immortal Forges measure different aspects of your performance. Earn the highest score in a Forge to become its Champion, or excel across every Forge to claim the title of Daizōshō, the greatest champion of them all.",
-                "daizoshoSubtitle": "The Great Artificer",
-                "daizoshoDescription": "The highest honor in your faction. The Great Artificer is awarded to the athlete with the best overall performance across all Immortal Forges, rewarding complete balance rather than excellence in just one area.",
-                "strengthTitle": "Strength",
-                "strengthDescription": "Measures your peak performance. Based on your strongest lifts and bodyweight achievements.",
-                "runningTitle": "Running",
-                "runningDescription": "Measures your greatest endurance performance. Based on your longest completed distance, with faster times breaking ties.",
-                "flexibilityTitle": "Flexibility",
-                "flexibilityDescription": "Measures your highest level of mobility and end-range strength across key flexibility standards.",
-                "burdenDescription": "Measures your total workload during the current cycle. Lift more weight, run more distance, or accumulate more time under tension to climb the rankings.",
-                "judgementDescription": "Measures efficiency relative to your bodyweight. Rewards athletes who achieve the greatest performance for their size, not simply the biggest numbers.",
-                "strifeDescription": "Measures total XP earned during the current cycle. Every workout, quest, milestone, and streak contributes toward your score."
-            }
+            "beFirst": "Be the first to claim the title!"
         },
         "currentUserLabel": "Me",
         "xpLabel": "XP"
+    },
+    "guides": {
+        "controls": {
+            "back": "Back",
+            "next": "Next",
+            "skip": "Skip"
+        },
+        "leaderboard": {
+            "introTitle": "Leaderboard",
+            "introDescription": "Every workout is a battle for glory. Compete across the Immortal Forges, conquer the leaderboards, and rise to become Daizōshō.",
+            "factionTitle": "Choose your Forge",
+            "factionDescription": "Each faction measures a different aspect of performance: Strength, Running, or Flexibility.",
+            "forgesTitle": "Immortal Forges and Daizōshō",
+            "forgesDescription": "Each Forge measures a different skill. Top one to become its Champion — dominate all of them to become Daizōshō.",
+            "daizoshoDescription": "The faction's highest honor — earned for balanced excellence across every Forge, not just one.",
+            "strengthTitle": "Strength",
+            "strengthDescription": "Peak performance — based on your strongest lifts and bodyweight feats.",
+            "runningTitle": "Running",
+            "runningDescription": "Greatest endurance — longest distance completed, with faster times breaking ties.",
+            "flexibilityTitle": "Flexibility",
+            "flexibilityDescription": "Your best mobility and end-range strength across key standards.",
+            "burdenDescription": "Total workload this cycle — weight lifted, distance run, time under tension.",
+            "judgementDescription": "Efficiency per bodyweight — rewards output relative to size, not raw numbers.",
+            "strifeDescription": "Total XP this cycle — from workouts, quests, milestones, and streaks."
+        }
     },
     "errors": {
         "connection_timeout": "Connection timeout. Please check your internet.",

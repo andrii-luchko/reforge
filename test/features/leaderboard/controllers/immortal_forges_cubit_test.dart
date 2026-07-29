@@ -50,6 +50,11 @@ void main() {
     when(() => mockAnalytics.logEvent(any())).thenAnswer((_) async {});
     when(() => mockUserCubit.currentOnboardedUser).thenReturn(null);
     when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => const Stream.empty());
+    for (final faction in Faction.values) {
+      when(
+        () => mockRepository.getImmortalForgesForFaction(faction),
+      ).thenAnswer((_) async => const Result.success([]));
+    }
   });
 
   group('ImmortalForgesCubit', () {
@@ -102,18 +107,21 @@ void main() {
       ).thenAnswer((_) async => Result.success(gakkiLeaders));
       when(
         () => mockRepository.getImmortalForgesForFaction(Faction.gyohyo),
-      ).thenAnswer((_) async => Result.success(gyohyoLeaders));
+      ).thenAnswer((_) async => Result.error(Exception('Initial failure')));
 
       final cubit = ImmortalForgesCubit(mockRepository, mockAnalytics, mockUserCubit);
       await Future.delayed(const Duration(milliseconds: 50));
 
+      when(
+        () => mockRepository.getImmortalForgesForFaction(Faction.gyohyo),
+      ).thenAnswer((_) async => Result.success(gyohyoLeaders));
       await cubit.changeFaction(Faction.gyohyo);
 
       expect(cubit.state.forgeData[Faction.gyohyo], gyohyoLeaders);
-      verify(() => mockRepository.getImmortalForgesForFaction(Faction.gyohyo)).called(1);
+      verify(() => mockRepository.getImmortalForgesForFaction(Faction.gyohyo)).called(2);
     });
 
-    test('refresh calls repository for selectedFaction', () async {
+    test('refresh reloads all factions', () async {
       final leaders = [createTestImmortalForgeEntity()];
       when(
         () => mockRepository.getImmortalForgesForFaction(Faction.gakki),
@@ -124,10 +132,12 @@ void main() {
 
       await cubit.refresh();
 
-      verify(() => mockRepository.getImmortalForgesForFaction(Faction.gakki)).called(2);
+      for (final faction in Faction.values) {
+        verify(() => mockRepository.getImmortalForgesForFaction(faction)).called(2);
+      }
     });
 
-    test('switches to a changed user faction, loads it once, and clears on logout', () async {
+    test('switches to a cached changed user faction and clears on logout', () async {
       final changes = StreamController<OnboardedUser?>.broadcast();
       when(() => mockUserCubit.currentOnboardedUser).thenReturn(createTestUser(Faction.gakki));
       when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => changes.stream);

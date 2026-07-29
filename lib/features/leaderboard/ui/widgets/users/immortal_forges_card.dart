@@ -1,9 +1,14 @@
 // ignore_for_file: prefer_match_file_name
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 // Ensure these imports are correct in your project structure
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/text_style_extension.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
@@ -11,11 +16,9 @@ import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart'
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/rhombus_painter.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/gradient_text_header.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_guide.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 const double designWidth = 358;
@@ -80,14 +83,12 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
 class ImmortalForcesCard extends StatelessWidget {
   const ImmortalForcesCard({
     required this.users,
-    this.guideKeys,
-    this.guideTooltips,
+    this.guide,
     super.key,
   });
 
   final List<ImmortalForgeEntity> users;
-  final ImmortalForgesGuideKeys? guideKeys;
-  final Map<ImmortalForgeRank, Widget>? guideTooltips;
+  final LeaderboardGuide? guide;
 
   ImmortalForgeEntity? _getUserByRank(int rank) {
     return users.where((u) => u.rank == rank).firstOrNull;
@@ -95,6 +96,7 @@ class ImmortalForcesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const rangGuidWindowSize = Size(124, 128);
     final ranks = Iterable.generate(5, (i) => _getUserByRank(i + 1)).toList();
     final userRank1 = ranks.first;
 
@@ -155,42 +157,37 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[3] != null) _RankAvatar(user: ranks[3]!, alignment: const Alignment(-0.85, 0.9)),
                     if (ranks[4] != null) _RankAvatar(user: ranks[4]!, alignment: const Alignment(0.85, 0.9)),
 
-                    if (guideKeys != null && guideTooltips != null) ...[
-                      if (ranks[0] != null)
-                        _RankShowcaseTarget(
-                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.daizosho),
-                          tooltip: guideTooltips![ImmortalForgeRank.daizosho]!,
-                          alignment: const Alignment(0, 0.2),
-                          size: const Size(140, 190),
-                        ),
-                      if (ranks[1] != null)
-                        _RankShowcaseTarget(
-                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.might),
-                          tooltip: guideTooltips![ImmortalForgeRank.might]!,
-                          alignment: const Alignment(-1, -1.3),
-                          size: const Size(128, 128),
-                        ),
-                      if (ranks[2] != null)
-                        _RankShowcaseTarget(
-                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.judgement),
-                          tooltip: guideTooltips![ImmortalForgeRank.judgement]!,
-                          alignment: const Alignment(1, -1.3),
-                          size: const Size(128, 128),
-                        ),
-                      if (ranks[3] != null)
-                        _RankShowcaseTarget(
-                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.strife),
-                          tooltip: guideTooltips![ImmortalForgeRank.strife]!,
-                          alignment: const Alignment(-1, 1.3),
-                          size: const Size(128, 128),
-                        ),
-                      if (ranks[4] != null)
-                        _RankShowcaseTarget(
-                          showcaseKey: guideKeys!.rank(ImmortalForgeRank.burden),
-                          tooltip: guideTooltips![ImmortalForgeRank.burden]!,
-                          alignment: const Alignment(1, 1.3),
-                          size: const Size(120, 126),
-                        ),
+                    if (guide case final guide?) ...[
+                      _RankGuideTarget(
+                        guide: guide,
+                        step: LeaderboardGuideStep.daizosho,
+                        alignment: const Alignment(0, 0.2),
+                        size: const Size(140, 190),
+                      ),
+                      _RankGuideTarget(
+                        guide: guide,
+                        step: LeaderboardGuideStep.might,
+                        alignment: const Alignment(-1, -1.3),
+                        size: rangGuidWindowSize,
+                      ),
+                      _RankGuideTarget(
+                        guide: guide,
+                        step: LeaderboardGuideStep.judgement,
+                        alignment: const Alignment(1, -1.3),
+                        size: rangGuidWindowSize,
+                      ),
+                      _RankGuideTarget(
+                        guide: guide,
+                        step: LeaderboardGuideStep.strife,
+                        alignment: const Alignment(-1, 1.3),
+                        size: rangGuidWindowSize,
+                      ),
+                      _RankGuideTarget(
+                        guide: guide,
+                        step: LeaderboardGuideStep.burden,
+                        alignment: const Alignment(1, 1.3),
+                        size: rangGuidWindowSize,
+                      ),
                     ],
                   ],
                 ),
@@ -270,16 +267,16 @@ class _RankAvatar extends StatelessWidget {
   }
 }
 
-class _RankShowcaseTarget extends StatelessWidget {
-  const _RankShowcaseTarget({
-    required this.showcaseKey,
-    required this.tooltip,
+class _RankGuideTarget extends StatelessWidget {
+  const _RankGuideTarget({
+    required this.guide,
+    required this.step,
     required this.alignment,
     required this.size,
   });
 
-  final GlobalKey showcaseKey;
-  final Widget tooltip;
+  final LeaderboardGuide guide;
+  final LeaderboardGuideStep step;
   final Alignment alignment;
   final Size size;
 
@@ -288,15 +285,16 @@ class _RankShowcaseTarget extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: IgnorePointer(
-        child: Showcase.withWidget(
-          overlayColor: context.appTheme.beige1000,
-          overlayOpacity: 0.97,
-          key: showcaseKey,
-          scope: ImmortalForgesGuideKeys.scope,
+        child: GuideTarget(
+          anchor: guide.anchor(step),
+          scope: LeaderboardGuide.scope,
+          guideCubit: context.read<GuideCubit>(),
           targetPadding: const EdgeInsets.all(4),
-          container: tooltip,
+          tooltip: guide.tooltip(
+            step,
+            immortalForgesCubit: context.read<ImmortalForgesCubit>(),
+          ),
           targetBorderRadius: .circular(16),
-          disableMovingAnimation: true,
           child: SizedBox.fromSize(size: size),
         ),
       ),

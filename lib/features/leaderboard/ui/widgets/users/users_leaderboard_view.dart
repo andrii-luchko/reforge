@@ -4,37 +4,31 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
-import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
-import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_guide.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/switchers/multi_options_switcher.dart';
-import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
 class UsersLeaderboardView extends StatelessWidget {
-  const UsersLeaderboardView({
-    required this.guideKeys,
-    required this.onStartGuide,
-    super.key,
-  });
+  const UsersLeaderboardView({required this.guide, super.key});
 
-  final ImmortalForgesGuideKeys guideKeys;
-  final ValueChanged<List<GlobalKey>> onStartGuide;
+  final LeaderboardGuide guide;
 
   @override
   Widget build(BuildContext context) {
     return SliverMainAxisGroup(
       slivers: [
-        ImmortalForgesSection(guideKeys: guideKeys, onStartGuide: onStartGuide),
+        ImmortalForgesSection(guide: guide),
         const SliverPadding(padding: EdgeInsets.only(bottom: 90), sliver: LeaderBoardListSection()),
       ],
     );
@@ -42,14 +36,9 @@ class UsersLeaderboardView extends StatelessWidget {
 }
 
 class ImmortalForgesSection extends StatelessWidget {
-  const ImmortalForgesSection({
-    required this.guideKeys,
-    required this.onStartGuide,
-    super.key,
-  });
+  const ImmortalForgesSection({required this.guide, super.key});
 
-  final ImmortalForgesGuideKeys guideKeys;
-  final ValueChanged<List<GlobalKey>> onStartGuide;
+  final LeaderboardGuide guide;
   static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
   @override
   Widget build(BuildContext context) {
@@ -65,19 +54,7 @@ class ImmortalForgesSection extends StatelessWidget {
         final isLoading = state.isLoading;
 
         final isEmpty = state.currentList.isEmpty;
-        final guideAvailable = state.areAllFactionsLoaded && !isEmpty;
-        final guideSteps = guideKeys.stepsFor(state.currentList);
-        final guide = t.leaderboard.immortalForges.guide;
-        final guideTooltips = <ImmortalForgeRank, Widget>{
-          for (final rank in ImmortalForgeRank.values)
-            if (state.currentList.any((user) => user.rank == rank.rank))
-              rank: _rankTooltip(
-                rank: rank,
-                faction: selectedFaction,
-                currentStep: guideSteps.indexOf(guideKeys.rank(rank)) + 1,
-                totalSteps: guideSteps.length,
-              ),
-        };
+        final guideCubit = context.read<GuideCubit>();
 
         return SliverSkeletonizer(
           enabled: isLoading,
@@ -87,15 +64,13 @@ class ImmortalForgesSection extends StatelessWidget {
                 padding: horizontalPadding.copyWith(bottom: 32),
                 sliver: SliverToBoxAdapter(
                   child: Skeleton.leaf(
-                    child: Showcase.withWidget(
-                      key: guideKeys.factionSelector,
-                      scope: ImmortalForgesGuideKeys.scope,
-                      targetPadding: const EdgeInsets.all(6),
-                      container: ImmortalForgesGuideTooltip(
-                        title: guide.factionTitle,
-                        description: guide.factionDescription,
-                        currentStep: 1,
-                        totalSteps: guideSteps.length,
+                    child: GuideTarget(
+                      anchor: guide.anchor(LeaderboardGuideStep.factionSelector),
+                      scope: LeaderboardGuide.scope,
+                      guideCubit: guideCubit,
+                      tooltip: guide.tooltip(
+                        LeaderboardGuideStep.factionSelector,
+                        immortalForgesCubit: cubit,
                       ),
                       child: MultiOptionSwitcher<Faction>(
                         selectedValue: selectedFaction,
@@ -116,44 +91,17 @@ class ImmortalForgesSection extends StatelessWidget {
                 sliver: SliverToBoxAdapter(
                   child: Skeleton.replace(
                     replacement: const ImmortalForcesCardShimmer(),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Showcase.withWidget(
-                          key: guideKeys.overview,
-                          scope: ImmortalForgesGuideKeys.scope,
-                          targetPadding: const EdgeInsets.all(6),
-                          container: ImmortalForgesGuideTooltip(
-                            title: guide.overviewTitle,
-                            description: '${guide.overviewDescription}\n\n${guide.forgesDescription}',
-                            currentStep: 2,
-                            totalSteps: guideSteps.length,
-                          ),
-                          child: isEmpty
-                              ? ImmortalForcesCardEmpty(faction: selectedFaction)
-                              : ImmortalForcesCard(
-                                  users: state.currentList,
-                                  guideKeys: guideKeys,
-                                  guideTooltips: guideTooltips,
-                                ),
-                        ),
-                        if (guideAvailable)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Semantics(
-                              button: true,
-                              label: guide.helpLabel,
-                              child: AppIconButton.icon(
-                                iconData: Icons.question_mark_rounded,
-                                width: 36,
-                                height: 36,
-                                iconSize: 18,
-                                onPressed: () => onStartGuide(guideSteps),
-                              ),
-                            ),
-                          ),
-                      ],
+                    child: GuideTarget(
+                      anchor: guide.anchor(LeaderboardGuideStep.immortalForges),
+                      scope: LeaderboardGuide.scope,
+                      guideCubit: guideCubit,
+                      tooltip: guide.tooltip(
+                        LeaderboardGuideStep.immortalForges,
+                        immortalForgesCubit: cubit,
+                      ),
+                      child: isEmpty
+                          ? ImmortalForcesCardEmpty(faction: selectedFaction)
+                          : ImmortalForcesCard(users: state.currentList, guide: guide),
                     ),
                   ).animateEntrance(),
                 ),
@@ -162,22 +110,6 @@ class ImmortalForgesSection extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _rankTooltip({
-    required ImmortalForgeRank rank,
-    required Faction faction,
-    required int currentStep,
-    required int totalSteps,
-  }) {
-    final content = forgeGuideContent(rank, faction);
-    return ImmortalForgesGuideTooltip(
-      title: content.title,
-      subtitle: content.subtitle,
-      description: content.description,
-      currentStep: currentStep,
-      totalSteps: totalSteps,
     );
   }
 }

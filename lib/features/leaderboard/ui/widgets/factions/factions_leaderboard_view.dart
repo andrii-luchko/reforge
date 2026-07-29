@@ -45,7 +45,7 @@ class FactionsLeaderboardView extends StatelessWidget {
                 child: FactionLeaderboardModePiker(
                   selectedMode: state.selectedMode,
                   onModeChanged: cubit.changeMode,
-                ),
+                ).animateEntrance(),
               ),
 
               SliverPadding(
