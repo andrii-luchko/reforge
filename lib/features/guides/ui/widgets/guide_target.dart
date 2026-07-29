@@ -36,7 +36,7 @@ class GuideTarget extends StatelessWidget {
       targetPadding: targetPadding,
       targetBorderRadius: targetBorderRadius,
       disableMovingAnimation: true,
-      disableBarrierInteraction: true,
+      disableBarrierInteraction: disableBarrierInteraction,
       disableDefaultTargetGestures: true,
       container: BlocProvider.value(
         value: guideCubit,
