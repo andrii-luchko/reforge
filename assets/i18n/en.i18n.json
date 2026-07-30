@@ -429,6 +429,14 @@
             "victoryPointsDescription": "Win a week, earn 1 Victory Point. First to 3 Victory Points becomes Monthly Champion.",
             "monthlyRewardsTitle": "Monthly Rewards",
             "monthlyRewardsDescription": "Monthly Champions earn a 7-day +5% XP boost."
+        },
+        "plateOfKeragura": {
+            "introTitle": "Plate of Keragura",
+            "introDescription": "Every level unlocks a new Plate of Keragura, revealing lore, heroes, and history of the world.",
+            "unlockedPlateTitle": "Open the Archive",
+            "unlockedPlateDescription": "Tap any unlocked Plate to reveal its artwork and story. Once loaded, you can expand or collapse it anytime.",
+            "lockedPlateTitle": "Locked Plates",
+            "lockedPlateDescription": "Locked Plates become available as you level up. Tap one to see the level required."
         }
     },
     "errors": {

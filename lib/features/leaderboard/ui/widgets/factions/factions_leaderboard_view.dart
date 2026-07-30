@@ -31,6 +31,7 @@ class FactionsLeaderboardView extends StatelessWidget {
     final cubit = context.read<FactionsLeaderboardCubit>();
 
     return BlocConsumer<FactionsLeaderboardCubit, FactionsLeaderboardState>(
+      listenWhen: (previous, current) => current.error != previous.error,
       listener: (context, state) {
         final error = state.error;
         if (error == null) return;

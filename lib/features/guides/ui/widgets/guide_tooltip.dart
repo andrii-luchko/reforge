@@ -63,16 +63,25 @@ class GuideTooltip extends StatelessWidget {
                     children: [
                       TextButton(
                         onPressed: currentStep == 1 ? null : context.read<GuideCubit>().previous,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
                         child: Text(t.guides.controls.back),
                       ),
                       const Spacer(),
                       TextButton(
                         onPressed: context.read<GuideCubit>().skip,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
                         child: Text(t.guides.controls.skip),
                       ),
                       const SizedBox(width: 4),
                       FilledButton(
                         onPressed: context.read<GuideCubit>().next,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
                         child: Text(t.guides.controls.next),
                       ),
                     ],

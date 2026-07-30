@@ -41,6 +41,13 @@ void main() {
       isFalse,
     );
     expect(
+      await repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.plateOfKeragura,
+      ),
+      isFalse,
+    );
+    expect(
       preferences.getBool('guides.71.leaderboard.completed'),
       isTrue,
     );
@@ -51,6 +58,15 @@ void main() {
     );
     expect(
       preferences.getBool('guides.71.faction_wars.completed'),
+      isTrue,
+    );
+
+    await repository.markCompleted(
+      userId: 71,
+      guideId: GuideId.plateOfKeragura,
+    );
+    expect(
+      preferences.getBool('guides.71.plate_of_keragura.completed'),
       isTrue,
     );
   });

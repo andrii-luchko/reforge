@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/guides/controller/guide_start_result.dart';
 import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/entities/guide_session.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
@@ -24,15 +25,24 @@ class GuideCubit extends Cubit<GuideState> {
   bool _startInProgress = false;
   bool _completionInProgress = false;
 
-  Future<void> startIfNeeded({
+  Future<GuideStartResult> startIfNeeded({
     required int userId,
     required GuideSession session,
   }) async {
-    if (isClosed || state is GuideChecking || state is GuideRunning || _startInProgress) return;
+    if (isClosed || state is GuideChecking || state is GuideRunning || _startInProgress) {
+      return GuideStartResult.ignored;
+    }
 
     // final currentState = state;
-    // if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) return;
-    // if (!_driver.canStart(session)) return;
+    // if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) {
+    //   return GuideStartResult.completed;
+    // }
+
+    try {
+      if (!_driver.canStart(session)) return GuideStartResult.notReady;
+    } on Object {
+      return GuideStartResult.failed;
+    }
 
     _startInProgress = true;
     _completionInProgress = false;
@@ -41,12 +51,15 @@ class GuideCubit extends Cubit<GuideState> {
     emit(GuideState.checking(guideId: session.id));
 
     try {
-      // final isCompleted = await _progressRepository.isCompleted(userId: userId, guideId: session.id);
-      // if (isClosed) return;
+      final isCompleted = await _progressRepository.isCompleted(
+        userId: userId,
+        guideId: session.id,
+      );
+      if (isClosed) return GuideStartResult.ignored;
 
       // if (isCompleted) {
       //   emit(GuideState.completed(guideId: session.id));
-      //   return;
+      //   return GuideStartResult.completed;
       // }
 
       _session = session;
@@ -58,12 +71,14 @@ class GuideCubit extends Cubit<GuideState> {
         ),
       );
       _driver.start(session);
+      return GuideStartResult.started;
     } on Object {
       if (!isClosed) {
         _session = null;
         _userId = null;
         emit(const GuideState.initial());
       }
+      return GuideStartResult.failed;
     } finally {
       _startInProgress = false;
     }

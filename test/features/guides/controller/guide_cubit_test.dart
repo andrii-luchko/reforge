@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/controller/guide_start_result.dart';
 import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/entities/guide_session.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
@@ -15,6 +16,7 @@ class _FakeGuideDriver implements GuideDriver {
   final StreamController<GuideDriverEvent> _events = StreamController.broadcast(sync: true);
 
   bool isReady = true;
+  bool throwOnStart = false;
   int startCalls = 0;
   int nextCalls = 0;
   int previousCalls = 0;
@@ -29,6 +31,7 @@ class _FakeGuideDriver implements GuideDriver {
 
   @override
   void start(GuideSession session) {
+    if (throwOnStart) throw StateError('Unable to start guide');
     startCalls++;
   }
 
@@ -84,8 +87,12 @@ void main() {
   test('does not check or start until every target is rendered', () async {
     driver.isReady = false;
 
-    await cubit.startIfNeeded(userId: 71, session: _session());
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
 
+    expect(result, GuideStartResult.notReady);
     expect(cubit.state, const GuideState.initial());
     expect(driver.startCalls, 0);
     verifyNever(
@@ -101,8 +108,12 @@ void main() {
       () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).thenAnswer((_) async => true);
 
-    await cubit.startIfNeeded(userId: 71, session: _session());
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
 
+    expect(result, GuideStartResult.completed);
     expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     expect(driver.startCalls, 0);
   });
@@ -113,9 +124,17 @@ void main() {
     ).thenAnswer((_) async => false);
 
     final session = _session();
-    await cubit.startIfNeeded(userId: 71, session: session);
-    await cubit.startIfNeeded(userId: 71, session: session);
+    final firstResult = await cubit.startIfNeeded(
+      userId: 71,
+      session: session,
+    );
+    final secondResult = await cubit.startIfNeeded(
+      userId: 71,
+      session: session,
+    );
 
+    expect(firstResult, GuideStartResult.started);
+    expect(secondResult, GuideStartResult.ignored);
     expect(
       cubit.state,
       const GuideState.running(
@@ -262,11 +281,12 @@ void main() {
     ).thenAnswer((_) async => false);
 
     await cubit.startIfNeeded(userId: 71, session: _session());
-    await cubit.startIfNeeded(
+    final result = await cubit.startIfNeeded(
       userId: 71,
       session: _session(GuideId.factionWars),
     );
 
+    expect(result, GuideStartResult.ignored);
     expect(driver.startCalls, 1);
     expect(
       cubit.state,
@@ -295,8 +315,12 @@ void main() {
     final session = _session();
     await cubit.startIfNeeded(userId: 71, session: session);
     await cubit.finish();
-    await cubit.startIfNeeded(userId: 71, session: session);
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: session,
+    );
 
+    expect(result, GuideStartResult.completed);
     expect(driver.startCalls, 1);
     verify(
       () => repository.isCompleted(
@@ -304,5 +328,53 @@ void main() {
         guideId: GuideId.leaderboard,
       ),
     ).called(1);
+  });
+
+  test('returns failed and resets state when completion check throws', () async {
+    when(
+      () => repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+    ).thenThrow(Exception('Storage unavailable'));
+
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
+
+    expect(result, GuideStartResult.failed);
+    expect(cubit.state, const GuideState.initial());
+    expect(driver.startCalls, 0);
+  });
+
+  test('returns failed and resets state when driver start throws', () async {
+    when(
+      () => repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+    ).thenAnswer((_) async => false);
+    driver.throwOnStart = true;
+
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
+
+    expect(result, GuideStartResult.failed);
+    expect(cubit.state, const GuideState.initial());
+    expect(driver.startCalls, 0);
+  });
+
+  test('returns ignored after close', () async {
+    await cubit.close();
+
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
+
+    expect(result, GuideStartResult.ignored);
   });
 }
