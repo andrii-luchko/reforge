@@ -10,6 +10,7 @@ import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
@@ -66,7 +67,7 @@ class ImmortalForgesSection extends StatelessWidget {
                   child: Skeleton.leaf(
                     child: GuideTarget(
                       anchor: guide.anchor(LeaderboardGuideStep.factionSelector),
-                      scope: LeaderboardGuide.scope,
+                      scope: leaderboardPageGuideScope,
                       guideCubit: guideCubit,
                       tooltip: guide.tooltip(
                         LeaderboardGuideStep.factionSelector,
@@ -93,7 +94,7 @@ class ImmortalForgesSection extends StatelessWidget {
                     replacement: const ImmortalForcesCardShimmer(),
                     child: GuideTarget(
                       anchor: guide.anchor(LeaderboardGuideStep.immortalForges),
-                      scope: LeaderboardGuide.scope,
+                      scope: leaderboardPageGuideScope,
                       guideCubit: guideCubit,
                       tooltip: guide.tooltip(
                         LeaderboardGuideStep.immortalForges,

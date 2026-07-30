@@ -1,5 +1,6 @@
 enum GuideId {
-  leaderboard('leaderboard');
+  leaderboard('leaderboard'),
+  factionWars('faction_wars');
 
   const GuideId(this.storageKey);
 

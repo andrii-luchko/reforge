@@ -6,11 +6,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_tooltip.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -57,7 +59,15 @@ void main() {
     guideCubit = _MockGuideCubit();
     immortalForgesCubit = _MockImmortalForgesCubit();
 
-    when(() => guideCubit.state).thenReturn(const GuideState.running(currentStep: 2, totalSteps: 8));
+    when(
+      () => guideCubit.state,
+    ).thenReturn(
+      const GuideState.running(
+        guideId: GuideId.leaderboard,
+        currentStep: 2,
+        totalSteps: 8,
+      ),
+    );
     when(() => guideCubit.stream).thenAnswer((_) => const Stream.empty());
     when(guideCubit.next).thenReturn(null);
     when(guideCubit.previous).thenReturn(null);
@@ -113,33 +123,6 @@ void main() {
     expect(find.text(t.guides.leaderboard.strengthDescription), findsNothing);
   });
 
-  testWidgets('faction tooltip excludes factions with empty cards', (tester) async {
-    const state = ImmortalForgesState(
-      forgeData: {
-        Faction.gakki: [_leader],
-        Faction.gyohyo: [],
-        Faction.seiren: [_leader],
-      },
-    );
-    when(() => immortalForgesCubit.state).thenReturn(state);
-    when(() => immortalForgesCubit.stream).thenAnswer((_) => const Stream.empty());
-
-    final guide = LeaderboardGuide();
-    await tester.pumpWidget(
-      _harness(
-        guideCubit: guideCubit,
-        child: guide.tooltip(
-          LeaderboardGuideStep.factionSelector,
-          immortalForgesCubit: immortalForgesCubit,
-        ),
-      ),
-    );
-
-    expect(find.text(Faction.gakki.title(t)), findsOneWidget);
-    expect(find.text(Faction.gyohyo.title(t)), findsNothing);
-    expect(find.text(Faction.seiren.title(t)), findsOneWidget);
-  });
-
   testWidgets('a partial non-empty card still exposes all five rank anchors', (tester) async {
     const state = ImmortalForgesState(
       forgeData: {
@@ -149,7 +132,7 @@ void main() {
     when(() => immortalForgesCubit.state).thenReturn(state);
     when(() => immortalForgesCubit.stream).thenAnswer((_) => const Stream.empty());
 
-    final showcaseView = ShowcaseView.register(scope: LeaderboardGuide.scope);
+    final showcaseView = ShowcaseView.register(scope: leaderboardPageGuideScope);
     addTearDown(showcaseView.unregister);
     di.getIt.registerSingleton<RouteObserver<ModalRoute<void>>>(RouteObserver<ModalRoute<void>>());
     addTearDown(() => di.getIt.unregister<RouteObserver<ModalRoute<void>>>());

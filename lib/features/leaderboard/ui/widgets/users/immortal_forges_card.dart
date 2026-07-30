@@ -11,6 +11,7 @@ import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
@@ -287,7 +288,7 @@ class _RankGuideTarget extends StatelessWidget {
       child: IgnorePointer(
         child: GuideTarget(
           anchor: guide.anchor(step),
-          scope: LeaderboardGuide.scope,
+          scope: leaderboardPageGuideScope,
           guideCubit: context.read<GuideCubit>(),
           targetPadding: const EdgeInsets.all(4),
           tooltip: guide.tooltip(

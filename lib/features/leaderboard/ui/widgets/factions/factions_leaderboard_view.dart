@@ -4,9 +4,13 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_factions.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/faction_mode_picker.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/leaderboard_faction_list.dart';
@@ -18,7 +22,9 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:toastification/toastification.dart';
 
 class FactionsLeaderboardView extends StatelessWidget {
-  const FactionsLeaderboardView({super.key});
+  const FactionsLeaderboardView({required this.guide, super.key});
+
+  final FactionWarsGuide guide;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +40,7 @@ class FactionsLeaderboardView extends StatelessWidget {
         final isLoading = state.isLoading;
         final versusList = state.versusMatchup;
         final userFaction = state.userFaction;
+        final guideCubit = context.read<GuideCubit>();
 
         final showVersusCard = versusList != null && userFaction != null && !isLoading;
 
@@ -42,9 +49,15 @@ class FactionsLeaderboardView extends StatelessWidget {
           child: SliverMainAxisGroup(
             slivers: [
               SliverToBoxAdapter(
-                child: FactionLeaderboardModePiker(
-                  selectedMode: state.selectedMode,
-                  onModeChanged: cubit.changeMode,
+                child: GuideTarget(
+                  anchor: guide.anchor(FactionWarsGuideStep.battleMode),
+                  scope: leaderboardPageGuideScope,
+                  guideCubit: guideCubit,
+                  tooltip: guide.tooltip(FactionWarsGuideStep.battleMode),
+                  child: FactionLeaderboardModePiker(
+                    selectedMode: state.selectedMode,
+                    onModeChanged: cubit.changeMode,
+                  ),
                 ).animateEntrance(),
               ),
 
@@ -56,13 +69,20 @@ class FactionsLeaderboardView extends StatelessWidget {
                     replacement: const FactionLeaderboardCardShimmer(),
 
                     child: showVersusCard
-                        ? FactionLeaderboardCard(
-                            mode: state.selectedMode,
-                            firstFaction: versusList.myFaction,
-                            secondFaction: versusList.opponent,
-                            userFaction: userFaction,
-                            currentWeek: 2,
-                            totalWeeks: 4,
+                        ? GuideTarget(
+                            anchor: guide.anchor(FactionWarsGuideStep.monthlyRewards),
+                            scope: leaderboardPageGuideScope,
+                            guideCubit: guideCubit,
+                            tooltip: guide.tooltip(FactionWarsGuideStep.monthlyRewards),
+                            child: FactionLeaderboardCard(
+                              mode: state.selectedMode,
+                              firstFaction: versusList.myFaction,
+                              secondFaction: versusList.opponent,
+                              userFaction: userFaction,
+                              currentWeek: 2,
+                              totalWeeks: 4,
+                              guide: guide,
+                            ),
                           )
                         : const FactionLeaderboardCardError(),
                   ).animateEntrance(),
@@ -95,7 +115,7 @@ class FactionsLeaderboardView extends StatelessWidget {
                 ),
               ),
 
-              _LeaderboardContent(state: state),
+              _LeaderboardContent(state: state, guide: guide),
             ],
           ),
         );
@@ -105,9 +125,10 @@ class FactionsLeaderboardView extends StatelessWidget {
 }
 
 class _LeaderboardContent extends StatelessWidget {
-  const _LeaderboardContent({required this.state});
+  const _LeaderboardContent({required this.state, required this.guide});
 
   final FactionsLeaderboardState state;
+  final FactionWarsGuide guide;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +143,7 @@ class _LeaderboardContent extends StatelessWidget {
           sliver: LeaderboardFactionList(
             factions: currentFaction,
             mode: state.selectedMode,
+            guide: guide,
           ),
         );
 

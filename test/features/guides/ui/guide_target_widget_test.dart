@@ -9,6 +9,7 @@ import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/entities/guide_session.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
+import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
 import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_tooltip.dart';
@@ -170,5 +171,84 @@ void main() {
 
     expect(find.text(t.guides.leaderboard.factionTitle), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('moves through nested Faction Wars targets without layout errors', (tester) async {
+    const scope = 'faction-wars-target-transition-test';
+    final guide = FactionWarsGuide();
+    final cubit = GuideCubit(
+      _MemoryGuideProgressRepository(),
+      ShowcaseGuideDriver(scope: scope),
+    );
+    addTearDown(cubit.close);
+
+    GuideTarget target(FactionWarsGuideStep step, Widget child) {
+      return GuideTarget(
+        anchor: guide.anchor(step),
+        scope: scope,
+        guideCubit: cubit,
+        tooltip: guide.tooltip(step),
+        child: child,
+      );
+    }
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeDataValues.darkThemeData,
+        home: BlocProvider<GuideCubit>.value(
+          value: cubit,
+          child: Scaffold(
+            body: Column(
+              children: [
+                Expanded(
+                  child: target(
+                    FactionWarsGuideStep.intro,
+                    const ColoredBox(color: Colors.red),
+                  ),
+                ),
+                Expanded(
+                  child: target(
+                    FactionWarsGuideStep.battleMode,
+                    const ColoredBox(color: Colors.blue),
+                  ),
+                ),
+                Expanded(
+                  child: target(
+                    FactionWarsGuideStep.scoring,
+                    const ColoredBox(color: Colors.yellow),
+                  ),
+                ),
+                Expanded(
+                  child: target(
+                    FactionWarsGuideStep.monthlyRewards,
+                    target(
+                      FactionWarsGuideStep.victoryPoints,
+                      const ColoredBox(color: Colors.green),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await cubit.startIfNeeded(userId: 71, session: guide.session);
+    await tester.pumpAndSettle();
+
+    expect(find.text(t.guides.factionWars.introTitle), findsOneWidget);
+
+    for (final title in [
+      t.guides.factionWars.battleModeTitle,
+      t.guides.factionWars.scoringTitle,
+      t.guides.factionWars.victoryPointsTitle,
+      t.guides.factionWars.monthlyRewardsTitle,
+    ]) {
+      await tester.tap(find.text(t.guides.controls.next));
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
   });
 }

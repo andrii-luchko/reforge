@@ -417,6 +417,18 @@
             "burdenDescription": "Total workload this cycle — weight lifted, distance run, time under tension.",
             "judgementDescription": "Efficiency per bodyweight — rewards output relative to size, not raw numbers.",
             "strifeDescription": "Total XP this cycle — from workouts, quests, milestones, and streaks."
+        },
+        "factionWars": {
+            "introTitle": "Faction Wars",
+            "introDescription": "A weekly clash between all three factions. Victory goes to teamwork and consistency — not headcount.",
+            "battleModeTitle": "Track the Battle",
+            "battleModeDescription": "Switch between the current fight and all-time results to see who’s winning now — and who’s leading overall.",
+            "scoringTitle": "How It's Scored",
+            "scoringDescription": "Score = total faction XP ÷ active members. Highest average XP per member wins the week.",
+            "victoryPointsTitle": "Victory Points",
+            "victoryPointsDescription": "Win a week, earn 1 Victory Point. First to 3 Victory Points becomes Monthly Champion.",
+            "monthlyRewardsTitle": "Monthly Rewards",
+            "monthlyRewardsDescription": "Monthly Champions earn a 7-day +5% XP boost."
         }
     },
     "errors": {

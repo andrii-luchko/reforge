@@ -19,7 +19,7 @@ sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
     required int totalXpEarned,
     // @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions, -- same as workoutSessions
     @JsonKey(name: 'workoutSessions') List<ExerciseSessionDTO>? workoutSessions,
-    @JsonKey(name: '"createdAt"') DateTime? createdAt,
+    @JsonKey(name: 'createdAt') DateTime? createdAt,
   }) = _WorkoutSessionDetailsDTO;
 
   factory WorkoutSessionDetailsDTO.fromJson(Map<String, dynamic> json) => _$WorkoutSessionDetailsDTOFromJson(json);

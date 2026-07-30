@@ -37,7 +37,20 @@ void main() {
       isFalse,
     );
     expect(
+      await repository.isCompleted(userId: 71, guideId: GuideId.factionWars),
+      isFalse,
+    );
+    expect(
       preferences.getBool('guides.71.leaderboard.completed'),
+      isTrue,
+    );
+
+    await repository.markCompleted(
+      userId: 71,
+      guideId: GuideId.factionWars,
+    );
+    expect(
+      preferences.getBool('guides.71.faction_wars.completed'),
       isTrue,
     );
   });

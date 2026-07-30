@@ -39,6 +39,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
 @freezed
 sealed class StaticDataDTO with _$StaticDataDTO {
   const factory StaticDataDTO({
+    //TODO(Masayoshi):add static metric support
     @JsonKey(name: 'tier') @Default([]) List<Tier> tiers,
   }) = _StaticDataDTO;
 

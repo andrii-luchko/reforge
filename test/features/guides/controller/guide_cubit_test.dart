@@ -56,9 +56,9 @@ class _FakeGuideDriver implements GuideDriver {
   void emit(GuideDriverEvent event) => _events.add(event);
 }
 
-GuideSession _session() {
+GuideSession _session([GuideId id = GuideId.leaderboard]) {
   return GuideSession(
-    id: GuideId.leaderboard,
+    id: id,
     steps: [
       GuideStep(anchor: GlobalKey()),
       GuideStep(anchor: GlobalKey()),
@@ -103,7 +103,7 @@ void main() {
 
     await cubit.startIfNeeded(userId: 71, session: _session());
 
-    expect(cubit.state, const GuideState.completed());
+    expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     expect(driver.startCalls, 0);
   });
 
@@ -116,14 +116,28 @@ void main() {
     await cubit.startIfNeeded(userId: 71, session: session);
     await cubit.startIfNeeded(userId: 71, session: session);
 
-    expect(cubit.state, const GuideState.running(currentStep: 1, totalSteps: 2));
+    expect(
+      cubit.state,
+      const GuideState.running(
+        guideId: GuideId.leaderboard,
+        currentStep: 1,
+        totalSteps: 2,
+      ),
+    );
     expect(driver.startCalls, 1);
 
     cubit.next();
     expect(driver.nextCalls, 1);
 
     driver.emit(const GuideStepStarted(2));
-    expect(cubit.state, const GuideState.running(currentStep: 2, totalSteps: 2));
+    expect(
+      cubit.state,
+      const GuideState.running(
+        guideId: GuideId.leaderboard,
+        currentStep: 2,
+        totalSteps: 2,
+      ),
+    );
 
     cubit.previous();
     expect(driver.previousCalls, 1);
@@ -136,12 +150,11 @@ void main() {
     when(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).thenAnswer((_) async {});
-
     await cubit.startIfNeeded(userId: 71, session: _session());
     await Future.wait([cubit.skip(), cubit.skip()]);
 
     expect(driver.dismissCalls, 1);
-    expect(cubit.state, const GuideState.completed());
+    expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     verify(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).called(1);
@@ -154,12 +167,11 @@ void main() {
     when(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).thenAnswer((_) async {});
-
     await cubit.startIfNeeded(userId: 71, session: _session());
     driver.emit(const GuideFinished());
     await pumpEventQueue();
 
-    expect(cubit.state, const GuideState.completed());
+    expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     verify(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).called(1);
@@ -176,7 +188,7 @@ void main() {
     await cubit.startIfNeeded(userId: 71, session: _session());
     await Future.wait([cubit.finish(), cubit.finish()]);
 
-    expect(cubit.state, const GuideState.completed());
+    expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     verify(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).called(1);
@@ -197,5 +209,100 @@ void main() {
         guideId: GuideId.leaderboard,
       ),
     );
+  });
+
+  test('starts a different guide after completing the first one', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.factionWars),
+    ).thenAnswer((_) async => false);
+    when(
+      () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async {});
+    when(
+      () => repository.markCompleted(userId: 71, guideId: GuideId.factionWars),
+    ).thenAnswer((_) async {});
+
+    await cubit.startIfNeeded(userId: 71, session: _session());
+    await cubit.finish();
+    await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(GuideId.factionWars),
+    );
+
+    expect(driver.startCalls, 2);
+    expect(
+      cubit.state,
+      const GuideState.running(
+        guideId: GuideId.factionWars,
+        currentStep: 1,
+        totalSteps: 2,
+      ),
+    );
+    await cubit.finish();
+    verify(
+      () => repository.markCompleted(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+    ).called(1);
+    verify(
+      () => repository.markCompleted(
+        userId: 71,
+        guideId: GuideId.factionWars,
+      ),
+    ).called(1);
+  });
+
+  test('does not replace an active guide with another session', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+
+    await cubit.startIfNeeded(userId: 71, session: _session());
+    await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(GuideId.factionWars),
+    );
+
+    expect(driver.startCalls, 1);
+    expect(
+      cubit.state,
+      const GuideState.running(
+        guideId: GuideId.leaderboard,
+        currentStep: 1,
+        totalSteps: 2,
+      ),
+    );
+    verifyNever(
+      () => repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.factionWars,
+      ),
+    );
+  });
+
+  test('does not restart the same guide after completing it', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+    when(
+      () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async {});
+
+    final session = _session();
+    await cubit.startIfNeeded(userId: 71, session: session);
+    await cubit.finish();
+    await cubit.startIfNeeded(userId: 71, session: session);
+
+    expect(driver.startCalls, 1);
+    verify(
+      () => repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+    ).called(1);
   });
 }

@@ -13,7 +13,6 @@ class GuideTarget extends StatelessWidget {
     required this.child,
     this.targetPadding = const EdgeInsets.all(6),
     this.targetBorderRadius = const BorderRadius.all(Radius.circular(16)),
-    this.disableBarrierInteraction = true,
     super.key,
   });
 
@@ -24,7 +23,6 @@ class GuideTarget extends StatelessWidget {
   final Widget child;
   final EdgeInsets targetPadding;
   final BorderRadius targetBorderRadius;
-  final bool disableBarrierInteraction;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +34,7 @@ class GuideTarget extends StatelessWidget {
       targetPadding: targetPadding,
       targetBorderRadius: targetBorderRadius,
       disableMovingAnimation: true,
-      disableBarrierInteraction: disableBarrierInteraction,
+      disableBarrierInteraction: true,
       disableDefaultTargetGestures: true,
       container: BlocProvider.value(
         value: guideCubit,

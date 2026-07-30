@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/entities/guide_session.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/guide_driver.dart';
@@ -27,29 +28,44 @@ class GuideCubit extends Cubit<GuideState> {
     required int userId,
     required GuideSession session,
   }) async {
-    if (isClosed || state is! GuideInitial || _startInProgress || !_driver.canStart(session)) return;
+    if (isClosed || state is GuideChecking || state is GuideRunning || _startInProgress) return;
+
+    // final currentState = state;
+    // if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) return;
+    // if (!_driver.canStart(session)) return;
 
     _startInProgress = true;
-    emit(const GuideState.checking());
+    _completionInProgress = false;
+    _session = null;
+    _userId = userId;
+    emit(GuideState.checking(guideId: session.id));
 
     try {
       // final isCompleted = await _progressRepository.isCompleted(userId: userId, guideId: session.id);
       // if (isClosed) return;
 
       // if (isCompleted) {
-      //   emit(const GuideState.completed());
+      //   emit(GuideState.completed(guideId: session.id));
       //   return;
       // }
 
-      _userId = userId;
       _session = session;
-      emit(GuideState.running(currentStep: 1, totalSteps: session.steps.length));
+      emit(
+        GuideState.running(
+          guideId: session.id,
+          currentStep: 1,
+          totalSteps: session.steps.length,
+        ),
+      );
       _driver.start(session);
     } on Object {
       if (!isClosed) {
-        _startInProgress = false;
+        _session = null;
+        _userId = null;
         emit(const GuideState.initial());
       }
+    } finally {
+      _startInProgress = false;
     }
   }
 
@@ -77,7 +93,13 @@ class GuideCubit extends Cubit<GuideState> {
       case GuideStepStarted(:final step):
         final session = _session;
         if (state is! GuideRunning || session == null) return;
-        emit(GuideState.running(currentStep: step, totalSteps: session.steps.length));
+        emit(
+          GuideState.running(
+            guideId: session.id,
+            currentStep: step,
+            totalSteps: session.steps.length,
+          ),
+        );
       case GuideFinished():
         unawaited(_complete());
     }
@@ -94,7 +116,7 @@ class GuideCubit extends Cubit<GuideState> {
     } on Object {
       // A failed local write should not keep an overlay open or crash the UI.
     } finally {
-      if (!isClosed) emit(const GuideState.completed());
+      if (!isClosed) emit(GuideState.completed(guideId: session.id));
     }
   }
 

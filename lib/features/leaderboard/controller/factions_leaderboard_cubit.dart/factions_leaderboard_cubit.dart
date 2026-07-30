@@ -34,7 +34,6 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
   final UserCubit _userCubit;
   StreamSubscription<OnboardedUser?>? _userSubscription;
   OnboardedUser? _lastUser;
-  bool _reloadAfterCurrentLoad = false;
 
   Future<void> loadFactions() async {
     if (state.isLoading) return;
@@ -42,11 +41,6 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
     emit(state.copyWith(isLoading: true, error: null));
 
     final result = await _repository.getFactionsLeaderboard();
-    if (_lastUser == null) {
-      _reloadAfterCurrentLoad = false;
-      return;
-    }
-
     final userFaction = _lastUser?.mainFaction;
 
     switch (result) {
@@ -54,11 +48,6 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
         emit(state.copyWith(factions: factions, userFaction: userFaction, isLoading: false));
       case Failure(:final error):
         emit(state.copyWith(isLoading: false, error: error.toString()));
-    }
-
-    if (_reloadAfterCurrentLoad) {
-      _reloadAfterCurrentLoad = false;
-      await loadFactions();
     }
   }
 
@@ -75,11 +64,6 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
     if (faction == null || previousUser?.factionId == user.factionId) return;
 
     emit(state.copyWith(userFaction: faction));
-    if (state.isLoading) {
-      _reloadAfterCurrentLoad = true;
-      return;
-    }
-    await loadFactions();
   }
 
   void changeMode(FactionMode mode) {
@@ -89,6 +73,11 @@ class FactionsLeaderboardCubit extends Cubit<FactionsLeaderboardState> {
 
   void changeShowType(FactionShowType type) {
     unawaited(_analytics.logEvent(AnalyticsEvents.leaderboardFactionsShowTypeChange, {'type': type.name}));
+    setShowType(type);
+  }
+
+  void setShowType(FactionShowType type) {
+    if (state.selectedType == type) return;
     emit(state.copyWith(selectedType: type));
   }
 

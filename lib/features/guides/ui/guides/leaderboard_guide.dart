@@ -25,8 +25,6 @@ class LeaderboardGuide {
         for (final step in LeaderboardGuideStep.values) step: GlobalKey(debugLabel: 'leaderboard-guide-${step.name}'),
       };
 
-  static const scope = 'leaderboard-guide';
-
   final Map<LeaderboardGuideStep, GlobalKey> _anchors;
 
   GlobalKey anchor(LeaderboardGuideStep step) => _anchors[step]!;
