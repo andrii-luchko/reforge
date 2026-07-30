@@ -91,7 +91,6 @@ class _LoreBodyState extends State<LoreBody> {
 
     return PlateOfKeraguraGuideHost(
       builder: (context, guide, guideState) {
-        final guideCubit = context.read<GuideCubit>();
         final guideIsRunning = guideState is GuideRunning;
 
         return SafeArea(
@@ -143,7 +142,6 @@ class _LoreBodyState extends State<LoreBody> {
                                   PlateOfKeraguraGuideStep.intro,
                                 ),
                                 scope: lorePageGuideScope,
-                                guideCubit: guideCubit,
                                 tooltip: guide.tooltip(
                                   PlateOfKeraguraGuideStep.intro,
                                 ),
@@ -174,7 +172,6 @@ class _LoreBodyState extends State<LoreBody> {
                             plates: displayedItems,
                             loadingDetailId: state.loadingDetailId,
                             guide: guide,
-                            guideCubit: guideCubit,
                           ),
                         ),
 
@@ -205,14 +202,12 @@ class PlatesList extends StatelessWidget {
     required this.plates,
     this.loadingDetailId,
     this.guide,
-    this.guideCubit,
     super.key,
   });
 
   final List<PlatesEntity> plates;
   final int? loadingDetailId;
   final PlateOfKeraguraGuide? guide;
-  final GuideCubit? guideCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -240,18 +235,16 @@ class PlatesList extends StatelessWidget {
               );
 
               final guide = this.guide;
-              final guideCubit = this.guideCubit;
               final guideStep = item.id == firstUnlockedId
                   ? PlateOfKeraguraGuideStep.unlockedPlate
                   : item.id == firstLockedId
                   ? PlateOfKeraguraGuideStep.lockedPlate
                   : null;
 
-              if (guide != null && guideCubit != null && guideStep != null) {
+              if (guide != null && guideStep != null) {
                 tile = GuideTarget(
                   anchor: guide.anchor(guideStep),
                   scope: lorePageGuideScope,
-                  guideCubit: guideCubit,
                   tooltip: guide.tooltip(guideStep),
                   child: tile,
                 );

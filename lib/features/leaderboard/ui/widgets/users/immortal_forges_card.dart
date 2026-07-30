@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/text_style_extension.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -289,7 +288,6 @@ class _RankGuideTarget extends StatelessWidget {
         child: GuideTarget(
           anchor: guide.anchor(step),
           scope: leaderboardPageGuideScope,
-          guideCubit: context.read<GuideCubit>(),
           targetPadding: const EdgeInsets.all(4),
           tooltip: guide.tooltip(
             step,

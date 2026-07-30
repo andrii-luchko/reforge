@@ -71,13 +71,11 @@ AttributesEntity _attribute(ForgeAttribute attribute) {
 
 Widget _target({
   required ForgeAttributesGuide guide,
-  required GuideCubit guideCubit,
   required ForgeAttributesGuideStep step,
 }) {
   return GuideTarget(
     anchor: guide.anchor(step),
     scope: achievementsPageGuideScope,
-    guideCubit: guideCubit,
     tooltip: guide.tooltip(step),
     child: SizedBox(
       width: 240,
@@ -149,29 +147,30 @@ void main() {
             BlocProvider<UserCubit>.value(value: userCubit),
           ],
           child: ForgeAttributesGuideHost(
-            builder: (context, guide, state) {
-              guideState = state;
-              final guideCubit = context.read<GuideCubit>();
+            child: Builder(
+              builder: (context) {
+                guideState = context.watch<GuideCubit>().state;
+                final guide = context.read<ForgeAttributesGuide>();
 
-              return Scaffold(
-                body: ValueListenableBuilder<Set<ForgeAttributesGuideStep>>(
-                  valueListenable: renderedTargets,
-                  builder: (context, targets, _) {
-                    return Column(
-                      children: [
-                        for (final step in ForgeAttributesGuideStep.values)
-                          if (targets.contains(step))
-                            _target(
-                              guide: guide,
-                              guideCubit: guideCubit,
-                              step: step,
-                            ),
-                      ],
-                    );
-                  },
-                ),
-              );
-            },
+                return Scaffold(
+                  body: ValueListenableBuilder<Set<ForgeAttributesGuideStep>>(
+                    valueListenable: renderedTargets,
+                    builder: (context, targets, _) {
+                      return Column(
+                        children: [
+                          for (final step in ForgeAttributesGuideStep.values)
+                            if (targets.contains(step))
+                              _target(
+                                guide: guide,
+                                step: step,
+                              ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),

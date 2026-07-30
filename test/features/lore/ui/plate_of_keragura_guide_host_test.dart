@@ -74,13 +74,11 @@ PlatesEntity _plate({
 
 Widget _target({
   required PlateOfKeraguraGuide guide,
-  required GuideCubit guideCubit,
   required PlateOfKeraguraGuideStep step,
 }) {
   return GuideTarget(
     anchor: guide.anchor(step),
     scope: lorePageGuideScope,
-    guideCubit: guideCubit,
     tooltip: guide.tooltip(step),
     child: SizedBox(
       width: 240,
@@ -156,7 +154,6 @@ void main() {
           child: PlateOfKeraguraGuideHost(
             builder: (context, guide, state) {
               guideState = state;
-              final guideCubit = context.read<GuideCubit>();
 
               return Scaffold(
                 body: ValueListenableBuilder<Set<PlateOfKeraguraGuideStep>>(
@@ -168,7 +165,6 @@ void main() {
                           if (targets.contains(step))
                             _target(
                               guide: guide,
-                              guideCubit: guideCubit,
                               step: step,
                             ),
                       ],

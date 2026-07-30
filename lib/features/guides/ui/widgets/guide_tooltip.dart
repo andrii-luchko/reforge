@@ -106,7 +106,7 @@ class _GuideControls extends StatelessWidget {
     return Row(
       spacing: 4,
 
-      children: [back, Spacer(), skip, next],
+      children: [back, const Spacer(), skip, next],
     );
   }
 }

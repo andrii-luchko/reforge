@@ -170,14 +170,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                                 child: GuideTarget(
                                   anchor: _leaderboardGuide.anchor(LeaderboardGuideStep.intro),
                                   scope: leaderboardPageGuideScope,
-                                  guideCubit: _guideCubit,
                                   tooltip: _leaderboardGuide.tooltip(LeaderboardGuideStep.intro),
                                   targetPadding: EdgeInsets.zero,
                                   targetBorderRadius: BorderRadius.zero,
                                   child: GuideTarget(
                                     anchor: _factionWarsGuide.anchor(FactionWarsGuideStep.intro),
                                     scope: leaderboardPageGuideScope,
-                                    guideCubit: _guideCubit,
                                     tooltip: _factionWarsGuide.tooltip(FactionWarsGuideStep.intro),
                                     targetPadding: EdgeInsets.zero,
                                     targetBorderRadius: BorderRadius.zero,

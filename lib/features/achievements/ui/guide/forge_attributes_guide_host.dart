@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
@@ -15,20 +16,13 @@ import 'package:reforge/features/guides/domain/repositories/guide_progress_repos
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
 import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 
-typedef ForgeAttributesGuideBuilder =
-    Widget Function(
-      BuildContext context,
-      ForgeAttributesGuide guide,
-      GuideState guideState,
-    );
-
 class ForgeAttributesGuideHost extends StatefulWidget {
   const ForgeAttributesGuideHost({
-    required this.builder,
+    required this.child,
     super.key,
   });
 
-  final ForgeAttributesGuideBuilder builder;
+  final Widget child;
 
   @override
   State<ForgeAttributesGuideHost> createState() => _ForgeAttributesGuideHostState();
@@ -123,28 +117,27 @@ class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _guideCubit,
-      child: MultiBlocListener(
-        listeners: [
-          BlocListener<AchievementsCubit, AchievementsState>(
-            listenWhen: (previous, current) {
-              return previous.isLoading != current.isLoading ||
-                  !setEquals(
-                    _attributeTypes(previous),
-                    _attributeTypes(current),
-                  );
-            },
-            listener: (_, _) => _requestStart(),
-          ),
-          BlocListener<UserCubit, UserState>(
-            listener: (_, _) => _requestStart(),
-          ),
-        ],
-        child: BlocBuilder<GuideCubit, GuideState>(
-          builder: (context, state) {
-            return widget.builder(context, _guide, state);
-          },
+    return Provider<ForgeAttributesGuide>.value(
+      value: _guide,
+      child: BlocProvider.value(
+        value: _guideCubit,
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<AchievementsCubit, AchievementsState>(
+              listenWhen: (previous, current) {
+                return previous.isLoading != current.isLoading ||
+                    !setEquals(
+                      _attributeTypes(previous),
+                      _attributeTypes(current),
+                    );
+              },
+              listener: (_, _) => _requestStart(),
+            ),
+            BlocListener<UserCubit, UserState>(
+              listener: (_, _) => _requestStart(),
+            ),
+          ],
+          child: widget.child,
         ),
       ),
     );

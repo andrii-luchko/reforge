@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
@@ -52,15 +53,16 @@ Widget _harness({
 }) {
   return MaterialApp(
     theme: ThemeDataValues.darkThemeData,
-    home: BlocProvider<GuideCubit>.value(
-      value: guideCubit,
-      child: Scaffold(
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: AttributeSystemSection(
-            attributes: attributes,
-            guide: guide,
-            guideCubit: guideCubit,
+    home: Provider<ForgeAttributesGuide>.value(
+      value: guide,
+      child: BlocProvider<GuideCubit>.value(
+        value: guideCubit,
+        child: Scaffold(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: AttributeSystemSection(
+              attributes: attributes,
+            ),
           ),
         ),
       ),

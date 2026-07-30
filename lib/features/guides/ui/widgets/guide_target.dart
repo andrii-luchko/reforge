@@ -8,7 +8,6 @@ class GuideTarget extends StatelessWidget {
   const GuideTarget({
     required this.anchor,
     required this.scope,
-    required this.guideCubit,
     required this.tooltip,
     required this.child,
     this.targetPadding = const EdgeInsets.all(6),
@@ -20,7 +19,6 @@ class GuideTarget extends StatelessWidget {
 
   final GlobalKey anchor;
   final String scope;
-  final GuideCubit guideCubit;
   final Widget tooltip;
   final Widget child;
   final EdgeInsets targetPadding;
@@ -30,7 +28,10 @@ class GuideTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final guideCubit = context.read<GuideCubit>();
+
     return Showcase.withWidget(
+      scrollLoadingWidget: const SizedBox.shrink(),
       key: anchor,
       enableAutoScroll: enableAutoScroll,
       scrollAlignment: scrollAlignment,

@@ -83,7 +83,6 @@ void main() {
                   child: GuideTarget(
                     anchor: guide.anchor(PlateOfKeraguraGuideStep.intro),
                     scope: lorePageGuideScope,
-                    guideCubit: guideCubit,
                     tooltip: guide.tooltip(
                       PlateOfKeraguraGuideStep.intro,
                     ),
@@ -96,7 +95,6 @@ void main() {
                     _plate(id: 2, isLocked: true),
                   ],
                   guide: guide,
-                  guideCubit: guideCubit,
                 ),
               ],
             ),

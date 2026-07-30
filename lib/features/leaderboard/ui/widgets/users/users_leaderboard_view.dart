@@ -4,7 +4,6 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -55,8 +54,6 @@ class ImmortalForgesSection extends StatelessWidget {
         final isLoading = state.isLoading;
 
         final isEmpty = state.currentList.isEmpty;
-        final guideCubit = context.read<GuideCubit>();
-
         return SliverSkeletonizer(
           enabled: isLoading,
           child: SliverMainAxisGroup(
@@ -68,7 +65,6 @@ class ImmortalForgesSection extends StatelessWidget {
                     child: GuideTarget(
                       anchor: guide.anchor(LeaderboardGuideStep.factionSelector),
                       scope: leaderboardPageGuideScope,
-                      guideCubit: guideCubit,
                       tooltip: guide.tooltip(
                         LeaderboardGuideStep.factionSelector,
                         immortalForgesCubit: cubit,
@@ -95,7 +91,6 @@ class ImmortalForgesSection extends StatelessWidget {
                     child: GuideTarget(
                       anchor: guide.anchor(LeaderboardGuideStep.immortalForges),
                       scope: leaderboardPageGuideScope,
-                      guideCubit: guideCubit,
                       tooltip: guide.tooltip(
                         LeaderboardGuideStep.immortalForges,
                         immortalForgesCubit: cubit,

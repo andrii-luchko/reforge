@@ -14,7 +14,6 @@ import 'package:reforge/features/achievements/ui/widgets/attribute_system_sectio
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
-import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
@@ -43,24 +42,15 @@ class _AchievementsPageState extends State<AchievementsPage> {
   @override
   Widget build(BuildContext context) {
     return ForgeAttributesGuideHost(
-      builder: (context, guide, guideState) {
-        return _buildPage(
-          context,
-          guide: guide,
-          guideState: guideState,
-        );
-      },
+      child: Builder(builder: _buildPage),
     );
   }
 
-  Widget _buildPage(
-    BuildContext context, {
-    required ForgeAttributesGuide guide,
-    required GuideState guideState,
-  }) {
+  Widget _buildPage(BuildContext context) {
     final appTheme = context.appTheme;
-    final guideCubit = context.read<GuideCubit>();
-    final guideIsRunning = guideState is GuideRunning;
+    final guideIsRunning = context.select<GuideCubit, bool>(
+      (cubit) => cubit.state is GuideRunning,
+    );
 
     const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
 
@@ -131,8 +121,6 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           child: Skeleton.leaf(
                             child: AttributeSystemSection(
                               attributes: state.attributes,
-                              guide: guide,
-                              guideCubit: guideCubit,
                             ).animateEntrance(enabled: !isLoading),
                           ),
                         ),

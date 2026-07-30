@@ -67,7 +67,6 @@ void main() {
             body: GuideTarget(
               anchor: anchor,
               scope: scope,
-              guideCubit: cubit,
               targetPadding: EdgeInsets.zero,
               targetBorderRadius: BorderRadius.zero,
               tooltip: const GuideTooltip(
@@ -130,7 +129,6 @@ void main() {
                   child: GuideTarget(
                     anchor: introAnchor,
                     scope: scope,
-                    guideCubit: cubit,
                     tooltip: guide.tooltip(LeaderboardGuideStep.intro),
                     child: const ColoredBox(color: Colors.red),
                   ),
@@ -139,7 +137,6 @@ void main() {
                   child: GuideTarget(
                     anchor: factionAnchor,
                     scope: scope,
-                    guideCubit: cubit,
                     tooltip: guide.tooltip(
                       LeaderboardGuideStep.factionSelector,
                       immortalForgesCubit: immortalForgesCubit,
@@ -186,7 +183,6 @@ void main() {
       return GuideTarget(
         anchor: guide.anchor(step),
         scope: scope,
-        guideCubit: cubit,
         tooltip: guide.tooltip(step),
         child: child,
       );

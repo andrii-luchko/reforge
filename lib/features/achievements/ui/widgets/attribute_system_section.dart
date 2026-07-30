@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -10,7 +11,6 @@ import 'package:reforge/features/achievements/domain/entities/attribute_entity.d
 import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_guide_bottom_sheet.dart';
 import 'package:reforge/features/achievements/ui/widgets/attributes_list.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -20,20 +20,15 @@ import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 class AttributeSystemSection extends StatelessWidget {
   const AttributeSystemSection({
     required this.attributes,
-    this.guide,
-    this.guideCubit,
     super.key,
   });
 
   final List<AttributesEntity> attributes;
-  final ForgeAttributesGuide? guide;
-  final GuideCubit? guideCubit;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final guide = this.guide;
-    final guideCubit = this.guideCubit;
+    final guide = context.read<ForgeAttributesGuide?>();
 
     final widget = DecoratedBox(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: appTheme.beige900),
@@ -59,20 +54,17 @@ class AttributeSystemSection extends StatelessWidget {
             else
               AttributesList(
                 attributes: attributes,
-                guide: guide,
-                guideCubit: guideCubit,
               ),
           ],
         ),
       ),
     );
 
-    return guide != null && guideCubit != null
+    return guide != null
         ? GuideTarget(
             enableAutoScroll: true,
             anchor: guide.anchor(ForgeAttributesGuideStep.intro),
             scope: achievementsPageGuideScope,
-            guideCubit: guideCubit,
             tooltip: guide.tooltip(ForgeAttributesGuideStep.intro),
             child: widget,
           )

@@ -1,30 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
 import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
-
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 class AttributesList extends StatelessWidget {
   const AttributesList({
     required this.attributes,
-    this.guide,
-    this.guideCubit,
     super.key,
   });
 
   final List<AttributesEntity> attributes;
-  final ForgeAttributesGuide? guide;
-  final GuideCubit? guideCubit;
 
   @override
   Widget build(BuildContext context) {
+    final guide = context.read<ForgeAttributesGuide?>();
     final sortedAttributes = [
       for (final attribute in forgeAttributesDisplayOrder)
         ...attributes.where((entity) => entity.attribute == attribute),
@@ -39,6 +35,7 @@ class AttributesList extends StatelessWidget {
             padding: const .only(bottom: 8),
             child: _buildItem(
               entity,
+              guide: guide,
               targetedAttributes: targetedAttributes,
             ),
           ),
@@ -48,13 +45,12 @@ class AttributesList extends StatelessWidget {
 
   Widget _buildItem(
     AttributesEntity entity, {
+    required ForgeAttributesGuide? guide,
     required Set<ForgeAttribute> targetedAttributes,
   }) {
     final item = AttributeChartItem(entity: entity);
-    final guide = this.guide;
-    final guideCubit = this.guideCubit;
 
-    if (guide == null || guideCubit == null || !targetedAttributes.add(entity.attribute)) {
+    if (guide == null || !targetedAttributes.add(entity.attribute)) {
       return item;
     }
 
@@ -62,7 +58,6 @@ class AttributesList extends StatelessWidget {
     return GuideTarget(
       anchor: guide.attributeAnchor(entity.attribute),
       scope: achievementsPageGuideScope,
-      guideCubit: guideCubit,
       tooltip: guide.tooltip(step),
       child: SizedBox(width: double.infinity, child: item),
     );

@@ -4,7 +4,6 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
@@ -41,7 +40,6 @@ class FactionsLeaderboardView extends StatelessWidget {
         final isLoading = state.isLoading;
         final versusList = state.versusMatchup;
         final userFaction = state.userFaction;
-        final guideCubit = context.read<GuideCubit>();
 
         final showVersusCard = versusList != null && userFaction != null && !isLoading;
 
@@ -53,7 +51,6 @@ class FactionsLeaderboardView extends StatelessWidget {
                 child: GuideTarget(
                   anchor: guide.anchor(FactionWarsGuideStep.battleMode),
                   scope: leaderboardPageGuideScope,
-                  guideCubit: guideCubit,
                   tooltip: guide.tooltip(FactionWarsGuideStep.battleMode),
                   child: FactionLeaderboardModePiker(
                     selectedMode: state.selectedMode,
@@ -73,7 +70,6 @@ class FactionsLeaderboardView extends StatelessWidget {
                         ? GuideTarget(
                             anchor: guide.anchor(FactionWarsGuideStep.monthlyRewards),
                             scope: leaderboardPageGuideScope,
-                            guideCubit: guideCubit,
                             tooltip: guide.tooltip(FactionWarsGuideStep.monthlyRewards),
                             child: FactionLeaderboardCard(
                               mode: state.selectedMode,

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
-import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
@@ -77,7 +75,6 @@ class _FactionListGuideTarget extends StatelessWidget {
     return GuideTarget(
       anchor: guide.anchor(FactionWarsGuideStep.scoring),
       scope: leaderboardPageGuideScope,
-      guideCubit: context.read<GuideCubit>(),
       tooltip: guide.tooltip(FactionWarsGuideStep.scoring),
       child: child,
     );
