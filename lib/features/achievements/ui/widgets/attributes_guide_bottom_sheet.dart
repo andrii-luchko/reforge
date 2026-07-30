@@ -66,10 +66,10 @@ class ForgeSystemGuideSheet extends StatelessWidget {
                 child: ListView.separated(
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-                  itemCount: ForgeAttribute.values.length,
+                  itemCount: forgeAttributesDisplayOrder.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 24),
                   itemBuilder: (context, index) {
-                    final attr = ForgeAttribute.values[index];
+                    final attr = forgeAttributesDisplayOrder[index];
                     return _AttributeDescriptionItem(attribute: attr);
                   },
                 ),

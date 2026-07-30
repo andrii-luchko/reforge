@@ -9,9 +9,12 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_host.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
@@ -39,7 +42,25 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return ForgeAttributesGuideHost(
+      builder: (context, guide, guideState) {
+        return _buildPage(
+          context,
+          guide: guide,
+          guideState: guideState,
+        );
+      },
+    );
+  }
+
+  Widget _buildPage(
+    BuildContext context, {
+    required ForgeAttributesGuide guide,
+    required GuideState guideState,
+  }) {
     final appTheme = context.appTheme;
+    final guideCubit = context.read<GuideCubit>();
+    final guideIsRunning = guideState is GuideRunning;
 
     const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
 
@@ -59,6 +80,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     await _cubit.loadAttributes(forceRefresh: true);
                   },
                   child: CustomScrollView(
+                    physics: guideIsRunning ? const NeverScrollableScrollPhysics() : null,
                     slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -109,6 +131,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                           child: Skeleton.leaf(
                             child: AttributeSystemSection(
                               attributes: state.attributes,
+                              guide: guide,
+                              guideCubit: guideCubit,
                             ).animateEntrance(enabled: !isLoading),
                           ),
                         ),

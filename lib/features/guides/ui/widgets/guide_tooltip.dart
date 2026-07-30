@@ -59,32 +59,8 @@ class GuideTooltip extends StatelessWidget {
                     additionalContent!,
                   ],
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      TextButton(
-                        onPressed: currentStep == 1 ? null : context.read<GuideCubit>().previous,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        child: Text(t.guides.controls.back),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: context.read<GuideCubit>().skip,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        child: Text(t.guides.controls.skip),
-                      ),
-                      const SizedBox(width: 4),
-                      FilledButton(
-                        onPressed: context.read<GuideCubit>().next,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        child: Text(t.guides.controls.next),
-                      ),
-                    ],
+                  _GuideControls(
+                    canGoBack: currentStep > 1,
                   ),
                 ],
               ),
@@ -92,6 +68,45 @@ class GuideTooltip extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _GuideControls extends StatelessWidget {
+  const _GuideControls({
+    required this.canGoBack,
+  });
+
+  final bool canGoBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final back = TextButton(
+      onPressed: canGoBack ? context.read<GuideCubit>().previous : null,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+      ),
+      child: Text(t.guides.controls.back),
+    );
+    final skip = TextButton(
+      onPressed: context.read<GuideCubit>().skip,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+      ),
+      child: Text(t.guides.controls.skip),
+    );
+    final next = FilledButton(
+      onPressed: context.read<GuideCubit>().next,
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+      ),
+      child: Text(t.guides.controls.next),
+    );
+
+    return Row(
+      spacing: 4,
+
+      children: [back, Spacer(), skip, next],
     );
   }
 }

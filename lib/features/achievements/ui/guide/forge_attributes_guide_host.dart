@@ -1,0 +1,152 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
+import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
+import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
+import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
+import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_eligibility.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/controller/guide_start_result.dart';
+import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
+import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
+import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
+
+typedef ForgeAttributesGuideBuilder =
+    Widget Function(
+      BuildContext context,
+      ForgeAttributesGuide guide,
+      GuideState guideState,
+    );
+
+class ForgeAttributesGuideHost extends StatefulWidget {
+  const ForgeAttributesGuideHost({
+    required this.builder,
+    super.key,
+  });
+
+  final ForgeAttributesGuideBuilder builder;
+
+  @override
+  State<ForgeAttributesGuideHost> createState() => _ForgeAttributesGuideHostState();
+}
+
+class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
+  static const _maxStartAttempts = 5;
+
+  final ForgeAttributesGuide _guide = ForgeAttributesGuide();
+  late final ShowcaseGuideDriver _guideDriver;
+  late final GuideCubit _guideCubit;
+  int _startRequestToken = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _guideDriver = ShowcaseGuideDriver(scope: achievementsPageGuideScope);
+    _guideCubit = GuideCubit(
+      di.getIt<GuideProgressRepository>(),
+      _guideDriver,
+    );
+    _requestStart();
+  }
+
+  @override
+  void dispose() {
+    _startRequestToken++;
+    unawaited(_guideCubit.close());
+    super.dispose();
+  }
+
+  void _requestStart() {
+    final requestToken = ++_startRequestToken;
+    _scheduleAttempt(requestToken: requestToken, attempt: 1);
+  }
+
+  void _scheduleAttempt({
+    required int requestToken,
+    required int attempt,
+  }) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(
+        _attemptStart(
+          requestToken: requestToken,
+          attempt: attempt,
+        ),
+      );
+    });
+    WidgetsBinding.instance.scheduleFrame();
+  }
+
+  Future<void> _attemptStart({
+    required int requestToken,
+    required int attempt,
+  }) async {
+    if (!mounted || requestToken != _startRequestToken) return;
+
+    final achievementsState = context.read<AchievementsCubit>().state;
+    final user = context.read<UserCubit>().state.userOrNull;
+    if (!canStartForgeAttributesGuide(
+      state: achievementsState,
+      userId: user?.id,
+    )) {
+      return;
+    }
+
+    final session = _guide.session(
+      availableAttributes: achievementsState.attributes.map(
+        (entity) => entity.attribute,
+      ),
+    );
+    if (session == null) return;
+
+    final result = await _guideCubit.startIfNeeded(
+      userId: user!.id,
+      session: session,
+    );
+    if (!mounted || requestToken != _startRequestToken) return;
+    if (result != GuideStartResult.notReady) return;
+
+    if (attempt < _maxStartAttempts) {
+      _scheduleAttempt(
+        requestToken: requestToken,
+        attempt: attempt + 1,
+      );
+    }
+  }
+
+  Set<ForgeAttribute> _attributeTypes(AchievementsState state) {
+    return state.attributes.map((entity) => entity.attribute).toSet();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: _guideCubit,
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<AchievementsCubit, AchievementsState>(
+            listenWhen: (previous, current) {
+              return previous.isLoading != current.isLoading ||
+                  !setEquals(
+                    _attributeTypes(previous),
+                    _attributeTypes(current),
+                  );
+            },
+            listener: (_, _) => _requestStart(),
+          ),
+          BlocListener<UserCubit, UserState>(
+            listener: (_, _) => _requestStart(),
+          ),
+        ],
+        child: BlocBuilder<GuideCubit, GuideState>(
+          builder: (context, state) {
+            return widget.builder(context, _guide, state);
+          },
+        ),
+      ),
+    );
+  }
+}

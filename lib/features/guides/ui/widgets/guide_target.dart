@@ -13,6 +13,8 @@ class GuideTarget extends StatelessWidget {
     required this.child,
     this.targetPadding = const EdgeInsets.all(6),
     this.targetBorderRadius = const BorderRadius.all(Radius.circular(16)),
+    this.enableAutoScroll = false,
+    this.scrollAlignment = 0.5,
     super.key,
   });
 
@@ -23,11 +25,15 @@ class GuideTarget extends StatelessWidget {
   final Widget child;
   final EdgeInsets targetPadding;
   final BorderRadius targetBorderRadius;
+  final bool? enableAutoScroll;
+  final double scrollAlignment;
 
   @override
   Widget build(BuildContext context) {
     return Showcase.withWidget(
       key: anchor,
+      enableAutoScroll: enableAutoScroll,
+      scrollAlignment: scrollAlignment,
       scope: scope,
       overlayColor: context.appTheme.beige1000,
       overlayOpacity: 0.97,

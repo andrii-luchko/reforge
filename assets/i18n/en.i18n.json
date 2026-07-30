@@ -437,6 +437,20 @@
             "unlockedPlateDescription": "Tap any unlocked Plate to reveal its artwork and story. Once loaded, you can expand or collapse it anytime.",
             "lockedPlateTitle": "Locked Plates",
             "lockedPlateDescription": "Locked Plates become available as you level up. Tap one to see the level required."
+        },
+        "forgeAttributes": {
+            "introTitle": "Forge Attributes",
+            "introDescription": "Forge Attributes track different paths of growth — improvement, effort, mastery, volume, and consistency.",
+            "koboTitle": "Kōbō — The Soul Furnace",
+            "koboDescription": "Personal improvement — earn XP by setting new personal bests.",
+            "kozuchiTitle": "Kozuchi — The Craftsman's Hammer",
+            "kozuchiDescription": "Workout effort — earn XP by training more and outperforming past sessions.",
+            "wazaTitle": "Waza — Your Craft",
+            "wazaDescription": "Discipline mastery — progress through strength, endurance, and flexibility milestones.",
+            "shogenTandaTitle": "Shōgen Tanda — The Workshop Unleashed",
+            "shogenTandaDescription": "Lifetime training volume — grows with every rep, mile, and minute trained.",
+            "tagaTitle": "Taga — The Soul-Furnace Containers",
+            "tagaDescription": "Consistency — build streaks to unlock greater rewards."
         }
     },
     "errors": {
@@ -538,27 +552,27 @@
             "kobo": {
                 "title": "Kōbō",
                 "subtitle": "The Soul Furnace",
-                "description": "Measures growth and intensity.\nXP is awarded for personal records (PRs) and exceeding previous bests."
+                "description": "Personal improvement — earn XP by setting new personal bests."
             },
             "kozuchi": {
                 "title": "Kozuchi",
                 "subtitle": "The Craftsman's Hammer",
-                "description": "Measures consistency and volume.\nXP increases through total workout completion and tonnage."
+                "description": "Workout effort — earn XP by training more and outperforming past sessions."
             },
             "sensho": {
                 "title": "Waza",
                 "subtitle": "Your Craft",
-                "description": "Measures efficiency relative to potential.\nXP scales based on how close performance is to the target goal."
+                "description": "Discipline mastery — progress through strength, endurance, and flexibility milestones."
             },
             "kobokai": {
                 "title": "Shōgen Tanda",
-                "subtitle": "Forge Unleashed",
-                "description": "Measures cumulative lifetime effort.\nAwards XP for hitting large milestones (e.g., 100k kg lifted)."
+                "subtitle": "The Workshop Unleashed",
+                "description": "Lifetime training volume — grows with every rep, mile, and minute trained."
             },
             "kannuki": {
                 "title": "Taga",
-                "subtitle": "The Soul-Forge Gate-Locks",
-                "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
+                "subtitle": "The Soul-Furnace Containers",
+                "description": "Consistency — build streaks to unlock greater rewards."
             }
         }
 

@@ -8,6 +8,14 @@ enum ForgeAttribute {
   kobokai,
 }
 
+const forgeAttributesDisplayOrder = <ForgeAttribute>[
+  ForgeAttribute.kobo,
+  ForgeAttribute.kozuchi,
+  ForgeAttribute.sensho,
+  ForgeAttribute.kobokai,
+  ForgeAttribute.kannuki,
+];
+
 extension ForgeAttributeX on ForgeAttribute {
   String title(Translations t) {
     return switch (this) {

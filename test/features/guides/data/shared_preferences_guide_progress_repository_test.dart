@@ -48,6 +48,13 @@ void main() {
       isFalse,
     );
     expect(
+      await repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.forgeAttributes,
+      ),
+      isFalse,
+    );
+    expect(
       preferences.getBool('guides.71.leaderboard.completed'),
       isTrue,
     );
@@ -67,6 +74,15 @@ void main() {
     );
     expect(
       preferences.getBool('guides.71.plate_of_keragura.completed'),
+      isTrue,
+    );
+
+    await repository.markCompleted(
+      userId: 71,
+      guideId: GuideId.forgeAttributes,
+    );
+    expect(
+      preferences.getBool('guides.71.forge_attributes.completed'),
       isTrue,
     );
   });
