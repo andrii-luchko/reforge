@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -111,7 +112,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
       case Success(value: final badges):
         emit(
           state.copyWith(
-            badges: badges,
+            badges: badges.sorted((a, b) => (a.isLocked ? 1 : 0).compareTo(b.isLocked ? 1 : 0)),
             isLoading: false,
           ),
         );
