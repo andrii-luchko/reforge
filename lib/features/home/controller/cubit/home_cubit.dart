@@ -110,18 +110,12 @@ class HomeCubit extends Cubit<HomeState> {
 
     switch (statsResult) {
       case Success(value: final stats):
-        final updatedMap = Map<StatsPeriod, UserStats>.from(state.statsMap);
-        if (stats != null) {
-          updatedMap[period] = stats;
-        }
-
-        final rank = stats == null && state.rank != null
-            ? state.rank
-            : _createRank(
-                state.user,
-                stats ?? updatedMap[period],
-                previousRank: state.rank,
-              );
+        final updatedMap = Map<StatsPeriod, UserStats>.from(state.statsMap)..[period] = stats;
+        final rank = _createRank(
+          state.user,
+          stats,
+          previousRank: state.rank,
+        );
 
         emit(
           state.copyWith(
@@ -139,6 +133,11 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
     }
+  }
+
+  Future<void> refreshAfterWorkout() async {
+    emit(state.copyWith(statsMap: {}));
+    await loadInitialData();
   }
 
   RankEntity? _createRank(
@@ -161,7 +160,7 @@ class HomeCubit extends Cubit<HomeState> {
       faction: faction,
       lvl: stats?.level ?? previousRank?.lvl,
       xp: stats?.currentXp ?? previousRank?.xp,
-      maxXp: stats?.totalXp ?? previousRank?.maxXp,
+      maxXp: stats?.xpGoal ?? previousRank?.maxXp,
     );
   }
 

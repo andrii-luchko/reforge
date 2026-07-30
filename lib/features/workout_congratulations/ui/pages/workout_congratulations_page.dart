@@ -9,6 +9,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/achievement_content_widget.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/congratulations_action_buttons.dart';
@@ -83,6 +84,7 @@ class _WorkoutCongratulationsPageState extends State<WorkoutCongratulationsPage>
 
   void _onFinishPressed() {
     unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutSummaryFinishClick));
+    unawaited(context.read<HomeCubit>().refreshAfterWorkout());
     const HomePageRoute().go(context);
   }
 

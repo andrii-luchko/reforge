@@ -85,5 +85,15 @@ void main() {
       preferences.getBool('guides.71.forge_attributes.completed'),
       isTrue,
     );
+
+    await repository.markCompleted(
+      userId: 71,
+      guideId: GuideId.mainPage,
+    );
+
+    expect(
+      preferences.getBool('guides.71.main_page.completed'),
+      isTrue,
+    );
   });
 }

@@ -3,11 +3,25 @@ import 'package:reforge/features/home/domain/user_stats.dart';
 
 void main() {
   group('UserStats', () {
+    test('new user stats use the approved defaults', () {
+      final stats = UserStats.newUser();
+
+      expect(stats.level, 51);
+      expect(stats.xpToNextLevel, 1000);
+      expect(stats.totalXp, 0);
+      expect(stats.totalWorkoutsDuration, 0);
+      expect(stats.workoutsCount, 0);
+      expect(stats.activeDays, 0);
+      expect(stats.totalDays, 3);
+      expect(stats.badgeName, isNull);
+      expect(stats.badgeImageUrl, isNull);
+      expect(stats.currentXp, 0);
+      expect(stats.xpGoal, 1000);
+    });
+
     group('currentXp', () {
       test('returns totalXp minus xpToNextLevel when positive', () {
-        final stats = UserStatsX.mock(
-          
-        );
+        final stats = UserStatsX.mock();
         expect(stats.currentXp, 1550);
       });
 
@@ -25,6 +39,21 @@ void main() {
           xpToNextLevel: 0,
         );
         expect(stats.currentXp, 1000);
+      });
+    });
+
+    group('xpGoal', () {
+      test('uses total XP when it is positive', () {
+        final stats = UserStatsX.mock();
+        expect(stats.xpGoal, 2000);
+      });
+
+      test('uses XP to next level when total XP is zero', () {
+        final stats = UserStatsX.mock(
+          totalXp: 0,
+          xpToNextLevel: 1000,
+        );
+        expect(stats.xpGoal, 1000);
       });
     });
 

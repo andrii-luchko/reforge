@@ -9,7 +9,7 @@ import 'package:reforge/features/home/domain/user_stats.dart';
 
 // ignore: one_member_abstracts
 abstract interface class HomeRepository {
-  Future<Result<UserStats?>> getUserStats(StatsPeriod period);
+  Future<Result<UserStats>> getUserStats(StatsPeriod period);
 }
 
 @Injectable(as: HomeRepository)
@@ -19,7 +19,7 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<Result<UserStats?>> getUserStats(StatsPeriod period) async {
+  Future<Result<UserStats>> getUserStats(StatsPeriod period) async {
     try {
       final startDate = period.range.start.toUtc().toIso8601String();
       final endDate = period.range.end.toUtc().toIso8601String();
@@ -29,9 +29,9 @@ class HomeRepositoryImpl with RepositoryErrorHandler implements HomeRepository {
       return Result.success(stats);
     } on DioException catch (error, stackTrace) {
       if (error.response?.statusCode == 500) {
-        //typical problem from backend for a new user. just return null;
-
-        return const Result.success(null);
+        // TODO(reforge): Remove this workaround when the backend returns an explicit
+        // no-stats response for new users instead of a generic 500.
+        return Result.success(UserStats.newUser());
       }
 
       return Result.error(error, stackTrace);

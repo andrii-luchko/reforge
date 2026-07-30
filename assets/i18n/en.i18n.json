@@ -451,6 +451,14 @@
             "shogenTandaDescription": "Lifetime training volume — grows with every rep, mile, and minute trained.",
             "tagaTitle": "Taga — The Soul-Furnace Containers",
             "tagaDescription": "Consistency — build streaks to unlock greater rewards."
+        },
+        "mainPage": {
+            "characterEvolutionTitle": "Character Evolution",
+            "characterEvolutionDescription": "Your character card evolves with every new rank you reach.",
+            "rankAscensionTitle": "Rank Ascension",
+            "rankAscensionDescription": "Unlock all 10 badges in a tier to rank up and evolve your card.",
+            "levelAndLegacyTitle": "Level and Legacy",
+            "levelAndLegacyDescription": "Levels raise your leaderboard position and unlock new Plates of Keragura."
         }
     },
     "errors": {

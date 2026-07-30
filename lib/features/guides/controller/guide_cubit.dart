@@ -33,10 +33,10 @@ class GuideCubit extends Cubit<GuideState> {
       return GuideStartResult.ignored;
     }
 
-    // final currentState = state;
-    // if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) {
-    //   return GuideStartResult.completed;
-    // }
+    final currentState = state;
+    if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) {
+      return GuideStartResult.completed;
+    }
 
     try {
       if (!_driver.canStart(session)) return GuideStartResult.notReady;
@@ -57,10 +57,10 @@ class GuideCubit extends Cubit<GuideState> {
       );
       if (isClosed) return GuideStartResult.ignored;
 
-      // if (isCompleted) {
-      //   emit(GuideState.completed(guideId: session.id));
-      //   return GuideStartResult.completed;
-      // }
+      if (isCompleted) {
+        emit(GuideState.completed(guideId: session.id));
+        return GuideStartResult.completed;
+      }
 
       _session = session;
       emit(

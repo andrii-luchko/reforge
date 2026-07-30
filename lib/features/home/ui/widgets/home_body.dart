@@ -1,11 +1,16 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/ui/guides/main_page_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
+import 'package:reforge/features/home/ui/guide/home_page_guide_scope.dart';
 import 'package:reforge/features/home/ui/widgets/home_app_bar.dart';
 import 'package:reforge/features/home/ui/widgets/home_workout_result_empty.dart';
 import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dart';
@@ -24,6 +29,11 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final guide = context.read<MainPageGuide?>();
+    final guideIsRunning = context.select<GuideCubit, bool>(
+      (cubit) => cubit.state is GuideRunning,
+    );
+
     return SafeArea(
       top: false,
       bottom: false,
@@ -56,6 +66,7 @@ class HomeBody extends StatelessWidget {
               child: Skeletonizer(
                 enabled: state.isLoading,
                 child: CustomScrollView(
+                  physics: guideIsRunning ? const NeverScrollableScrollPhysics() : null,
                   slivers: [
                     HomeSliverAppBar(
                       imageUrl: state.user?.avatarUrl,
@@ -66,9 +77,10 @@ class HomeBody extends StatelessWidget {
                       sliver: SliverToBoxAdapter(
                         child: Skeleton.replace(
                           replacement: const AvatarCardShimmer(),
-                          child: AvatarRankCard(
+                          child: _buildRankCard(
+                            guide: guide,
                             rank: state.rank ?? RankEntity.mockWith(t),
-                          ).animateEntrance(),
+                          ),
                         ),
                       ),
                     ),
@@ -110,6 +122,23 @@ class HomeBody extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildRankCard({
+    required MainPageGuide? guide,
+    required RankEntity rank,
+  }) {
+    final card = AvatarRankCard(rank: rank).animateEntrance();
+    if (guide == null) return card;
+
+    return GuideTarget(
+      anchor: guide.anchor(MainPageGuideStep.characterEvolution),
+      scope: homePageGuideScope,
+      tooltip: guide.tooltip(MainPageGuideStep.characterEvolution),
+
+      targetPadding: EdgeInsets.zero,
+      child: card,
     );
   }
 }

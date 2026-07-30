@@ -68,7 +68,7 @@ void main() {
         expect(cubit.state.rank, isNotNull);
         expect(cubit.state.rank!.lvl, stats.level);
         expect(cubit.state.rank!.xp, stats.currentXp);
-        expect(cubit.state.rank!.maxXp, stats.totalXp);
+        expect(cubit.state.rank!.maxXp, stats.xpGoal);
         expect(cubit.state.isLoading, false);
         expect(cubit.state.error, isNull);
       });
@@ -149,22 +149,26 @@ void main() {
         expect(cubit.state.rank, same(validRank));
       });
 
-      test('null stats response preserves the last valid rank', () async {
+      test('refresh after workout bypasses and replaces cached stats', () async {
         final user = createTestOnboardedUser();
-        final stats = createTestUserStats();
+        final initialStats = createTestUserStats();
+        final refreshedStats = UserStatsX.mock(level: 8);
         var calls = 0;
         when(() => mockUserCubit.currentOnboardedUser).thenReturn(user);
         when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async {
           calls++;
-          return calls == 1 ? Result.success(stats) : const Result.success(null);
+          return Result.success(calls == 1 ? initialStats : refreshedStats);
         });
 
         final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
         await cubit.loadInitialData();
-        final validRank = cubit.state.rank;
-        await cubit.loadStatsByPeriod(StatsPeriod.lastWeek, isInitial: true);
+        await cubit.refreshAfterWorkout();
 
-        expect(cubit.state.rank, same(validRank));
+        expect(cubit.state.currentStats, same(refreshedStats));
+        expect(cubit.state.rank?.lvl, 8);
+        verify(
+          () => mockRepository.getUserStats(StatsPeriod.lastWeek),
+        ).called(2);
       });
     });
 

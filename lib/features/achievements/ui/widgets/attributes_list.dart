@@ -59,6 +59,7 @@ class AttributesList extends StatelessWidget {
       anchor: guide.attributeAnchor(entity.attribute),
       scope: achievementsPageGuideScope,
       tooltip: guide.tooltip(step),
+      targetPadding: const .all(8),
       child: SizedBox(width: double.infinity, child: item),
     );
   }

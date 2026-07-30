@@ -13,6 +13,20 @@ class UserStats {
     required this.badgeImageUrl,
   });
 
+  factory UserStats.newUser() {
+    return UserStats(
+      level: 1,
+      xpToNextLevel: 1000,
+      totalXp: 0,
+      totalWorkoutsDuration: 0,
+      workoutsCount: 0,
+      activeDays: 0,
+      totalDays: 3,
+      badgeName: null,
+      badgeImageUrl: null,
+    );
+  }
+
   int level;
   int xpToNextLevel;
   int totalXp;
@@ -26,6 +40,8 @@ class UserStats {
   String? badgeImageUrl;
 
   int get currentXp => (totalXp - xpToNextLevel).clamp(0, totalXp);
+
+  int get xpGoal => totalXp > 0 ? totalXp : xpToNextLevel;
 }
 
 extension UserStatsX on UserStats {
@@ -41,7 +57,7 @@ extension UserStatsX on UserStats {
     int workoutsCount = 12,
     int activeDays = 4,
     int totalDays = 7,
-    String? badgeName = 'Iron Lifter',
+    String? badgeName,
   }) {
     return UserStats(
       level: level,

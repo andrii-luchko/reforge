@@ -14,7 +14,7 @@ class XpTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = currentXp / totalXp;
+    final progress = totalXp <= 0 ? 0.0 : (currentXp / totalXp).clamp(0.0, 1.0);
     final percentage = (progress * 100).toInt();
     final appTheme = context.appTheme;
 
