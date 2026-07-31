@@ -35,7 +35,7 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
 
     emit(state.copyWith(selectedFaction: userFaction, error: null));
 
-    await _fetchData(userFaction);
+    await _fetchAllFactions();
   }
 
   Future<void> _onUserChanged(OnboardedUser? user) async {
@@ -62,7 +62,7 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
     }
 
     if (!state.forgeData.containsKey(faction)) {
-      await _fetchData(faction);
+      await _fetchFaction(faction);
     }
   }
 
@@ -71,15 +71,45 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
     emit(state.copyWith(selectedFaction: faction, error: null));
 
     if (!state.forgeData.containsKey(faction)) {
-      await _fetchData(faction);
+      await _fetchFaction(faction);
     }
   }
 
   Future<void> refresh() async {
-    await _fetchData(state.selectedFaction);
+    await _fetchAllFactions();
   }
 
-  Future<void> _fetchData(Faction faction) async {
+  Future<void> _fetchAllFactions() async {
+    emit(state.copyWith(isLoading: true, error: null));
+
+    final results = await Future.wait(
+      Faction.values.map(
+        (faction) async => MapEntry(faction, await _repository.getImmortalForgesForFaction(faction)),
+      ),
+    );
+
+    final forgeData = <Faction, List<ImmortalForgeEntity>>{};
+    Exception? error;
+
+    for (final entry in results) {
+      switch (entry.value) {
+        case Success(value: final leaders):
+          forgeData[entry.key] = leaders;
+        case Failure(error: final failure):
+          error ??= failure;
+      }
+    }
+
+    emit(
+      state.copyWith(
+        isLoading: false,
+        forgeData: forgeData,
+        error: error?.toString(),
+      ),
+    );
+  }
+
+  Future<void> _fetchFaction(Faction faction) async {
     emit(state.copyWith(isLoading: true, error: null));
 
     final revision = _userRevision;
@@ -88,10 +118,8 @@ class ImmortalForgesCubit extends Cubit<ImmortalForgesState> {
 
     switch (result) {
       case Success(value: final response):
-        final leaders = response;
-
         final updatedData = Map<Faction, List<ImmortalForgeEntity>>.from(state.forgeData);
-        updatedData[faction] = leaders;
+        updatedData[faction] = response;
 
         emit(
           state.copyWith(

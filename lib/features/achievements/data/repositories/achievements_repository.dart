@@ -46,10 +46,13 @@ class AchievementsRepositoryImpl with RepositoryErrorHandler implements Achievem
     try {
       final result = await makeRequest(
         () async {
-          final result = await _apiClient.getUserBadges();
+          final response = await _apiClient.getUserBadges();
 
-          final mappedList = result.data.map((badge) => badge.toDomain()).toList();
-          return mappedList;
+          final badges = response.data.map((badge) => badge.toDomain()).toList();
+
+          final sorted = badges.sorted((a, b) => (a.isLocked ? 1 : 0).compareTo(b.isLocked ? 1 : 0));
+
+          return sorted;
         },
         label: 'getUserBadges',
       );

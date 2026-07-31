@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/ui/widgets/badge_card.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -21,9 +20,10 @@ class SliverBadgesGrid extends StatelessWidget {
     return SliverGrid(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        mainAxisSpacing: 8,
+        mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 0.7,
+        // childAspectRatio: 0.75,
+        mainAxisExtent: 149,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
@@ -31,7 +31,7 @@ class SliverBadgesGrid extends StatelessWidget {
 
           return BadgeCard(
             badge: badge,
-          ).animateEntrance();
+          );
         },
         childCount: badges.length,
       ),

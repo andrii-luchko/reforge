@@ -4,6 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/shared/uikit/base_glass_container.dart';
 import 'package:reforge/shared/uikit/blur_container.dart';
 import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
@@ -77,10 +78,12 @@ class AppIconButton extends StatelessWidget {
         ),
       );
     } else {
-      return Icon(
-        iconData,
-        size: iconSize,
-        color: appTheme.beige400,
+      return Skeleton.keep(
+        child: Icon(
+          iconData,
+          size: iconSize,
+          color: appTheme.beige400,
+        ),
       );
     }
   }

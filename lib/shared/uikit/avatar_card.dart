@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/guides/ui/guides/main_page_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
+import 'package:reforge/features/home/ui/guide/home_page_guide_scope.dart';
 import 'package:reforge/features/home/ui/widgets/faction_widget.dart';
 import 'package:reforge/features/home/ui/widgets/lvl_widget.dart';
 import 'package:reforge/features/home/ui/widgets/rank_card.dart';
@@ -23,6 +27,8 @@ class AvatarRankCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+    final guide = context.read<MainPageGuide?>();
+
     return _AvatarCardBase(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -54,7 +60,12 @@ class AvatarRankCard extends StatelessWidget {
                 Positioned(
                   top: 0,
                   left: w * 0.08,
-                  child: LvlWidget(lvl: lvl),
+                  child: _guideTarget(
+                    guide: guide,
+                    step: MainPageGuideStep.levelAndLegacy,
+                    targetBorderRadius: BorderRadius.circular(4),
+                    child: LvlWidget(lvl: lvl),
+                  ),
                 ),
 
               Positioned(
@@ -68,15 +79,42 @@ class AvatarRankCard extends StatelessWidget {
                 left: w * 0.01,
                 width: w * 0.93,
 
-                child: RankCard(
-                  japanRankName: rank.japanRankName,
-                  rankName: rank.rankName,
+                child: _guideTarget(
+                  guide: guide,
+                  step: MainPageGuideStep.rankAscension,
+                  targetPadding: const EdgeInsets.all(4).copyWith(right: 32),
+                  targetBorderRadius: BorderRadius.circular(4),
+                  child: RankCard(
+                    japanRankName: rank.japanRankName,
+                    rankName: rank.rankName,
+                  ),
                 ),
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _guideTarget({
+    required MainPageGuide? guide,
+    required MainPageGuideStep step,
+    required Widget child,
+    EdgeInsets targetPadding = const EdgeInsets.all(6),
+    BorderRadius targetBorderRadius = const BorderRadius.all(
+      Radius.circular(16),
+    ),
+  }) {
+    if (guide == null) return child;
+
+    return GuideTarget(
+      anchor: guide.anchor(step),
+      scope: homePageGuideScope,
+      tooltip: guide.tooltip(step),
+      targetPadding: targetPadding,
+      targetBorderRadius: targetBorderRadius,
+      child: child,
     );
   }
 

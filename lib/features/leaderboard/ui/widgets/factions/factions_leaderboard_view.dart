@@ -4,9 +4,12 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_show_type.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_factions.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_leaderboard_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/faction_mode_picker.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/factions/leaderboard_faction_list.dart';
@@ -23,8 +26,10 @@ class FactionsLeaderboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<FactionsLeaderboardCubit>();
+    final guide = context.read<FactionWarsGuide?>();
 
     return BlocConsumer<FactionsLeaderboardCubit, FactionsLeaderboardState>(
+      listenWhen: (previous, current) => current.error != previous.error,
       listener: (context, state) {
         final error = state.error;
         if (error == null) return;
@@ -36,16 +41,43 @@ class FactionsLeaderboardView extends StatelessWidget {
         final userFaction = state.userFaction;
 
         final showVersusCard = versusList != null && userFaction != null && !isLoading;
+        final battleModePicker = FactionLeaderboardModePiker(
+          selectedMode: state.selectedMode,
+          onModeChanged: cubit.changeMode,
+        );
+        final battleModeTarget = guide == null
+            ? battleModePicker
+            : GuideTarget(
+                anchor: guide.anchor(FactionWarsGuideStep.battleMode),
+                scope: leaderboardPageGuideScope,
+                tooltip: guide.tooltip(FactionWarsGuideStep.battleMode),
+                child: battleModePicker,
+              );
+        final factionCard = showVersusCard
+            ? FactionLeaderboardCard(
+                mode: state.selectedMode,
+                firstFaction: versusList.myFaction,
+                secondFaction: versusList.opponent,
+                userFaction: userFaction,
+                currentWeek: 2,
+                totalWeeks: 4,
+              )
+            : const FactionLeaderboardCardError();
+        final factionCardTarget = guide == null || !showVersusCard
+            ? factionCard
+            : GuideTarget(
+                anchor: guide.anchor(FactionWarsGuideStep.monthlyRewards),
+                scope: leaderboardPageGuideScope,
+                tooltip: guide.tooltip(FactionWarsGuideStep.monthlyRewards),
+                child: factionCard,
+              );
 
         return SliverSkeletonizer(
           enabled: isLoading,
           child: SliverMainAxisGroup(
             slivers: [
               SliverToBoxAdapter(
-                child: FactionLeaderboardModePiker(
-                  selectedMode: state.selectedMode,
-                  onModeChanged: cubit.changeMode,
-                ),
+                child: battleModeTarget.animateEntrance(),
               ),
 
               SliverPadding(
@@ -54,17 +86,7 @@ class FactionsLeaderboardView extends StatelessWidget {
                   child: Skeleton.replace(
                     key: ValueKey(state.selectedMode),
                     replacement: const FactionLeaderboardCardShimmer(),
-
-                    child: showVersusCard
-                        ? FactionLeaderboardCard(
-                            mode: state.selectedMode,
-                            firstFaction: versusList.myFaction,
-                            secondFaction: versusList.opponent,
-                            userFaction: userFaction,
-                            currentWeek: 2,
-                            totalWeeks: 4,
-                          )
-                        : const FactionLeaderboardCardError(),
+                    child: factionCardTarget,
                   ).animateEntrance(),
                 ),
               ),

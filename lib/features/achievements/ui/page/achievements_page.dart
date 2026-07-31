@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/router/routes.dart';
@@ -9,9 +10,12 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
+import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_host.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
+import 'package:reforge/features/achievements/ui/widgets/badges_preview.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
+import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
@@ -39,7 +43,16 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return ForgeAttributesGuideHost(
+      child: Builder(builder: _buildPage),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     final appTheme = context.appTheme;
+    final guideIsRunning = context.select<GuideCubit, bool>(
+      (cubit) => cubit.state is GuideRunning,
+    );
 
     const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
 
@@ -59,6 +72,8 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     await _cubit.loadAttributes(forceRefresh: true);
                   },
                   child: CustomScrollView(
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+                    physics: guideIsRunning ? const NeverScrollableScrollPhysics() : null,
                     slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -152,9 +167,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverBadgesGrid(
-                          badges: state.badges.take(3).toList(),
-                        ),
+                        sliver: state.badges.isEmpty
+                            ? const SliverBadgesGrid(badges: [])
+                            : SliverToBoxAdapter(
+                                child: BadgesPreview(
+                                  badges: state.badges,
+                                ),
+                              ),
                       ),
                       const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                     ],

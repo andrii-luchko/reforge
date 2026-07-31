@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
@@ -98,6 +99,30 @@ void main() {
 
         verify(() => mockRepository.getFactionsLeaderboard()).called(1);
       });
+
+      test('keeps loaded factions when the user is initially unavailable', () async {
+        final changes = StreamController<OnboardedUser?>.broadcast();
+        final factions = [createTestFactionModel(Faction.gakki)];
+        when(() => mockUserCubit.currentOnboardedUser).thenReturn(null);
+        when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => changes.stream);
+        when(() => mockRepository.getFactionsLeaderboard()).thenAnswer((_) async => Result.success(factions));
+
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics, mockUserCubit);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.factions, factions);
+        expect(cubit.state.userFaction, isNull);
+        expect(cubit.state.isLoading, isFalse);
+
+        changes.add(createTestUser(Faction.gakki));
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.userFaction, Faction.gakki);
+        verify(() => mockRepository.getFactionsLeaderboard()).called(1);
+
+        await cubit.close();
+        await changes.close();
+      });
     });
 
     group('changeMode', () {
@@ -124,9 +149,26 @@ void main() {
 
         expect(cubit.state.selectedType, FactionShowType.victoryPoints);
       });
+
+      test('setShowType changes state without logging a user action', () async {
+        when(() => mockRepository.getFactionsLeaderboard()).thenAnswer((_) async => const Result.success([]));
+
+        final cubit = FactionsLeaderboardCubit(mockRepository, mockAnalytics, mockUserCubit);
+        await Future<void>.delayed(Duration.zero);
+
+        cubit.setShowType(FactionShowType.victoryPoints);
+
+        expect(cubit.state.selectedType, FactionShowType.victoryPoints);
+        verifyNever(
+          () => mockAnalytics.logEvent(
+            AnalyticsEvents.leaderboardFactionsShowTypeChange,
+            any(),
+          ),
+        );
+      });
     });
 
-    test('reloads standings only when the user faction changes and clears on logout', () async {
+    test('updates user faction without reloading standings and clears on logout', () async {
       final changes = StreamController<OnboardedUser?>.broadcast();
       when(() => mockUserCubit.onboardedUserChanges).thenAnswer((_) => changes.stream);
       when(() => mockRepository.getFactionsLeaderboard()).thenAnswer((_) async => const Result.success([]));
@@ -136,7 +178,6 @@ void main() {
 
       changes.add(createTestUser(Faction.gakki).copyWith(userName: 'Updated'));
       await Future<void>.delayed(Duration.zero);
-      verify(() => mockRepository.getFactionsLeaderboard()).called(1);
 
       changes.add(createTestUser(Faction.gyohyo));
       await Future<void>.delayed(Duration.zero);

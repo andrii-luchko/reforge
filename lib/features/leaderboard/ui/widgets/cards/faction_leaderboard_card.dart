@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/faction_container.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/cards/score_widget.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/notched_faction_leaderboard_card.dart';
@@ -188,14 +192,16 @@ class FactionLeaderboardCard extends StatelessWidget {
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: ScoreWidget(
-                              firstFactionScore: firstScore,
-                              secondFactionScore: secondScore,
-                              winnerTitle: firstScore == secondScore
-                                  ? 'No leader'
-                                  : (firstScore > secondScore
-                                        ? firstFaction.faction.title(t)
-                                        : secondFaction.faction.title(t)),
+                            child: _VictoryPointsGuideTarget(
+                              child: ScoreWidget(
+                                firstFactionScore: firstScore,
+                                secondFactionScore: secondScore,
+                                winnerTitle: firstScore == secondScore
+                                    ? 'No leader'
+                                    : (firstScore > secondScore
+                                          ? firstFaction.faction.title(t)
+                                          : secondFaction.faction.title(t)),
+                              ),
                             ),
                           ),
                         ),
@@ -216,6 +222,28 @@ class FactionLeaderboardCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _VictoryPointsGuideTarget extends StatelessWidget {
+  const _VictoryPointsGuideTarget({
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final guide = context.read<FactionWarsGuide?>();
+    if (guide == null) return child;
+
+    return GuideTarget(
+      anchor: guide.anchor(FactionWarsGuideStep.victoryPoints),
+      scope: leaderboardPageGuideScope,
+      tooltip: guide.tooltip(FactionWarsGuideStep.victoryPoints),
+      targetPadding: const EdgeInsets.all(16).copyWith(top: 0),
+      child: child,
     );
   }
 }

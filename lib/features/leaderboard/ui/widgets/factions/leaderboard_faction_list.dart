@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
+import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/domain/entities/leaderboard_faction_model.dart';
 import 'package:reforge/features/leaderboard/domain/enum/faction_mode.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/xp_tag.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -14,7 +18,11 @@ import 'package:reforge/shared/empty_list_message.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class LeaderboardFactionList extends StatelessWidget {
-  const LeaderboardFactionList({required this.factions, required this.mode, super.key});
+  const LeaderboardFactionList({
+    required this.factions,
+    required this.mode,
+    super.key,
+  });
 
   final List<LeaderboardFactionModel> factions;
   final FactionMode mode;
@@ -27,27 +35,48 @@ class LeaderboardFactionList extends StatelessWidget {
             subtitle: t.leaderboard.factions.emptySubtitle,
             icon: Icons.groups_3_outlined,
           )
-        : SliverList.separated(
-            itemCount: factions.length,
-            itemBuilder: (context, index) {
-              final faction = factions[index];
-
-              final rank = index + 1;
-              return Skeleton.leaf(
-                child:
-                    LeaderboardFactionListTile(
-                      key: ValueKey(faction.name),
-                      faction: faction,
-                      rank: rank,
-                    ).animateEntrance(
-                      index: index,
+        : SliverToBoxAdapter(
+            child: Column(
+              children: [
+                for (int index = 0; index < factions.length; index++) ...[
+                  if (index != 0) const SizedBox(height: 8),
+                  Skeleton.leaf(
+                    child: _FactionListGuideTarget(
+                      includeTarget: index == 0,
+                      child: LeaderboardFactionListTile(
+                        key: ValueKey(factions[index].name),
+                        faction: factions[index],
+                        rank: index + 1,
+                      ).animateEntrance(index: index),
                     ),
-              );
-            },
-            separatorBuilder: (context, index) => const SizedBox(
-              height: 8,
+                  ),
+                ],
+              ],
             ),
           );
+  }
+}
+
+class _FactionListGuideTarget extends StatelessWidget {
+  const _FactionListGuideTarget({
+    required this.includeTarget,
+    required this.child,
+  });
+
+  final bool includeTarget;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final guide = context.read<FactionWarsGuide?>();
+    if (!includeTarget || guide == null) return child;
+
+    return GuideTarget(
+      anchor: guide.anchor(FactionWarsGuideStep.scoring),
+      scope: leaderboardPageGuideScope,
+      tooltip: guide.tooltip(FactionWarsGuideStep.scoring),
+      child: child,
+    );
   }
 }
 

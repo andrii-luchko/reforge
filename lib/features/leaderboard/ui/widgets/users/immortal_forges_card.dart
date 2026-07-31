@@ -1,12 +1,17 @@
 // ignore_for_file: prefer_match_file_name
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 // Ensure these imports are correct in your project structure
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/text_style_extension.dart';
+import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
+import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
+import 'package:reforge/features/leaderboard/domain/entities/immortal_forge_rank.dart';
 import 'package:reforge/features/leaderboard/domain/entities/immortal_forges_entity.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/gradient_by_rank.dart';
-import 'package:reforge/features/leaderboard/domain/helpers/top_five_titles_by_rank.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/gradient_line.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/leaderboard_avatar.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/painters/leader_box.painter.dart';
@@ -90,6 +95,7 @@ class ImmortalForcesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const rangGuidWindowSize = Size(124, 128);
     final ranks = Iterable.generate(5, (i) => _getUserByRank(i + 1)).toList();
     final userRank1 = ranks.first;
 
@@ -133,7 +139,7 @@ class ImmortalForcesCard extends StatelessWidget {
                       Center(
                         child: LeaderBoardAvatar(
                           size: const Size(84, 84),
-                          borderGradientColors: getGradientByRank(1, context),
+                          borderGradientColors: 1.immortalForgeGradient(context),
                           imageUrl: userRank1.avatarUrl,
                         ),
                       ),
@@ -149,6 +155,32 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[2] != null) _RankAvatar(user: ranks[2]!, alignment: const Alignment(0.85, -0.9)),
                     if (ranks[3] != null) _RankAvatar(user: ranks[3]!, alignment: const Alignment(-0.85, 0.9)),
                     if (ranks[4] != null) _RankAvatar(user: ranks[4]!, alignment: const Alignment(0.85, 0.9)),
+
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.daizosho,
+                      alignment: Alignment(0, 0.2),
+                      size: Size(140, 190),
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.might,
+                      alignment: Alignment(-1, -1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.judgement,
+                      alignment: Alignment(1, -1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.strife,
+                      alignment: Alignment(-1, 1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.burden,
+                      alignment: Alignment(1, 1.3),
+                      size: rangGuidWindowSize,
+                    ),
                   ],
                 ),
               ),
@@ -187,7 +219,7 @@ class _RankLabel extends StatelessWidget {
               child: Align(
                 alignment: const Alignment(0, -0.1),
                 child: Text(
-                  topFiveTitlesByRank(rank),
+                  rank.immortalForgeTitle,
                   style: subheadH5Medium.copyWith(
                     color: context.appTheme.beige100,
                     fontSize: 14,
@@ -221,7 +253,42 @@ class _RankAvatar extends StatelessWidget {
       child: LeaderBoardAvatar(
         size: const Size(62, 62),
         imageUrl: user.avatarUrl,
-        borderGradientColors: getGradientByRank(user.rank, context),
+        borderGradientColors: user.rank.immortalForgeGradient(context),
+      ),
+    );
+  }
+}
+
+class _RankGuideTarget extends StatelessWidget {
+  const _RankGuideTarget({
+    required this.step,
+    required this.alignment,
+    required this.size,
+  });
+
+  final LeaderboardGuideStep step;
+  final Alignment alignment;
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    final guide = context.read<LeaderboardGuide?>();
+    if (guide == null) return const SizedBox.shrink();
+
+    return Align(
+      alignment: alignment,
+      child: IgnorePointer(
+        child: GuideTarget(
+          anchor: guide.anchor(step),
+          scope: leaderboardPageGuideScope,
+          targetPadding: const EdgeInsets.all(4),
+          tooltip: guide.tooltip(
+            step,
+            immortalForgesCubit: context.read<ImmortalForgesCubit>(),
+          ),
+          targetBorderRadius: .circular(16),
+          child: SizedBox.fromSize(size: size),
+        ),
       ),
     );
   }

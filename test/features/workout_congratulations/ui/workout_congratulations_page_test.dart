@@ -8,6 +8,7 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/achievement_content_widget.dart';
@@ -21,6 +22,8 @@ import 'package:reforge/shared/horizontal_xp_bar.dart';
 import '../../../core/analytics/mocks/mock_analytics_service.dart';
 
 class _MockWorkoutFlowCubit extends Mock implements WorkoutFlowCubit {}
+
+class _MockHomeCubit extends Mock implements HomeCubit {}
 
 class _MockGoRouterState extends Mock implements GoRouterState {}
 
@@ -193,6 +196,10 @@ void main() {
 
   testWidgets('finish navigates to home and logs analytics', (tester) async {
     final workoutFlowCubit = _workoutFlowCubit(_summary());
+    final homeCubit = _MockHomeCubit();
+    when(() => homeCubit.state).thenReturn(const HomeState());
+    when(() => homeCubit.stream).thenAnswer((_) => const Stream.empty());
+    when(homeCubit.refreshAfterWorkout).thenAnswer((_) async {});
 
     final router = GoRouter(
       initialLocation: '/workout-congratulations',
@@ -210,8 +217,11 @@ void main() {
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
-      BlocProvider<WorkoutFlowCubit>.value(
-        value: workoutFlowCubit,
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<WorkoutFlowCubit>.value(value: workoutFlowCubit),
+          BlocProvider<HomeCubit>.value(value: homeCubit),
+        ],
         child: MaterialApp.router(
           theme: ThemeDataValues.darkThemeData,
           routerConfig: router,
@@ -225,6 +235,7 @@ void main() {
 
     expect(find.text('Home destination'), findsOneWidget);
     verify(() => analytics.logEvent(AnalyticsEvents.workoutSummaryFinishClick)).called(1);
+    verify(homeCubit.refreshAfterWorkout).called(1);
   });
 
   testWidgets('route redirects home when workout summary is missing', (tester) async {

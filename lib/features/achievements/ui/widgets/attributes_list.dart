@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/formatters/xp_formatter.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
-
+import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
+import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 class AttributesList extends StatelessWidget {
@@ -17,16 +20,47 @@ class AttributesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final guide = context.read<ForgeAttributesGuide?>();
+    final sortedAttributes = [
+      for (final attribute in forgeAttributesDisplayOrder)
+        ...attributes.where((entity) => entity.attribute == attribute),
+    ];
+    final targetedAttributes = <ForgeAttribute>{};
+
     return Column(
       crossAxisAlignment: .start,
-      children: attributes
-          .map(
-            (entity) => Padding(
-              padding: const .only(bottom: 8),
-              child: AttributeChartItem(entity: entity),
+      children: [
+        for (final entity in sortedAttributes)
+          Padding(
+            padding: const .only(bottom: 8),
+            child: _buildItem(
+              entity,
+              guide: guide,
+              targetedAttributes: targetedAttributes,
             ),
-          )
-          .toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildItem(
+    AttributesEntity entity, {
+    required ForgeAttributesGuide? guide,
+    required Set<ForgeAttribute> targetedAttributes,
+  }) {
+    final item = AttributeChartItem(entity: entity);
+
+    if (guide == null || !targetedAttributes.add(entity.attribute)) {
+      return item;
+    }
+
+    final step = guide.stepForAttribute(entity.attribute);
+    return GuideTarget(
+      anchor: guide.attributeAnchor(entity.attribute),
+      scope: achievementsPageGuideScope,
+      tooltip: guide.tooltip(step),
+      targetPadding: const .all(8),
+      child: SizedBox(width: double.infinity, child: item),
     );
   }
 }

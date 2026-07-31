@@ -4,9 +4,12 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/guides/ui/guides/leaderboard_guide.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/users_leaderboard_cubit.dart/users_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/domain/helpers/generate_mock_users.dart';
+import 'package:reforge/features/leaderboard/ui/guide/leaderboard_page_guide_scope.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/immortal_forges_card.dart';
 import 'package:reforge/features/leaderboard/ui/widgets/users/leader_board_users_list.dart';
 import 'package:reforge/features/quiz/domain/enums/faction.dart';
@@ -24,7 +27,7 @@ class UsersLeaderboardView extends StatelessWidget {
     return const SliverMainAxisGroup(
       slivers: [
         ImmortalForgesSection(),
-        SliverPadding(padding: .only(bottom: 90), sliver: LeaderBoardListSection()),
+        SliverPadding(padding: EdgeInsets.only(bottom: 90), sliver: LeaderBoardListSection()),
       ],
     );
   }
@@ -32,9 +35,12 @@ class UsersLeaderboardView extends StatelessWidget {
 
 class ImmortalForgesSection extends StatelessWidget {
   const ImmortalForgesSection({super.key});
+
   static const horizontalPadding = EdgeInsets.symmetric(horizontal: 16);
   @override
   Widget build(BuildContext context) {
+    final guide = context.read<LeaderboardGuide?>();
+
     return BlocConsumer<ImmortalForgesCubit, ImmortalForgesState>(
       listener: (context, state) {
         final error = state.error;
@@ -47,6 +53,40 @@ class ImmortalForgesSection extends StatelessWidget {
         final isLoading = state.isLoading;
 
         final isEmpty = state.currentList.isEmpty;
+        final factionSelector = MultiOptionSwitcher<Faction>(
+          selectedValue: selectedFaction,
+          values: Faction.values,
+          labelBuilder: (value) => value.title(t),
+          onSelected: cubit.changeFaction,
+          borderRadius: BorderRadius.circular(50),
+          padding: const EdgeInsets.all(3),
+          itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
+        );
+        final factionSelectorTarget = guide == null
+            ? factionSelector
+            : GuideTarget(
+                anchor: guide.anchor(LeaderboardGuideStep.factionSelector),
+                scope: leaderboardPageGuideScope,
+                tooltip: guide.tooltip(
+                  LeaderboardGuideStep.factionSelector,
+                  immortalForgesCubit: cubit,
+                ),
+                child: factionSelector,
+              );
+        final immortalForgesCard = isEmpty
+            ? ImmortalForcesCardEmpty(faction: selectedFaction)
+            : ImmortalForcesCard(users: state.currentList);
+        final immortalForgesTarget = guide == null
+            ? immortalForgesCard
+            : GuideTarget(
+                anchor: guide.anchor(LeaderboardGuideStep.immortalForges),
+                scope: leaderboardPageGuideScope,
+                tooltip: guide.tooltip(
+                  LeaderboardGuideStep.immortalForges,
+                  immortalForgesCubit: cubit,
+                ),
+                child: immortalForgesCard,
+              );
 
         return SliverSkeletonizer(
           enabled: isLoading,
@@ -56,15 +96,7 @@ class ImmortalForgesSection extends StatelessWidget {
                 padding: horizontalPadding.copyWith(bottom: 32),
                 sliver: SliverToBoxAdapter(
                   child: Skeleton.leaf(
-                    child: MultiOptionSwitcher<Faction>(
-                      selectedValue: selectedFaction,
-                      values: Faction.values,
-                      labelBuilder: (value) => value.title(t),
-                      onSelected: cubit.changeFaction,
-                      borderRadius: BorderRadius.circular(50),
-                      padding: const EdgeInsets.all(3),
-                      itemTextStyle: subheadH5Medium.copyWith(color: context.appTheme.beige100),
-                    ),
+                    child: factionSelectorTarget,
                   ),
                 ),
               ),
@@ -74,12 +106,8 @@ class ImmortalForgesSection extends StatelessWidget {
                 sliver: SliverToBoxAdapter(
                   child: Skeleton.replace(
                     replacement: const ImmortalForcesCardShimmer(),
-                    child: isEmpty
-                        ? ImmortalForcesCardEmpty(faction: selectedFaction)
-                        : ImmortalForcesCard(
-                            users: state.currentList,
-                          ),
-                  ).animateEntrance(),
+                    child: immortalForgesTarget.animateEntrance(),
+                  ),
                 ),
               ),
             ],

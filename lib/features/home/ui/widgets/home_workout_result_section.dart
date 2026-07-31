@@ -54,7 +54,7 @@ class HomeWorkoutResultSection extends StatelessWidget {
             sliver: SliverToBoxAdapter(
               child: XpTile(
                 currentXp: stats.currentXp,
-                totalXp: stats.totalXp,
+                totalXp: stats.xpGoal,
               ),
             ),
           ),

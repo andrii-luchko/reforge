@@ -394,6 +394,76 @@
         "currentUserLabel": "Me",
         "xpLabel": "XP"
     },
+    "guides": {
+        "controls": {
+            "back": "Back",
+            "next": "Next",
+            "finish": "Finish",
+            "skip": "Skip"
+        },
+        "leaderboard": {
+            "introTitle": "Leaderboard",
+            "introDescription": "Every workout is a battle for glory. Compete across the Immortal Forges, conquer the leaderboards, and rise to become Daizōshō.",
+            "factionTitle": "Choose your Forge",
+            "factionDescription": "Each faction measures a different aspect of performance: Strength, Running, or Flexibility.",
+            "forgesTitle": "Immortal Forges and Daizōshō",
+            "forgesDescription": "Each Forge measures a different skill. Top one to become its Champion — dominate all of them to become Daizōshō.",
+            "daizoshoDescription": "The faction's highest honor — earned for balanced excellence across every Forge, not just one.",
+            "strengthTitle": "Strength",
+            "strengthDescription": "Peak performance — based on your strongest lifts and bodyweight feats.",
+            "runningTitle": "Running",
+            "runningDescription": "Greatest endurance — longest distance completed, with faster times breaking ties.",
+            "flexibilityTitle": "Flexibility",
+            "flexibilityDescription": "Your best mobility and end-range strength across key standards.",
+            "burdenDescription": "Total workload this cycle — weight lifted, distance run, time under tension.",
+            "judgementDescription": "Efficiency per bodyweight — rewards output relative to size, not raw numbers.",
+            "strifeDescription": "Total XP this cycle — from workouts, quests, milestones, and streaks."
+        },
+        "factionWars": {
+            "introTitle": "Faction Wars",
+            "introDescription": "A weekly clash between all three factions. Victory goes to teamwork and consistency — not headcount.",
+            "battleModeTitle": "Track the Battle",
+            "battleModeDescription": "Switch between the current fight and all-time results to see who’s winning now — and who’s leading overall.",
+            "scoringTitle": "How It's Scored",
+            "scoringDescription": "Score = total faction XP ÷ active members. Highest average XP per member wins the week.",
+            "victoryPointsTitle": "Victory Points",
+            "victoryPointsDescription": "Win a week, earn 1 Victory Point. First to 3 Victory Points becomes Monthly Champion.",
+            "monthlyRewardsTitle": "Monthly Rewards",
+            "monthlyRewardsDescription": "Monthly Champions earn a 7-day +5% XP boost."
+        },
+        "plateOfKeragura": {
+            "introTitle": "Plate of Keragura",
+            "introDescription": "Every level unlocks a new Plate of Keragura, revealing lore, heroes, and history of the world.",
+            "unlockedPlateTitle": "Open the Archive",
+            "unlockedPlateDescription": "Tap any unlocked Plate to reveal its artwork and story. Once loaded, you can expand or collapse it anytime.",
+            "lockedPlateTitle": "Locked Plates",
+            "lockedPlateDescription": "Locked Plates become available as you level up. Tap one to see the level required."
+        },
+        "forgeAttributes": {
+            "introTitle": "Forge Attributes",
+            "introDescription": "Forge Attributes track different paths of growth — improvement, effort, mastery, volume, and consistency.",
+            "koboTitle": "Kōbō — The Soul Furnace",
+            "koboDescription": "Personal improvement — earn XP by setting new personal bests.",
+            "kozuchiTitle": "Kozuchi — The Craftsman's Hammer",
+            "kozuchiDescription": "Workout effort — earn XP by training more and outperforming past sessions.",
+            "wazaTitle": "Waza — Your Craft",
+            "wazaDescription": "Discipline mastery — progress through strength, endurance, and flexibility milestones.",
+            "shogenTandaTitle": "Shōgen Tanda — The Workshop Unleashed",
+            "shogenTandaDescription": "Lifetime training volume — grows with every rep, mile, and minute trained.",
+            "tagaTitle": "Taga — The Soul-Furnace Containers",
+            "tagaDescription": "Consistency — build streaks to unlock greater rewards.",
+            "badgesTitle": "Milestone Badges",
+            "badgesDescription": "Badges track specific achievements across Strength, Running, and Flexibility. Click to open any badge to see what it measures, or explore them all in the full list."
+        },
+        "mainPage": {
+            "characterEvolutionTitle": "Character Evolution",
+            "characterEvolutionDescription": "Your character card evolves with every new rank you reach.",
+            "rankAscensionTitle": "Rank Ascension",
+            "rankAscensionDescription": "Unlock all 10 badges in a tier to rank up and evolve your card.",
+            "levelAndLegacyTitle": "Level and Legacy",
+            "levelAndLegacyDescription": "Levels raise your leaderboard position and unlock new Plates of Keragura."
+        }
+    },
     "errors": {
         "connection_timeout": "Connection timeout. Please check your internet.",
         "unauthorized": "Unauthorized",
@@ -484,6 +554,10 @@
         "itemsCount": "$unlocked/$total items",
         "noBadgesFound": "No Badges Found",
         "noBadgesSubtitle": "It looks like you have no badges yet.",
+        "badgeDetails": {
+            "lockedPreview": "Locked · Tier 1 Preview",
+            "currentTier": "Tier $tier"
+        },
         "noAttributesFound": "No Attributes Found",
         "noAttributesSubtitle": "It looks like you have no attributes yet.",
         "attributeSystem": "Attribute system",
@@ -493,27 +567,27 @@
             "kobo": {
                 "title": "Kōbō",
                 "subtitle": "The Soul Furnace",
-                "description": "Measures growth and intensity.\nXP is awarded for personal records (PRs) and exceeding previous bests."
+                "description": "Personal improvement — earn XP by setting new personal bests."
             },
             "kozuchi": {
                 "title": "Kozuchi",
                 "subtitle": "The Craftsman's Hammer",
-                "description": "Measures consistency and volume.\nXP increases through total workout completion and tonnage."
+                "description": "Workout effort — earn XP by training more and outperforming past sessions."
             },
             "sensho": {
                 "title": "Waza",
                 "subtitle": "Your Craft",
-                "description": "Measures efficiency relative to potential.\nXP scales based on how close performance is to the target goal."
+                "description": "Discipline mastery — progress through strength, endurance, and flexibility milestones."
             },
             "kobokai": {
                 "title": "Shōgen Tanda",
-                "subtitle": "Forge Unleashed",
-                "description": "Measures cumulative lifetime effort.\nAwards XP for hitting large milestones (e.g., 100k kg lifted)."
+                "subtitle": "The Workshop Unleashed",
+                "description": "Lifetime training volume — grows with every rep, mile, and minute trained."
             },
             "kannuki": {
                 "title": "Taga",
-                "subtitle": "The Soul-Forge Gate-Locks",
-                "description": "Measures streaks and discipline.\nLonger unbroken streaks act as a multiplier for all XP gains."
+                "subtitle": "The Soul-Furnace Containers",
+                "description": "Consistency — build streaks to unlock greater rewards."
             }
         }
 
