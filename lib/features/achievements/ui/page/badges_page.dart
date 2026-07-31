@@ -24,89 +24,85 @@ class BadgesPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: DefaultBackground(
-        body: SafeArea(
-          top: false,
-          bottom: false,
-          child: BlocBuilder<AchievementsCubit, AchievementsState>(
-            builder: (context, state) {
-              final badges = state.badges;
+        body: BlocBuilder<AchievementsCubit, AchievementsState>(
+          builder: (context, state) {
+            final badges = state.badges;
 
-              return Skeletonizer(
-                enabled: state.isLoading,
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    cubit.onBadgesRefresh();
-                    await cubit.loadBadges(forceRefresh: true);
-                  },
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: horizontalPadding,
-                        sliver: SliverAppBar(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          scrolledUnderElevation: 0,
-                          automaticallyImplyLeading: false,
+            return Skeletonizer(
+              enabled: state.isLoading,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  cubit.onBadgesRefresh();
+                  await cubit.loadBadges(forceRefresh: true);
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: horizontalPadding,
+                      sliver: SliverAppBar(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        scrolledUnderElevation: 0,
+                        automaticallyImplyLeading: false,
 
-                          centerTitle: false,
-                          leadingWidth: 56,
-                          leading: AppIconButton.icon(
-                            iconData: Icons.chevron_left_rounded,
-                            iconSize: 32,
-                            onPressed: Navigator.of(context).pop,
-                          ),
-
-                          actions: [
-                            Skeleton.keep(
-                              child: Text(
-                                t.achievements.badges,
-                                style: subheadH1Medium.copyWith(color: appTheme.beige100),
-                              ),
-                            ),
-                          ],
+                        centerTitle: false,
+                        leadingWidth: 56,
+                        leading: AppIconButton.icon(
+                          iconData: Icons.chevron_left_rounded,
+                          iconSize: 32,
+                          onPressed: Navigator.of(context).pop,
                         ),
+
+                        actions: [
+                          Skeleton.keep(
+                            child: Text(
+                              t.achievements.badges,
+                              style: subheadH1Medium.copyWith(color: appTheme.beige100),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: CommonHeaderDelegate(
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: CommonHeaderDelegate(
+                        height: 30,
+                        child: Container(
                           height: 30,
-                          child: Container(
-                            height: 30,
-                            color: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Skeleton.keep(
-                                  child: Text(
-                                    t.achievements.badgesList,
-                                    style: subheadH1Medium.copyWith(color: appTheme.beige100),
-                                  ),
+                          color: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Skeleton.keep(
+                                child: Text(
+                                  t.achievements.badgesList,
+                                  style: subheadH1Medium.copyWith(color: appTheme.beige100),
                                 ),
+                              ),
 
-                                Text(
-                                  t.achievements.itemsCount(unlocked: state.unLockedCount, total: badges.length),
-                                  style: subheadH5Medium.copyWith(color: appTheme.beige600),
-                                ),
-                              ],
-                            ),
+                              Text(
+                                t.achievements.itemsCount(unlocked: state.unLockedCount, total: badges.length),
+                                style: subheadH5Medium.copyWith(color: appTheme.beige600),
+                              ),
+                            ],
                           ),
                         ),
                       ),
+                    ),
 
-                      SliverPadding(
-                        padding: horizontalPadding.copyWith(top: 16, bottom: 32),
-                        sliver: SliverBadgesGrid(badges: badges),
-                      ),
-                    ],
-                  ),
+                    SliverPadding(
+                      padding: horizontalPadding.copyWith(top: 16, bottom: 32),
+                      sliver: SliverBadgesGrid(badges: badges),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
         additionalAnimationsBehind: const [ParticlesWidget()],
       ),

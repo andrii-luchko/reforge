@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reforge/app/router/routes.dart';
@@ -11,6 +12,7 @@ import 'package:reforge/features/achievements/controllers/achievements_cubit.dar
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
 import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_host.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
+import 'package:reforge/features/achievements/ui/widgets/badges_preview.dart';
 import 'package:reforge/features/achievements/ui/widgets/common_heder_delegate.dart';
 import 'package:reforge/features/achievements/ui/widgets/sliver_badges_grid.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
@@ -70,6 +72,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
                     await _cubit.loadAttributes(forceRefresh: true);
                   },
                   child: CustomScrollView(
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
                     physics: guideIsRunning ? const NeverScrollableScrollPhysics() : null,
                     slivers: [
                       SliverPadding(
@@ -164,9 +167,13 @@ class _AchievementsPageState extends State<AchievementsPage> {
 
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverBadgesGrid(
-                          badges: state.badges.take(3).toList(),
-                        ),
+                        sliver: state.badges.isEmpty
+                            ? const SliverBadgesGrid(badges: [])
+                            : SliverToBoxAdapter(
+                                child: BadgesPreview(
+                                  badges: state.badges,
+                                ),
+                              ),
                       ),
                       const AppBottomPaddingWidget.sliverWithAppBottomBarHeight(),
                     ],

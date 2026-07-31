@@ -10,6 +10,7 @@ import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/controllers/achievements_cubit.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
+import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
 import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
 import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_host.dart';
@@ -231,6 +232,45 @@ void main() {
       ForgeAttributesGuideStep.intro,
       ForgeAttributesGuideStep.kobo,
       ForgeAttributesGuideStep.taga,
+    };
+
+    await pumpHost(tester);
+    await tester.pumpAndSettle();
+
+    expect(
+      guideState,
+      const GuideState.running(
+        guideId: GuideId.forgeAttributes,
+        currentStep: 1,
+        totalSteps: 3,
+      ),
+    );
+
+    await disposeHost(tester);
+  });
+
+  testWidgets('adds the badges step when badge data and target are ready', (
+    tester,
+  ) async {
+    currentAchievementsState = AchievementsState(
+      attributes: [_attribute(ForgeAttribute.kobo)],
+      badges: const [
+        BadgeEntity(
+          imageUrl: '',
+          title: 'Warden',
+          isLocked: true,
+        ),
+      ],
+    );
+    whenListen(
+      achievementsCubit,
+      achievementStates.stream,
+      initialState: currentAchievementsState,
+    );
+    renderedTargets.value = {
+      ForgeAttributesGuideStep.intro,
+      ForgeAttributesGuideStep.kobo,
+      ForgeAttributesGuideStep.badges,
     };
 
     await pumpHost(tester);

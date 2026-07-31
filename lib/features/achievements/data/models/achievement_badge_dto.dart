@@ -13,7 +13,10 @@ sealed class AchievementBadgeDto with _$AchievementBadgeDto {
     required String name,
     required String key,
     String? exerciseMetric,
+    int? factionId,
     String? iconUrlKey,
+    String? requirementTitle,
+    String? description,
     DateTime? createdAt,
     DateTime? updatedAt,
     @Default(false) bool isCompleted,
@@ -24,7 +27,18 @@ sealed class AchievementBadgeDto with _$AchievementBadgeDto {
   factory AchievementBadgeDto.fromJson(Map<String, dynamic> json) => _$AchievementBadgeDtoFromJson(json);
 
   BadgeEntity toDomain() {
-    return BadgeEntity(imageUrl: iconUrl ?? '', title: name, isLocked: !isCompleted);
+    return BadgeEntity(
+      id: id,
+      imageUrl: iconUrl ?? '',
+      title: name,
+      isLocked: !isCompleted,
+      key: key,
+      exerciseMetric: exerciseMetric,
+      factionId: factionId,
+      requirementTitle: requirementTitle,
+      description: description,
+      tier: userProgress?.tier,
+    );
   }
 }
 

@@ -93,6 +93,7 @@ class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
       availableAttributes: achievementsState.attributes.map(
         (entity) => entity.attribute,
       ),
+      includeBadges: achievementsState.badges.isNotEmpty,
     );
     if (session == null) return;
 

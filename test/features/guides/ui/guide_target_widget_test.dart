@@ -90,6 +90,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Leaderboard'), findsOneWidget);
+    expect(find.text(t.guides.controls.finish), findsOneWidget);
+    expect(find.text(t.guides.controls.next), findsNothing);
+    expect(find.text(t.guides.controls.skip), findsNothing);
+
+    await tester.tap(find.text(t.guides.controls.finish));
+    await tester.pumpAndSettle();
+
+    expect(
+      cubit.state,
+      const GuideState.completed(guideId: GuideId.leaderboard),
+    );
     expect(tester.takeException(), isNull);
   });
 

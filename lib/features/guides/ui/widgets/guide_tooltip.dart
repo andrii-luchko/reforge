@@ -28,6 +28,7 @@ class GuideTooltip extends StatelessWidget {
         final runningState = state is GuideRunning ? state : null;
         final currentStep = runningState?.currentStep ?? 1;
         final totalSteps = runningState?.totalSteps ?? 1;
+        final isLastStep = currentStep >= totalSteps;
 
         return ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 320),
@@ -61,6 +62,7 @@ class GuideTooltip extends StatelessWidget {
                   const SizedBox(height: 12),
                   _GuideControls(
                     canGoBack: currentStep > 1,
+                    isLastStep: isLastStep,
                   ),
                 ],
               ),
@@ -75,38 +77,53 @@ class GuideTooltip extends StatelessWidget {
 class _GuideControls extends StatelessWidget {
   const _GuideControls({
     required this.canGoBack,
+    required this.isLastStep,
   });
 
   final bool canGoBack;
+  final bool isLastStep;
 
   @override
   Widget build(BuildContext context) {
     final back = TextButton(
       onPressed: canGoBack ? context.read<GuideCubit>().previous : null,
       style: TextButton.styleFrom(
+        minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 8),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(t.guides.controls.back),
     );
     final skip = TextButton(
       onPressed: context.read<GuideCubit>().skip,
       style: TextButton.styleFrom(
+        minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 8),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(t.guides.controls.skip),
     );
     final next = FilledButton(
       onPressed: context.read<GuideCubit>().next,
       style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 12),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: Text(t.guides.controls.next),
+      child: Text(
+        isLastStep ? t.guides.controls.finish : t.guides.controls.next,
+      ),
     );
 
     return Row(
       spacing: 4,
 
-      children: [back, const Spacer(), skip, next],
+      children: [
+        back,
+        const Spacer(),
+        if (!isLastStep) skip,
+        next,
+      ],
     );
   }
 }

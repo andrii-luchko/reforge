@@ -12,6 +12,7 @@ enum ForgeAttributesGuideStep {
   waza,
   shogenTanda,
   taga,
+  badges,
 }
 
 class ForgeAttributesGuide {
@@ -41,6 +42,7 @@ class ForgeAttributesGuide {
 
   GuideSession? session({
     required Iterable<ForgeAttribute> availableAttributes,
+    bool includeBadges = false,
   }) {
     final available = availableAttributes.toSet();
     if (available.isEmpty) return null;
@@ -54,6 +56,10 @@ class ForgeAttributesGuide {
             GuideStep(
               anchor: attributeAnchor(attribute),
             ),
+        if (includeBadges)
+          GuideStep(
+            anchor: anchor(ForgeAttributesGuideStep.badges),
+          ),
       ],
     );
   }
@@ -85,6 +91,10 @@ class ForgeAttributesGuide {
       ForgeAttributesGuideStep.taga => GuideTooltip(
         title: guide.tagaTitle,
         description: guide.tagaDescription,
+      ),
+      ForgeAttributesGuideStep.badges => GuideTooltip(
+        title: guide.badgesTitle,
+        description: guide.badgesDescription,
       ),
     };
   }

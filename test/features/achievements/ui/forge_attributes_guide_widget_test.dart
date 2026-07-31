@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -7,15 +8,22 @@ import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
+import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/enums/forge_attribute.dart';
 import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_scope.dart';
 import 'package:reforge/features/achievements/ui/widgets/attribute_system_section.dart';
+import 'package:reforge/features/achievements/ui/widgets/badge_card.dart';
+import 'package:reforge/features/achievements/ui/widgets/badge_details_bottom_sheet.dart';
+import 'package:reforge/features/achievements/ui/widgets/badges_preview.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
+import 'package:reforge/features/guides/controller/guide_start_result.dart';
 import 'package:reforge/features/guides/domain/entities/guide_id.dart';
+import 'package:reforge/features/guides/domain/entities/guide_session.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
 import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
 import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
+import 'package:reforge/features/guides/ui/widgets/guide_tooltip.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 import '../../../helpers/test_setup.dart';
@@ -196,6 +204,8 @@ void main() {
       );
     }
     expect(find.text('6 / 6'), findsOneWidget);
+    expect(find.text(t.guides.controls.finish), findsOneWidget);
+    expect(find.text(t.guides.controls.next), findsNothing);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -233,5 +243,104 @@ void main() {
       find.text(t.guides.forgeAttributes.koboDescription),
       findsOneWidget,
     );
+  });
+
+  testWidgets('scrolls the badge preview into view without covering its cards', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(320, 568)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final guide = ForgeAttributesGuide();
+    final guideCubit = GuideCubit(
+      _MemoryGuideProgressRepository(),
+      ShowcaseGuideDriver(scope: achievementsPageGuideScope),
+    );
+    final scrollController = ScrollController();
+    addTearDown(guideCubit.close);
+    addTearDown(scrollController.dispose);
+
+    const badges = [
+      BadgeEntity(imageUrl: '', title: 'Warden', isLocked: true),
+      BadgeEntity(imageUrl: '', title: 'Sentinel', isLocked: true),
+      BadgeEntity(imageUrl: '', title: 'Enforcer', isLocked: true),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeDataValues.darkThemeData,
+        home: Provider<ForgeAttributesGuide>.value(
+          value: guide,
+          child: BlocProvider<GuideCubit>.value(
+            value: guideCubit,
+            child: Scaffold(
+              body: BlocBuilder<GuideCubit, GuideState>(
+                builder: (context, state) {
+                  return CustomScrollView(
+                    controller: scrollController,
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+                    physics: state is GuideRunning ? const NeverScrollableScrollPhysics() : null,
+                    slivers: const [
+                      SliverToBoxAdapter(child: SizedBox(height: 900)),
+                      SliverPadding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        sliver: SliverToBoxAdapter(
+                          child: BadgesPreview(badges: badges),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final result = await guideCubit.startIfNeeded(
+      userId: 71,
+      session: GuideSession(
+        id: GuideId.forgeAttributes,
+        steps: [
+          GuideStep(
+            anchor: guide.anchor(ForgeAttributesGuideStep.badges),
+          ),
+        ],
+      ),
+    );
+    expect(result, GuideStartResult.started);
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 60));
+    await tester.pumpAndSettle();
+
+    expect(find.text(t.guides.forgeAttributes.badgesTitle), findsOneWidget);
+    expect(find.text(t.guides.controls.finish), findsOneWidget);
+    expect(scrollController.offset, greaterThan(0));
+    expect(find.byType(BadgeCard), findsNWidgets(3));
+    expect(
+      tester.widgetList<BadgeCard>(find.byType(BadgeCard)).every((card) => !card.isInteractionEnabled),
+      isTrue,
+    );
+    final tooltipRect = tester.getRect(find.byType(GuideTooltip));
+    for (var index = 0; index < 3; index++) {
+      final rect = tester.getRect(find.byType(BadgeCard).at(index));
+      expect(rect.top, greaterThanOrEqualTo(0));
+      expect(rect.bottom, lessThanOrEqualTo(568));
+      expect(tooltipRect.bottom, lessThanOrEqualTo(rect.top));
+    }
+
+    await tester.tap(find.byType(BadgeCard).first);
+    await tester.pump();
+    expect(find.byType(BadgeDetailsBottomSheet), findsNothing);
+    expect(guideCubit.state, isA<GuideRunning>());
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
   });
 }

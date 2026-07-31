@@ -14,6 +14,7 @@ class GuideTarget extends StatelessWidget {
     this.targetBorderRadius = const BorderRadius.all(Radius.circular(16)),
     this.enableAutoScroll = false,
     this.scrollAlignment = 0.5,
+    this.tooltipPosition,
     super.key,
   });
 
@@ -25,6 +26,7 @@ class GuideTarget extends StatelessWidget {
   final BorderRadius targetBorderRadius;
   final bool? enableAutoScroll;
   final double scrollAlignment;
+  final TooltipPosition? tooltipPosition;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,7 @@ class GuideTarget extends StatelessWidget {
       key: anchor,
       enableAutoScroll: enableAutoScroll,
       scrollAlignment: scrollAlignment,
+      tooltipPosition: tooltipPosition,
       scope: scope,
       overlayColor: context.appTheme.beige1000,
       overlayOpacity: 0.97,

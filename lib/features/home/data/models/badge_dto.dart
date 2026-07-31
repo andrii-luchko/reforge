@@ -22,7 +22,15 @@ sealed class BadgeDto with _$BadgeDto {
   factory BadgeDto.fromJson(Map<String, dynamic> json) => _$BadgeDtoFromJson(json);
 
   BadgeEntity toDomain() {
-    return BadgeEntity(imageUrl: iconUrl ?? '', title: milestone.name, isLocked: false);
+    return BadgeEntity(
+      id: milestone.id,
+      imageUrl: iconUrl ?? '',
+      title: milestone.name,
+      isLocked: false,
+      key: milestone.key,
+      exerciseMetric: milestone.exerciseMetric,
+      tier: tier,
+    );
   }
 }
 

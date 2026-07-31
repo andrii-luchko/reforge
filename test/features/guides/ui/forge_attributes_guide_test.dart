@@ -13,6 +13,7 @@ void main() {
     final guide = ForgeAttributesGuide();
     final session = guide.session(
       availableAttributes: ForgeAttribute.values,
+      includeBadges: true,
     );
 
     expect(session, isNotNull);

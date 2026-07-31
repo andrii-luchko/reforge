@@ -398,6 +398,7 @@
         "controls": {
             "back": "Back",
             "next": "Next",
+            "finish": "Finish",
             "skip": "Skip"
         },
         "leaderboard": {
@@ -450,7 +451,9 @@
             "shogenTandaTitle": "Shōgen Tanda — The Workshop Unleashed",
             "shogenTandaDescription": "Lifetime training volume — grows with every rep, mile, and minute trained.",
             "tagaTitle": "Taga — The Soul-Furnace Containers",
-            "tagaDescription": "Consistency — build streaks to unlock greater rewards."
+            "tagaDescription": "Consistency — build streaks to unlock greater rewards.",
+            "badgesTitle": "Milestone Badges",
+            "badgesDescription": "Badges track specific achievements across Strength, Running, and Flexibility. Click to open any badge to see what it measures, or explore them all in the full list."
         },
         "mainPage": {
             "characterEvolutionTitle": "Character Evolution",
@@ -551,6 +554,10 @@
         "itemsCount": "$unlocked/$total items",
         "noBadgesFound": "No Badges Found",
         "noBadgesSubtitle": "It looks like you have no badges yet.",
+        "badgeDetails": {
+            "lockedPreview": "Locked · Tier 1 Preview",
+            "currentTier": "Tier $tier"
+        },
         "noAttributesFound": "No Attributes Found",
         "noAttributesSubtitle": "It looks like you have no attributes yet.",
         "attributeSystem": "Attribute system",

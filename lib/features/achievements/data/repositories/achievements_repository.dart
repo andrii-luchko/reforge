@@ -4,6 +4,7 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/features/achievements/data/enum/rank_status.dart';
+import 'package:reforge/features/achievements/data/mock/achievement_badges_mock.dart';
 import 'package:reforge/features/achievements/domain/entities/attribute_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/badge_entity.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
@@ -46,9 +47,9 @@ class AchievementsRepositoryImpl with RepositoryErrorHandler implements Achievem
     try {
       final result = await makeRequest(
         () async {
-          final result = await _apiClient.getUserBadges();
+          final badges = useMockWorkoutMilestones ? mockAchievementBadges : (await _apiClient.getUserBadges()).data;
 
-          final mappedList = result.data.map((badge) => badge.toDomain()).toList();
+          final mappedList = badges.map((badge) => badge.toDomain()).toList();
           return mappedList;
         },
         label: 'getUserBadges',
