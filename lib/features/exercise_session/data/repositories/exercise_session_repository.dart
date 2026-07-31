@@ -30,7 +30,7 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
 
       if (data == null) return const Result.success(null);
 
-      final sets = data.sets?.map((set) => set.toWorkoutSet(system)).toList();
+      final sets = data.sets.map((set) => set.toWorkoutSet(system)).toList();
       return Result.success((notes: data.notes, sets: sets));
     } on Exception catch (error) {
       return Result.error(error);

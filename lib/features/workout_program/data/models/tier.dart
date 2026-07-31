@@ -17,7 +17,7 @@ sealed class Tier with _$Tier {
 }
 
 extension TierExtension on Tier {
-  //TODO: add translation for this
+  // TODO(Masayoshi): Add translation for this.
   String get displayTitle => 'Level $rank';
 }
 

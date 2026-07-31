@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
-import 'package:reforge/features/exercise_session/data/models/exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
 import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
@@ -17,8 +17,7 @@ sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
     required int duration,
     required WorkoutSessionStatus status,
     required int totalXpEarned,
-    // @JsonKey(name: 'exerciseSessions') List<ExerciseSessionDTO>? exerciseSessions, -- same as workoutSessions
-    @JsonKey(name: 'workoutSessions') List<ExerciseSessionDTO>? workoutSessions,
+    @JsonKey(name: 'workoutSessions') List<WorkoutExerciseSessionDTO>? workoutSessions,
     @JsonKey(name: 'createdAt') DateTime? createdAt,
   }) = _WorkoutSessionDetailsDTO;
 
@@ -51,7 +50,7 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
             imageUrl: s.exercise!.thumbnailInstructionUrl,
             metrics: s.exercise!.toEntity().metrics,
             notes: s.notes,
-            sets: (s.sets ?? []).map((e) => e.toWorkoutSet(system)).toList(),
+            sets: s.sets.map((e) => e.toWorkoutSet(system)).toList(),
           ),
         )
         .toList();

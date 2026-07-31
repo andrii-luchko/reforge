@@ -1,6 +1,7 @@
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/workout_program/data/enums/exercise_type.dart';
 import 'package:reforge/features/workout_program/data/models/tier.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_faction_entity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 class ExerciseDetailsEntity {
@@ -20,14 +21,22 @@ class ExerciseDetailsEntity {
     required this.thumbnailInstructionUrl,
     required this.instructionsSteps,
     this.type,
+    this.faction,
+    this.factionId,
+    this.isPoseDetectionEnabled = false,
   });
 
   final int id;
   final String name;
   final String description;
-  final String key;
+
+  /// Stable backend key. Search responses currently omit this field.
+  final String? key;
   final ExerciseType? type;
+  final ExerciseFactionEntity? faction;
+  final int? factionId;
   final List<WorkoutMetric> metrics;
+  final bool isPoseDetectionEnabled;
   final PoseDetectionPreset? poseDetectionPreset;
 
   final bool isTiered;
@@ -36,6 +45,18 @@ class ExerciseDetailsEntity {
   final String? videoInstructionUrl;
   final String? thumbnailInstructionUrl;
   final Map<String, String> instructionsSteps;
+
+  /// Classifier used for exercises returned by swap-search.
+  ///
+  /// `durationSec` alone is intentionally not a running signal because it is
+  /// also used by flexibility exercises.
+  bool get isRunningSwapCandidate {
+    final exerciseFaction = faction;
+    return factionId == 3 ||
+        exerciseFaction?.id == 3 ||
+        exerciseFaction?.slug.toLowerCase() == 'gyohyo' ||
+        metrics.contains(WorkoutMetric.distance);
+  }
 
   @override
   String toString() {

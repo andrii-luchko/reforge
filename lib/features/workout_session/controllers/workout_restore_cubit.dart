@@ -8,7 +8,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
-import 'package:reforge/features/exercise_session/data/models/exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
@@ -201,9 +201,9 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
         ) ??
         MeasurementSystem.metric;
     final map = <int, List<WorkoutSet>>{};
-    final sessions = details.workoutSessions ?? <ExerciseSessionDTO>[];
+    final sessions = details.workoutSessions ?? <WorkoutExerciseSessionDTO>[];
     for (final session in sessions) {
-      final sets = (session.sets ?? <ExerciseSetDTO>[]).map((s) => s.toWorkoutSet(system)).toList();
+      final sets = session.sets.map((s) => s.toWorkoutSet(system)).toList();
       if (sets.isNotEmpty) {
         map[session.workoutProgramExerciseId] = sets;
       }

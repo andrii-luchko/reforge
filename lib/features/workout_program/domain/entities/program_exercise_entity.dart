@@ -39,7 +39,7 @@ class ProgramExerciseEntity {
     if (hasDistance && (hasTime || hasPace)) return true;
     if (hasTime && exerciseDetails.type == ExerciseType.endurance) return true;
 
-    return exerciseDetails.key.toLowerCase().contains('run');
+    return exerciseDetails.key?.toLowerCase().contains('run') ?? false;
   }
 
   @override

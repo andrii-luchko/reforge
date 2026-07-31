@@ -20,6 +20,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
     required String description,
     required int type,
     required String key,
+    int? factionId,
 
     @Default([]) List<String> metrics,
     @Default(false) bool isPoseDetectionEnabled,
@@ -38,7 +39,7 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
 @freezed
 sealed class StaticDataDTO with _$StaticDataDTO {
   const factory StaticDataDTO({
-    //TODO(Masayoshi):add static metric support
+    // TODO(Masayoshi): Add static metric support.
     @JsonKey(name: 'tier') @Default([]) List<Tier> tiers,
   }) = _StaticDataDTO;
 
@@ -53,7 +54,9 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       description: description,
       key: key,
       type: ExerciseType.fromInt(type),
-      metrics: metrics.map(_mapStringToMetric).whereType<WorkoutMetric>().toList(),
+      factionId: factionId,
+      metrics: metrics.map(WorkoutMetric.fromApiValue).whereType<WorkoutMetric>().toList(),
+      isPoseDetectionEnabled: isPoseDetectionEnabled,
       poseDetectionPreset: _mapPoseDetectionPreset(poseDetectionPreset),
       isTiered: isTiered,
       tiers: staticData?.tiers ?? [],
@@ -61,25 +64,6 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       thumbnailInstructionUrl: thumbnailInstructionUrl,
       instructionsSteps: instructionsSteps,
     );
-  }
-
-  WorkoutMetric? _mapStringToMetric(String value) {
-    switch (value) {
-      case 'weightKg':
-        return WorkoutMetric.weight;
-      case 'reps':
-        return WorkoutMetric.reps;
-      case 'durationSec':
-        return WorkoutMetric.time;
-      case 'distanceM':
-        return WorkoutMetric.distance;
-      case 'speedKmH':
-        return WorkoutMetric.pace;
-      case 'angleDeg':
-        return WorkoutMetric.degrees;
-      default:
-        return null;
-    }
   }
 
   PoseDetectionPreset? _mapPoseDetectionPreset(String? value) {
@@ -108,7 +92,7 @@ sealed class ExerciseSegmentDTO with _$ExerciseSegmentDTO {
 
 extension ExerciseSegmentToEntityX on ExerciseSegmentDTO {
   ExerciseSegmentEntity toEntity() {
-    final metric = _mapStringToMetric(targetMetric);
+    final metric = WorkoutMetric.fromApiValue(targetMetric) ?? WorkoutMetric.distance;
 
     return ExerciseSegmentEntity(
       id: id,
@@ -118,25 +102,5 @@ extension ExerciseSegmentToEntityX on ExerciseSegmentDTO {
       distanceM: distanceM ?? 0,
       durationSec: durationSec ?? 0,
     );
-  }
-
-  WorkoutMetric _mapStringToMetric(String value) {
-    switch (value) {
-      case 'weightKg':
-        return WorkoutMetric.weight;
-      case 'reps':
-        return WorkoutMetric.reps;
-      case 'durationSec':
-      case 'duration':
-        return WorkoutMetric.time;
-      case 'distanceM':
-        return WorkoutMetric.distance;
-      case 'speedKmH':
-        return WorkoutMetric.pace;
-      case 'angleDeg':
-        return WorkoutMetric.degrees;
-      default:
-        return WorkoutMetric.distance;
-    }
   }
 }

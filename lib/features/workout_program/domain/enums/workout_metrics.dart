@@ -19,6 +19,18 @@ enum WorkoutMetric {
   degrees;
 
   static const List<WorkoutMetric> runningMetrics = [.time, .distance, .pace];
+
+  static WorkoutMetric? fromApiValue(String value) {
+    return switch (value) {
+      'weightKg' => WorkoutMetric.weight,
+      'reps' => WorkoutMetric.reps,
+      'durationSec' || 'duration' => WorkoutMetric.time,
+      'distanceM' => WorkoutMetric.distance,
+      'speedKmH' => WorkoutMetric.pace,
+      'angleDeg' => WorkoutMetric.degrees,
+      _ => null,
+    };
+  }
 }
 
 extension WorkoutMetricsX on WorkoutMetric {
