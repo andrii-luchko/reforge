@@ -21,6 +21,10 @@ import 'package:reforge/features/calendar/data/models/calendar_data.dart';
 import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
 import 'package:reforge/features/exercise_session/data/models/complete_set_request.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_search_request.dart';
+import 'package:reforge/features/exercise_session/data/responses/swap_exercise_search_response.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
@@ -135,6 +139,20 @@ abstract class ApiClient {
   //
   @POST('/workout-exercise-set-sessions')
   Future<void> completeSet(@Body() CreateSetSessionRequest request);
+
+  @POST('/workout-exercise-sessions')
+  Future<BaseResponse<WorkoutExerciseSessionDTO>> createWorkoutExerciseSession(
+    @Body() CreateWorkoutExerciseSessionRequest request,
+  );
+
+  @GET('/workout-exercises/swap-search')
+  Future<SwapExerciseSearchResponse> searchSwapExercises(@Queries() SwapExerciseSearchRequest request);
+
+  @PATCH('/workout-exercise-sessions/{workoutExerciseSessionId}/swap')
+  Future<BaseResponse<WorkoutExerciseSessionDTO>> swapWorkoutExercise(
+    @Path('workoutExerciseSessionId') int workoutExerciseSessionId,
+    @Body() SwapExerciseRequest request,
+  );
 
   @GET(
     '/workout-exercise-sessions/sessions/{workout_session_id}/program-exercises/{workout_program_exercise_id}/previous',
