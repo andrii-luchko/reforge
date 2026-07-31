@@ -4,6 +4,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_exercise_s
 import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
 import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
 
 void main() {
@@ -120,6 +121,52 @@ void main() {
       });
 
       expect(dto.toEntity(MeasurementSystem.metric).effectiveExercise?.id, 33);
+    });
+
+    test('duplicate selection prefers the first session containing sets', () {
+      const details = WorkoutSessionDetailsDTO(
+        id: 172,
+        workoutProgramDayId: 25,
+        duration: 0,
+        status: WorkoutSessionStatus.active,
+        totalXpEarned: 0,
+        workoutSessions: [
+          WorkoutExerciseSessionDTO(
+            id: 228,
+            exerciseId: 33,
+            workoutSessionId: 172,
+            workoutProgramExerciseId: 100,
+          ),
+          WorkoutExerciseSessionDTO(
+            id: 229,
+            exerciseId: 33,
+            workoutSessionId: 172,
+            workoutProgramExerciseId: 100,
+            sets: [
+              ExerciseSetDTO(
+                id: 501,
+                exerciseId: 33,
+                exerciseSessionId: 229,
+              ),
+            ],
+          ),
+          WorkoutExerciseSessionDTO(
+            id: 230,
+            exerciseId: 33,
+            workoutSessionId: 172,
+            workoutProgramExerciseId: 100,
+            sets: [
+              ExerciseSetDTO(
+                id: 502,
+                exerciseId: 33,
+                exerciseSessionId: 230,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      expect(details.exerciseSessionsByProgramExerciseId[100]?.id, 229);
     });
   });
 }

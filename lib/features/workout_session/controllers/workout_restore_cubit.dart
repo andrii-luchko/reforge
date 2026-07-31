@@ -17,6 +17,7 @@ import 'package:reforge/features/workout_program/domain/repositories/workout_pro
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
 import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 
 part 'workout_restore_cubit.freezed.dart';
@@ -132,7 +133,20 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       return;
     }
 
-    final restoredSets = _buildRestoredSetsMap(details);
+    final selectedSessions = details.exerciseSessionsByProgramExerciseId;
+    final rawSessionCount = details.workoutSessions?.length ?? 0;
+    if (rawSessionCount > selectedSessions.length) {
+      logger.w(
+        'WorkoutRestoreCubit: ignored ${rawSessionCount - selectedSessions.length} duplicate exercise sessions',
+      );
+    }
+    final system = _measurementSystem;
+    final restoredSets = _buildRestoredSetsMap(selectedSessions.values, system);
+    final exerciseContexts = _buildExerciseContexts(
+      programDay,
+      selectedSessions,
+      system,
+    );
     final inProgressLap = await _localWorkoutRepository.getAnyInProgressLapForSession(pending.sessionId);
     final inProgressIndex = inProgressLap == null
         ? -1
@@ -155,6 +169,7 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       durationSec: pending.cachedDurationSec,
       restoredSets: restoredSets,
       startIndex: resumeIndex,
+      exerciseContexts: exerciseContexts,
     );
 
     emit(WorkoutRestoreState.restored(resumeProgramExerciseId: resumeExercise.id));
@@ -193,15 +208,11 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  Map<int, List<WorkoutSet>> _buildRestoredSetsMap(WorkoutSessionDetailsDTO details) {
-    final system =
-        _userSessionService.currentUser?.map(
-          newUser: (_) => null,
-          onboarded: (user) => user.measurementSystem,
-        ) ??
-        MeasurementSystem.metric;
+  Map<int, List<WorkoutSet>> _buildRestoredSetsMap(
+    Iterable<WorkoutExerciseSessionDTO> sessions,
+    MeasurementSystem system,
+  ) {
     final map = <int, List<WorkoutSet>>{};
-    final sessions = details.workoutSessions ?? <WorkoutExerciseSessionDTO>[];
     for (final session in sessions) {
       final sets = session.sets.map((s) => s.toWorkoutSet(system)).toList();
       if (sets.isNotEmpty) {
@@ -209,6 +220,34 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       }
     }
     return map;
+  }
+
+  Map<int, ActiveWorkoutExerciseContext> _buildExerciseContexts(
+    ProgramDayEntity programDay,
+    Map<int, WorkoutExerciseSessionDTO> sessions,
+    MeasurementSystem system,
+  ) {
+    final contexts = <int, ActiveWorkoutExerciseContext>{};
+    for (final programExercise in programDay.programExercises) {
+      final dto = sessions[programExercise.id];
+      if (dto == null) continue;
+
+      final session = dto.toEntity(system);
+      contexts[programExercise.id] = ActiveWorkoutExerciseContext(
+        programExercise: programExercise,
+        session: session,
+        effectiveExercise: session.effectiveExercise ?? programExercise.exerciseDetails,
+      );
+    }
+    return contexts;
+  }
+
+  MeasurementSystem get _measurementSystem {
+    return _userSessionService.currentUser?.map(
+          newUser: (_) => null,
+          onboarded: (user) => user.measurementSystem,
+        ) ??
+        MeasurementSystem.metric;
   }
 
   /// Returns the index of the LAST exercise that has recorded sets.

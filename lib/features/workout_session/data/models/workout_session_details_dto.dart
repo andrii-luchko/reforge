@@ -25,6 +25,21 @@ sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
 }
 
 extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
+  /// Selects one session per program exercise.
+  ///
+  /// Duplicate sessions are legacy/test data. Prefer the first session with
+  /// recorded sets; otherwise preserve the first item returned by the server.
+  Map<int, WorkoutExerciseSessionDTO> get exerciseSessionsByProgramExerciseId {
+    final selected = <int, WorkoutExerciseSessionDTO>{};
+    for (final session in workoutSessions ?? const <WorkoutExerciseSessionDTO>[]) {
+      final existing = selected[session.workoutProgramExerciseId];
+      if (existing == null || (existing.sets.isEmpty && session.sets.isNotEmpty)) {
+        selected[session.workoutProgramExerciseId] = session;
+      }
+    }
+    return Map.unmodifiable(selected);
+  }
+
   TrainingDetailsEntity toEntity(MeasurementSystem system) {
     return TrainingDetailsEntity(
       id: id,
@@ -37,7 +52,7 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
   }
 
   List<PreviousExerciseResult> toPreviousResults(MeasurementSystem system) {
-    final sessions = workoutSessions ?? [];
+    final sessions = exerciseSessionsByProgramExerciseId.values;
 
     if (sessions.isEmpty) return [];
 
