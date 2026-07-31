@@ -42,9 +42,8 @@ class RunningActivePage extends StatelessWidget {
 
             logger.d(state.currentSegmentIndex);
             final cubit = context.read<RunningTrackerCubit>();
-            final programExercise = cubit.programExercise;
 
-            final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+            final segment = cubit.config.segments.elementAtOrNull(state.currentSegmentIndex);
 
             if (segment != null && segment.activity == .walk) {
               await WalkAudioHintDialog.show(context, Duration(seconds: segment.durationSec));
@@ -179,7 +178,7 @@ class ActiveGpsSession extends StatelessWidget {
                   BlocProvider(
                     create: (context) => getIt<RunningMapCubit>(
                       param1: context.read<RunningTrackerCubit>().workoutSessionId,
-                      param2: context.read<RunningTrackerCubit>().programExercise.id,
+                      param2: context.read<RunningTrackerCubit>().workoutProgramExerciseId,
                       // ignore: discarded_futures
                     )..init(),
                     child: const ActiveRunningMapContainer(),
@@ -238,9 +237,7 @@ class ActivePedometerSession extends StatelessWidget {
 
     return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
       builder: (context, state) {
-        final cubit = context.read<RunningTrackerCubit>();
-        final programExercise = cubit.programExercise;
-        final exerciseDetails = programExercise.exerciseDetails;
+        final exerciseDetails = context.read<ActiveExerciseCubit>().effectiveExercise;
 
         final lap = state.currentLap;
         final segmentActivity = lap?.activity;

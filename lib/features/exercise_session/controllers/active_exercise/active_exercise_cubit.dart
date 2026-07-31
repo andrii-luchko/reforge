@@ -12,10 +12,13 @@ import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
+import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/workout_program/data/models/tier.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'active_exercise_cubit.freezed.dart';
@@ -27,32 +30,40 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     this.repository,
     this._analytics,
     this._userSessionService,
-    @factoryParam this.workoutSessionId,
-    @factoryParam this.programExercise,
-  ) : super(const ActiveExerciseState());
+    @factoryParam this.exerciseContext,
+  ) : super(
+        ActiveExerciseState(
+          session: exerciseContext.session,
+          effectiveExercise: exerciseContext.effectiveExercise,
+          notes: exerciseContext.session.notes ?? '',
+        ),
+      );
 
-  //external params
-  final int workoutSessionId;
-  final ProgramExerciseEntity programExercise;
+  final ActiveWorkoutExerciseContext exerciseContext;
 
   //dependencies
   final ExerciseSessionRepository repository;
   final AnalyticsService _analytics;
   final UserSessionService _userSessionService;
 
-  /// Pre-populated sets from a restored session. Set via [setRestoredSets]
-  /// immediately after creation (before [_init] completes its async work).
-  List<WorkoutSet>? _restoredSets;
+  Future<void>? _initialization;
 
-  /// Called from the route builder immediately after cubit creation.
-  /// Injects restored sets (if any) and triggers [_init].
-  /// Always call this method — pass `null` when there are no sets to restore.
-  void setRestoredSets(List<WorkoutSet>? sets) {
-    _restoredSets = sets;
-    unawaited(_init());
+  int get workoutSessionId => state.session.workoutSessionId;
+
+  ProgramExerciseEntity get programExercise => exerciseContext.programExercise;
+
+  WorkoutExerciseSessionEntity get workoutExerciseSession => state.session;
+
+  ExerciseDetailsEntity get effectiveExercise => state.effectiveExercise;
+
+  bool get isRunningExercise =>
+      state.session.isSwapped ? state.effectiveExercise.isRunningSwapCandidate : programExercise.isRunningExercise;
+
+  Future<void> initialize({List<WorkoutSet>? restoredSets}) {
+    return _initialization ??= _initialize(restoredSets);
   }
 
-  Future<void> _init() async {
+  Future<void> _initialize(List<WorkoutSet>? restoredSets) async {
     emit(state.copyWith(isLoading: true));
 
     final measurementSystem =
@@ -66,7 +77,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     // If we have restored sets from an interrupted session, show them as completed.
     // A fresh empty set is appended so the user can continue recording.
-    final restored = _restoredSets;
+    final restored = restoredSets;
     final initialSets = (restored != null && restored.isNotEmpty)
         ? [
             ...restored.map((s) => s.copyWith(isDone: true)),
@@ -94,6 +105,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {
+    if (state.session.isSwapped) return null;
+
     final result = await repository.getPreviousResults(
       programExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
@@ -105,10 +118,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           return null;
         }
         return PreviousExerciseResult(
-          name: programExercise.exerciseDetails.name,
-          description: programExercise.exerciseDetails.description,
-          metrics: programExercise.exerciseDetails.metrics,
-          imageUrl: programExercise.exerciseDetails.thumbnailInstructionUrl,
+          name: effectiveExercise.name,
+          description: effectiveExercise.description,
+          metrics: effectiveExercise.metrics,
+          imageUrl: effectiveExercise.thumbnailInstructionUrl,
           sets: value.sets ?? [],
           notes: value.notes,
         );
@@ -152,7 +165,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     if (currentSet == null || currentSet.isDone) return;
 
-    final metrics = programExercise.exerciseDetails.metrics;
+    final metrics = effectiveExercise.metrics;
 
     if (!currentSet.isValid(metrics)) {
       emit(state.copyWith(setValidationError: t.workout_validation.fillAllFields));
@@ -163,10 +176,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     updateSet(setId, currentSet.copyWith(isBusy: true));
 
-    final tier = programExercise.exerciseDetails.isTiered ? state.selectedTier?.rank : null;
+    final tier = effectiveExercise.isTiered ? state.selectedTier?.rank : null;
 
     final result = await repository.completeSet(
-      exerciseId: programExercise.exerciseDetails.id,
+      exerciseId: effectiveExercise.id,
       workoutProgramExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
       system: state.measureSystem,
@@ -180,7 +193,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
           _analytics.logEvent(
             AnalyticsEvents.workoutSetComplete,
             {
-              'exercise_id': programExercise.exerciseDetails.id,
+              'exercise_id': effectiveExercise.id,
               'set_number': setNumber,
             },
           ),
@@ -196,7 +209,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
   Future<void> finishExercise() async {
     logger.d('''
-name: ${programExercise.exerciseDetails.name}
+name: ${effectiveExercise.name}
 loading:${state.isLoading}
 submitted: ${state.isSubmitted}
 ''');
@@ -204,6 +217,8 @@ submitted: ${state.isSubmitted}
     if (state.isLoading) return;
 
     if (state.isSubmitted) return;
+
+    if (state.isSendingSet) return;
 
     if (state.sets.isEmpty) {
       emit(state.copyWith(setValidationError: t.workout_validation.completeOneSet));
@@ -223,7 +238,7 @@ submitted: ${state.isSubmitted}
       emit(state.copyWith(isLoading: false, isSubmitted: true));
     } else {
       final result = await repository.saveWorkoutNote(
-        exerciseId: programExercise.exerciseDetails.id,
+        exerciseId: effectiveExercise.id,
         workoutProgramExerciseId: programExercise.id,
         workoutSessionId: workoutSessionId,
 

@@ -8,6 +8,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/controller/running_set_sync_cubit.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
@@ -47,8 +48,7 @@ void main() {
     final cubit = RunningSetSyncCubit(
       localRepository,
       exerciseRepository,
-      10,
-      _runningProgramExercise,
+      _runningConfig,
     )..init();
 
     rows.add(const [_readyToSyncRow]);
@@ -102,5 +102,12 @@ const _runningProgramExercise = ProgramExerciseEntity(
     thumbnailInstructionUrl: null,
     instructionsSteps: {},
   ),
+  segments: [],
+);
+
+final _runningConfig = RunningExerciseConfig(
+  workoutSessionId: 10,
+  workoutProgramExerciseId: 20,
+  exercise: _runningProgramExercise.exerciseDetails,
   segments: [],
 );

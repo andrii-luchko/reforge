@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_match_file_name
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -26,7 +25,7 @@ import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
 import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
 import 'package:reforge/features/camera_detection/ui/pages/camera_detection_page.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
-import 'package:reforge/features/exercise_session/ui/active_exercise/pages/regular_exercise_page.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/pages/active_exercise_gate.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -37,9 +36,6 @@ import 'package:reforge/features/lore/ui/page/lore_page.dart';
 import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
-import 'package:reforge/features/running/controller/running_set_sync_cubit.dart';
-import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
-import 'package:reforge/features/running/ui/pages/running_exercise_host.dart';
 import 'package:reforge/features/running/ui/pages/start_running_page.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
@@ -67,7 +63,6 @@ import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/ui/active_workout/pages/active_workout_shell.dart';
 import 'package:reforge/features/workout_session/ui/navigation/workout_navigation_mixin.dart';
-import 'package:reforge/shared/uikit/states/no_workout_error_widget.dart';
 
 part 'deep_link_routes.dart';
 part 'routes.g.dart';
@@ -715,97 +710,9 @@ class ActiveExercisePageRoute extends GoRouteData with $ActiveExercisePageRoute 
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return BlocBuilder<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
+    return ActiveExerciseGate(
       key: ValueKey(programExerciseId),
-      builder: (context, flowState) {
-        final workoutSessionId = flowState.workoutSessionId;
-        final programDay = flowState.programDay;
-
-        if (workoutSessionId == null || programDay == null) {
-          return const NoWorkoutErrorWidget();
-        }
-
-        final programExercise = programDay.programExercises.firstWhereOrNull(
-          (pExercise) => pExercise.id == programExerciseId,
-        );
-
-        if (programExercise == null) {
-          return const NoWorkoutErrorWidget();
-        }
-
-        // ── Running exercise ─────────────────────────────────────────────
-        if (programExercise.isRunningExercise) {
-          final restoredSets = flowState.isRestoredSession ? flowState.restoredSets[programExercise.id] : null;
-
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context) => di.getIt<ActiveExerciseCubit>(
-                  param1: workoutSessionId,
-                  param2: programExercise,
-                )..setRestoredSets(restoredSets),
-              ),
-              BlocProvider(
-                create: (_) {
-                  final cubit = di.getIt<RunningTrackerCubit>(
-                    param1: workoutSessionId,
-                    param2: programExercise,
-                  );
-                  unawaited(cubit.init());
-                  return cubit;
-                },
-              ),
-              BlocProvider(
-                create: (_) => di.getIt<RunningSetSyncCubit>(
-                  param1: workoutSessionId,
-                  param2: programExercise,
-                )..init(),
-              ),
-            ],
-            child: MultiBlocListener(
-              listeners: [
-                BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
-                  listenWhen: (previous, current) => previous.isLoading && !current.isLoading,
-                  listener: (context, state) {
-                    final syncState = context.read<RunningSetSyncCubit>().state;
-                    context.read<ActiveExerciseCubit>().replaceSetsFromExternalSource(
-                      sets: syncState.sets,
-                      isSending: syncState.isSending,
-                    );
-                  },
-                ),
-                BlocListener<RunningSetSyncCubit, RunningSetSyncState>(
-                  listener: (context, syncState) {
-                    final activeExerciseCubit = context.read<ActiveExerciseCubit>();
-                    if (activeExerciseCubit.state.isLoading) return;
-                    activeExerciseCubit.replaceSetsFromExternalSource(
-                      sets: syncState.sets,
-                      isSending: syncState.isSending,
-                    );
-                  },
-                ),
-              ],
-              child: RunningExerciseHost(
-                onExerciseFinished: () async {
-                  final timerDuration = context.read<TimerCubit>().state.duration;
-                  await context.read<WorkoutSessionFlowCubit>().nextExercise(timerDuration);
-                },
-              ),
-            ),
-          );
-        }
-
-        // ── Regular exercise ─────────────────────────────────────────────
-        final restoredSets = flowState.isRestoredSession ? flowState.restoredSets[programExercise.id] : null;
-
-        return BlocProvider(
-          create: (context) => di.getIt<ActiveExerciseCubit>(
-            param1: workoutSessionId,
-            param2: programExercise,
-          )..setRestoredSets(restoredSets),
-          child: const RegularExercisePage(),
-        );
-      },
+      programExerciseId: programExerciseId,
     );
   }
 }

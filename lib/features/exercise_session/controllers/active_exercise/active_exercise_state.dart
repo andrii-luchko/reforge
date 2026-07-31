@@ -4,6 +4,9 @@ part of 'active_exercise_cubit.dart';
 sealed class ActiveExerciseState with _$ActiveExerciseState {
   const ActiveExerciseState._();
   const factory ActiveExerciseState({
+    required WorkoutExerciseSessionEntity session,
+    required ExerciseDetailsEntity effectiveExercise,
+
     @Default('') String notes,
     @Default([]) List<WorkoutSet> sets,
 

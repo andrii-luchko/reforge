@@ -37,15 +37,14 @@ class RunningLapsSummaryPage extends StatelessWidget {
         builder: (context, state) {
           final cubit = context.read<RunningTrackerCubit>();
           final activeExerciseCubit = context.watch<ActiveExerciseCubit>();
-          final programExercise = cubit.programExercise;
-          final exerciseDetails = programExercise.exerciseDetails;
+          final exerciseDetails = activeExerciseCubit.effectiveExercise;
 
           final measureSystem = activeExerciseCubit.state.measureSystem;
 
           final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
             final segment = set.programSegmentId == null
                 ? null
-                : programExercise.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
+                : cubit.config.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
 
             final distanceM = (set.distance ?? 0) * 1000;
             final speedKmH = set.pace ?? 0;
@@ -99,7 +98,9 @@ class RunningLapsSummaryPage extends StatelessWidget {
                     RunningSummaryFooter(
                       state: state,
                       onBackToRunning: cubit.goToActive,
-                      onFinishExercise: state.isSubmitting ? null : () => unawaited(_onFinishExercise(context, cubit)),
+                      onFinishExercise: state.isSubmitting || activeExerciseCubit.state.isSendingSet
+                          ? null
+                          : () => unawaited(_onFinishExercise(context, cubit)),
                     ),
                   ],
                 ),
@@ -112,10 +113,10 @@ class RunningLapsSummaryPage extends StatelessWidget {
   }
 
   Future<void> _onFinishExercise(BuildContext context, RunningTrackerCubit cubit) async {
-    final success = await cubit.finishExercise();
-    if (!success || !context.mounted) return;
-
     await onExerciseFinished();
+    if (!context.mounted || !context.read<ActiveExerciseCubit>().state.isSubmitted) return;
+
+    await cubit.finishExercise();
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:reforge/features/running/data/services/running_service_client.da
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -18,7 +19,6 @@ import 'package:reforge/features/running/domain/services/running_permissions_ser
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
-import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 part 'running_tracker_cubit.freezed.dart';
@@ -31,8 +31,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     this._repository,
     this._permissionsService,
     this._preferencesService,
-    @factoryParam this.workoutSessionId,
-    @factoryParam this.programExercise,
+    @factoryParam this.config,
   ) : super(const RunningTrackerState());
 
   final RunningServiceClient _serviceClient;
@@ -40,14 +39,17 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   final RunningPermissionsService _permissionsService;
   final RunningPreferencesService _preferencesService;
 
-  final int workoutSessionId;
-  final ProgramExerciseEntity programExercise;
+  final RunningExerciseConfig config;
 
   StreamSubscription<RunningMetrics>? _metricsSub;
   StreamSubscription<RunningEvent>? _eventsSub;
   bool _hasSentStopSession = false;
 
-  ExerciseSegmentEntity? get currentSegment => programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+  int get workoutSessionId => config.workoutSessionId;
+
+  int get workoutProgramExerciseId => config.workoutProgramExerciseId;
+
+  ExerciseSegmentEntity? get currentSegment => config.segments.elementAtOrNull(state.currentSegmentIndex);
 
   bool get hasSeenAudioHint => _preferencesService.hasSeenAudioHint;
 
@@ -58,7 +60,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> init() async {
     final lap = await _repository.getInProgressLapForExercise(
       sessionId: workoutSessionId,
-      programExerciseId: programExercise.id,
+      programExerciseId: workoutProgramExerciseId,
     );
 
     if (lap != null) {
@@ -71,9 +73,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
       // Calculate real activity from playlist
       final index = lap.setNumber - 1;
-      final activity = (index < programExercise.segments.length)
-          ? programExercise.segments[index].activity
-          : SegmentActivity.run;
+      final activity = (index < config.segments.length) ? config.segments[index].activity : SegmentActivity.run;
 
       final restoredLap = ExerciseLap(
         driftSetId: lap.id,
@@ -259,7 +259,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     await _metricsSub?.cancel();
     await _eventsSub?.cancel();
 
-    final limits = programExercise.segments
+    final limits = config.segments
         .map(
           (s) => LapLimit(
             metric: s.targetMetric,
@@ -285,7 +285,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       mode: mode,
       limits: limits,
       sessionId: workoutSessionId,
-      programExerciseId: programExercise.id,
+      programExerciseId: workoutProgramExerciseId,
       startPaused: startPaused,
     );
   }

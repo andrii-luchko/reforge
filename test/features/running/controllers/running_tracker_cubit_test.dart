@@ -7,6 +7,7 @@ import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -44,8 +45,7 @@ void main() {
       repository,
       MockRunningPermissionsService(),
       MockRunningPreferencesService(),
-      10,
-      _programExercise,
+      _runningConfig,
     )..setMode(RunningMode.gps);
   });
 
@@ -74,6 +74,46 @@ void main() {
 
     dispatched.complete();
     await start;
+  });
+
+  test('free-run runtime config starts without segment limits', () async {
+    final freeRunCubit = RunningTrackerCubit(
+      service,
+      repository,
+      MockRunningPermissionsService(),
+      MockRunningPreferencesService(),
+      RunningExerciseConfig(
+        workoutSessionId: 10,
+        workoutProgramExerciseId: _programExercise.id,
+        exercise: _programExercise.exerciseDetails,
+        segments: const [],
+      ),
+    )..setMode(RunningMode.gps);
+    when(
+      () => service.startSession(
+        mode: any(named: 'mode'),
+        limits: any(named: 'limits'),
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+        startPaused: any(named: 'startPaused'),
+      ),
+    ).thenAnswer((_) async {});
+
+    await freeRunCubit.startLap();
+
+    final captured =
+        verify(
+              () => service.startSession(
+                mode: RunningMode.gps,
+                limits: captureAny(named: 'limits'),
+                sessionId: 10,
+                programExerciseId: 20,
+              ),
+            ).captured.single
+            as List<LapLimit>;
+    expect(captured, isEmpty);
+
+    await freeRunCubit.close();
   });
 
   test('cancel after warm-up never starts a session', () async {
@@ -432,6 +472,13 @@ final _programExercise = ProgramExerciseEntity(
       durationSec: 60,
     ),
   ],
+);
+
+final _runningConfig = RunningExerciseConfig(
+  workoutSessionId: 10,
+  workoutProgramExerciseId: _programExercise.id,
+  exercise: _programExercise.exerciseDetails,
+  segments: _programExercise.segments,
 );
 
 const _metric = RunningMetrics(

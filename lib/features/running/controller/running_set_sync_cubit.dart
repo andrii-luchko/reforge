@@ -8,22 +8,20 @@ import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
-import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 
 @injectable
 class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   RunningSetSyncCubit(
     this._localRepository,
     this._exerciseSessionRepository,
-    @factoryParam this.workoutSessionId,
-    @factoryParam this.programExercise,
+    @factoryParam this.config,
   ) : super(const RunningSetSyncState());
 
   final LocalWorkoutSessionRepository _localRepository;
   final ExerciseSessionRepository _exerciseSessionRepository;
-  final int workoutSessionId;
-  final ProgramExerciseEntity programExercise;
+  final RunningExerciseConfig config;
 
   StreamSubscription<List<ActiveRunningSet>>? _databaseSubscription;
   final Set<int> _syncingRowIds = {};
@@ -35,14 +33,14 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
 
     _databaseSubscription = _localRepository
         .watchActiveRunningSets(
-          sessionId: workoutSessionId,
-          programExerciseId: programExercise.id,
+          sessionId: config.workoutSessionId,
+          programExerciseId: config.workoutProgramExerciseId,
         )
         .listen(_onDatabaseRowsChanged);
   }
 
   void _onDatabaseRowsChanged(List<ActiveRunningSet> rows) {
-    final exerciseRows = rows.where((row) => row.programExerciseId == programExercise.id).toList();
+    final exerciseRows = rows.where((row) => row.programExerciseId == config.workoutProgramExerciseId).toList();
     final mappedSets = exerciseRows.map(_mapRowToSet).toList();
 
     emit(
@@ -78,9 +76,9 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
     try {
       final set = state.sets.firstWhereOrNull((item) => item.id == row.id) ?? _mapRowToSet(row);
       final result = await _exerciseSessionRepository.completeSet(
-        exerciseId: programExercise.exerciseDetails.id,
-        workoutProgramExerciseId: programExercise.id,
-        workoutSessionId: workoutSessionId,
+        exerciseId: config.exercise.id,
+        workoutProgramExerciseId: config.workoutProgramExerciseId,
+        workoutSessionId: config.workoutSessionId,
         system: MeasurementSystem.metric,
         set: set,
       );

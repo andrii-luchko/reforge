@@ -84,10 +84,8 @@ class RunningOverviewPage extends StatelessWidget {
       child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
         builder: (context, runningState) {
           final cubit = context.read<RunningTrackerCubit>();
-          final programExercise = cubit.programExercise;
-          final exerciseDetails = programExercise.exerciseDetails;
-
-          final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+          final activeExerciseCubit = context.watch<ActiveExerciseCubit>();
+          final exerciseDetails = activeExerciseCubit.effectiveExercise;
 
           final previousResult = activeExerciseCubit.state.previousResult;
           final measureSystem = activeExerciseCubit.state.measureSystem;
