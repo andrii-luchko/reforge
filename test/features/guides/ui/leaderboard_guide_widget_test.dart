@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
@@ -137,6 +138,7 @@ void main() {
     di.getIt.registerSingleton<RouteObserver<ModalRoute<void>>>(RouteObserver<ModalRoute<void>>());
     addTearDown(() => di.getIt.unregister<RouteObserver<ModalRoute<void>>>());
 
+    final guide = LeaderboardGuide();
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeDataValues.darkThemeData,
@@ -145,10 +147,12 @@ void main() {
             BlocProvider<GuideCubit>.value(value: guideCubit),
             BlocProvider<ImmortalForgesCubit>.value(value: immortalForgesCubit),
           ],
-          child: Scaffold(
-            body: ImmortalForcesCard(
-              users: const [_leader],
-              guide: LeaderboardGuide(),
+          child: Provider<LeaderboardGuide>.value(
+            value: guide,
+            child: const Scaffold(
+              body: ImmortalForcesCard(
+                users: [_leader],
+              ),
             ),
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
@@ -88,10 +89,13 @@ void main() {
             BlocProvider<GuideCubit>.value(value: guideCubit),
             BlocProvider<FactionsLeaderboardCubit>.value(value: factionsCubit),
           ],
-          child: Scaffold(
-            body: CustomScrollView(
-              scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
-              slivers: [FactionsLeaderboardView(guide: guide)],
+          child: Provider<FactionWarsGuide>.value(
+            value: guide,
+            child: const Scaffold(
+              body: CustomScrollView(
+                scrollCacheExtent: ScrollCacheExtent.pixels(1200),
+                slivers: [FactionsLeaderboardView()],
+              ),
             ),
           ),
         ),

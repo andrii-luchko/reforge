@@ -6,6 +6,7 @@ import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/controller/guide_start_result.dart';
+import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
 import 'package:reforge/features/guides/ui/guides/plate_of_keragura_guide.dart';
@@ -60,6 +61,15 @@ class _PlateOfKeraguraGuideHostState extends State<PlateOfKeraguraGuideHost> {
 
   void _requestStart() {
     final requestToken = ++_startRequestToken;
+    final userId = context.read<UserCubit>().state.userOrNull?.id;
+    if (userId == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: userId,
+          guideId: GuideId.plateOfKeragura,
+        )) {
+      return;
+    }
+
     _scheduleAttempt(requestToken: requestToken, attempt: 1);
   }
 
@@ -84,11 +94,19 @@ class _PlateOfKeraguraGuideHostState extends State<PlateOfKeraguraGuideHost> {
   }) async {
     if (!mounted || requestToken != _startRequestToken) return;
 
-    final loreState = context.read<LoreCubit>().state;
     final user = context.read<UserCubit>().state.userOrNull;
+    if (user == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: user.id,
+          guideId: GuideId.plateOfKeragura,
+        )) {
+      return;
+    }
+
+    final loreState = context.read<LoreCubit>().state;
     if (!canStartPlateOfKeraguraGuide(
       state: loreState,
-      userId: user?.id,
+      userId: user.id,
     )) {
       return;
     }
@@ -104,7 +122,7 @@ class _PlateOfKeraguraGuideHostState extends State<PlateOfKeraguraGuideHost> {
       includeLockedPlate: hasLockedPlate,
     );
     final result = await _guideCubit.startIfNeeded(
-      userId: user!.id,
+      userId: user.id,
       session: fullSession,
     );
     if (!mounted || requestToken != _startRequestToken) return;

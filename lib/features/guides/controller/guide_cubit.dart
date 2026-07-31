@@ -24,6 +24,18 @@ class GuideCubit extends Cubit<GuideState> {
   int? _userId;
   bool _startInProgress = false;
   bool _completionInProgress = false;
+  final Set<(int, GuideId)> _completedGuides = {};
+
+  bool shouldAttemptStart({
+    required int userId,
+    required GuideId guideId,
+  }) {
+    if (isClosed || state is GuideChecking || state is GuideRunning || _startInProgress) {
+      return false;
+    }
+
+    return !_completedGuides.contains((userId, guideId));
+  }
 
   Future<GuideStartResult> startIfNeeded({
     required int userId,
@@ -33,8 +45,7 @@ class GuideCubit extends Cubit<GuideState> {
       return GuideStartResult.ignored;
     }
 
-    final currentState = state;
-    if (currentState is GuideCompleted && currentState.guideId == session.id && _userId == userId) {
+    if (_completedGuides.contains((userId, session.id))) {
       return GuideStartResult.completed;
     }
 
@@ -58,6 +69,7 @@ class GuideCubit extends Cubit<GuideState> {
       if (isClosed) return GuideStartResult.ignored;
 
       if (isCompleted) {
+        _completedGuides.add((userId, session.id));
         emit(GuideState.completed(guideId: session.id));
         return GuideStartResult.completed;
       }
@@ -126,6 +138,7 @@ class GuideCubit extends Cubit<GuideState> {
     if (state is! GuideRunning || userId == null || session == null || _completionInProgress) return;
 
     _completionInProgress = true;
+    _completedGuides.add((userId, session.id));
     try {
       await _progressRepository.markCompleted(userId: userId, guideId: session.id);
     } on Object {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
@@ -20,13 +21,11 @@ class LeaderboardFactionList extends StatelessWidget {
   const LeaderboardFactionList({
     required this.factions,
     required this.mode,
-    this.guide,
     super.key,
   });
 
   final List<LeaderboardFactionModel> factions;
   final FactionMode mode;
-  final FactionWarsGuide? guide;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +42,7 @@ class LeaderboardFactionList extends StatelessWidget {
                   if (index != 0) const SizedBox(height: 8),
                   Skeleton.leaf(
                     child: _FactionListGuideTarget(
-                      guide: index == 0 ? guide : null,
+                      includeTarget: index == 0,
                       child: LeaderboardFactionListTile(
                         key: ValueKey(factions[index].name),
                         faction: factions[index],
@@ -60,17 +59,17 @@ class LeaderboardFactionList extends StatelessWidget {
 
 class _FactionListGuideTarget extends StatelessWidget {
   const _FactionListGuideTarget({
-    required this.guide,
+    required this.includeTarget,
     required this.child,
   });
 
-  final FactionWarsGuide? guide;
+  final bool includeTarget;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final guide = this.guide;
-    if (guide == null) return child;
+    final guide = context.read<FactionWarsGuide?>();
+    if (!includeTarget || guide == null) return child;
 
     return GuideTarget(
       anchor: guide.anchor(FactionWarsGuideStep.scoring),

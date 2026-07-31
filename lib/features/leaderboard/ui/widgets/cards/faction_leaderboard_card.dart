@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/guides/ui/guides/faction_wars_guide.dart';
@@ -103,7 +104,6 @@ class FactionLeaderboardCard extends StatelessWidget {
     required this.userFaction,
     required this.totalWeeks,
     required this.currentWeek,
-    this.guide,
     super.key,
   });
 
@@ -113,7 +113,6 @@ class FactionLeaderboardCard extends StatelessWidget {
   final Faction userFaction;
   final int totalWeeks;
   final int currentWeek;
-  final FactionWarsGuide? guide;
 
   String _getHeaderMessage(Translations t) {
     final firstScore = firstFaction.scoreByMode(mode);
@@ -194,7 +193,6 @@ class FactionLeaderboardCard extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: _VictoryPointsGuideTarget(
-                              guide: guide,
                               child: ScoreWidget(
                                 firstFactionScore: firstScore,
                                 secondFactionScore: secondScore,
@@ -230,16 +228,14 @@ class FactionLeaderboardCard extends StatelessWidget {
 
 class _VictoryPointsGuideTarget extends StatelessWidget {
   const _VictoryPointsGuideTarget({
-    required this.guide,
     required this.child,
   });
 
-  final FactionWarsGuide? guide;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final guide = this.guide;
+    final guide = context.read<FactionWarsGuide?>();
     if (guide == null) return child;
 
     return GuideTarget(

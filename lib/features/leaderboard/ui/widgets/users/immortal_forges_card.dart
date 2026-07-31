@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_match_file_name
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 // Ensure these imports are correct in your project structure
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -83,12 +84,10 @@ class ImmortalForcesCardEmpty extends StatelessWidget {
 class ImmortalForcesCard extends StatelessWidget {
   const ImmortalForcesCard({
     required this.users,
-    this.guide,
     super.key,
   });
 
   final List<ImmortalForgeEntity> users;
-  final LeaderboardGuide? guide;
 
   ImmortalForgeEntity? _getUserByRank(int rank) {
     return users.where((u) => u.rank == rank).firstOrNull;
@@ -157,38 +156,31 @@ class ImmortalForcesCard extends StatelessWidget {
                     if (ranks[3] != null) _RankAvatar(user: ranks[3]!, alignment: const Alignment(-0.85, 0.9)),
                     if (ranks[4] != null) _RankAvatar(user: ranks[4]!, alignment: const Alignment(0.85, 0.9)),
 
-                    if (guide case final guide?) ...[
-                      _RankGuideTarget(
-                        guide: guide,
-                        step: LeaderboardGuideStep.daizosho,
-                        alignment: const Alignment(0, 0.2),
-                        size: const Size(140, 190),
-                      ),
-                      _RankGuideTarget(
-                        guide: guide,
-                        step: LeaderboardGuideStep.might,
-                        alignment: const Alignment(-1, -1.3),
-                        size: rangGuidWindowSize,
-                      ),
-                      _RankGuideTarget(
-                        guide: guide,
-                        step: LeaderboardGuideStep.judgement,
-                        alignment: const Alignment(1, -1.3),
-                        size: rangGuidWindowSize,
-                      ),
-                      _RankGuideTarget(
-                        guide: guide,
-                        step: LeaderboardGuideStep.strife,
-                        alignment: const Alignment(-1, 1.3),
-                        size: rangGuidWindowSize,
-                      ),
-                      _RankGuideTarget(
-                        guide: guide,
-                        step: LeaderboardGuideStep.burden,
-                        alignment: const Alignment(1, 1.3),
-                        size: rangGuidWindowSize,
-                      ),
-                    ],
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.daizosho,
+                      alignment: Alignment(0, 0.2),
+                      size: Size(140, 190),
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.might,
+                      alignment: Alignment(-1, -1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.judgement,
+                      alignment: Alignment(1, -1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.strife,
+                      alignment: Alignment(-1, 1.3),
+                      size: rangGuidWindowSize,
+                    ),
+                    const _RankGuideTarget(
+                      step: LeaderboardGuideStep.burden,
+                      alignment: Alignment(1, 1.3),
+                      size: rangGuidWindowSize,
+                    ),
                   ],
                 ),
               ),
@@ -269,19 +261,20 @@ class _RankAvatar extends StatelessWidget {
 
 class _RankGuideTarget extends StatelessWidget {
   const _RankGuideTarget({
-    required this.guide,
     required this.step,
     required this.alignment,
     required this.size,
   });
 
-  final LeaderboardGuide guide;
   final LeaderboardGuideStep step;
   final Alignment alignment;
   final Size size;
 
   @override
   Widget build(BuildContext context) {
+    final guide = context.read<LeaderboardGuide?>();
+    if (guide == null) return const SizedBox.shrink();
+
     return Align(
       alignment: alignment,
       child: IgnorePointer(

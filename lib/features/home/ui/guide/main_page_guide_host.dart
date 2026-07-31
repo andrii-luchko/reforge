@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/controller/guide_start_result.dart';
+import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
 import 'package:reforge/features/guides/ui/guides/main_page_guide.dart';
@@ -53,6 +54,15 @@ class _MainPageGuideHostState extends State<MainPageGuideHost> {
 
   void _requestStart() {
     final requestToken = ++_startRequestToken;
+    final userId = context.read<HomeCubit>().state.user?.id;
+    if (userId == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: userId,
+          guideId: GuideId.mainPage,
+        )) {
+      return;
+    }
+
     _scheduleAttempt(requestToken: requestToken, attempt: 1);
   }
 
@@ -78,10 +88,18 @@ class _MainPageGuideHostState extends State<MainPageGuideHost> {
     if (!mounted || requestToken != _startRequestToken) return;
 
     final homeState = context.read<HomeCubit>().state;
+    final userId = homeState.user?.id;
+    if (userId == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: userId,
+          guideId: GuideId.mainPage,
+        )) {
+      return;
+    }
     if (!canStartMainPageGuide(homeState)) return;
 
     final result = await _guideCubit.startIfNeeded(
-      userId: homeState.user!.id,
+      userId: userId,
       session: _guide.session,
     );
     if (!mounted || requestToken != _startRequestToken) return;

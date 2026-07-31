@@ -12,6 +12,7 @@ import 'package:reforge/features/achievements/ui/guide/achievements_page_guide_s
 import 'package:reforge/features/achievements/ui/guide/forge_attributes_guide_eligibility.dart';
 import 'package:reforge/features/guides/controller/guide_cubit.dart';
 import 'package:reforge/features/guides/controller/guide_start_result.dart';
+import 'package:reforge/features/guides/domain/entities/guide_id.dart';
 import 'package:reforge/features/guides/domain/repositories/guide_progress_repository.dart';
 import 'package:reforge/features/guides/infrastructure/showcase_guide_driver.dart';
 import 'package:reforge/features/guides/ui/guides/forge_attributes_guide.dart';
@@ -56,6 +57,15 @@ class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
 
   void _requestStart() {
     final requestToken = ++_startRequestToken;
+    final userId = context.read<UserCubit>().state.userOrNull?.id;
+    if (userId == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: userId,
+          guideId: GuideId.forgeAttributes,
+        )) {
+      return;
+    }
+
     _scheduleAttempt(requestToken: requestToken, attempt: 1);
   }
 
@@ -80,11 +90,19 @@ class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
   }) async {
     if (!mounted || requestToken != _startRequestToken) return;
 
-    final achievementsState = context.read<AchievementsCubit>().state;
     final user = context.read<UserCubit>().state.userOrNull;
+    if (user == null ||
+        !_guideCubit.shouldAttemptStart(
+          userId: user.id,
+          guideId: GuideId.forgeAttributes,
+        )) {
+      return;
+    }
+
+    final achievementsState = context.read<AchievementsCubit>().state;
     if (!canStartForgeAttributesGuide(
       state: achievementsState,
-      userId: user?.id,
+      userId: user.id,
     )) {
       return;
     }
@@ -98,7 +116,7 @@ class _ForgeAttributesGuideHostState extends State<ForgeAttributesGuideHost> {
     if (session == null) return;
 
     final result = await _guideCubit.startIfNeeded(
-      userId: user!.id,
+      userId: user.id,
       session: session,
     );
     if (!mounted || requestToken != _startRequestToken) return;

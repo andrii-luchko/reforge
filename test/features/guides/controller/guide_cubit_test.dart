@@ -116,6 +116,13 @@ void main() {
     expect(result, GuideStartResult.completed);
     expect(cubit.state, const GuideState.completed(guideId: GuideId.leaderboard));
     expect(driver.startCalls, 0);
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+      isFalse,
+    );
   });
 
   test('starts once and mirrors driver navigation events', () async {
@@ -177,6 +184,13 @@ void main() {
     verify(
       () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
     ).called(1);
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+      isFalse,
+    );
   });
 
   test('driver finish stores completion', () async {
@@ -246,6 +260,20 @@ void main() {
 
     await cubit.startIfNeeded(userId: 71, session: _session());
     await cubit.finish();
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+      isFalse,
+    );
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.factionWars,
+      ),
+      isTrue,
+    );
     await cubit.startIfNeeded(
       userId: 71,
       session: _session(GuideId.factionWars),
@@ -330,6 +358,74 @@ void main() {
     ).called(1);
   });
 
+  test('completion cache is isolated by user id', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+    when(
+      () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async {});
+
+    await cubit.startIfNeeded(userId: 71, session: _session());
+    await cubit.finish();
+
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+      isFalse,
+    );
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 72,
+        guideId: GuideId.leaderboard,
+      ),
+      isTrue,
+    );
+  });
+
+  test('completion remains cached when persistence fails', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+    when(
+      () => repository.markCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenThrow(Exception('Storage unavailable'));
+
+    await cubit.startIfNeeded(userId: 71, session: _session());
+    await cubit.finish();
+    final result = await cubit.startIfNeeded(
+      userId: 71,
+      session: _session(),
+    );
+
+    expect(result, GuideStartResult.completed);
+    expect(driver.startCalls, 1);
+    verify(
+      () => repository.isCompleted(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+    ).called(1);
+  });
+
+  test('preflight rejects attempts while a guide is running', () async {
+    when(
+      () => repository.isCompleted(userId: 71, guideId: GuideId.leaderboard),
+    ).thenAnswer((_) async => false);
+
+    await cubit.startIfNeeded(userId: 71, session: _session());
+
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.factionWars,
+      ),
+      isFalse,
+    );
+  });
+
   test('returns failed and resets state when completion check throws', () async {
     when(
       () => repository.isCompleted(
@@ -376,5 +472,12 @@ void main() {
     );
 
     expect(result, GuideStartResult.ignored);
+    expect(
+      cubit.shouldAttemptStart(
+        userId: 71,
+        guideId: GuideId.leaderboard,
+      ),
+      isFalse,
+    );
   });
 }
