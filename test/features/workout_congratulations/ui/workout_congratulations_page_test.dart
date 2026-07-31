@@ -9,19 +9,19 @@ import 'package:reforge/app/theme/theme_data_values.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
-import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/achievement_content_widget.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/share_content_widgets.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/summary_content_widget.dart';
-import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
+import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_share/ui/widgets/share/share_dialog.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/horizontal_xp_bar.dart';
 
 import '../../../core/analytics/mocks/mock_analytics_service.dart';
 
-class _MockWorkoutFlowCubit extends Mock implements WorkoutFlowCubit {}
+class _MockWorkoutSessionFlowCubit extends Mock implements WorkoutSessionFlowCubit {}
 
 class _MockHomeCubit extends Mock implements HomeCubit {}
 
@@ -58,9 +58,9 @@ WorkoutSessionSummaryEntity _summary({
   );
 }
 
-WorkoutFlowCubit _workoutFlowCubit(WorkoutSessionSummaryEntity? summary) {
-  final cubit = _MockWorkoutFlowCubit();
-  when(() => cubit.state).thenReturn(WorkoutFlowState(summary: summary));
+WorkoutSessionFlowCubit _workoutFlowCubit(WorkoutSessionSummaryEntity? summary) {
+  final cubit = _MockWorkoutSessionFlowCubit();
+  when(() => cubit.state).thenReturn(WorkoutSessionFlowState(summary: summary));
   when(() => cubit.stream).thenAnswer((_) => const Stream.empty());
   return cubit;
 }
@@ -101,7 +101,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeDataValues.darkThemeData,
-        home: BlocProvider<WorkoutFlowCubit>.value(
+        home: BlocProvider<WorkoutSessionFlowCubit>.value(
           value: workoutFlowCubit,
           child: const WorkoutCongratulationsPage(),
         ),
@@ -219,7 +219,7 @@ void main() {
     await tester.pumpWidget(
       MultiBlocProvider(
         providers: [
-          BlocProvider<WorkoutFlowCubit>.value(value: workoutFlowCubit),
+          BlocProvider<WorkoutSessionFlowCubit>.value(value: workoutFlowCubit),
           BlocProvider<HomeCubit>.value(value: homeCubit),
         ],
         child: MaterialApp.router(
@@ -243,7 +243,7 @@ void main() {
     String? redirect;
 
     await tester.pumpWidget(
-      BlocProvider<WorkoutFlowCubit>.value(
+      BlocProvider<WorkoutSessionFlowCubit>.value(
         value: workoutFlowCubit,
         child: MaterialApp(
           home: Builder(

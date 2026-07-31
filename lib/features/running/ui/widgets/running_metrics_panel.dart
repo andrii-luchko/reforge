@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/workout_run_exercise_row.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 class RunningMetricsPanel extends StatelessWidget {
   const RunningMetricsPanel({

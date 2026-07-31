@@ -15,12 +15,12 @@ import 'package:reforge/features/running/domain/exceptions/running_service_excep
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_flow/data/enums/execution_mode.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
+import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
   setUpAll(() {

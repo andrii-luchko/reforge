@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
-import 'package:reforge/features/active_workout/ui/widgets/exercise_results/previous_exercise_result_list_tile.dart';
-import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
+import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/previous_exercise_result_list_tile.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_mode_dialog.dart';
@@ -20,7 +20,7 @@ import 'package:toastification/toastification.dart';
 
 /// First screen of the running exercise flow.
 ///
-/// Mirrors [ActiveWorkoutPage] in structure but replaces [DynamicWorkoutForm]
+/// Mirrors [RegularExercisePage] in structure but replaces [DynamicWorkoutForm]
 /// with a "Start Running" button. The notes and exercise detail sections are
 /// shared between both exercise types.
 ///

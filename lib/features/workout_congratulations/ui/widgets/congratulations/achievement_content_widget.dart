@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_summary_entity.dart';
 
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';

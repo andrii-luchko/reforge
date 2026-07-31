@@ -1,4 +1,4 @@
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 
 /// A universal model for both active and completed running laps.
 class ExerciseLap {

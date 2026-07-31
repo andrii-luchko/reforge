@@ -18,7 +18,9 @@ import 'package:reforge/features/running/ui/pages/running_permission_denied_page
 /// - [RunningPhase.active]    → [RunningActivePage]
 /// - [RunningPhase.finished]  → [RunningLapsSummaryPage]
 class RunningExerciseHost extends StatelessWidget {
-  const RunningExerciseHost({super.key});
+  const RunningExerciseHost({required this.onExerciseFinished, super.key});
+
+  final Future<void> Function() onExerciseFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,9 @@ class RunningExerciseHost extends StatelessWidget {
             child: switch (state.phase) {
               RunningPhase.overview => const RunningOverviewPage(),
               RunningPhase.active => const RunningActivePage(),
-              RunningPhase.finished => const RunningLapsSummaryPage(),
+              RunningPhase.finished => RunningLapsSummaryPage(
+                onExerciseFinished: onExerciseFinished,
+              ),
               RunningPhase.permissionDenied => const RunningPermissionDeniedPage(),
             },
           ),

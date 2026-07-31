@@ -10,7 +10,7 @@ import 'package:reforge/features/calendar/data/datasources/workout_details_local
 import 'package:reforge/features/calendar/domain/entity/calendar_entity.dart';
 import 'package:reforge/features/calendar/domain/entity/training_details_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
 
 abstract interface class CalendarRepository {
   Future<Result<CalendarEntity>> getMonthCalendarData(DateTime month);

@@ -14,11 +14,6 @@ import 'package:reforge/core/user/controller/user_cubit.dart';
 import 'package:reforge/features/achievements/ui/page/achievements_page.dart';
 import 'package:reforge/features/achievements/ui/page/badges_page.dart';
 import 'package:reforge/features/achievements/ui/page/ranks_page.dart';
-import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
-import 'package:reforge/features/active_workout/ui/pages/active_workout_page.dart';
-import 'package:reforge/features/active_workout/ui/pages/active_workout_shell.dart';
-import 'package:reforge/features/active_workout/ui/pages/start_running_page.dart';
-import 'package:reforge/features/active_workout/ui/widgets/active_workout_page/no_workout_error_widget.dart';
 import 'package:reforge/features/auth/ui/pages/create_new_password_page.dart';
 import 'package:reforge/features/auth/ui/pages/forgot_password_email_page.dart';
 import 'package:reforge/features/auth/ui/pages/reset_send_page.dart';
@@ -30,6 +25,8 @@ import 'package:reforge/features/calendar/ui/page/calendar_page.dart';
 import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
 import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
 import 'package:reforge/features/camera_detection/ui/pages/camera_detection_page.dart';
+import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/pages/regular_exercise_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -40,8 +37,10 @@ import 'package:reforge/features/lore/ui/page/lore_page.dart';
 import 'package:reforge/features/notifications/ui/page/notifications_page.dart';
 import 'package:reforge/features/onboarding/page/onboarding_page.dart';
 import 'package:reforge/features/quiz/ui/pages/quiz_page.dart';
+import 'package:reforge/features/running/controller/running_set_sync_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/ui/pages/running_exercise_host.dart';
+import 'package:reforge/features/running/ui/pages/start_running_page.dart';
 import 'package:reforge/features/settings/domain/enum/profile_settings.dart';
 import 'package:reforge/features/settings/domain/enum/workout_settings.dart';
 import 'package:reforge/features/settings/ui/helpers/settings_navigation.dart';
@@ -59,13 +58,16 @@ import 'package:reforge/features/subscription/ui/pages/change_plan_page.dart';
 import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
-import 'package:reforge/features/workout_details/ui/pages/scheduled_workout_details_page.dart';
-import 'package:reforge/features/workout_details/ui/pages/workout_details_page.dart';
-import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
-import 'package:reforge/features/workout_instruction/ui/page/workout_instruction_page.dart';
+import 'package:reforge/features/workout_program/ui/exercise_instruction/pages/exercise_instruction_page.dart';
+import 'package:reforge/features/workout_program/ui/workout_day_details/pages/scheduled_workout_details_page.dart';
+import 'package:reforge/features/workout_program/ui/workout_day_details/pages/workout_details_page.dart';
 import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
 import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_page.dart';
 import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page.dart';
+import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
+import 'package:reforge/features/workout_session/ui/active_workout/pages/active_workout_shell.dart';
+import 'package:reforge/features/workout_session/ui/navigation/workout_navigation_mixin.dart';
+import 'package:reforge/shared/uikit/states/no_workout_error_widget.dart';
 
 part 'deep_link_routes.dart';
 part 'routes.g.dart';
@@ -595,16 +597,16 @@ class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
   routes: [
     TypedGoRoute<WorkoutDetailsPageRoute>(path: '/workout-details'),
     TypedGoRoute<ScheduledWorkoutDetailsPageRoute>(path: '/scheduled-workout-details'),
-    TypedGoRoute<WorkoutInstructionPageRoute>(path: '/workout-instruction'),
+    TypedGoRoute<ExerciseInstructionPageRoute>(path: '/workout-instruction'),
     TypedShellRoute<WorkoutQuizShellRoute>(
       routes: [
         TypedGoRoute<WorkoutQuizPageRoute>(path: '/workout-quiz'),
         TypedGoRoute<WorkoutQuizSummaryPageRoute>(path: '/workout-quiz-summary'),
       ],
     ),
-    TypedShellRoute<ActiveWorkoutsShellRoute>(
+    TypedShellRoute<ActiveWorkoutShellRoute>(
       routes: [
-        TypedGoRoute<ActiveWorkoutPageRoute>(
+        TypedGoRoute<ActiveExercisePageRoute>(
           path: '/active-workout',
         ),
       ],
@@ -628,16 +630,19 @@ class WorkoutShellRoute extends ShellRouteData {
   }
 }
 
-class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute {
+class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute, WorkoutNavigationMixin {
   const WorkoutDetailsPageRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return const WorkoutDetailsPage();
+    return WorkoutDetailsPage(
+      onStartWorkout: () => handleStartWorkout(context),
+    );
   }
 }
 
-class ScheduledWorkoutDetailsPageRoute extends GoRouteData with $ScheduledWorkoutDetailsPageRoute {
+class ScheduledWorkoutDetailsPageRoute extends GoRouteData
+    with $ScheduledWorkoutDetailsPageRoute, WorkoutNavigationMixin {
   const ScheduledWorkoutDetailsPageRoute({required this.date, required this.scheduledWorkoutDayId});
 
   final DateTime date;
@@ -648,19 +653,20 @@ class ScheduledWorkoutDetailsPageRoute extends GoRouteData with $ScheduledWorkou
     return ScheduledWorkoutDetailsPage(
       scheduledWorkoutDayId: scheduledWorkoutDayId,
       date: date,
+      onStartWorkout: () => handleStartWorkout(context),
     );
   }
 }
 
-class WorkoutInstructionPageRoute extends GoRouteData with $WorkoutInstructionPageRoute {
-  const WorkoutInstructionPageRoute({required this.name, required this.workoutId});
+class ExerciseInstructionPageRoute extends GoRouteData with $ExerciseInstructionPageRoute {
+  const ExerciseInstructionPageRoute({required this.name, required this.workoutId});
 
   final String name;
   final int workoutId;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return WorkoutInstructionPage(
+    return ExerciseInstructionPage(
       name: name,
       workoutId: workoutId,
     );
@@ -692,7 +698,7 @@ class WorkoutQuizSummaryPageRoute extends GoRouteData with $WorkoutQuizSummaryPa
   }
 }
 
-class ActiveWorkoutsShellRoute extends ShellRouteData {
+class ActiveWorkoutShellRoute extends ShellRouteData {
   @override
   Widget builder(BuildContext context, GoRouterState state, Widget navigator) {
     return BlocProvider(
@@ -702,14 +708,14 @@ class ActiveWorkoutsShellRoute extends ShellRouteData {
   }
 }
 
-class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
-  const ActiveWorkoutPageRoute({required this.programExerciseId});
+class ActiveExercisePageRoute extends GoRouteData with $ActiveExercisePageRoute {
+  const ActiveExercisePageRoute({required this.programExerciseId});
 
   final int programExerciseId;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return BlocBuilder<WorkoutFlowCubit, WorkoutFlowState>(
+    return BlocBuilder<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
       key: ValueKey(programExerciseId),
       builder: (context, flowState) {
         final workoutSessionId = flowState.workoutSessionId;
@@ -749,8 +755,43 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
                   return cubit;
                 },
               ),
+              BlocProvider(
+                create: (_) => di.getIt<RunningSetSyncCubit>(
+                  param1: workoutSessionId,
+                  param2: programExercise,
+                )..init(),
+              ),
             ],
-            child: const RunningExerciseHost(),
+            child: MultiBlocListener(
+              listeners: [
+                BlocListener<ActiveExerciseCubit, ActiveExerciseState>(
+                  listenWhen: (previous, current) => previous.isLoading && !current.isLoading,
+                  listener: (context, state) {
+                    final syncState = context.read<RunningSetSyncCubit>().state;
+                    context.read<ActiveExerciseCubit>().replaceSetsFromExternalSource(
+                      sets: syncState.sets,
+                      isSending: syncState.isSending,
+                    );
+                  },
+                ),
+                BlocListener<RunningSetSyncCubit, RunningSetSyncState>(
+                  listener: (context, syncState) {
+                    final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+                    if (activeExerciseCubit.state.isLoading) return;
+                    activeExerciseCubit.replaceSetsFromExternalSource(
+                      sets: syncState.sets,
+                      isSending: syncState.isSending,
+                    );
+                  },
+                ),
+              ],
+              child: RunningExerciseHost(
+                onExerciseFinished: () async {
+                  final timerDuration = context.read<TimerCubit>().state.duration;
+                  await context.read<WorkoutSessionFlowCubit>().nextExercise(timerDuration);
+                },
+              ),
+            ),
           );
         }
 
@@ -762,7 +803,7 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
             param1: workoutSessionId,
             param2: programExercise,
           )..setRestoredSets(restoredSets),
-          child: const ActiveWorkoutPage(),
+          child: const RegularExercisePage(),
         );
       },
     );
@@ -802,7 +843,7 @@ class WorkoutCongratulationsPageRoute extends GoRouteData with $WorkoutCongratul
 
   @override
   String? redirect(BuildContext context, GoRouterState state) {
-    return context.read<WorkoutFlowCubit>().state.summary == null ? const HomePageRoute().location : null;
+    return context.read<WorkoutSessionFlowCubit>().state.summary == null ? const HomePageRoute().location : null;
   }
 
   @override

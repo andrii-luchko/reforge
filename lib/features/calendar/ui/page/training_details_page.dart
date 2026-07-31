@@ -9,8 +9,8 @@ import 'package:reforge/features/calendar/domain/entity/training_details_entity.
 import 'package:reforge/features/calendar/ui/widgets/total_duration_tile.dart';
 import 'package:reforge/features/calendar/ui/widgets/workout_info_tile.dart';
 import 'package:reforge/features/calendar/ui/widgets/xp_tile.dart';
+import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/empty_list_message.dart';

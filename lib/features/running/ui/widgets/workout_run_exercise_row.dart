@@ -4,7 +4,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/core/timer/ui/smooth_timer_text.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 class WorkoutRunExerciseRow extends StatelessWidget {

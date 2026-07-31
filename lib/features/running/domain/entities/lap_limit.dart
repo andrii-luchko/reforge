@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 part 'lap_limit.freezed.dart';
 

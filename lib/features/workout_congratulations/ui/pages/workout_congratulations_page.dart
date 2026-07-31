@@ -10,12 +10,12 @@ import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
-import 'package:reforge/features/workout_common/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/achievement_content_widget.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/congratulations_action_buttons.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/share_content_widgets.dart';
 import 'package:reforge/features/workout_congratulations/ui/widgets/congratulations/summary_content_widget.dart';
-import 'package:reforge/features/workout_flow/controllers/workout_flow_cubit.dart';
+import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/particles/particles.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -35,7 +35,7 @@ class _WorkoutCongratulationsPageState extends State<WorkoutCongratulationsPage>
   @override
   void initState() {
     super.initState();
-    _summary = context.read<WorkoutFlowCubit>().state.summary;
+    _summary = context.read<WorkoutSessionFlowCubit>().state.summary;
     _xpProgress = _summary == null ? 0.2 : _calculateXpProgress(_summary);
 
     if (_summary case WorkoutSessionSummaryEntity(earnedMilestones: [final first, ...])) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
-import 'package:reforge/features/workout_common/domain/media_service.dart';
+import 'package:reforge/features/workout_share/domain/services/media_service.dart';
 
 @injectable
 class ShareController {

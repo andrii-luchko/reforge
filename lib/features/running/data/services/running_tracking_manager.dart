@@ -12,8 +12,8 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 class RunningSessionManager {
   RunningSessionManager(

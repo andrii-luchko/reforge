@@ -1,7 +1,7 @@
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
 
 /// A snapshot of real-time running metrics emitted by [TrackingEngine].
 ///
