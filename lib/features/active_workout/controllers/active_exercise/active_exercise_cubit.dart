@@ -31,11 +31,14 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     @factoryParam this.programExercise,
   ) : super(const ActiveExerciseState());
 
+  //external params
+  final int workoutSessionId;
+  final ProgramExerciseEntity programExercise;
+
+  //dependencies
   final TrainingSessionRepository repository;
   final LocalWorkoutSessionRepository _localWorkoutRepo;
   final AnalyticsService _analytics;
-  final int workoutSessionId;
-  final ProgramExerciseEntity programExercise;
 
   /// Pre-populated sets from a restored session. Set via [setRestoredSets]
   /// immediately after creation (before [_init] completes its async work).

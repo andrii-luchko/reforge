@@ -719,8 +719,8 @@ class ActiveWorkoutPageRoute extends GoRouteData with $ActiveWorkoutPageRoute {
           return const NoWorkoutErrorWidget();
         }
 
-        final programExercise = programDay.exercises.firstWhereOrNull(
-          (exercise) => exercise.id == programExerciseId,
+        final programExercise = programDay.programExercises.firstWhereOrNull(
+          (pExercise) => pExercise.id == programExerciseId,
         );
 
         if (programExercise == null) {

@@ -36,7 +36,7 @@ extension ProgramDayToEntityX on ProgramDayDTO {
       name: name,
       dayNumber: dayNumber,
 
-      exercises: exercises.map((e) => e.toEntity()).toList(),
+      programExercises: exercises.map((e) => e.toEntity()).toList(),
     );
   }
 }

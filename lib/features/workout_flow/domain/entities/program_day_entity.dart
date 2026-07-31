@@ -5,20 +5,20 @@ class ProgramDayEntity {
     required this.id,
     required this.name,
     required this.dayNumber,
-    required this.exercises,
+    required this.programExercises,
   });
 
   final int id;
   final String name;
   final int dayNumber;
-  final List<ProgramExerciseEntity> exercises;
+  final List<ProgramExerciseEntity> programExercises;
 
   List<ProgramExerciseEntity> get sortedExercises {
-    return [...exercises]..sort((a, b) => a.order.compareTo(b.order));
+    return [...programExercises]..sort((a, b) => a.order.compareTo(b.order));
   }
 
   @override
   String toString() {
-    return 'ProgramDayEntity(\nid: $id,\n name: $name, \ndayNumber: $dayNumber, \nexercises: $exercises)';
+    return 'ProgramDayEntity(\nid: $id,\n name: $name, \ndayNumber: $dayNumber, \nexercises: $programExercises)';
   }
 }
