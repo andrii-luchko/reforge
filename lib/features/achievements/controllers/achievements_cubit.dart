@@ -112,7 +112,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
       case Success(value: final badges):
         emit(
           state.copyWith(
-            badges: badges.sorted((a, b) => (a.isLocked ? 1 : 0).compareTo(b.isLocked ? 1 : 0)),
+            badges: badges,
             isLoading: false,
           ),
         );
