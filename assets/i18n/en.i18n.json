@@ -500,6 +500,7 @@
         "swapSearchTitle": "Swap exercise",
         "swapSearchHint": "Search exercises...",
         "swapSearchLoadingQuery": "Searching exercises...",
+        "swapExerciseUnavailable":"Exercise already started and cannot be swapped",
         "allFactions": "All",
         "noSwapExercises": "No exercises found"
     },

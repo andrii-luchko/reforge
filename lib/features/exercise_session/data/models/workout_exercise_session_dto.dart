@@ -16,7 +16,7 @@ sealed class WorkoutExerciseSessionDTO with _$WorkoutExerciseSessionDTO {
     required int id,
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    int? workoutProgramExerciseId,
     @Default(false) bool isSwapped,
     int? swappedExerciseId,
     @Default(true) bool isActive,
@@ -32,11 +32,15 @@ sealed class WorkoutExerciseSessionDTO with _$WorkoutExerciseSessionDTO {
   factory WorkoutExerciseSessionDTO.fromJson(Map<String, dynamic> json) => _$WorkoutExerciseSessionDTOFromJson(json);
 
   WorkoutExerciseSessionEntity toEntity(MeasurementSystem system) {
+    final programExerciseId = workoutProgramExerciseId;
+    if (programExerciseId == null) {
+      throw StateError('Cannot map an unbound workout exercise session to the domain');
+    }
     return WorkoutExerciseSessionEntity(
       id: id,
       exerciseId: exerciseId,
       workoutSessionId: workoutSessionId,
-      workoutProgramExerciseId: workoutProgramExerciseId,
+      workoutProgramExerciseId: programExerciseId,
       isSwapped: isSwapped,
       swappedExerciseId: swappedExerciseId,
       isActive: isActive,

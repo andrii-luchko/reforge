@@ -329,10 +329,12 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
   }) async {
     final result = await _repository.getWorkoutSessionDetails(workoutSessionId);
     if (result case Success(value: final details?)) {
-      final rawSessions = details.workoutSessions ?? const [];
+      final rawSessions = details.normalizedExerciseSessions;
       final selected = details.exerciseSessionsByProgramExerciseId;
       if (rawSessions.length > selected.length) {
-        logger.w('WorkoutSessionFlowCubit: duplicate exercise sessions found during reconciliation');
+        logger.w(
+          'WorkoutSessionFlowCubit: duplicate or unbound exercise sessions found during reconciliation',
+        );
       }
       final dto = selected[programExercise.id];
       if (dto == null || !_isCurrentRegistry(generation, workoutSessionId)) return null;

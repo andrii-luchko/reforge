@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
@@ -11,6 +12,7 @@ import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/app_svg_icon.dart';
 import 'package:reforge/shared/uikit/buttons/pressable_animation.dart';
+import 'package:toastification/toastification.dart';
 
 class ExerciseSwapButton extends StatelessWidget {
   const ExerciseSwapButton({super.key});
@@ -26,14 +28,18 @@ class ExerciseSwapButton extends StatelessWidget {
         return Row(
           children: [
             PressableAnimation(
-              onTap: canSwap ? () => _openSearch(context) : null,
+              onTap: canSwap
+                  ? () => _openSearch(context)
+                  : () {
+                      toastification.showErrorToast(t.workout.swapExerciseUnavailable, context);
+                    },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   borderRadius: borderRadius,
-                  color: appTheme.orange400,
+                  color: canSwap ? appTheme.orange400 : appTheme.beige900,
                   border: Border.all(
-                    color: appTheme.strokeCalendar,
+                    color: canSwap ? appTheme.strokeCalendar : appTheme.beige900,
                   ),
                 ),
 
@@ -48,7 +54,10 @@ class ExerciseSwapButton extends StatelessWidget {
                       ),
                       Text(
                         t.workout.swapExercise,
-                        style: subheadH6Medium.copyWith(color: appTheme.beige100, fontSize: 13),
+                        style: subheadH6Medium.copyWith(
+                          color: canSwap ? appTheme.beige100 : appTheme.beige600,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),

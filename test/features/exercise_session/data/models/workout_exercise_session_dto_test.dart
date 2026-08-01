@@ -60,14 +60,6 @@ void main() {
         'createdAt': '2026-07-31T14:16:16.281Z',
         'exerciseSessions': [
           {
-            'id': 999,
-            'exerciseId': 33,
-            'workoutSessionId': 172,
-            'workoutProgramExerciseId': 100,
-          },
-        ],
-        'workoutSessions': [
-          {
             'id': 228,
             'exerciseId': 33,
             'workoutSessionId': 172,
@@ -93,10 +85,18 @@ void main() {
             'swappedExercise': _exerciseJson(id: 14, name: '1km Run', key: '1km_run', type: 3),
           },
         ],
+        'workoutSessions': [
+          {
+            'id': 999,
+            'exerciseId': 33,
+            'workoutSessionId': 172,
+            'workoutProgramExerciseId': 100,
+          },
+        ],
       });
 
-      expect(details.workoutSessions, hasLength(1));
-      final dto = details.workoutSessions!.single;
+      expect(details.exerciseSessions, hasLength(1));
+      final dto = details.exerciseSessionsByProgramExerciseId.values.single;
       expect(dto.id, 228);
 
       final entity = dto.toEntity(MeasurementSystem.metric);
@@ -107,6 +107,89 @@ void main() {
       expect(entity.notes, 'keep me');
       expect(entity.sets.single.distance, 1);
       expect(entity.sets.single.time, const Duration(seconds: 120));
+    });
+
+    test('uses workoutSessions only as a legacy fallback', () {
+      const details = WorkoutSessionDetailsDTO(
+        id: 172,
+        workoutProgramDayId: 25,
+        duration: 0,
+        status: WorkoutSessionStatus.active,
+        totalXpEarned: 0,
+        exerciseSessions: [],
+        workoutSessions: [
+          WorkoutExerciseSessionDTO(
+            id: 228,
+            exerciseId: 33,
+            workoutSessionId: 172,
+            workoutProgramExerciseId: 100,
+          ),
+        ],
+      );
+
+      expect(details.normalizedExerciseSessions.single.id, 228);
+      expect(details.exerciseSessionsByProgramExerciseId[100]?.id, 228);
+    });
+
+    test('parses an unbound swapped execution session and merges its sets into the parent', () {
+      final details = WorkoutSessionDetailsDTO.fromJson({
+        'id': 175,
+        'workoutProgramDayId': 36,
+        'duration': 0,
+        'status': 'active',
+        'totalXpEarned': 0,
+        'exerciseSessions': [
+          {
+            'id': 231,
+            'exerciseId': 31,
+            'workoutSessionId': 175,
+            'workoutProgramExerciseId': 120,
+            'isSwapped': true,
+            'swappedExerciseId': 30,
+            'isActive': false,
+            'sets': <Map<String, dynamic>>[],
+            'exercise': _exerciseJson(id: 31, name: 'Side Split', key: 'sideSplit', type: 3),
+            'swappedExercise': _exerciseJson(
+              id: 30,
+              name: 'Front Split Right',
+              key: 'frontRightSplit',
+              type: 3,
+            ),
+          },
+          {
+            'id': 232,
+            'exerciseId': 30,
+            'workoutSessionId': 175,
+            'workoutProgramExerciseId': null,
+            'isSwapped': false,
+            'isActive': true,
+            'sets': [
+              {
+                'id': 361,
+                'exerciseId': 30,
+                'exerciseSessionId': 232,
+                'angleDeg': 15,
+                'setNumber': 1,
+              },
+            ],
+            'exercise': _exerciseJson(
+              id: 30,
+              name: 'Front Split Right',
+              key: 'frontRightSplit',
+              type: 3,
+            ),
+          },
+        ],
+      });
+
+      expect(details.exerciseSessions![1].workoutProgramExerciseId, isNull);
+      expect(details.unboundExerciseSessionCount, 1);
+
+      final restored = details.exerciseSessionsByProgramExerciseId[120]!;
+      expect(restored.id, 231);
+      expect(restored.workoutProgramExerciseId, 120);
+      expect(restored.sets.single.id, 361);
+      expect(restored.toEntity(MeasurementSystem.metric).sets.single.degrees, 15);
     });
 
     test('resolves the original exercise when session is not swapped', () {
@@ -130,7 +213,7 @@ void main() {
         duration: 0,
         status: WorkoutSessionStatus.active,
         totalXpEarned: 0,
-        workoutSessions: [
+        exerciseSessions: [
           WorkoutExerciseSessionDTO(
             id: 228,
             exerciseId: 33,

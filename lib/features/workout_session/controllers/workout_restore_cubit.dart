@@ -134,14 +134,22 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     }
 
     final selectedSessions = details.exerciseSessionsByProgramExerciseId;
-    final rawSessionCount = details.workoutSessions?.length ?? 0;
-    if (rawSessionCount > selectedSessions.length) {
+    final rawSessionCount = details.normalizedExerciseSessions.length;
+    final unboundSessionCount = details.unboundExerciseSessionCount;
+    final boundSessionCount = rawSessionCount - unboundSessionCount;
+    if (boundSessionCount > selectedSessions.length) {
       logger.w(
-        'WorkoutRestoreCubit: ignored ${rawSessionCount - selectedSessions.length} duplicate exercise sessions',
+        'WorkoutRestoreCubit: ignored ${boundSessionCount - selectedSessions.length} duplicate exercise sessions',
+      );
+    }
+    if (unboundSessionCount > 0) {
+      logger.w(
+        'WorkoutRestoreCubit: received $unboundSessionCount unbound exercise sessions; '
+        'compatible swapped sets were merged defensively',
       );
     }
     final system = _measurementSystem;
-    final restoredSets = _buildRestoredSetsMap(selectedSessions.values, system);
+    final restoredSets = _buildRestoredSetsMap(selectedSessions, system);
     final exerciseContexts = _buildExerciseContexts(
       programDay,
       selectedSessions,
@@ -209,14 +217,15 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
   // ── Private helpers ────────────────────────────────────────────────────────
 
   Map<int, List<WorkoutSet>> _buildRestoredSetsMap(
-    Iterable<WorkoutExerciseSessionDTO> sessions,
+    Map<int, WorkoutExerciseSessionDTO> sessions,
     MeasurementSystem system,
   ) {
     final map = <int, List<WorkoutSet>>{};
-    for (final session in sessions) {
+    for (final entry in sessions.entries) {
+      final session = entry.value;
       final sets = session.sets.map((s) => s.toWorkoutSet(system)).toList();
       if (sets.isNotEmpty) {
-        map[session.workoutProgramExerciseId] = sets;
+        map[entry.key] = sets;
       }
     }
     return map;
