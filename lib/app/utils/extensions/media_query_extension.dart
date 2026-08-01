@@ -15,6 +15,10 @@ extension MediaQueryExtension on BuildContext {
     return MediaQuery.viewInsetsOf(this).bottom;
   }
 
+  double get mediaQueryViewInsetsTop {
+    return MediaQuery.viewInsetsOf(this).top;
+  }
+
   bool get isKeyboardVisible => mediaQueryViewInsetsBottom > 0;
   double get mediaQueryTopPadding {
     return MediaQuery.paddingOf(this).top;

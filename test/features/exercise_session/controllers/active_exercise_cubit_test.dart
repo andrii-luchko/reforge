@@ -5,6 +5,7 @@ import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -114,6 +115,68 @@ void main() {
 
     await cubit.close();
   });
+
+  test('applies a confirmed repeated swap while preserving notes and resetting unfinished sets', () async {
+    final cubit =
+        ActiveExerciseCubit(
+            repository,
+            analytics,
+            userSessionService,
+            _swappedContext(notes: 'server note'),
+          )
+          ..replaceSetsFromExternalSource(
+            sets: [WorkoutSet(id: 1, reps: 5)],
+            isSending: false,
+          )
+          ..setNote('local note');
+
+    final context = cubit.applySwap(
+      AppliedExerciseSwap(
+        session: _swapResponse(_regularReplacement.id),
+        exercise: _regularReplacement,
+      ),
+    );
+
+    expect(context?.session.id, 100);
+    expect(context?.effectiveExercise.id, _regularReplacement.id);
+    expect(context?.session.notes, 'local note');
+    expect(cubit.state.notes, 'local note');
+    expect(cubit.state.sets, hasLength(1));
+    expect(cubit.state.sets.single.isEmpty, isTrue);
+    expect(cubit.state.previousResult, isNull);
+    expect(cubit.isRunningExercise, isFalse);
+
+    final runningContext = cubit.applySwap(
+      AppliedExerciseSwap(
+        session: _swapResponse(_runningReplacement.id),
+        exercise: _runningReplacement,
+      ),
+    );
+
+    expect(runningContext?.effectiveExercise.id, _runningReplacement.id);
+    expect(cubit.state.sets, isEmpty);
+    expect(cubit.state.notes, 'local note');
+    expect(cubit.isRunningExercise, isTrue);
+
+    await cubit.close();
+  });
+
+  test('does not allow opening swap after a completed set', () async {
+    final cubit =
+        ActiveExerciseCubit(
+          repository,
+          analytics,
+          userSessionService,
+          _swappedContext(),
+        )..replaceSetsFromExternalSource(
+          sets: [WorkoutSet(id: 1, reps: 5, isDone: true)],
+          isSending: false,
+        );
+
+    expect(cubit.canSwap, isFalse);
+
+    await cubit.close();
+  });
 }
 
 class _MockExerciseSessionRepository extends Mock implements ExerciseSessionRepository {}
@@ -145,6 +208,25 @@ ActiveWorkoutExerciseContext _swappedContext({String? notes}) {
   );
 }
 
+WorkoutExerciseSessionEntity _swapResponse(int swappedExerciseId) {
+  return WorkoutExerciseSessionEntity(
+    id: 100,
+    exerciseId: _plannedExercise.id,
+    workoutSessionId: 10,
+    workoutProgramExerciseId: _programExercise.id,
+    isSwapped: true,
+    swappedExerciseId: swappedExerciseId,
+    isActive: true,
+    notes: '',
+    lastCompletedSet: null,
+    createdAt: null,
+    updatedAt: null,
+    sets: const [],
+    exercise: null,
+    swappedExercise: null,
+  );
+}
+
 const _plannedExercise = ExerciseDetailsEntity(
   id: 30,
   name: 'Push-ups',
@@ -166,6 +248,36 @@ const _swappedExercise = ExerciseDetailsEntity(
   key: null,
   factionId: 3,
   metrics: [WorkoutMetric.reps],
+  poseDetectionPreset: null,
+  isTiered: false,
+  tiers: [],
+  videoInstructionUrl: null,
+  thumbnailInstructionUrl: null,
+  instructionsSteps: {},
+);
+
+const _regularReplacement = ExerciseDetailsEntity(
+  id: 41,
+  name: 'Squats',
+  description: 'Runtime regular exercise',
+  key: null,
+  factionId: 1,
+  metrics: [WorkoutMetric.reps],
+  poseDetectionPreset: null,
+  isTiered: false,
+  tiers: [],
+  videoInstructionUrl: null,
+  thumbnailInstructionUrl: null,
+  instructionsSteps: {},
+);
+
+const _runningReplacement = ExerciseDetailsEntity(
+  id: 42,
+  name: 'Running',
+  description: 'Runtime running exercise',
+  key: null,
+  factionId: 3,
+  metrics: [WorkoutMetric.time],
   poseDetectionPreset: null,
   isTiered: false,
   tiers: [],

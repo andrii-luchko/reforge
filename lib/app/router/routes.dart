@@ -25,7 +25,10 @@ import 'package:reforge/features/calendar/ui/page/training_details_page.dart';
 import 'package:reforge/features/camera_detection/controller/camera_detection_cubit.dart';
 import 'package:reforge/features/camera_detection/ui/pages/camera_detection_page.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/exercise_session/controllers/exercise_swap/exercise_swap_cubit.dart';
+import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/pages/active_exercise_gate.dart';
+import 'package:reforge/features/exercise_session/ui/exercise_swap/pages/exercise_swap_search_page.dart';
 import 'package:reforge/features/home/ui/page/home_page.dart';
 import 'package:reforge/features/leaderboard/controller/factions_leaderboard_cubit.dart/factions_leaderboard_cubit.dart';
 import 'package:reforge/features/leaderboard/controller/immortal_forges_cubit.dart/immortal_forges_cubit.dart';
@@ -606,6 +609,7 @@ class NotificationsPageRoute extends GoRouteData with $NotificationsPageRoute {
         ),
       ],
     ),
+    TypedGoRoute<ExerciseSwapSearchPageRoute>(path: '/exercise-swap-search'),
     TypedGoRoute<CameraDetectionPageRoute>(path: '/camera-detection'),
     TypedGoRoute<StartRunningPageRoute>(path: '/start-running'),
     TypedGoRoute<WorkoutCongratulationsPageRoute>(path: '/workout-congratulations'),
@@ -713,6 +717,24 @@ class ActiveExercisePageRoute extends GoRouteData with $ActiveExercisePageRoute 
     return ActiveExerciseGate(
       key: ValueKey(programExerciseId),
       programExerciseId: programExerciseId,
+    );
+  }
+}
+
+class ExerciseSwapSearchPageRoute extends GoRouteData with $ExerciseSwapSearchPageRoute {
+  const ExerciseSwapSearchPageRoute({required this.$extra});
+
+  final ExerciseSwapRequestContext $extra;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return BlocProvider(
+      create: (_) {
+        final cubit = di.getIt<ExerciseSwapCubit>(param1: $extra);
+        unawaited(cubit.initialize());
+        return cubit;
+      },
+      child: const ExerciseSwapSearchPage(),
     );
   }
 }

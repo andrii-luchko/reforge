@@ -94,6 +94,21 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     return _exerciseContexts[workoutProgramExerciseId];
   }
 
+  bool updateExerciseContextAfterSwap(ActiveWorkoutExerciseContext context) {
+    final programExerciseId = context.programExercise.id;
+    final current = _exerciseContexts[programExerciseId];
+    if (current == null ||
+        current.session.id != context.session.id ||
+        context.session.workoutSessionId != state.workoutSessionId ||
+        !state.isActive) {
+      logger.w('WorkoutSessionFlowCubit: rejected a stale exercise swap context');
+      return false;
+    }
+
+    _exerciseContexts[programExerciseId] = context;
+    return true;
+  }
+
   Future<Result<ActiveWorkoutExerciseContext>> ensureExerciseSession(
     ProgramExerciseEntity programExercise,
   ) {

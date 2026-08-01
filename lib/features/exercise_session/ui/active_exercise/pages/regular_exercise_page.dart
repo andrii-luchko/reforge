@@ -5,6 +5,8 @@ import 'package:reforge/features/exercise_session/controllers/active_exercise/ac
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/active_exercise_loader.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/dynamic_workout_form.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/previous_exercise_result_list_tile.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_swap_button.dart';
+
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -53,6 +55,8 @@ class RegularExercisePage extends StatelessWidget {
                             ),
 
                             WorkoutSection(exercise: exerciseDetails),
+                            const SizedBox(height: 12),
+                            const ExerciseSwapButton(),
                             const SizedBox(height: 24),
 
                             if (previousResult != null) ...[

@@ -8,6 +8,7 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/previous_exercise_result_list_tile.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_swap_button.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
@@ -113,6 +114,8 @@ class RunningOverviewPage extends StatelessWidget {
                             ),
 
                             WorkoutSection(exercise: exerciseDetails),
+                            const SizedBox(height: 12),
+                            const ExerciseSwapButton(),
                             const SizedBox(height: 24),
 
                             if (previousResult != null) ...[

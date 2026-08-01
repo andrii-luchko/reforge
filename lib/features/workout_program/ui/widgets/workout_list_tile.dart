@@ -21,6 +21,7 @@ class StaticWorkoutTile extends StatelessWidget {
     this.onTap,
     this.showTrailingIcon = true,
     this.icon,
+    this.borderColor,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class StaticWorkoutTile extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? icon;
   final bool showTrailingIcon;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +46,7 @@ class StaticWorkoutTile extends StatelessWidget {
           size: 32,
         );
     return _BaseWorkoutTileContainer(
+      borderColor: borderColor,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -183,13 +186,11 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
 // ==========================================
 
 class _BaseWorkoutTileContainer extends StatelessWidget {
-  const _BaseWorkoutTileContainer({
-    required this.child,
-    this.onTap,
-  });
+  const _BaseWorkoutTileContainer({required this.child, this.onTap, this.borderColor});
 
   final Widget child;
   final VoidCallback? onTap;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +207,7 @@ class _BaseWorkoutTileContainer extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: borderRadius,
             gradient: appTheme.radioButtonGradient,
-            border: Border.all(color: appTheme.strokeCard),
+            border: Border.all(color: borderColor ?? appTheme.strokeCard),
           ),
           child: child,
         ),

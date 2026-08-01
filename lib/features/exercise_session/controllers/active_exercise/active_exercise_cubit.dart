@@ -11,6 +11,7 @@ import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
@@ -59,6 +60,9 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   bool get isRunningExercise =>
       state.session.isSwapped ? state.effectiveExercise.isRunningSwapCandidate : programExercise.isRunningExercise;
 
+  bool get canSwap =>
+      !state.isLoading && !state.isSendingSet && !state.isSubmitted && !state.sets.any((set) => set.isDone);
+
   Future<void> initialize({List<WorkoutSet>? restoredSets}) {
     return _initialization ??= _initialize(restoredSets);
   }
@@ -102,6 +106,49 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     required bool isSending,
   }) {
     emit(state.copyWith(sets: sets, isSendingSet: isSending));
+  }
+
+  ActiveWorkoutExerciseContext? applySwap(AppliedExerciseSwap swap) {
+    if (!swap.isConfirmed || swap.session.id != state.session.id) return null;
+
+    final response = swap.session;
+    final normalizedSession = WorkoutExerciseSessionEntity(
+      id: response.id,
+      exerciseId: response.exerciseId,
+      workoutSessionId: response.workoutSessionId,
+      workoutProgramExerciseId: response.workoutProgramExerciseId,
+      isSwapped: true,
+      swappedExerciseId: swap.exercise.id,
+      isActive: response.isActive,
+      notes: state.notes,
+      lastCompletedSet: null,
+      createdAt: response.createdAt ?? state.session.createdAt,
+      updatedAt: response.updatedAt,
+      sets: const [],
+      exercise: state.session.exercise ?? programExercise.exerciseDetails,
+      swappedExercise: swap.exercise,
+    );
+    final nextContext = ActiveWorkoutExerciseContext(
+      programExercise: programExercise,
+      session: normalizedSession,
+      effectiveExercise: swap.exercise,
+    );
+    final replacementSets = swap.exercise.isRunningSwapCandidate
+        ? const <WorkoutSet>[]
+        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1)];
+
+    emit(
+      state.copyWith(
+        session: normalizedSession,
+        effectiveExercise: swap.exercise,
+        sets: replacementSets,
+        selectedTier: null,
+        previousResult: null,
+        error: null,
+        setValidationError: null,
+      ),
+    );
+    return nextContext;
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {

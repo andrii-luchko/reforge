@@ -495,7 +495,13 @@
         "finishWorkoutMessage": "Are you sure you want to end this workout? Your progress and XP will be saved only after confirmation.",
         "deleteSetTitle": "Delete Set?",
         "deleteSetMessage": "Are you sure you want to delete this set? This action cannot be undone",
-        "selectTier": "Select tier"
+        "selectTier": "Select tier",
+        "swapExercise": "Swap exercise",
+        "swapSearchTitle": "Swap exercise",
+        "swapSearchHint": "Search exercises...",
+        "swapSearchLoadingQuery": "Searching exercises...",
+        "allFactions": "All",
+        "noSwapExercises": "No exercises found"
     },
     "workout_details": {
         "power_title": "Power Builder Routine",

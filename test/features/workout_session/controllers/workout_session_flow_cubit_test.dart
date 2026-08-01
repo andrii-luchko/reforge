@@ -190,6 +190,27 @@ void main() {
       );
     });
 
+    test('updates the registered context after a confirmed swap and rejects a stale session id', () {
+      _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
+      final updated = ActiveWorkoutExerciseContext(
+        programExercise: _programExercise,
+        session: _session(id: 225, swappedExerciseId: 12),
+        effectiveExercise: _replacementExercise,
+      );
+
+      expect(cubit.updateExerciseContextAfterSwap(updated), isTrue);
+      expect(cubit.exerciseContextFor(100)?.effectiveExercise.id, 12);
+      expect(cubit.exerciseContextFor(100)?.session.swappedExerciseId, 12);
+
+      final stale = ActiveWorkoutExerciseContext(
+        programExercise: _programExercise,
+        session: _session(id: 999, swappedExerciseId: 13),
+        effectiveExercise: _replacementExercise,
+      );
+      expect(cubit.updateExerciseContextAfterSwap(stale), isFalse);
+      expect(cubit.exerciseContextFor(100)?.session.id, 225);
+    });
+
     test('clears restored contexts when a new workout starts', () async {
       _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
       when(() => workoutRepository.startWorkoutSession(25)).thenAnswer(
@@ -296,14 +317,14 @@ ActiveWorkoutExerciseContext _context({required int sessionId}) {
   );
 }
 
-WorkoutExerciseSessionEntity _session({required int id}) {
+WorkoutExerciseSessionEntity _session({required int id, int? swappedExerciseId}) {
   return WorkoutExerciseSessionEntity(
     id: id,
     exerciseId: 33,
     workoutSessionId: 169,
     workoutProgramExerciseId: 100,
-    isSwapped: false,
-    swappedExerciseId: null,
+    isSwapped: swappedExerciseId != null,
+    swappedExerciseId: swappedExerciseId,
     isActive: true,
     notes: null,
     lastCompletedSet: null,
@@ -329,6 +350,20 @@ const _exerciseDetails = ExerciseDetailsEntity(
   name: 'Exercise',
   description: '',
   key: 'exercise',
+  metrics: [],
+  poseDetectionPreset: null,
+  isTiered: false,
+  tiers: [],
+  videoInstructionUrl: null,
+  thumbnailInstructionUrl: null,
+  instructionsSteps: {},
+);
+
+const _replacementExercise = ExerciseDetailsEntity(
+  id: 12,
+  name: 'Replacement',
+  description: '',
+  key: null,
   metrics: [],
   poseDetectionPreset: null,
   isTiered: false,
