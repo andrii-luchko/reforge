@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/active_exercise_loader.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/dynamic_workout_form.dart';
@@ -23,6 +24,8 @@ class RegularExercisePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardVisible = KeyboardVisibilityProvider.isKeyboardVisible(context);
+
     return BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
       builder: (context, exerciseState) {
         final cubit = context.read<ActiveExerciseCubit>();
@@ -87,28 +90,22 @@ class RegularExercisePage extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 8),
-                    Skeleton.leaf(
-                      child: Row(
-                        spacing: 8,
-                        children: [
-                          if (exerciseDetails.poseDetectionPreset != null)
-                            AppIconButton(
-                              iconAsset: Assets.images.icons.cameraAlt,
-                              iconSize: 20,
-                              onPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 150),
+                      child: isKeyboardVisible
+                          ? const SizedBox.shrink()
+                          : AnimatedOpacity(
+                              opacity: 1,
+                              duration: const Duration(milliseconds: 150),
+                              child: RegularExerciseFooter(
+                                isPoseDetectionEnabled: exerciseDetails.poseDetectionPreset != null,
+                                onCameraButtonPressed: () =>
+                                    CameraDetectionPageRoute($extra: cubit).push<void>(context),
+                                onPrimaryButtonPressed: () async {
+                                  await context.read<ActiveExerciseCubit>().finishExercise();
+                                },
+                              ),
                             ),
-                          Expanded(
-                            child: PrimaryButton(
-                              text: t.workout.forgeNextMove,
-                              onPressed: () async {
-                                await context.read<ActiveExerciseCubit>().finishExercise();
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -118,6 +115,46 @@ class RegularExercisePage extends StatelessWidget {
           loader: const Positioned.fill(child: ActiveExerciseLoader()),
         );
       },
+    );
+  }
+}
+
+class RegularExerciseFooter extends StatelessWidget {
+  const RegularExerciseFooter({
+    required this.isPoseDetectionEnabled,
+    required this.onPrimaryButtonPressed,
+    this.onCameraButtonPressed,
+    super.key,
+  });
+
+  final bool isPoseDetectionEnabled;
+
+  final VoidCallback onPrimaryButtonPressed;
+  final VoidCallback? onCameraButtonPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeleton.leaf(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8, top: 8),
+        child: Row(
+          spacing: 8,
+          children: [
+            if (isPoseDetectionEnabled)
+              AppIconButton(
+                iconAsset: Assets.images.icons.cameraAlt,
+                iconSize: 20,
+                onPressed: onCameraButtonPressed,
+              ),
+            Expanded(
+              child: PrimaryButton(
+                text: t.workout.forgeNextMove,
+                onPressed: onPrimaryButtonPressed,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

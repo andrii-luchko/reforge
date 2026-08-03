@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
@@ -89,68 +89,70 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
-          listener: (context, state) {
-            if (state.error == null) return;
-            toastification.showErrorToast(state.error!, context);
-          },
-        ),
-
-        BlocListener<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
-          listenWhen: (previous, current) {
-            if (previous.sessionStatus != current.sessionStatus) return true;
-
-            if (previous.currentExerciseIndex != current.currentExerciseIndex) return true;
-
-            return false;
-          },
-          listener: (context, flowState) {
-            if (flowState.isCanceled) {
-              const HomePageRoute().go(context);
-              unawaited(context.read<UserCubit>().refreshUser());
-              return;
-            }
-
-            if (flowState.isCompleted) {
-              final summary = flowState.summary;
-              if (summary == null) {
-                const HomePageRoute().go(context);
-              } else {
-                const WorkoutCongratulationsPageRoute().go(context);
-              }
-              unawaited(context.read<UserCubit>().refreshUser());
-              return;
-            }
-
-            final currentExercise = flowState.currentExercise;
-
-            if (currentExercise == null) return;
-
-            ActiveExercisePageRoute(
-              programExerciseId: currentExercise.id,
-            ).go(context);
-          },
-        ),
-      ],
-      child: Stack(
-        children: [
-          Scaffold(
-            resizeToAvoidBottomInset: true,
-            extendBodyBehindAppBar: true,
-            appBar: ActiveWorkoutAppBar(
-              onClosePressed: () async => onClosePressed(context),
-              onRestTimerPressed: () {
-                unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutRestTimerClick));
-                unawaited(WorkoutDialogs.restTimerDialog(context));
-              },
-            ),
-
-            body: widget.child,
+    return KeyboardVisibilityProvider(
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
+            listener: (context, state) {
+              if (state.error == null) return;
+              toastification.showErrorToast(state.error!, context);
+            },
           ),
-          const WorkoutSessionLoader(),
+
+          BlocListener<WorkoutSessionFlowCubit, WorkoutSessionFlowState>(
+            listenWhen: (previous, current) {
+              if (previous.sessionStatus != current.sessionStatus) return true;
+
+              if (previous.currentExerciseIndex != current.currentExerciseIndex) return true;
+
+              return false;
+            },
+            listener: (context, flowState) {
+              if (flowState.isCanceled) {
+                const HomePageRoute().go(context);
+                unawaited(context.read<UserCubit>().refreshUser());
+                return;
+              }
+
+              if (flowState.isCompleted) {
+                final summary = flowState.summary;
+                if (summary == null) {
+                  const HomePageRoute().go(context);
+                } else {
+                  const WorkoutCongratulationsPageRoute().go(context);
+                }
+                unawaited(context.read<UserCubit>().refreshUser());
+                return;
+              }
+
+              final currentExercise = flowState.currentExercise;
+
+              if (currentExercise == null) return;
+
+              ActiveExercisePageRoute(
+                programExerciseId: currentExercise.id,
+              ).go(context);
+            },
+          ),
         ],
+        child: Stack(
+          children: [
+            Scaffold(
+              resizeToAvoidBottomInset: true,
+              extendBodyBehindAppBar: true,
+              appBar: ActiveWorkoutAppBar(
+                onClosePressed: () async => onClosePressed(context),
+                onRestTimerPressed: () {
+                  unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutRestTimerClick));
+                  unawaited(WorkoutDialogs.restTimerDialog(context));
+                },
+              ),
+
+              body: widget.child,
+            ),
+            const WorkoutSessionLoader(),
+          ],
+        ),
       ),
     );
   }
