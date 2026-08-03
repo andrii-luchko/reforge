@@ -30,10 +30,33 @@ sealed class ExerciseDetailsDTO with _$ExerciseDetailsDTO {
 
     String? videoInstructionUrl,
     String? thumbnailInstructionUrl,
-    @Default({}) Map<String, String> instructionsSteps,
+    @JsonKey(
+      name: 'instructions',
+      fromJson: _instructionsFromJson,
+      toJson: _instructionsToJson,
+    )
+    @Default({})
+    Map<String, String> instructionsSteps,
   }) = _ExerciseDetailsDTO;
 
   factory ExerciseDetailsDTO.fromJson(Map<String, dynamic> json) => _$ExerciseDetailsDTOFromJson(json);
+}
+
+Map<String, String> _instructionsFromJson(Object? json) {
+  if (json is! List) return const {};
+
+  return {
+    for (final instruction in json)
+      if (instruction is Map)
+        for (final entry in instruction.entries)
+          if (entry.key is String && entry.value is String) entry.key as String: entry.value as String,
+  };
+}
+
+List<Map<String, String>> _instructionsToJson(Map<String, String> instructions) {
+  return [
+    for (final entry in instructions.entries) {entry.key: entry.value},
+  ];
 }
 
 @freezed
