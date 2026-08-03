@@ -5,7 +5,6 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/exercise_session/controllers/exercise_swap/exercise_swap_cubit.dart';
 import 'package:reforge/features/quiz/ui/widgets/radio_button_option.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
-import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_program/ui/widgets/workout_list_tile.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -110,15 +109,11 @@ class _ExerciseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = <String>[
-      if (exercise.faction case final faction?) faction.name,
-      ...exercise.metrics.map((metric) => metric.title(t, null)),
-    ];
     return StaticWorkoutTile(
       title: exercise.name,
       description: exercise.description,
       imageUrl: exercise.thumbnailInstructionUrl,
-      tags: tags,
+      tags: exercise.availableTags(t),
       borderColor: isSelected ? context.appTheme.orange400 : null,
       icon: AnimatedSwitcher(
         duration: const Duration(milliseconds: 100),

@@ -3,6 +3,7 @@ import 'package:reforge/features/workout_program/data/enums/exercise_type.dart';
 import 'package:reforge/features/workout_program/data/models/tier.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_faction_entity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class ExerciseDetailsEntity {
   const ExerciseDetailsEntity({
@@ -61,5 +62,15 @@ class ExerciseDetailsEntity {
   @override
   String toString() {
     return 'ExerciseDetailsEntity(\nid: $id,\n name: $name,\n description: $description,\n key: $key,\n metrics: $metrics, \nposeDetectionPreset: $poseDetectionPreset, \nisTiered: $isTiered,\n tiers: $tiers,\n videoInstructionUrl: $videoInstructionUrl, \nthumbnailInstructionUrl: $thumbnailInstructionUrl, \ninstructionsSteps: $instructionsSteps)';
+  }
+}
+
+extension ExerciseDetailsEntityX on ExerciseDetailsEntity {
+  List<String> availableTags(Translations t) {
+    final tags = <String>[
+      if (faction != null) faction!.name,
+      ...metrics.map((metric) => metric.title(t, null)),
+    ];
+    return tags;
   }
 }

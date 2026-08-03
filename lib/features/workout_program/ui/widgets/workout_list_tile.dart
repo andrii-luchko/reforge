@@ -141,9 +141,7 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final imageSize = (widget.tags == null || widget.tags!.isEmpty)
-            ? Size.lerp(const Size(62, 62), const Size(73, 85), _controller.value)!
-            : const Size(73, 85);
+        final imageSize = Size.lerp(const Size(62, 62), const Size(73, 85), _controller.value) ?? const Size(62, 62);
 
         return _BaseWorkoutTileContainer(
           onTap: _handleTap,
@@ -156,7 +154,7 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
                   title: widget.title,
                   description: widget.description,
                   imageUrl: widget.imageUrl,
-                  tags: widget.tags,
+                  tags: null,
                   imageSize: imageSize,
                   isDescriptionExpanded: _isExpanded,
                   trailing: RotationTransition(
@@ -171,7 +169,13 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
               ),
               _ExpandableBody(
                 heightFactor: _heightFactor,
-                children: widget.children,
+                children: [
+                  if (widget.tags != null && widget.tags!.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    AppTagsListView(tags: widget.tags!),
+                  ],
+                  ...widget.children,
+                ],
               ),
             ],
           ),

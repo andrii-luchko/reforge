@@ -3,6 +3,7 @@ import 'package:reforge/features/workout_program/domain/entities/exercise_detail
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/instruction_section.dart';
 // import 'package:reforge/features/workout_program/ui/widgets/app_tags_list_view.dart';
 import 'package:reforge/features/workout_program/ui/widgets/workout_list_tile.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class WorkoutSection extends StatelessWidget {
   const WorkoutSection({required this.exercise, super.key});
@@ -18,6 +19,7 @@ class WorkoutSection extends StatelessWidget {
           title: exercise.name,
           description: exercise.description,
           imageUrl: exercise.thumbnailInstructionUrl,
+          tags: exercise.availableTags(t),
           children: [
             InstructionSection(
               needDecoration: false,

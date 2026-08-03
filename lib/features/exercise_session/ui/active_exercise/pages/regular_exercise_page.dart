@@ -62,7 +62,7 @@ class RegularExercisePage extends StatelessWidget {
                             const ExerciseSwapButton(),
                             const SizedBox(height: 24),
 
-                            if (previousResult != null) ...[
+                            if (previousResult != null && previousResult.sets.isNotEmpty) ...[
                               PreviousExerciseResultListTile(
                                 result: previousResult,
                                 system: exerciseState.measureSystem,
