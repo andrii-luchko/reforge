@@ -1,5 +1,5 @@
+import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
 
 class TrainingDetailsEntity {
   TrainingDetailsEntity({

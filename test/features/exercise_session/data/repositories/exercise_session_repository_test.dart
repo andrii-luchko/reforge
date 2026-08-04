@@ -1,0 +1,158 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:reforge/app/utils/helpers/base_response.dart';
+import 'package:reforge/app/utils/helpers/meta_data.dart';
+import 'package:reforge/core/network/api_client.dart';
+import 'package:reforge/features/exercise_session/data/models/swap_exercise_search_item_dto.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/data/repositories/exercise_session_repository.dart';
+import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_search_request.dart';
+import 'package:reforge/features/exercise_session/data/responses/swap_exercise_search_response.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+
+class _MockApiClient extends Mock implements ApiClient {}
+
+void main() {
+  late _MockApiClient apiClient;
+  late ExerciseSessionRepositoryImpl repository;
+
+  setUp(() {
+    apiClient = _MockApiClient();
+    repository = ExerciseSessionRepositoryImpl(apiClient);
+  });
+
+  group('ExerciseSessionRepositoryImpl', () {
+    test('creates a workout exercise session and maps its response', () async {
+      const request = CreateWorkoutExerciseSessionRequest(
+        exerciseId: 33,
+        workoutSessionId: 169,
+        workoutProgramExerciseId: 100,
+      );
+      when(
+        () => apiClient.createWorkoutExerciseSession(request),
+      ).thenAnswer(
+        (_) async => const BaseResponse(
+          data: WorkoutExerciseSessionDTO(
+            id: 222,
+            exerciseId: 33,
+            workoutSessionId: 169,
+            workoutProgramExerciseId: 100,
+          ),
+          status: 'success',
+        ),
+      );
+
+      final result = await repository.createWorkoutExerciseSession(
+        exerciseId: 33,
+        workoutSessionId: 169,
+        workoutProgramExerciseId: 100,
+        system: MeasurementSystem.metric,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.orNull?.id, 222);
+      expect(result.orNull?.exerciseId, 33);
+      expect(result.orNull?.isSwapped, isFalse);
+      verify(() => apiClient.createWorkoutExerciseSession(request)).called(1);
+    });
+
+    test('searches with filters and maps exercises plus pagination', () async {
+      const request = SwapExerciseSearchRequest(
+        search: 'run',
+        factionId: 3,
+        page: 2,
+        limit: 10,
+      );
+      when(
+        () => apiClient.searchSwapExercises(request),
+      ).thenAnswer(
+        (_) async => const SwapExerciseSearchResponse(
+          data: [
+            SwapExerciseSearchItemDTO(
+              id: 14,
+              name: '1km Run',
+              description: 'Fixed distance sprint or time trial.',
+              faction: ExerciseFactionDTO(id: 3, name: 'Running', slug: 'gyohyo'),
+              metrics: ['durationSec'],
+            ),
+          ],
+          meta: MetaData(
+            pagination: PaginationInfo(page: 2, total: 45, limit: 10, pages: 5),
+          ),
+          status: 'success',
+        ),
+      );
+
+      final result = await repository.searchSwapExercises(
+        search: 'run',
+        factionId: 3,
+        page: 2,
+        limit: 10,
+      );
+
+      expect(result.isSuccess, isTrue);
+      final page = result.orNull!;
+      expect(page.exercises.single.id, 14);
+      expect(page.exercises.single.isRunningSwapCandidate, isTrue);
+      expect(page.pagination.page, 2);
+      expect(page.pagination.total, 45);
+      expect(page.pagination.pages, 5);
+      verify(() => apiClient.searchSwapExercises(request)).called(1);
+    });
+
+    test('swaps through the current session id and maps the PATCH response', () async {
+      const request = SwapExerciseRequest(swappedExerciseId: 14);
+      when(
+        () => apiClient.swapWorkoutExercise(228, request),
+      ).thenAnswer(
+        (_) async => const BaseResponse(
+          data: WorkoutExerciseSessionDTO(
+            id: 228,
+            exerciseId: 33,
+            workoutSessionId: 172,
+            workoutProgramExerciseId: 100,
+            isSwapped: true,
+            swappedExerciseId: 14,
+            notes: 'keep me',
+          ),
+          status: 'success',
+        ),
+      );
+
+      final result = await repository.swapExercise(
+        workoutExerciseSessionId: 228,
+        swappedExerciseId: 14,
+        system: MeasurementSystem.metric,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(result.orNull?.id, 228);
+      expect(result.orNull?.swappedExerciseId, 14);
+      expect(result.orNull?.notes, 'keep me');
+      verify(() => apiClient.swapWorkoutExercise(228, request)).called(1);
+    });
+
+    test('keeps API exceptions in the Result error channel', () async {
+      const request = CreateWorkoutExerciseSessionRequest(
+        exerciseId: 33,
+        workoutSessionId: 169,
+        workoutProgramExerciseId: 100,
+      );
+      when(
+        () => apiClient.createWorkoutExerciseSession(request),
+      ).thenThrow(Exception('create failed'));
+
+      final result = await repository.createWorkoutExerciseSession(
+        exerciseId: 33,
+        workoutSessionId: 169,
+        workoutProgramExerciseId: 100,
+        system: MeasurementSystem.metric,
+      );
+
+      expect(result.isError, isTrue);
+      expect(result.orNull, isNull);
+    });
+  });
+}

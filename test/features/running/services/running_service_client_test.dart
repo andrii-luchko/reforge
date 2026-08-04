@@ -69,11 +69,44 @@ void main() {
         any(
           that: isA<Map<String, dynamic>>()
               .having((payload) => payload['sessionId'], 'sessionId', 42)
-              .having((payload) => payload['mode'], 'mode', 'gps'),
+              .having((payload) => payload['mode'], 'mode', 'gps')
+              .having(
+                (payload) => payload['restoreCompletedPlan'],
+                'restoreCompletedPlan',
+                false,
+              ),
         ),
       ),
     ).called(1);
     expect(client.currentMode, RunningMode.gps);
+  });
+
+  test('startSession forwards the completed-plan restore flag', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+
+    await client.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      sessionId: 42,
+      programExerciseId: 7,
+      startPaused: true,
+      restoreCompletedPlan: true,
+    );
+
+    verify(
+      () => service.invoke(
+        'start_session',
+        any(
+          that: isA<Map<String, dynamic>>()
+              .having((payload) => payload['startPaused'], 'startPaused', true)
+              .having(
+                (payload) => payload['restoreCompletedPlan'],
+                'restoreCompletedPlan',
+                true,
+              ),
+        ),
+      ),
+    ).called(1);
   });
 
   test('startSession reuses a warmed worker', () async {

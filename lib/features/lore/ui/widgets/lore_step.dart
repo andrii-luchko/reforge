@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
-import 'package:reforge/features/workout_instruction/ui/widgets/instruction_section.dart';
+import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/instruction_section.dart';
 
 class LoreStep extends StatelessWidget {
   const LoreStep({

@@ -495,7 +495,14 @@
         "finishWorkoutMessage": "Are you sure you want to end this workout? Your progress and XP will be saved only after confirmation.",
         "deleteSetTitle": "Delete Set?",
         "deleteSetMessage": "Are you sure you want to delete this set? This action cannot be undone",
-        "selectTier": "Select tier"
+        "selectTier": "Select tier",
+        "swapExercise": "Swap exercise",
+        "swapSearchTitle": "Swap exercise",
+        "swapSearchHint": "Search exercises...",
+        "swapSearchLoadingQuery": "Searching exercises...",
+        "swapExerciseUnavailable":"Exercise already started and cannot be swapped",
+        "allFactions": "All",
+        "noSwapExercises": "No exercises found"
     },
     "workout_details": {
         "power_title": "Power Builder Routine",
@@ -532,7 +539,8 @@
         "workout_info": "Workout info",
         "trainingDateTitle": "Training $date",
         "empty_title": "No Info Found",
-        "empty_subtitle": "It seems there are no results available at the moment. Please check back later."
+        "empty_subtitle": "It seems there are no results available at the moment. Please check back later.",
+        "empty_sets_title": "No metrics or sets found for this exercise."
     },
     "workout_flow": {
         "startWorkoutError": "Failed to start workout: $error",

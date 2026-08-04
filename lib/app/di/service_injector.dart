@@ -9,11 +9,15 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/di/modules/background_handler.dart';
 import 'package:reforge/app/di/service_injector.config.dart';
+import 'package:reforge/features/exercise_session/data/repositories/test_exercise_session_repository.dart';
+import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/notifications/data/service/fcm_notification_service.dart';
-import 'package:reforge/features/workout_flow/data/repositories/test_training_session_repository.dart';
-import 'package:reforge/features/workout_flow/domain/repositories/training_session_repository.dart';
+import 'package:reforge/features/workout_program/data/repositories/test_workout_program_repository.dart';
+import 'package:reforge/features/workout_program/domain/repositories/workout_program_repository.dart';
 import 'package:reforge/features/workout_quiz/data/repositories/test_workout_quiz_repository.dart';
 import 'package:reforge/features/workout_quiz/domain/repositories/workout_quiz_repository.dart';
+import 'package:reforge/features/workout_session/data/repositories/test_workout_session_repository.dart';
+import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 import 'package:reforge/firebase_options.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -31,11 +35,25 @@ Future<void> configureDependencies() async {
   const useMockRepositories = bool.fromEnvironment('USE_MOCKS');
 
   if (useMockRepositories) {
-    if (getIt.isRegistered<TrainingSessionRepository>()) {
-      await getIt.unregister<TrainingSessionRepository>();
+    if (getIt.isRegistered<WorkoutProgramRepository>()) {
+      await getIt.unregister<WorkoutProgramRepository>();
     }
-    getIt.registerFactory<TrainingSessionRepository>(
-      () => const TestTrainingSessionRepository(),
+    getIt.registerFactory<WorkoutProgramRepository>(
+      () => const TestWorkoutProgramRepository(),
+    );
+
+    if (getIt.isRegistered<WorkoutSessionRepository>()) {
+      await getIt.unregister<WorkoutSessionRepository>();
+    }
+    getIt.registerFactory<WorkoutSessionRepository>(
+      () => const TestWorkoutSessionRepository(),
+    );
+
+    if (getIt.isRegistered<ExerciseSessionRepository>()) {
+      await getIt.unregister<ExerciseSessionRepository>();
+    }
+    getIt.registerFactory<ExerciseSessionRepository>(
+      () => const TestExerciseSessionRepository(),
     );
 
     if (getIt.isRegistered<WorkoutQuizRepository>()) {

@@ -5,8 +5,8 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/workout_run_exercise_row.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 
 /// Compact scrollable list of completed laps.

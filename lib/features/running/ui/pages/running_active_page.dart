@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/active_workout/controllers/active_exercise/active_exercise_cubit.dart';
-import 'package:reforge/features/active_workout/ui/widgets/workout_section.dart';
+import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/features/running/controller/map/running_map_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
@@ -12,6 +13,7 @@ import 'package:reforge/features/running/ui/widgets/active_running_map_container
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
@@ -42,9 +44,8 @@ class RunningActivePage extends StatelessWidget {
 
             logger.d(state.currentSegmentIndex);
             final cubit = context.read<RunningTrackerCubit>();
-            final programExercise = cubit.programExercise;
 
-            final segment = programExercise.segments.elementAtOrNull(state.currentSegmentIndex);
+            final segment = cubit.config.segments.elementAtOrNull(state.currentSegmentIndex);
 
             if (segment != null && segment.activity == .walk) {
               await WalkAudioHintDialog.show(context, Duration(seconds: segment.durationSec));
@@ -77,7 +78,10 @@ class RunningActivePage extends StatelessWidget {
                 child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
                   builder: (context, state) {
                     final cubit = context.read<RunningTrackerCubit>();
-                    return _ActionButtons(state: state, cubit: cubit);
+                    return AnimatedVisibility(
+                      isVisible: KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      child: _ActionButtons(state: state, cubit: cubit),
+                    );
                   },
                 ),
               ),
@@ -179,7 +183,7 @@ class ActiveGpsSession extends StatelessWidget {
                   BlocProvider(
                     create: (context) => getIt<RunningMapCubit>(
                       param1: context.read<RunningTrackerCubit>().workoutSessionId,
-                      param2: context.read<RunningTrackerCubit>().programExercise.id,
+                      param2: context.read<RunningTrackerCubit>().workoutProgramExerciseId,
                       // ignore: discarded_futures
                     )..init(),
                     child: const ActiveRunningMapContainer(),
@@ -238,9 +242,7 @@ class ActivePedometerSession extends StatelessWidget {
 
     return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
       builder: (context, state) {
-        final cubit = context.read<RunningTrackerCubit>();
-        final programExercise = cubit.programExercise;
-        final exerciseDetails = programExercise.exerciseDetails;
+        final exerciseDetails = context.read<ActiveExerciseCubit>().effectiveExercise;
 
         final lap = state.currentLap;
         final segmentActivity = lap?.activity;

@@ -109,3 +109,53 @@ class RadioButtonOption extends StatelessWidget {
     );
   }
 }
+
+class AppRadioButton extends StatelessWidget {
+  const AppRadioButton({
+    required this.isSelected,
+    this.onTap,
+    super.key,
+  });
+
+  final bool isSelected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+
+    final borderColor = isSelected ? appTheme.orange400 : appTheme.beige700;
+    final dotColor = isSelected ? appTheme.orange400 : appTheme.beige100;
+    return PressableAnimation(
+      scaleAmount: 0.99,
+      enabledFeedback: false,
+      onTap: onTap,
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: borderColor,
+          ),
+        ),
+        child: isSelected
+            ? Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: dotColor,
+                    ),
+                  ),
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+}

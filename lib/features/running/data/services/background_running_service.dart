@@ -17,8 +17,8 @@ import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 Future<void> initializeBackgroundService() async {
   if (Platform.isAndroid) {
@@ -95,6 +95,11 @@ Future<void> onStart(ServiceInstance service) async {
           final programExerciseId = RunningServiceProtocol.requiredInt(event, 'programExerciseId');
           final modeStr = RunningServiceProtocol.requiredString(event, 'mode');
           final startPaused = RunningServiceProtocol.optionalBool(event, 'startPaused', fallback: false);
+          final restoreCompletedPlan = RunningServiceProtocol.optionalBool(
+            event,
+            'restoreCompletedPlan',
+            fallback: false,
+          );
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
 
           final rawLimits = RunningServiceProtocol.optionalList(event, 'limits');
@@ -177,13 +182,17 @@ Future<void> onStart(ServiceInstance service) async {
           // Teleport Guard
           await _handleSessionRestore(sessionId, programExerciseId);
 
-          _logBackground('manager_start_begin mode=$mode startPaused=$startPaused');
+          _logBackground(
+            'manager_start_begin mode=$mode startPaused=$startPaused '
+            'restoreCompletedPlan=$restoreCompletedPlan',
+          );
           await manager.startSession(
             mode: mode,
             limits: limits,
             sessionId: sessionId,
             programExerciseId: programExerciseId,
             startPaused: startPaused,
+            restoreCompletedPlan: restoreCompletedPlan,
           );
           _logBackground('manager_start_complete');
 

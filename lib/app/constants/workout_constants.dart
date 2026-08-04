@@ -91,7 +91,7 @@ class WorkoutConstants {
   static const double minDegree = 0;
 
   /// 90 degrees for vertical bench press backrests.
-  static const double maxDegree = 360;
+  static const double maxDegree = 180;
 
   static const double degreeStep = 1;
 }

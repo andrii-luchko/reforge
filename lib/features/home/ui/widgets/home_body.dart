@@ -16,7 +16,7 @@ import 'package:reforge/features/home/ui/widgets/home_workout_result_empty.dart'
 import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dart';
 import 'package:reforge/features/home/ui/widgets/start_workout_list_tile.dart';
 import 'package:reforge/features/home/ui/widgets/workout_result/home_workout_results_header.dart';
-import 'package:reforge/features/workout_flow/controllers/workout_restore_cubit.dart';
+import 'package:reforge/features/workout_session/controllers/workout_restore_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/uikit/avatar_card.dart';

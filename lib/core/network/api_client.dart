@@ -19,6 +19,12 @@ import 'package:reforge/features/achievements/data/models/attributes_dto.dart';
 import 'package:reforge/features/achievements/data/models/user_ranks_dto.dart';
 import 'package:reforge/features/calendar/data/models/calendar_data.dart';
 import 'package:reforge/features/camera_detection/data/models/pose_data_point.dart';
+import 'package:reforge/features/exercise_session/data/models/complete_set_request.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
+import 'package:reforge/features/exercise_session/data/requests/swap_exercise_search_request.dart';
+import 'package:reforge/features/exercise_session/data/responses/swap_exercise_search_response.dart';
 import 'package:reforge/features/home/data/models/user_stats_dto.dart';
 import 'package:reforge/features/leaderboard/data/models/faction_leaderboard_dto.dart';
 import 'package:reforge/features/leaderboard/data/response/immortal_forges_response.dart';
@@ -30,15 +36,13 @@ import 'package:reforge/features/notifications/data/models/notification_test_req
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/profile_requests.dart';
-import 'package:reforge/features/workout_common/models/complete_set_request.dart';
-import 'package:reforge/features/workout_common/models/exercise_session_dto.dart';
-import 'package:reforge/features/workout_flow/data/models/program_day_dto.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_session.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_session_details_dto.dart';
-import 'package:reforge/features/workout_flow/data/models/workout_summary.dart';
-import 'package:reforge/features/workout_flow/data/requests/complete_workout_session_request.dart';
-import 'package:reforge/features/workout_flow/data/requests/start_workout_session_request.dart';
+import 'package:reforge/features/workout_program/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_quiz/data/requests/workout_quiz_request.dart';
+import 'package:reforge/features/workout_session/data/models/workout_session.dart';
+import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/data/models/workout_summary.dart';
+import 'package:reforge/features/workout_session/data/requests/complete_workout_session_request.dart';
+import 'package:reforge/features/workout_session/data/requests/start_workout_session_request.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'api_client.g.dart';
@@ -136,10 +140,24 @@ abstract class ApiClient {
   @POST('/workout-exercise-set-sessions')
   Future<void> completeSet(@Body() CreateSetSessionRequest request);
 
+  @POST('/workout-exercise-sessions')
+  Future<BaseResponse<WorkoutExerciseSessionDTO>> createWorkoutExerciseSession(
+    @Body() CreateWorkoutExerciseSessionRequest request,
+  );
+
+  @GET('/workout-exercises/swap-search')
+  Future<SwapExerciseSearchResponse> searchSwapExercises(@Queries() SwapExerciseSearchRequest request);
+
+  @PATCH('/workout-exercise-sessions/{workoutExerciseSessionId}/swap')
+  Future<BaseResponse<WorkoutExerciseSessionDTO>> swapWorkoutExercise(
+    @Path('workoutExerciseSessionId') int workoutExerciseSessionId,
+    @Body() SwapExerciseRequest request,
+  );
+
   @GET(
     '/workout-exercise-sessions/sessions/{workout_session_id}/program-exercises/{workout_program_exercise_id}/previous',
   )
-  Future<BaseResponse<ExerciseSessionDTO?>> getPreviousExercise(
+  Future<BaseResponse<WorkoutExerciseSessionDTO?>> getPreviousExercise(
     @Path('workout_session_id') int workoutSessionId,
     @Path('workout_program_exercise_id') int programExerciseId,
   );

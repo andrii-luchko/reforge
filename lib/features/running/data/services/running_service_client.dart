@@ -11,7 +11,7 @@ import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 
 /// Fire-and-forget UI-isolate client for the running background worker.
 ///
@@ -180,6 +180,7 @@ class RunningServiceClient {
     required int sessionId,
     required int programExerciseId,
     bool startPaused = false,
+    bool restoreCompletedPlan = false,
   }) async {
     await initialize();
 
@@ -202,6 +203,7 @@ class RunningServiceClient {
       'programExerciseId': programExerciseId,
       'mode': mode.name,
       'startPaused': startPaused,
+      'restoreCompletedPlan': restoreCompletedPlan,
       'limits': limits
           .map(
             (limit) => {
@@ -213,7 +215,10 @@ class RunningServiceClient {
           )
           .toList(),
     });
-    _log('start_session_sent mode=${mode.name} startPaused=$startPaused');
+    _log(
+      'start_session_sent mode=${mode.name} startPaused=$startPaused '
+      'restoreCompletedPlan=$restoreCompletedPlan',
+    );
   }
 
   void pauseSession() => _invokeControl('pause_session');

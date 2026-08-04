@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
+import 'package:reforge/features/running/domain/entities/lap_limit.dart';
+import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
   late MockLocalWorkoutSessionRepository repository;
@@ -57,6 +61,8 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => repository.markSetAsFinishedLocally(any())).thenAnswer((_) async {});
+    when(() => audio.playLapCompleted()).thenAnswer((_) async {});
+    when(() => audio.playWorkoutCompleted()).thenAnswer((_) async {});
   });
 
   test('subscribes to engine metrics before engine.start', () async {
@@ -171,6 +177,88 @@ void main() {
     await manager.endSession();
   });
 
+  for (final scenario in <({WorkoutMetric metric, String name})>[
+    (metric: WorkoutMetric.distance, name: 'distance'),
+    (metric: WorkoutMetric.time, name: 'time'),
+  ]) {
+    test('${scenario.name} limit automatically completes the planned set', () async {
+      final manager = RunningSessionManager(pedometer, gps, repository, audio);
+      final completed = manager.eventsStream.firstWhere((event) => event is PlannedWorkoutCompletedEvent);
+
+      await manager.startSession(
+        mode: RunningMode.gps,
+        limits: [LapLimit(metric: scenario.metric, limitValue: 1)],
+        sessionId: 10,
+        programExerciseId: 20,
+      );
+
+      await completed;
+      await Future<void>.delayed(Duration.zero);
+
+      verify(() => repository.markSetAsFinishedLocally(1)).called(1);
+      expect(gps.pauseCalls, 1);
+      verifyNever(
+        () => repository.createNewActiveSet(
+          sessionId: 10,
+          programExerciseId: 20,
+          setNumber: 2,
+          trackingMode: RunningMode.gps.dbValue,
+        ),
+      );
+
+      await manager.endSession();
+    });
+  }
+
+  test('restored completed plan stays on the next index and resumes with a free set', () async {
+    when(
+      () => repository.getLastLap(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => _completedLap);
+    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+
+    await manager.startSession(
+      mode: RunningMode.gps,
+      limits: const [
+        LapLimit(metric: WorkoutMetric.distance, limitValue: 3000),
+      ],
+      sessionId: 10,
+      programExerciseId: 20,
+      startPaused: true,
+      restoreCompletedPlan: true,
+    );
+
+    verifyNever(
+      () => repository.createNewActiveSet(
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+        setNumber: any(named: 'setNumber'),
+        trackingMode: any(named: 'trackingMode'),
+        programSegmentId: any(named: 'programSegmentId'),
+        segmentType: any(named: 'segmentType'),
+      ),
+    );
+
+    await manager.suspendSessionForSummary();
+    await manager.suspendSessionForSummary();
+    await manager.resumeSession();
+
+    verify(
+      () => repository.createNewActiveSet(
+        sessionId: 10,
+        programExerciseId: 20,
+        setNumber: 2,
+        trackingMode: RunningMode.gps.dbValue,
+      ),
+    ).called(1);
+    expect(gps.resetCalls, 1);
+    expect(gps.resumeCalls, 1);
+
+    await manager.endSession();
+  });
+
   test('finalizes the active lap before forwarding a terminal engine failure', () async {
     final manager = RunningSessionManager(pedometer, gps, repository, audio);
     final markCompleted = Completer<void>();
@@ -229,6 +317,8 @@ final class SynchronousMetricEngine implements TrackingEngine {
   final _controller = StreamController<RunningMetrics>.broadcast(sync: true);
   int startCalls = 0;
   int pauseCalls = 0;
+  int resetCalls = 0;
+  int resumeCalls = 0;
   int stopCalls = 0;
   Completer<void>? stopCompleter;
 
@@ -257,10 +347,10 @@ final class SynchronousMetricEngine implements TrackingEngine {
   void pause() => pauseCalls++;
 
   @override
-  void reset() {}
+  void reset() => resetCalls++;
 
   @override
-  void resume() {}
+  void resume() => resumeCalls++;
 
   @override
   Future<void> stop() async {
@@ -268,3 +358,16 @@ final class SynchronousMetricEngine implements TrackingEngine {
     await stopCompleter?.future;
   }
 }
+
+const _completedLap = ActiveRunningSet(
+  id: 1,
+  sessionId: 10,
+  programExerciseId: 20,
+  setNumber: 1,
+  distanceMeters: 3000,
+  durationSeconds: 720,
+  isDone: true,
+  isBusy: false,
+  trackingMode: 'gps',
+  segmentType: 'run',
+);

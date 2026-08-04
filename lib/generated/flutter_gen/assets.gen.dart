@@ -43,6 +43,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/apple.svg
   String get apple => 'assets/images/icons/apple.svg';
 
+  /// File path: assets/images/icons/arrow_swap_horizontal.svg
+  String get arrowSwapHorizontal => 'assets/images/icons/arrow_swap_horizontal.svg';
+
   /// File path: assets/images/icons/bell.svg
   String get bell => 'assets/images/icons/bell.svg';
 
@@ -169,6 +172,9 @@ class $AssetsImagesIconsGen {
   /// File path: assets/images/icons/right_shoulder.svg
   String get rightShoulder => 'assets/images/icons/right_shoulder.svg';
 
+  /// File path: assets/images/icons/search.svg
+  String get search => 'assets/images/icons/search.svg';
+
   /// File path: assets/images/icons/setting_active.svg
   String get settingActive => 'assets/images/icons/setting_active.svg';
 
@@ -202,6 +208,7 @@ class $AssetsImagesIconsGen {
   /// List of all assets
   List<String> get values => [
     apple,
+    arrowSwapHorizontal,
     bell,
     calendar,
     calendar2,
@@ -244,6 +251,7 @@ class $AssetsImagesIconsGen {
     rightLeg,
     rightPelvis,
     rightShoulder,
+    search,
     settingActive,
     settingInactive,
     sms,

@@ -7,6 +7,7 @@ import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
@@ -15,12 +16,12 @@ import 'package:reforge/features/running/domain/exceptions/running_service_excep
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
-import 'package:reforge/features/workout_common/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_flow/data/enums/execution_mode.dart';
-import 'package:reforge/features/workout_flow/data/enums/segment_activity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/exercise_details_entity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/exercise_segment_entity.dart';
-import 'package:reforge/features/workout_flow/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
+import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
   setUpAll(() {
@@ -38,14 +39,25 @@ void main() {
     when(() => service.metricsStream).thenAnswer((_) => const Stream<RunningMetrics>.empty());
     when(() => service.eventsStream).thenAnswer((_) => const Stream<RunningEvent>.empty());
     when(() => service.endSession()).thenReturn(null);
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+      ),
+    ).thenAnswer((_) async => null);
+    when(
+      () => repository.getLastLap(
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+      ),
+    ).thenAnswer((_) async => null);
 
     cubit = RunningTrackerCubit(
       service,
       repository,
       MockRunningPermissionsService(),
       MockRunningPreferencesService(),
-      10,
-      _programExercise,
+      _runningConfig,
     )..setMode(RunningMode.gps);
   });
 
@@ -74,6 +86,47 @@ void main() {
 
     dispatched.complete();
     await start;
+  });
+
+  test('free-run runtime config starts without segment limits', () async {
+    final freeRunCubit = RunningTrackerCubit(
+      service,
+      repository,
+      MockRunningPermissionsService(),
+      MockRunningPreferencesService(),
+      RunningExerciseConfig(
+        workoutSessionId: 10,
+        workoutProgramExerciseId: _programExercise.id,
+        exercise: _programExercise.exerciseDetails,
+        segments: const [],
+        staticTargetSetCount: 1,
+      ),
+    )..setMode(RunningMode.gps);
+    when(
+      () => service.startSession(
+        mode: any(named: 'mode'),
+        limits: any(named: 'limits'),
+        sessionId: any(named: 'sessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+        startPaused: any(named: 'startPaused'),
+      ),
+    ).thenAnswer((_) async {});
+
+    await freeRunCubit.startLap();
+
+    final captured =
+        verify(
+              () => service.startSession(
+                mode: RunningMode.gps,
+                limits: captureAny(named: 'limits'),
+                sessionId: 10,
+                programExerciseId: 20,
+              ),
+            ).captured.single
+            as List<LapLimit>;
+    expect(captured, isEmpty);
+
+    await freeRunCubit.close();
   });
 
   test('cancel after warm-up never starts a session', () async {
@@ -182,6 +235,75 @@ void main() {
         startPaused: true,
       ),
     ).called(1);
+  });
+
+  test('restore opens a completed planned run in resumable summary', () async {
+    when(
+      () => repository.getLastLap(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => _completedLap);
+    when(
+      () => service.startSession(
+        mode: RunningMode.gps,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        programExerciseId: 20,
+        startPaused: true,
+        restoreCompletedPlan: true,
+      ),
+    ).thenAnswer((_) async {});
+    when(() => service.resumeSession()).thenReturn(null);
+
+    await cubit.init();
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
+    expect(cubit.state.mode, RunningMode.gps);
+    expect(cubit.state.isPaused, isTrue);
+    expect(cubit.state.canReturnToActive, isTrue);
+
+    cubit.goToActive();
+    expect(cubit.state.phase, RunningPhase.active);
+
+    await cubit.resumeLap();
+    expect(cubit.state.sessionStatus, RunningSessionStatus.running);
+    expect(cubit.state.isPaused, isFalse);
+    verify(() => service.resumeSession()).called(1);
+  });
+
+  test('completed plan restore failure keeps summary terminal and finishable', () async {
+    when(
+      () => repository.getLastLap(
+        sessionId: 10,
+        programExerciseId: 20,
+      ),
+    ).thenAnswer((_) async => _completedLap);
+    when(
+      () => service.startSession(
+        mode: RunningMode.gps,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        programExerciseId: 20,
+        startPaused: true,
+        restoreCompletedPlan: true,
+      ),
+    ).thenThrow(
+      const RunningServiceException(
+        code: 'location_service_disabled',
+        message: 'Location is disabled',
+        isFatal: true,
+      ),
+    );
+
+    await cubit.init();
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.terminated);
+    expect(cubit.state.terminalFailure?.code, 'location_service_disabled');
+    expect(cubit.state.canReturnToActive, isFalse);
+    expect(await cubit.finishExercise(), isTrue);
   });
 
   test('terminal failure turns a restored suspended session into terminated', () async {
@@ -344,6 +466,35 @@ void main() {
     await metrics.close();
   });
 
+  test('planned completion opens summary without sending manual suspend', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    final events = StreamController<RunningEvent>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    when(() => service.eventsStream).thenAnswer((_) => events.stream);
+    when(() => service.resumeSession()).thenReturn(null);
+    _stubSuccessfulStart(service);
+
+    await cubit.startLap();
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    events.add(const PlannedWorkoutCompletedEvent());
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.phase, RunningPhase.finished);
+    expect(cubit.state.sessionStatus, RunningSessionStatus.suspended);
+    expect(cubit.state.isPaused, isTrue);
+    verifyNever(() => service.suspendSessionForSummary());
+
+    cubit.goToActive();
+    await cubit.resumeLap();
+    expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.isPaused, isFalse);
+    verify(() => service.resumeSession()).called(1);
+
+    await metrics.close();
+    await events.close();
+  });
+
   test('recoverable error does not change the session lifecycle', () async {
     final metrics = StreamController<RunningMetrics>.broadcast();
     when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
@@ -403,6 +554,19 @@ const _activeLap = ActiveRunningSet(
   segmentType: 'run',
 );
 
+const _completedLap = ActiveRunningSet(
+  id: 1,
+  sessionId: 10,
+  programExerciseId: 20,
+  setNumber: 1,
+  distanceMeters: 3000,
+  durationSeconds: 720,
+  isDone: true,
+  isBusy: false,
+  trackingMode: 'gps',
+  segmentType: 'run',
+);
+
 final _programExercise = ProgramExerciseEntity(
   id: 20,
   programDayId: 1,
@@ -432,6 +596,14 @@ final _programExercise = ProgramExerciseEntity(
       durationSec: 60,
     ),
   ],
+);
+
+final _runningConfig = RunningExerciseConfig(
+  workoutSessionId: 10,
+  workoutProgramExerciseId: _programExercise.id,
+  exercise: _programExercise.exerciseDetails,
+  segments: _programExercise.segments,
+  staticTargetSetCount: 1,
 );
 
 const _metric = RunningMetrics(

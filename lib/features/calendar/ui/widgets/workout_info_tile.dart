@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
-import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_data.dart';
-import 'package:reforge/features/active_workout/ui/widgets/exercise_results/result_exercise_header.dart';
-import 'package:reforge/features/active_workout/ui/widgets/previous_result_dialog.dart';
+import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/features/exercise_session/domain/entities/previous_exercise_result.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/result_exercise_data.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/result_exercise_header.dart';
+import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/previous_result_dialog.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
-import 'package:reforge/features/workout_common/domain/entities/previous_exercise_result.dart';
-import 'package:reforge/features/workout_common/ui/widgets/workout_list_tile.dart';
+import 'package:reforge/features/workout_program/ui/widgets/workout_list_tile.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
 
 class WorkoutInfoTile extends StatefulWidget {
   const WorkoutInfoTile({
@@ -71,6 +73,9 @@ class _WorkoutInfoTileState extends State<WorkoutInfoTile> with SingleTickerProv
         )
         .toList();
 
+    final hasMetricsAndSets = result.metrics.isNotEmpty && result.sets.isNotEmpty;
+    final hasNotes = result.notes != null && result.notes!.isNotEmpty;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -96,7 +101,7 @@ class _WorkoutInfoTileState extends State<WorkoutInfoTile> with SingleTickerProv
             opacity: _controller,
             child: Column(
               children: [
-                if (result.metrics.isNotEmpty)
+                if (hasMetricsAndSets) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: ResultExerciseHeader(
@@ -105,9 +110,12 @@ class _WorkoutInfoTileState extends State<WorkoutInfoTile> with SingleTickerProv
                     ),
                   ),
 
-                ...wsets,
+                  ...wsets,
+                ] else ...[
+                  const _EmptyInfoSection(),
+                ],
 
-                if (result.notes != null && result.notes!.isNotEmpty)
+                if (hasNotes)
                   NotesSection(
                     notes: result.notes,
                   ),
@@ -116,6 +124,34 @@ class _WorkoutInfoTileState extends State<WorkoutInfoTile> with SingleTickerProv
           ),
         ),
       ],
+    );
+  }
+}
+
+class _EmptyInfoSection extends StatelessWidget {
+  const _EmptyInfoSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final appTheme = context.appTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Center(
+        child: Column(
+          spacing: 8,
+          children: [
+            Icon(Icons.info_outline_rounded, color: appTheme.beige600, size: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                t.training_details.empty_sets_title,
+                style: bodyLRegular.copyWith(color: appTheme.beige600),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
