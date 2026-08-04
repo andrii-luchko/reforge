@@ -82,7 +82,16 @@ class WorkoutSessionCache extends Table {
   IntColumn get remoteSessionId => integer().unique()();
 
   /// Program day id needed to re-fetch ProgramDayEntity with full exercise details
-  IntColumn get programDayId => integer()();
+  IntColumn get programDayId => integer().nullable()();
+
+  /// `program` for scheduled workouts, `adHoc` for workouts assembled at runtime.
+  TextColumn get source => text().withDefault(const Constant('program'))();
+
+  /// Minimal serialized execution plan used when no program day exists.
+  TextColumn get executionPlanJson => text().nullable()();
+
+  /// Last durable initialization boundary reached by the client.
+  TextColumn get initializationPhase => text().withDefault(const Constant('workoutCreated'))();
 
   /// When the session was originally started (for display purposes)
   DateTimeColumn get startedAt => dateTime()();
@@ -97,6 +106,36 @@ class WorkoutSessionCache extends Table {
 
   /// Last time this session had activity. Used for garbage collection.
   DateTimeColumn get updatedAt => dateTime().nullable()();
+}
+
+@TableIndex(
+  name: 'idx_workout_exercise_session_cache_identity',
+  columns: {#workoutSessionId, #executionKey},
+  unique: true,
+)
+@TableIndex(
+  name: 'idx_workout_exercise_session_cache_remote',
+  columns: {#exerciseSessionId},
+  unique: true,
+)
+class WorkoutExerciseSessionCache extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get workoutSessionId => integer().references(
+    WorkoutSessionCache,
+    #remoteSessionId,
+    onDelete: KeyAction.cascade,
+  )();
+
+  TextColumn get executionKey => text()();
+  IntColumn get exerciseId => integer()();
+  IntColumn get effectiveExerciseId => integer()();
+  IntColumn get exerciseSessionId => integer().nullable()();
+  IntColumn get workoutProgramExerciseId => integer().nullable()();
+  IntColumn get position => integer()();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  TextColumn get notesSyncStatus => text().withDefault(const Constant('synced'))();
+  DateTimeColumn get updatedAt => dateTime()();
 }
 
 /// GPS route points collected during a running session.
@@ -122,12 +161,19 @@ class SessionRoutePoints extends Table {
   DateTimeColumn get timestamp => dateTime()();
 }
 
-@DriftDatabase(tables: [ActiveRunningSets, WorkoutSessionCache, SessionRoutePoints])
+@DriftDatabase(
+  tables: [
+    ActiveRunningSets,
+    WorkoutSessionCache,
+    WorkoutExerciseSessionCache,
+    SessionRoutePoints,
+  ],
+)
 class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -168,6 +214,21 @@ class WorkoutDatabase extends _$WorkoutDatabase {
         await m.alterTable(TableMigration(activeRunningSets));
         await m.createIndex(idxActiveRunningSetsSearch);
         await m.createIndex(idxActiveRunningSetsClientIdentity);
+      }
+      if (from < 4) {
+        await customStatement(
+          "ALTER TABLE workout_session_cache ADD COLUMN source TEXT NOT NULL DEFAULT 'program';",
+        );
+        await customStatement(
+          'ALTER TABLE workout_session_cache ADD COLUMN execution_plan_json TEXT;',
+        );
+        await customStatement(
+          "ALTER TABLE workout_session_cache ADD COLUMN initialization_phase TEXT NOT NULL DEFAULT 'workoutCreated';",
+        );
+        await m.alterTable(TableMigration(workoutSessionCache));
+        await m.createTable(workoutExerciseSessionCache);
+        await m.createIndex(idxWorkoutExerciseSessionCacheIdentity);
+        await m.createIndex(idxWorkoutExerciseSessionCacheRemote);
       }
     },
   );

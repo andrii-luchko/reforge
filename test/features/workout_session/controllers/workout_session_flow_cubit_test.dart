@@ -47,6 +47,11 @@ void main() {
   late _MockUserSessionService userSessionService;
   late WorkoutSessionFlowCubit cubit;
 
+  setUpAll(() {
+    registerFallbackValue(CachedWorkoutSource.program);
+    registerFallbackValue(WorkoutInitializationPhase.workoutCreated);
+  });
+
   setUp(() {
     workoutRepository = _MockWorkoutSessionRepository();
     exerciseRepository = _MockExerciseSessionRepository();
@@ -54,6 +59,30 @@ void main() {
     sessionCache = _MockWorkoutSessionCacheRepository();
     userSessionService = _MockUserSessionService();
     when(() => userSessionService.currentUser).thenReturn(_user());
+    when(
+      () => sessionCache.saveActiveSession(
+        remoteSessionId: any(named: 'remoteSessionId'),
+        programDayId: any(named: 'programDayId'),
+        source: any(named: 'source'),
+        executionPlanJson: any(named: 'executionPlanJson'),
+        initializationPhase: any(named: 'initializationPhase'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.saveExerciseSession(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+        exerciseId: any(named: 'exerciseId'),
+        effectiveExerciseId: any(named: 'effectiveExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
+        position: any(named: 'position'),
+        workoutProgramExerciseId: any(named: 'workoutProgramExerciseId'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.updateInitializationPhase(any()),
+    ).thenAnswer((_) async {});
     cubit = WorkoutSessionFlowCubit(
       workoutRepository,
       exerciseRepository,
@@ -312,7 +341,7 @@ void main() {
       expect(cubit.state.isStartingWorkout, isFalse);
     });
 
-    test('starts Free Run without program bindings or program cache write', () async {
+    test('starts Free Run without program bindings and persists its ad-hoc plan', () async {
       final plan = WorkoutExecutionPlan.freeRun(
         details: _freeRunningExercise,
         executionKey: 'free-run:one',
@@ -336,12 +365,13 @@ void main() {
       expect(result.orNull?.spec.workoutProgramExerciseId, isNull);
       expect(cubit.state.programDay, isNull);
       expect(cubit.state.startIntent, WorkoutStartIntent.freeRun);
-      verifyNever(
+      verify(
         () => sessionCache.saveActiveSession(
-          remoteSessionId: any(named: 'remoteSessionId'),
-          programDayId: any(named: 'programDayId'),
+          remoteSessionId: 182,
+          source: CachedWorkoutSource.adHoc,
+          executionPlanJson: any(named: 'executionPlanJson'),
         ),
-      );
+      ).called(1);
     });
 
     test('completes one-exercise Free Run through the common next path', () async {

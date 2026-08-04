@@ -90,5 +90,26 @@ void main() {
     expect(byName, isNot(contains('is_busy')));
     expect(byName['client_set_id']!.read<int>('notnull'), 1);
     expect(byName['program_exercise_id']!.read<int>('notnull'), 0);
+
+    final workoutColumns = await database.customSelect('PRAGMA table_info(workout_session_cache);').get();
+    final workoutByName = {
+      for (final row in workoutColumns) row.read<String>('name'): row,
+    };
+    expect(workoutByName['program_day_id']!.read<int>('notnull'), 0);
+    expect(workoutByName, contains('source'));
+    expect(workoutByName, contains('execution_plan_json'));
+    expect(workoutByName, contains('initialization_phase'));
+
+    final cachedWorkout = await database.select(database.workoutSessionCache).getSingle();
+    expect(cachedWorkout.programDayId, 30);
+    expect(cachedWorkout.source, 'program');
+    expect(cachedWorkout.initializationPhase, 'workoutCreated');
+
+    final exerciseCacheColumns = await database
+        .customSelect(
+          'PRAGMA table_info(workout_exercise_session_cache);',
+        )
+        .get();
+    expect(exerciseCacheColumns, isNotEmpty);
   });
 }

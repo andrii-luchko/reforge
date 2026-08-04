@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
@@ -22,6 +23,7 @@ void main() {
   late _MockExerciseSessionRepository repository;
   late _MockAnalyticsService analytics;
   late _MockUserSessionService userSessionService;
+  late _MockWorkoutSessionCacheRepository sessionCache;
 
   setUpAll(() {
     registerFallbackValue(WorkoutSet(id: -1));
@@ -32,7 +34,27 @@ void main() {
     repository = _MockExerciseSessionRepository();
     analytics = _MockAnalyticsService();
     userSessionService = _MockUserSessionService();
+    sessionCache = _MockWorkoutSessionCacheRepository();
     when(() => userSessionService.currentUser).thenReturn(null);
+    when(
+      () => sessionCache.saveExerciseNotesLocally(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.getExerciseSession(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    ).thenAnswer((_) async => null);
+    when(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   test('swapped initialization is explicit, idempotent, and skips previous result', () async {
@@ -41,6 +63,7 @@ void main() {
       analytics,
       userSessionService,
       const ClientIdGenerator(),
+      sessionCache,
       _swappedContext(notes: 'keep me'),
     );
 
@@ -69,6 +92,7 @@ void main() {
       analytics,
       userSessionService,
       const ClientIdGenerator(),
+      sessionCache,
       _swappedContext(),
     );
     when(
@@ -130,6 +154,7 @@ void main() {
             analytics,
             userSessionService,
             const ClientIdGenerator(),
+            sessionCache,
             _swappedContext(notes: 'server note'),
           )
           ..replaceSetsFromExternalSource(
@@ -176,6 +201,7 @@ void main() {
           analytics,
           userSessionService,
           const ClientIdGenerator(),
+          sessionCache,
           _swappedContext(),
         )..replaceSetsFromExternalSource(
           sets: [WorkoutSet(id: 1, reps: 5, isDone: true)],
@@ -193,6 +219,7 @@ void main() {
       analytics,
       userSessionService,
       const ClientIdGenerator(),
+      sessionCache,
       _freeRunExecution(),
     );
     final set = WorkoutSet(
@@ -265,6 +292,8 @@ void main() {
 class _MockExerciseSessionRepository extends Mock implements ExerciseSessionRepository {}
 
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionCacheRepository {}
 
 class _MockUserSessionService extends Mock implements UserSessionService {}
 

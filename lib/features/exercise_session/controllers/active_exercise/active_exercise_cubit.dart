@@ -9,6 +9,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
@@ -32,6 +33,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     this._analytics,
     this._userSessionService,
     this._clientIdGenerator,
+    this._sessionCache,
     @factoryParam this.execution,
   ) : super(
         ActiveExerciseState(
@@ -48,8 +50,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   final AnalyticsService _analytics;
   final UserSessionService _userSessionService;
   final ClientIdGenerator _clientIdGenerator;
+  final WorkoutSessionCacheRepository _sessionCache;
 
   Future<void>? _initialization;
+  Future<void> _notePersistence = Future.value();
+  var _notesChanged = false;
 
   int get workoutSessionId => state.session.workoutSessionId;
 
@@ -193,6 +198,19 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   void setNote(String newNote) {
     logger.d(newNote);
     emit(state.copyWith(notes: newNote));
+    _notesChanged = true;
+    _notePersistence = _notePersistence
+        .then(
+          (_) => _sessionCache.saveExerciseNotesLocally(
+            workoutSessionId: workoutSessionId,
+            executionKey: execution.spec.executionKey,
+            notes: newNote,
+          ),
+        )
+        .onError((error, stackTrace) {
+          logger.e('ActiveExerciseCubit: failed to cache notes', error, stackTrace);
+        });
+    unawaited(_notePersistence);
   }
 
   void addSet() {
@@ -303,18 +321,28 @@ submitted: ${state.isSubmitted}
 
     emit(state.copyWith(isLoading: true));
 
-    final note = state.notes;
+    await _notePersistence;
+    final cachedExercise = await _sessionCache.getExerciseSession(
+      workoutSessionId: workoutSessionId,
+      executionKey: execution.spec.executionKey,
+    );
+    final shouldSyncNotes = _notesChanged || cachedExercise?.noteStatus != CachedNotesSyncStatus.synced;
 
-    if (note.isEmpty) {
+    if (!shouldSyncNotes) {
       emit(state.copyWith(isLoading: false, isSubmitted: true));
     } else {
       final result = await repository.saveWorkoutNote(
         exerciseSessionId: state.session.id,
-        note: note,
+        note: state.notes,
       );
 
       switch (result) {
         case Success():
+          await _sessionCache.markExerciseNotesSynced(
+            workoutSessionId: workoutSessionId,
+            executionKey: execution.spec.executionKey,
+          );
+          _notesChanged = false;
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
         case Failure(:final error):

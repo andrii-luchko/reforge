@@ -8,6 +8,7 @@ import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
+import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
@@ -16,11 +17,15 @@ import 'package:reforge/features/workout_program/data/enums/execution_mode.dart'
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/domain/repositories/exercise_catalog_repository.dart';
 import 'package:reforge/features/workout_program/domain/repositories/workout_program_repository.dart';
 import 'package:reforge/features/workout_session/controllers/workout_restore_cubit.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/domain/entities/cached_workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
 import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 
 class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionCacheRepository {}
@@ -28,6 +33,8 @@ class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionC
 class _MockWorkoutSessionRepository extends Mock implements WorkoutSessionRepository {}
 
 class _MockWorkoutProgramRepository extends Mock implements WorkoutProgramRepository {}
+
+class _MockExerciseCatalogRepository extends Mock implements ExerciseCatalogRepository {}
 
 class _MockLocalWorkoutSessionRepository extends Mock implements LocalWorkoutSessionRepository {}
 
@@ -41,6 +48,7 @@ void main() {
   late _MockWorkoutSessionCacheRepository sessionCache;
   late _MockWorkoutSessionRepository sessionRepository;
   late _MockWorkoutProgramRepository programRepository;
+  late _MockExerciseCatalogRepository exerciseCatalogRepository;
   late _MockLocalWorkoutSessionRepository localWorkoutRepository;
   late _MockUserSessionService userSessionService;
   late _MockExerciseSessionRepository exerciseSessionRepository;
@@ -57,6 +65,7 @@ void main() {
     sessionCache = _MockWorkoutSessionCacheRepository();
     sessionRepository = _MockWorkoutSessionRepository();
     programRepository = _MockWorkoutProgramRepository();
+    exerciseCatalogRepository = _MockExerciseCatalogRepository();
     localWorkoutRepository = _MockLocalWorkoutSessionRepository();
     userSessionService = _MockUserSessionService();
     exerciseSessionRepository = _MockExerciseSessionRepository();
@@ -68,6 +77,8 @@ void main() {
         id: 1,
         remoteSessionId: 172,
         programDayId: 25,
+        source: CachedWorkoutSource.program.name,
+        initializationPhase: WorkoutInitializationPhase.active.name,
         startedAt: DateTime(2026),
         durationSec: 120,
         lastExerciseIndex: 0,
@@ -75,6 +86,32 @@ void main() {
     );
     when(
       () => localWorkoutRepository.getAnyInProgressLapForSession(172),
+    ).thenAnswer((_) async => null);
+    when(() => sessionCache.getExerciseSessions(172)).thenAnswer((_) async => []);
+    when(() => sessionCache.clearActiveSession()).thenAnswer((_) async {});
+    when(
+      () => sessionCache.saveExerciseSession(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+        exerciseId: any(named: 'exerciseId'),
+        effectiveExerciseId: any(named: 'effectiveExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
+        position: any(named: 'position'),
+        workoutProgramExerciseId: any(named: 'workoutProgramExerciseId'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.getExerciseSession(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
     ).thenAnswer((_) async => null);
 
     flowCubit = WorkoutSessionFlowCubit(
@@ -88,6 +125,7 @@ void main() {
       sessionCache,
       sessionRepository,
       programRepository,
+      exerciseCatalogRepository,
       localWorkoutRepository,
       userSessionService,
       flowCubit,
@@ -156,6 +194,7 @@ void main() {
       analytics,
       userSessionService,
       const ClientIdGenerator(),
+      sessionCache,
       execution,
     );
     await activeCubit.initialize(restoredSets: flowCubit.state.restoredSets[100]);
@@ -192,6 +231,7 @@ void main() {
       analytics,
       userSessionService,
       const ClientIdGenerator(),
+      sessionCache,
       execution,
     );
     await activeCubit.initialize();
@@ -237,6 +277,140 @@ void main() {
     expect(execution?.session.workoutProgramExerciseId, 100);
     expect(flowCubit.state.restoredSets, hasLength(1));
     expect(flowCubit.state.restoredSets[100], hasLength(1));
+  });
+
+  test('restores Free Run from backend details and preserves dirty local notes', () async {
+    final plan = WorkoutExecutionPlan.freeRun(
+      details: _freeRunningExerciseDto.toEntity(),
+      executionKey: 'free-run:restore',
+    );
+    when(() => sessionCache.getActiveSession()).thenAnswer(
+      (_) async => WorkoutSessionCacheData(
+        id: 1,
+        remoteSessionId: 182,
+        source: CachedWorkoutSource.adHoc.name,
+        executionPlanJson: CachedWorkoutExecutionPlan.fromPlan(plan).encode(),
+        initializationPhase: WorkoutInitializationPhase.active.name,
+        startedAt: DateTime(2026),
+        durationSec: 120,
+        lastExerciseIndex: 0,
+      ),
+    );
+    when(() => sessionRepository.getWorkoutSessionDetails(182)).thenAnswer(
+      (_) async => const Result.success(
+        WorkoutSessionDetailsDTO(
+          id: 182,
+          duration: 120,
+          status: WorkoutSessionStatus.active,
+          totalXpEarned: 0,
+          exerciseSessions: [
+            WorkoutExerciseSessionDTO(
+              id: 246,
+              exerciseId: 4,
+              workoutSessionId: 182,
+              notes: 'server note',
+              exercise: _freeRunningExerciseDto,
+            ),
+          ],
+        ),
+      ),
+    );
+    when(() => sessionCache.getExerciseSessions(182)).thenAnswer(
+      (_) async => [
+        WorkoutExerciseSessionCacheData(
+          id: 1,
+          workoutSessionId: 182,
+          executionKey: 'free-run:restore',
+          exerciseId: 4,
+          effectiveExerciseId: 4,
+          exerciseSessionId: 246,
+          position: 0,
+          notes: 'local note',
+          notesSyncStatus: CachedNotesSyncStatus.dirty.name,
+          updatedAt: DateTime(2026),
+        ),
+      ],
+    );
+    when(
+      () => localWorkoutRepository.getAnyInProgressLapForSession(182),
+    ).thenAnswer((_) async => null);
+
+    await restoreCubit.checkForInterrupted();
+    await restoreCubit.restoreSession();
+
+    expect(flowCubit.state.startIntent, WorkoutStartIntent.freeRun);
+    expect(flowCubit.state.programDay, isNull);
+    expect(flowCubit.state.currentExercise?.exerciseId, 4);
+    final execution = flowCubit.exerciseExecutionFor('free-run:restore');
+    expect(execution?.exerciseSessionId, 246);
+    expect(execution?.session.notes, 'local note');
+    verifyNever(() => exerciseCatalogRepository.getExercise(any()));
+  });
+
+  test('restores Free Run before exercise-session creation and reconciles by creating it', () async {
+    final plan = WorkoutExecutionPlan.freeRun(
+      details: _freeRunningExerciseDto.toEntity(),
+      executionKey: 'free-run:before-exercise',
+    );
+    when(() => sessionCache.getActiveSession()).thenAnswer(
+      (_) async => WorkoutSessionCacheData(
+        id: 1,
+        remoteSessionId: 182,
+        source: CachedWorkoutSource.adHoc.name,
+        executionPlanJson: CachedWorkoutExecutionPlan.fromPlan(plan).encode(),
+        initializationPhase: WorkoutInitializationPhase.workoutCreated.name,
+        startedAt: DateTime(2026),
+        durationSec: 0,
+        lastExerciseIndex: 0,
+      ),
+    );
+    when(() => sessionRepository.getWorkoutSessionDetails(182)).thenAnswer(
+      (_) async => const Result.success(
+        WorkoutSessionDetailsDTO(
+          id: 182,
+          duration: 0,
+          status: WorkoutSessionStatus.active,
+          totalXpEarned: 0,
+          exerciseSessions: [],
+        ),
+      ),
+    );
+    when(() => sessionCache.getExerciseSessions(182)).thenAnswer((_) async => []);
+    when(() => exerciseCatalogRepository.getExercise(4)).thenAnswer(
+      (_) async => Result.success(_freeRunningExerciseDto.toEntity()),
+    );
+    when(
+      () => exerciseSessionRepository.createWorkoutExerciseSession(
+        exerciseId: 4,
+        workoutSessionId: 182,
+        system: MeasurementSystem.metric,
+      ),
+    ).thenAnswer(
+      (_) async => Result.success(
+        _freeSessionEntity(id: 246),
+      ),
+    );
+
+    await restoreCubit.checkForInterrupted();
+    await restoreCubit.restoreSession();
+
+    expect(flowCubit.exerciseExecutionFor('free-run:before-exercise'), isNull);
+    final result = await flowCubit.ensureExerciseSession(flowCubit.state.currentExercise!);
+    expect(result.orNull?.exerciseSessionId, 246);
+  });
+
+  test('clears local state when the cached workout is already terminal', () async {
+    when(() => sessionRepository.getWorkoutSessionDetails(172)).thenAnswer(
+      (_) async => Result.success(
+        _details(const []).copyWith(status: WorkoutSessionStatus.completed),
+      ),
+    );
+
+    await restoreCubit.checkForInterrupted();
+
+    expect(restoreCubit.state, isA<WorkoutRestoreNone>());
+    verify(() => sessionCache.clearActiveSession()).called(1);
+    verifyNever(() => programRepository.getWorkoutByDay(any()));
   });
 }
 
@@ -302,6 +476,35 @@ const _runningExerciseDto = ExerciseDetailsDTO(
   factionId: 3,
   metrics: ['durationSec', 'distanceM'],
 );
+
+const _freeRunningExerciseDto = ExerciseDetailsDTO(
+  id: 4,
+  name: 'Running',
+  description: 'Free running exercise',
+  type: 2,
+  key: 'running',
+  factionId: 3,
+  metrics: ['durationSec', 'distanceM'],
+);
+
+WorkoutExerciseSessionEntity _freeSessionEntity({required int id}) {
+  return WorkoutExerciseSessionEntity(
+    id: id,
+    exerciseId: 4,
+    workoutSessionId: 182,
+    workoutProgramExerciseId: null,
+    isSwapped: false,
+    swappedExerciseId: null,
+    isActive: true,
+    notes: null,
+    lastCompletedSet: null,
+    createdAt: null,
+    updatedAt: null,
+    sets: const [],
+    exercise: _freeRunningExerciseDto.toEntity(),
+    swappedExercise: null,
+  );
+}
 
 final _regularProgramExercise = ProgramExerciseEntity(
   id: 100,

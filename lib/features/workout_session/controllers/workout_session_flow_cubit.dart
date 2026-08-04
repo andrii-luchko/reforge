@@ -24,6 +24,7 @@ import 'package:reforge/features/workout_session/data/enums/workout_session_stat
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/cached_workout_execution_plan.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_exercise_spec.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_source.dart';
@@ -78,22 +79,46 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     required int startIndex,
     Map<int, ActiveWorkoutExerciseContext> exerciseContexts = const {},
   }) {
-    _clearExerciseRegistry();
     final executionPlan = WorkoutExecutionPlan.fromProgramDay(programDay);
+    final executions = <String, ActiveExerciseExecution>{};
     for (final spec in executionPlan.exercises) {
       final programExerciseId = spec.workoutProgramExerciseId;
       final context = programExerciseId == null ? null : exerciseContexts[programExerciseId];
       if (context == null) continue;
-      _exerciseExecutions[spec.executionKey] = ActiveExerciseExecution(
+      executions[spec.executionKey] = ActiveExerciseExecution(
         spec: spec,
         workoutSessionId: sessionId,
         session: context.session,
       );
     }
+    initExecutionPlanFromRestore(
+      sessionId: sessionId,
+      executionPlan: executionPlan,
+      durationSec: durationSec,
+      restoredSets: restoredSets,
+      startIndex: startIndex,
+      executions: executions,
+      programDay: programDay,
+      startIntent: WorkoutStartIntent.program,
+    );
+  }
+
+  void initExecutionPlanFromRestore({
+    required int sessionId,
+    required WorkoutExecutionPlan executionPlan,
+    required int durationSec,
+    required Map<int, List<WorkoutSet>> restoredSets,
+    required int startIndex,
+    required Map<String, ActiveExerciseExecution> executions,
+    required WorkoutStartIntent startIntent,
+    ProgramDayEntity? programDay,
+  }) {
+    _clearExerciseRegistry();
+    _exerciseExecutions.addAll(executions);
     final newState = state.copyWith(
       isLoading: false,
       executionPlan: executionPlan,
-      startIntent: WorkoutStartIntent.program,
+      startIntent: startIntent,
       programDay: programDay,
       workoutSessionId: sessionId,
       sessionStatus: WorkoutSessionStatus.active,
@@ -124,6 +149,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     }
 
     _exerciseExecutions[executionKey] = execution;
+    unawaited(_cacheExerciseExecution(execution));
     return true;
   }
 
@@ -246,14 +272,16 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         unawaited(_analytics.logEvent(AnalyticsEvents.workoutStart));
         logger.d('WorkoutSessionFlowCubit: started session ${sessionData.id}');
 
-        if (plan.source case ProgramWorkoutSource(:final programDayId)) {
-          unawaited(
-            _sessionCache.saveActiveSession(
-              remoteSessionId: sessionData.id,
-              programDayId: programDayId,
-            ),
-          );
-        }
+        final programDayId = switch (plan.source) {
+          ProgramWorkoutSource(:final programDayId) => programDayId,
+          AdHocWorkoutSource() => null,
+        };
+        await _sessionCache.saveActiveSession(
+          remoteSessionId: sessionData.id,
+          programDayId: programDayId,
+          source: plan.source is ProgramWorkoutSource ? CachedWorkoutSource.program : CachedWorkoutSource.adHoc,
+          executionPlanJson: CachedWorkoutExecutionPlan.fromPlan(plan).encode(),
+        );
 
         emit(
           state.copyWith(
@@ -268,6 +296,9 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         final firstExecution = await ensureExerciseSession(plan.exercises.first);
         if (generation != _exerciseRegistryGeneration || state.workoutSessionId != sessionData.id) {
           return Result.error(AppException('Workout session changed while initializing first exercise'));
+        }
+        if (firstExecution.isSuccess) {
+          await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
         }
         emit(
           state.copyWith(
@@ -351,7 +382,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         } else if (status == WorkoutSessionStatus.canceled) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutCancel));
         }
-        unawaited(_sessionCache.clearActiveSession());
+        await _sessionCache.clearActiveSession();
         emit(state.copyWith(sessionStatus: status, summary: summary, isLoading: false));
 
       case Failure(:final error):
@@ -385,6 +416,11 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         }
         final execution = _buildExecution(spec, workoutSessionId, session);
         _exerciseExecutions[spec.executionKey] = execution;
+        await _cacheExerciseExecution(execution);
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated);
+        if (state.isRestoredSession && state.executionPlan?.exercises.first.executionKey == spec.executionKey) {
+          await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+        }
         return Result.success(execution);
 
       case Failure(:final error):
@@ -426,6 +462,11 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         dto.toEntity(_measurementSystem),
       );
       _exerciseExecutions[spec.executionKey] = execution;
+      await _cacheExerciseExecution(execution);
+      await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated);
+      if (state.isRestoredSession && state.executionPlan?.exercises.first.executionKey == spec.executionKey) {
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+      }
       return execution;
     }
     return null;
@@ -459,6 +500,24 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       spec: spec,
       workoutSessionId: workoutSessionId,
       session: session,
+    );
+  }
+
+  Future<void> _cacheExerciseExecution(ActiveExerciseExecution execution) {
+    final position =
+        state.executionPlan?.exercises.indexWhere(
+          (spec) => spec.executionKey == execution.spec.executionKey,
+        ) ??
+        0;
+    return _sessionCache.saveExerciseSession(
+      workoutSessionId: execution.workoutSessionId,
+      executionKey: execution.spec.executionKey,
+      exerciseId: execution.session.exerciseId,
+      effectiveExerciseId: execution.effectiveExercise.id,
+      exerciseSessionId: execution.exerciseSessionId,
+      workoutProgramExerciseId: execution.spec.workoutProgramExerciseId,
+      position: position < 0 ? 0 : position,
+      notes: execution.session.notes ?? '',
     );
   }
 

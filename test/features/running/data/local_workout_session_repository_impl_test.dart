@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/core/database/database.dart';
@@ -16,7 +17,7 @@ void main() {
         .insert(
           WorkoutSessionCacheCompanion.insert(
             remoteSessionId: 10,
-            programDayId: 30,
+            programDayId: const Value(30),
             startedAt: DateTime(2026),
           ),
         );
