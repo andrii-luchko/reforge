@@ -96,6 +96,7 @@ void main() {
       MockRunningPreferencesService(),
       RunningExerciseConfig(
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: _programExercise.id,
         exercise: _programExercise.exerciseDetails,
         segments: const [],
@@ -600,6 +601,7 @@ final _programExercise = ProgramExerciseEntity(
 
 final _runningConfig = RunningExerciseConfig(
   workoutSessionId: 10,
+  exerciseSessionId: 100,
   workoutProgramExerciseId: _programExercise.id,
   exercise: _programExercise.exerciseDetails,
   segments: _programExercise.segments,

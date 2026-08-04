@@ -9,6 +9,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
 import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
 import 'package:reforge/features/exercise_session/data/requests/swap_exercise_search_request.dart';
+import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -23,8 +24,8 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
   Future<Result<WorkoutExerciseSessionEntity>> createWorkoutExerciseSession({
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
     required MeasurementSystem system,
+    int? workoutProgramExerciseId,
   }) async {
     try {
       final response = await makeRequest(
@@ -114,26 +115,33 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
   }
 
   @override
-  Future<Result<void>> completeSet({
+  Future<Result<CompletedSetIdentity>> completeSet({
     required WorkoutSet set,
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required MeasurementSystem system,
+    int? workoutProgramExerciseId,
   }) async {
     try {
       final request = CreateSetSessionRequest.fromWorkoutSet(
         set: set,
         exerciseId: exerciseId,
-        workoutProgramExerciseId: workoutProgramExerciseId,
         workoutSessionId: workoutSessionId,
+        exerciseSessionId: exerciseSessionId,
+        workoutProgramExerciseId: workoutProgramExerciseId,
         system: system,
       );
-      await makeRequest(
+      final response = await makeRequest(
         () => _apiClient.completeSet(request),
         label: 'completeSet',
       );
-      return const Result.success(null);
+      return Result.success(
+        CompletedSetIdentity(
+          remoteSetId: response.data.id,
+          clientSetId: response.data.clientSetId,
+        ),
+      );
     } on Exception catch (error) {
       return Result.error(error);
     }

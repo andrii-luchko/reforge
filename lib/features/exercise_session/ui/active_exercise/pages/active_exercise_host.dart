@@ -59,6 +59,7 @@ class ActiveExerciseHost extends StatelessWidget {
 
           final config = RunningExerciseConfig(
             workoutSessionId: state.session.workoutSessionId,
+            exerciseSessionId: state.session.id,
             workoutProgramExerciseId: cubit.programExercise.id,
             exercise: state.effectiveExercise,
             segments: state.session.isSwapped ? const [] : cubit.programExercise.segments,

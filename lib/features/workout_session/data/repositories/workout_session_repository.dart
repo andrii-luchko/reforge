@@ -46,11 +46,20 @@ class WorkoutSessionRepositoryImpl with RepositoryErrorHandler implements Workou
 
   @override
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId) async {
+    return _startWorkoutSession(
+      StartWorkoutSessionRequest.program(workoutProgramDayId: workoutProgramDayId),
+    );
+  }
+
+  @override
+  Future<Result<WorkoutSession>> startAdHocWorkoutSession() {
+    return _startWorkoutSession(StartWorkoutSessionRequest.adHoc());
+  }
+
+  Future<Result<WorkoutSession>> _startWorkoutSession(StartWorkoutSessionRequest request) async {
     try {
       final response = await makeRequest(
-        () => _apiClient.starWorkoutSession(
-          StartWorkoutSessionRequest(workoutProgramDayId: workoutProgramDayId),
-        ),
+        () => _apiClient.starWorkoutSession(request),
         label: 'startWorkoutSession',
       );
       logger.d(response);

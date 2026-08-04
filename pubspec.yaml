@@ -61,6 +61,7 @@ dependencies:
   sign_in_with_apple: ^8.1.0
   skeletonizer: ^2.1.2
   showcaseview: ^5.1.0
+  uuid: ^4.6.0
 
   
   intl: ^0.20.2 

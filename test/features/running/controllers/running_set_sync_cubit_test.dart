@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/controller/running_set_sync_cubit.dart';
@@ -36,11 +37,16 @@ void main() {
       () => exerciseRepository.completeSet(
         exerciseId: 30,
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: 20,
         system: MeasurementSystem.metric,
         set: any(named: 'set'),
       ),
-    ).thenAnswer((_) async => const Result.success(null));
+    ).thenAnswer(
+      (_) async => const Result.success(
+        CompletedSetIdentity(remoteSetId: 1, clientSetId: null),
+      ),
+    );
     when(() => localRepository.markSetAsDone(1)).thenAnswer((_) async {
       if (!markedDone.isCompleted) markedDone.complete();
     });
@@ -107,6 +113,7 @@ const _runningProgramExercise = ProgramExerciseEntity(
 
 final _runningConfig = RunningExerciseConfig(
   workoutSessionId: 10,
+  exerciseSessionId: 100,
   workoutProgramExerciseId: 20,
   exercise: _runningProgramExercise.exerciseDetails,
   segments: [],

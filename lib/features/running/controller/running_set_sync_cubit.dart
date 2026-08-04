@@ -77,8 +77,9 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
       final set = state.sets.firstWhereOrNull((item) => item.id == row.id) ?? _mapRowToSet(row);
       final result = await _exerciseSessionRepository.completeSet(
         exerciseId: config.exercise.id,
-        workoutProgramExerciseId: config.workoutProgramExerciseId,
         workoutSessionId: config.workoutSessionId,
+        exerciseSessionId: config.exerciseSessionId,
+        workoutProgramExerciseId: config.workoutProgramExerciseId,
         system: MeasurementSystem.metric,
         set: set,
       );

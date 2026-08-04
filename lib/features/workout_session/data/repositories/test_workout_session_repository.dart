@@ -52,6 +52,19 @@ class TestWorkoutSessionRepository implements WorkoutSessionRepository {
   }
 
   @override
+  Future<Result<WorkoutSession>> startAdHocWorkoutSession() async {
+    return const Result.success(
+      WorkoutSession(
+        id: 99,
+        userId: 1,
+        duration: 0,
+        status: WorkoutSessionStatus.active,
+        totalXpEarned: 0,
+      ),
+    );
+  }
+
+  @override
   Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,

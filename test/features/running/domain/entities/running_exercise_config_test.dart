@@ -66,6 +66,7 @@ RunningExerciseConfig _config({
 }) {
   return RunningExerciseConfig(
     workoutSessionId: 1,
+    exerciseSessionId: 10,
     workoutProgramExerciseId: 2,
     exercise: ExerciseDetailsEntity(
       id: 3,

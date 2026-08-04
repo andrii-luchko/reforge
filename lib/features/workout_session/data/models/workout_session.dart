@@ -11,7 +11,7 @@ sealed class WorkoutSession with _$WorkoutSession {
   const factory WorkoutSession({
     required int id,
     required int userId,
-    required int workoutProgramDayId,
+    int? workoutProgramDayId,
     int? exerciseTypeId,
     required int duration,
     required WorkoutSessionStatus status,

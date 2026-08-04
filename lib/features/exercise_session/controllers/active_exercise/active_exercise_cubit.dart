@@ -21,6 +21,7 @@ import 'package:reforge/features/workout_program/domain/entities/exercise_detail
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:uuid/uuid.dart';
 
 part 'active_exercise_cubit.freezed.dart';
 part 'active_exercise_state.dart';
@@ -46,6 +47,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   final ExerciseSessionRepository repository;
   final AnalyticsService _analytics;
   final UserSessionService _userSessionService;
+
+  static const _uuid = Uuid();
 
   Future<void>? _initialization;
 
@@ -85,10 +88,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     final initialSets = (restored != null && restored.isNotEmpty)
         ? [
             ...restored.map((s) => s.copyWith(isDone: true)),
-            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: restored.length + 1),
+            _newSet(setNumber: restored.length + 1),
           ]
         : [
-            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1),
+            _newSet(setNumber: 1),
           ];
 
     emit(
@@ -133,9 +136,7 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       session: normalizedSession,
       effectiveExercise: swap.exercise,
     );
-    final replacementSets = swap.exercise.isRunningSwapCandidate
-        ? const <WorkoutSet>[]
-        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1)];
+    final replacementSets = swap.exercise.isRunningSwapCandidate ? const <WorkoutSet>[] : [_newSet(setNumber: 1)];
 
     emit(
       state.copyWith(
@@ -188,8 +189,16 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void addSet() {
-    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: state.sets.length + 1);
+    final newSet = _newSet(setNumber: state.sets.length + 1);
     emit(state.copyWith(sets: [...state.sets, newSet]));
+  }
+
+  WorkoutSet _newSet({required int setNumber}) {
+    return WorkoutSet(
+      id: DateTime.now().microsecondsSinceEpoch,
+      clientSetId: _uuid.v7(),
+      setNumber: setNumber,
+    );
   }
 
   void updateSet(int setId, WorkoutSet newSetData) {
@@ -227,8 +236,9 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     final result = await repository.completeSet(
       exerciseId: effectiveExercise.id,
-      workoutProgramExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
+      exerciseSessionId: state.session.id,
+      workoutProgramExerciseId: programExercise.id,
       system: state.measureSystem,
       set: currentSet.copyWith(selectedTier: tier),
     );

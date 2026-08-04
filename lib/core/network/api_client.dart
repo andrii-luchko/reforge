@@ -36,6 +36,7 @@ import 'package:reforge/features/notifications/data/models/notification_test_req
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
 import 'package:reforge/features/settings/data/request/profile_requests.dart';
+import 'package:reforge/features/workout_program/data/models/exercise_catalog_item_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_quiz/data/requests/workout_quiz_request.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session.dart';
@@ -138,7 +139,7 @@ abstract class ApiClient {
 
   //
   @POST('/workout-exercise-set-sessions')
-  Future<void> completeSet(@Body() CreateSetSessionRequest request);
+  Future<BaseResponse<ExerciseSetDTO>> completeSet(@Body() CreateSetSessionRequest request);
 
   @POST('/workout-exercise-sessions')
   Future<BaseResponse<WorkoutExerciseSessionDTO>> createWorkoutExerciseSession(
@@ -147,6 +148,9 @@ abstract class ApiClient {
 
   @GET('/workout-exercises/swap-search')
   Future<SwapExerciseSearchResponse> searchSwapExercises(@Queries() SwapExerciseSearchRequest request);
+
+  @GET('/workout-exercises/{exerciseId}')
+  Future<BaseResponse<ExerciseCatalogItemDTO>> getExercise(@Path('exerciseId') int exerciseId);
 
   @PATCH('/workout-exercise-sessions/{workoutExerciseSessionId}/swap')
   Future<BaseResponse<WorkoutExerciseSessionDTO>> swapWorkoutExercise(

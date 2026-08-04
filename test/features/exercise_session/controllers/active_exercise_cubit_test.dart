@@ -5,6 +5,7 @@ import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
@@ -70,11 +71,16 @@ void main() {
       () => repository.completeSet(
         exerciseId: _swappedExercise.id,
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: 20,
         system: MeasurementSystem.metric,
         set: any(named: 'set'),
       ),
-    ).thenAnswer((_) async => const Result.success(null));
+    ).thenAnswer(
+      (_) async => const Result.success(
+        CompletedSetIdentity(remoteSetId: 1, clientSetId: null),
+      ),
+    );
     when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
     when(
       () => repository.saveWorkoutNote(
@@ -99,6 +105,7 @@ void main() {
       () => repository.completeSet(
         exerciseId: _swappedExercise.id,
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: 20,
         system: MeasurementSystem.metric,
         set: any(named: 'set'),

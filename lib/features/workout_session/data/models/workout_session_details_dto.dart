@@ -13,10 +13,10 @@ part 'workout_session_details_dto.g.dart';
 sealed class WorkoutSessionDetailsDTO with _$WorkoutSessionDetailsDTO {
   const factory WorkoutSessionDetailsDTO({
     required int id,
-    required int workoutProgramDayId,
     required int duration,
     required WorkoutSessionStatus status,
     required int totalXpEarned,
+    int? workoutProgramDayId,
     @JsonKey(name: 'exerciseSessions') List<WorkoutExerciseSessionDTO>? exerciseSessions,
     @JsonKey(name: 'workoutSessions') List<WorkoutExerciseSessionDTO>? workoutSessions,
     @JsonKey(name: 'createdAt') DateTime? createdAt,
@@ -90,7 +90,9 @@ extension WorkoutSessionDetailsDTOX on WorkoutSessionDetailsDTO {
   }
 
   List<PreviousExerciseResult> toPreviousResults(MeasurementSystem system) {
-    final sessions = exerciseSessionsByProgramExerciseId.values;
+    final sessions = workoutProgramDayId == null
+        ? normalizedExerciseSessions
+        : exerciseSessionsByProgramExerciseId.values;
 
     if (sessions.isEmpty) return [];
 

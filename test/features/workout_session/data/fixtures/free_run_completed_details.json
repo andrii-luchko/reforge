@@ -1,0 +1,61 @@
+{
+  "data": {
+    "id": 182,
+    "workoutProgramDayId": null,
+    "duration": 1621,
+    "status": "completed",
+    "totalXpEarned": 0,
+    "createdAt": "2026-08-04T01:38:36.208Z",
+    "exerciseSessions": [
+      {
+        "id": 246,
+        "exerciseId": 4,
+        "workoutSessionId": 182,
+        "workoutProgramExerciseId": null,
+        "isSwapped": false,
+        "swappedExerciseId": null,
+        "isActive": false,
+        "notes": "easy run",
+        "lastCompletedSet": null,
+        "sets": [
+          {
+            "id": 368,
+            "clientSetId": "019893a2-7078-76f9-8e8f-bf8e3b16bf93",
+            "exerciseId": 4,
+            "exerciseSessionId": 246,
+            "programSegmentId": null,
+            "durationSec": 60,
+            "speedKmH": 10.5,
+            "distanceM": 1000,
+            "setNumber": 1
+          }
+        ],
+        "exercise": {
+          "id": 4,
+          "name": "Running",
+          "description": "Cardiovascular endurance exercise that improves heart health and stamina.",
+          "type": 2,
+          "key": "running",
+          "metrics": ["durationSec", "distanceM"],
+          "staticData": {},
+          "instructions": [],
+          "isTiered": false,
+          "isPoseDetectionEnabled": false,
+          "videoInstructionUrl": "https://video.example/running",
+          "thumbnailInstructionUrl": "https://image.example/running"
+        }
+      }
+    ],
+    "workoutSessions": [
+      {
+        "id": 246,
+        "exerciseId": 4,
+        "workoutSessionId": 182,
+        "workoutProgramExerciseId": null,
+        "isActive": false,
+        "sets": []
+      }
+    ]
+  },
+  "status": "success"
+}

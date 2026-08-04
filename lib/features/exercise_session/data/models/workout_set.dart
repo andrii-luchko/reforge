@@ -11,6 +11,7 @@ sealed class WorkoutSet with _$WorkoutSet {
 
   factory WorkoutSet({
     required int id,
+    String? clientSetId,
     int? setNumber,
     Duration? time,
     double? distance,

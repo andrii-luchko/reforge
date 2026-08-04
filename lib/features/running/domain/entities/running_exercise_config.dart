@@ -6,6 +6,7 @@ import 'package:reforge/features/workout_program/domain/enums/workout_metrics.da
 class RunningExerciseConfig {
   const RunningExerciseConfig({
     required this.workoutSessionId,
+    required this.exerciseSessionId,
     required this.workoutProgramExerciseId,
     required this.exercise,
     required this.segments,
@@ -13,6 +14,7 @@ class RunningExerciseConfig {
   }) : assert(staticTargetSetCount > 0, 'staticTargetSetCount must be positive');
 
   final int workoutSessionId;
+  final int exerciseSessionId;
   final int workoutProgramExerciseId;
   final ExerciseDetailsEntity exercise;
   final List<ExerciseSegmentEntity> segments;

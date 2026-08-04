@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": 4,
+    "name": "Running",
+    "description": "Cardiovascular endurance exercise that improves heart health and stamina.",
+    "isPoseDetectionEnabled": false,
+    "poseDetectionPreset": null,
+    "videoInstructionUrl": "https://video.example/running",
+    "thumbnailInstructionUrl": "https://image.example/running",
+    "metrics": ["durationSec", "distanceM"],
+    "staticData": {},
+    "instructions": [],
+    "createdAt": "2025-12-22T16:03:19.119Z",
+    "updatedAt": "2025-12-22T16:03:19.119Z",
+    "faction": {
+      "id": 3,
+      "name": "Running",
+      "slug": "gyohyo",
+      "createdAt": "2025-12-22T16:03:11.368Z",
+      "updatedAt": "2025-12-22T16:03:11.368Z"
+    },
+    "bodyParts": []
+  },
+  "status": "success"
+}
