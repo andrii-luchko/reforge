@@ -66,7 +66,7 @@ class WorkoutQuizSummaryBody extends StatelessWidget with WorkoutNavigationMixin
               text: t.workout_quiz.quiz_summary.button_label,
               onPressed: () async {
                 unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutQuizSummaryStartWorkoutClick));
-                await handleStartWorkout(context);
+                await handleStartPreparedWorkout(context);
               },
             ),
           ],

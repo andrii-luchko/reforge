@@ -7,15 +7,15 @@ class RunningExerciseConfig {
   const RunningExerciseConfig({
     required this.workoutSessionId,
     required this.exerciseSessionId,
-    required this.workoutProgramExerciseId,
     required this.exercise,
     required this.segments,
     required this.staticTargetSetCount,
+    this.workoutProgramExerciseId,
   }) : assert(staticTargetSetCount > 0, 'staticTargetSetCount must be positive');
 
   final int workoutSessionId;
   final int exerciseSessionId;
-  final int workoutProgramExerciseId;
+  final int? workoutProgramExerciseId;
   final ExerciseDetailsEntity exercise;
   final List<ExerciseSegmentEntity> segments;
   final int staticTargetSetCount;
@@ -49,5 +49,5 @@ class RunningExerciseConfig {
     );
   }
 
-  bool get isFreeRun => limits.isEmpty;
+  bool get isOpenEnded => limits.isEmpty;
 }

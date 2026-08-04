@@ -60,10 +60,10 @@ class ActiveExerciseHost extends StatelessWidget {
           final config = RunningExerciseConfig(
             workoutSessionId: state.session.workoutSessionId,
             exerciseSessionId: state.session.id,
-            workoutProgramExerciseId: cubit.programExercise.id,
+            workoutProgramExerciseId: cubit.workoutProgramExerciseId,
             exercise: state.effectiveExercise,
-            segments: state.session.isSwapped ? const [] : cubit.programExercise.segments,
-            staticTargetSetCount: state.session.isSwapped ? 1 : cubit.programExercise.sets,
+            segments: state.session.isSwapped ? const [] : cubit.execution.spec.segments,
+            staticTargetSetCount: state.session.isSwapped ? 1 : (cubit.execution.spec.targetSetCount ?? 1),
           );
           return _RunningExerciseBranch(
             key: ValueKey(state.effectiveExercise.id),
@@ -92,7 +92,11 @@ class _RunningExerciseBranch extends StatelessWidget {
           },
         ),
         BlocProvider(
-          create: (_) => di.getIt<RunningSetSyncCubit>(param1: config)..init(),
+          create: (_) {
+            final cubit = di.getIt<RunningSetSyncCubit>(param1: config);
+            unawaited(cubit.init());
+            return cubit;
+          },
         ),
       ],
       child: MultiBlocListener(
@@ -117,9 +121,29 @@ class _RunningExerciseBranch extends StatelessWidget {
               );
             },
           ),
+          BlocListener<RunningSetSyncCubit, RunningSetSyncState>(
+            listenWhen: (previous, current) => previous.error != current.error,
+            listener: (context, syncState) {
+              if (syncState.error case final error?) {
+                toastification.showErrorToast(error, context);
+              }
+            },
+          ),
         ],
         child: RunningExerciseHost(
-          onExerciseFinished: context.read<ActiveExerciseCubit>().finishExercise,
+          onExerciseFinished: () async {
+            final syncCubit = context.read<RunningSetSyncCubit>();
+            final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+            final isSynced = await syncCubit.flush();
+            if (!isSynced) return false;
+
+            await (activeExerciseCubit..replaceSetsFromExternalSource(
+                  sets: syncCubit.state.sets,
+                  isSending: syncCubit.state.isSending,
+                ))
+                .finishExercise();
+            return activeExerciseCubit.state.isSubmitted;
+          },
         ),
       ),
     );

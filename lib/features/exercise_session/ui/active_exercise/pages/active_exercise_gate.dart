@@ -8,9 +8,9 @@ import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/pages/active_exercise_host.dart';
-import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
-import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_exercise_spec.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -18,17 +18,17 @@ import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 import 'package:reforge/shared/uikit/states/no_workout_error_widget.dart';
 
 class ActiveExerciseGate extends StatefulWidget {
-  const ActiveExerciseGate({required this.programExerciseId, super.key});
+  const ActiveExerciseGate({required this.executionKey, super.key});
 
-  final int programExerciseId;
+  final String executionKey;
 
   @override
   State<ActiveExerciseGate> createState() => _ActiveExerciseGateState();
 }
 
 class _ActiveExerciseGateState extends State<ActiveExerciseGate> {
-  ProgramExerciseEntity? _programExercise;
-  Future<Result<ActiveWorkoutExerciseContext>>? _contextFuture;
+  WorkoutExerciseSpec? _spec;
+  Future<Result<ActiveExerciseExecution>>? _contextFuture;
   bool _isInvalidRoute = false;
 
   @override
@@ -38,23 +38,23 @@ class _ActiveExerciseGateState extends State<ActiveExerciseGate> {
 
     final flowCubit = context.read<WorkoutSessionFlowCubit>();
     final flowState = flowCubit.state;
-    final programExercise = flowState.programDay?.programExercises.firstWhereOrNull(
-      (exercise) => exercise.id == widget.programExerciseId,
-    );
-    if (flowState.workoutSessionId == null || programExercise == null) {
+    final spec = flowState.executionPlan?.exercises
+        .where((exercise) => exercise.executionKey == widget.executionKey)
+        .firstOrNull;
+    if (flowState.workoutSessionId == null || spec == null) {
       _isInvalidRoute = true;
       return;
     }
 
-    _programExercise = programExercise;
-    _contextFuture = flowCubit.ensureExerciseSession(programExercise);
+    _spec = spec;
+    _contextFuture = flowCubit.ensureExerciseSession(spec);
   }
 
   void _retry() {
-    final programExercise = _programExercise;
-    if (programExercise == null) return;
+    final spec = _spec;
+    if (spec == null) return;
     setState(() {
-      _contextFuture = context.read<WorkoutSessionFlowCubit>().retryEnsureExerciseSession(programExercise);
+      _contextFuture = context.read<WorkoutSessionFlowCubit>().retryEnsureExerciseSession(spec);
     });
   }
 
@@ -64,7 +64,7 @@ class _ActiveExerciseGateState extends State<ActiveExerciseGate> {
     final future = _contextFuture;
     if (future == null) return const ScreenLoadingIndicator();
 
-    return FutureBuilder<Result<ActiveWorkoutExerciseContext>>(
+    return FutureBuilder<Result<ActiveExerciseExecution>>(
       future: future,
       builder: (context, snapshot) {
         final result = snapshot.data;
@@ -77,21 +77,22 @@ class _ActiveExerciseGateState extends State<ActiveExerciseGate> {
 
         return switch (result) {
           Failure(:final error) => _ExerciseSessionError(message: error.toString(), onRetry: _retry),
-          Success(value: final exerciseContext) => _buildExercise(exerciseContext),
+          Success(value: final execution) => _buildExercise(execution),
         };
       },
     );
   }
 
-  Widget _buildExercise(ActiveWorkoutExerciseContext exerciseContext) {
+  Widget _buildExercise(ActiveExerciseExecution execution) {
     final flowState = context.read<WorkoutSessionFlowCubit>().state;
-    final restoredSets = flowState.restoredSets[exerciseContext.programExercise.id];
-    final initialSets = restoredSets ?? (exerciseContext.session.sets.isEmpty ? null : exerciseContext.session.sets);
+    final programExerciseId = execution.spec.workoutProgramExerciseId;
+    final restoredSets = programExerciseId == null ? null : flowState.restoredSets[programExerciseId];
+    final initialSets = restoredSets ?? (execution.session.sets.isEmpty ? null : execution.session.sets);
 
     return BlocProvider(
-      key: ValueKey(exerciseContext.session.id),
+      key: ValueKey(execution.exerciseSessionId),
       create: (_) {
-        final cubit = di.getIt<ActiveExerciseCubit>(param1: exerciseContext);
+        final cubit = di.getIt<ActiveExerciseCubit>(param1: execution);
         unawaited(cubit.initialize(restoredSets: initialSets));
         return cubit;
       },

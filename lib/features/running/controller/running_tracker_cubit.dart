@@ -45,8 +45,6 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
   int get workoutSessionId => config.workoutSessionId;
 
-  int get workoutProgramExerciseId => config.workoutProgramExerciseId;
-
   ExerciseSegmentEntity? get currentSegment => config.segments.elementAtOrNull(state.currentSegmentIndex);
 
   bool get hasSeenAudioHint => _preferencesService.hasSeenAudioHint;
@@ -58,7 +56,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> init() async {
     final lap = await _repository.getInProgressLapForExercise(
       sessionId: workoutSessionId,
-      programExerciseId: workoutProgramExerciseId,
+      exerciseSessionId: config.exerciseSessionId,
+      workoutProgramExerciseId: config.workoutProgramExerciseId,
     );
 
     if (lap != null) {
@@ -110,7 +109,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         ? null
         : await _repository.getLastLap(
             sessionId: workoutSessionId,
-            programExerciseId: workoutProgramExerciseId,
+            exerciseSessionId: config.exerciseSessionId,
+            workoutProgramExerciseId: config.workoutProgramExerciseId,
           );
 
     if (lastLap != null && lastLap.setNumber >= limits.length) {
@@ -326,7 +326,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         mode: mode,
         limits: config.limits,
         sessionId: workoutSessionId,
-        programExerciseId: workoutProgramExerciseId,
+        exerciseSessionId: config.exerciseSessionId,
+        workoutProgramExerciseId: config.workoutProgramExerciseId,
         startPaused: startPaused,
         restoreCompletedPlan: true,
       );
@@ -335,7 +336,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         mode: mode,
         limits: config.limits,
         sessionId: workoutSessionId,
-        programExerciseId: workoutProgramExerciseId,
+        exerciseSessionId: config.exerciseSessionId,
+        workoutProgramExerciseId: config.workoutProgramExerciseId,
         startPaused: startPaused,
       );
     }

@@ -130,7 +130,7 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
               if (currentExercise == null) return;
 
               ActiveExercisePageRoute(
-                programExerciseId: currentExercise.id,
+                executionKey: currentExercise.executionKey,
               ).go(context);
             },
           ),

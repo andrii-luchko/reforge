@@ -166,14 +166,10 @@ abstract class ApiClient {
     @Path('workout_program_exercise_id') int programExerciseId,
   );
 
-  @PATCH(
-    '/workout-exercise-sessions/sessions/{workout_session_id}/program-exercises/{workout_program_exercise_id}/exercises/{exercise_id}/notes',
-  )
-  Future<void> saveExerciseNotes(
-    @Path('workout_session_id') int workoutSessionId,
-    @Path('workout_program_exercise_id') int programExerciseId,
-    @Path('exercise_id') int exerciseId,
-    @BodyExtra('note') String note,
+  @PATCH('/workout-exercise-sessions/{exerciseSessionId}')
+  Future<void> saveExerciseSessionNotes(
+    @Path('exerciseSessionId') int exerciseSessionId,
+    @BodyExtra('notes') String notes,
   );
 
   @POST('/workout-sessions')

@@ -149,19 +149,12 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
 
   @override
   Future<Result<void>> saveWorkoutNote({
-    required int exerciseId,
-    required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required String note,
   }) async {
     try {
       await makeRequest(
-        () => _apiClient.saveExerciseNotes(
-          workoutSessionId,
-          workoutProgramExerciseId,
-          exerciseId,
-          note,
-        ),
+        () => _apiClient.saveExerciseSessionNotes(exerciseSessionId, note),
         label: 'saveWorkoutNote',
       );
       return const Result.success(null);

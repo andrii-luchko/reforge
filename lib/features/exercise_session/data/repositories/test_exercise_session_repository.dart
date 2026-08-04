@@ -109,9 +109,7 @@ class TestExerciseSessionRepository implements ExerciseSessionRepository {
 
   @override
   Future<Result<void>> saveWorkoutNote({
-    required int exerciseId,
-    required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required String note,
   }) async {
     return const Result.success(null);

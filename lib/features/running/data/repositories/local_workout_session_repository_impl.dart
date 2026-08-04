@@ -3,30 +3,35 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 
 @LazySingleton(as: LocalWorkoutSessionRepository)
 class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository {
-  LocalWorkoutSessionRepositoryImpl(this._db);
+  LocalWorkoutSessionRepositoryImpl(this._db, this._clientIdGenerator);
 
   final WorkoutDatabase _db;
+  final ClientIdGenerator _clientIdGenerator;
 
   @override
   Stream<List<ActiveRunningSet>> watchActiveRunningSets({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   }) {
     return _db.watchSetsForExercise(
       sessionId: sessionId,
-      programExerciseId: programExerciseId,
+      exerciseSessionId: exerciseSessionId,
+      programExerciseId: workoutProgramExerciseId,
     );
   }
 
   @override
   Future<int> createNewActiveSet({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
     required int setNumber,
     required String trackingMode,
+    int? workoutProgramExerciseId,
     int? programSegmentId,
     String? segmentType,
   }) async {
@@ -35,10 +40,10 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
         .insert(
           ActiveRunningSetsCompanion.insert(
             sessionId: sessionId,
-            programExerciseId: programExerciseId,
+            exerciseSessionId: drift.Value(exerciseSessionId),
+            programExerciseId: drift.Value(workoutProgramExerciseId),
+            clientSetId: _clientIdGenerator.nextSetId(),
             setNumber: setNumber,
-            isBusy: const drift.Value(true),
-            isDone: const drift.Value(false),
             trackingMode: drift.Value(trackingMode),
             programSegmentId: drift.Value(programSegmentId),
             segmentType: segmentType != null ? drift.Value(segmentType) : const drift.Value.absent(),
@@ -99,7 +104,8 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   @override
   Future<List<RouteCoordinate>> getRoutePoints({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   }) async {
     final query =
         _db.select(_db.sessionRoutePoints).join([
@@ -110,7 +116,11 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
           ])
           ..where(
             _db.sessionRoutePoints.sessionId.equals(sessionId) &
-                _db.activeRunningSets.programExerciseId.equals(programExerciseId),
+                (_db.activeRunningSets.exerciseSessionId.equals(exerciseSessionId) |
+                    (_db.activeRunningSets.exerciseSessionId.isNull() &
+                        (workoutProgramExerciseId == null
+                            ? const drift.Constant(false)
+                            : _db.activeRunningSets.programExerciseId.equals(workoutProgramExerciseId)))),
           )
           ..orderBy([drift.OrderingTerm(expression: _db.sessionRoutePoints.timestamp)]);
 
@@ -130,11 +140,13 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   @override
   Future<ActiveRunningSet?> getInProgressLapForExercise({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   }) {
     return _db.getInProgressLapForExercise(
       sessionId: sessionId,
-      programExerciseId: programExerciseId,
+      exerciseSessionId: exerciseSessionId,
+      programExerciseId: workoutProgramExerciseId,
     );
   }
 
@@ -146,16 +158,33 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   @override
   Future<ActiveRunningSet?> getLastLap({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   }) {
     return _db.getLastLap(
       sessionId: sessionId,
-      programExerciseId: programExerciseId,
+      exerciseSessionId: exerciseSessionId,
+      programExerciseId: workoutProgramExerciseId,
     );
   }
 
   @override
-  Future<void> markSetAsDone(int setId) {
-    return _db.markSetAsDone(setId);
+  Future<void> markSetAsSyncing(int setId) {
+    return _db.markSetAsSyncing(setId);
+  }
+
+  @override
+  Future<void> markSetSyncFailed(int setId) {
+    return _db.markSetSyncFailed(setId);
+  }
+
+  @override
+  Future<void> markSetAsSynced(int setId, {required int remoteSetId}) {
+    return _db.markSetAsSynced(setId, remoteSetId: remoteSetId);
+  }
+
+  @override
+  Future<void> recoverInterruptedSetSyncs() {
+    return _db.recoverInterruptedSetSyncs();
   }
 }

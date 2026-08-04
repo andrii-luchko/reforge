@@ -129,6 +129,18 @@ void main() {
       verify(() => apiClient.completeSet(request)).called(1);
     });
 
+    test('saves notes through the exercise-session endpoint', () async {
+      when(() => apiClient.saveExerciseSessionNotes(246, 'outdoor intervals')).thenAnswer((_) async {});
+
+      final result = await repository.saveWorkoutNote(
+        exerciseSessionId: 246,
+        note: 'outdoor intervals',
+      );
+
+      expect(result.isSuccess, isTrue);
+      verify(() => apiClient.saveExerciseSessionNotes(246, 'outdoor intervals')).called(1);
+    });
+
     test('searches with filters and maps exercises plus pagination', () async {
       const request = SwapExerciseSearchRequest(
         search: 'run',

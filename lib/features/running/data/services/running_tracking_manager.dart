@@ -39,7 +39,8 @@ class RunningSessionManager {
   final _eventsController = StreamController<RunningEvent>.broadcast();
 
   int? _workoutSessionId;
-  int? _programExerciseId;
+  int? _exerciseSessionId;
+  int? _workoutProgramExerciseId;
   int? _currentDbSetId;
   Timer? _snapshotTimer;
   Future<void>? _endSessionFuture;
@@ -54,11 +55,13 @@ class RunningSessionManager {
   /// Fetches historical route points for the session.
   Future<List<RouteCoordinate>> getRoutePoints({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   }) {
     return _repository.getRoutePoints(
       sessionId: sessionId,
-      programExerciseId: programExerciseId,
+      exerciseSessionId: exerciseSessionId,
+      workoutProgramExerciseId: workoutProgramExerciseId,
     );
   }
 
@@ -66,7 +69,8 @@ class RunningSessionManager {
     required RunningMode mode,
     required List<LapLimit> limits,
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
     bool startPaused = false,
     bool restoreCompletedPlan = false,
   }) async {
@@ -84,13 +88,15 @@ class RunningSessionManager {
     _currentMode = mode;
     _limits = limits;
     _workoutSessionId = sessionId;
-    _programExerciseId = programExerciseId;
+    _exerciseSessionId = exerciseSessionId;
+    _workoutProgramExerciseId = workoutProgramExerciseId;
 
     try {
       // Check for an interrupted session lap in the DB
       final inProgressLap = await _repository.getInProgressLapForExercise(
         sessionId: sessionId,
-        programExerciseId: programExerciseId,
+        exerciseSessionId: exerciseSessionId,
+        workoutProgramExerciseId: workoutProgramExerciseId,
       );
 
       RunningMetrics? initialOffset;
@@ -115,7 +121,8 @@ class RunningSessionManager {
       } else {
         final lastLap = await _repository.getLastLap(
           sessionId: sessionId,
-          programExerciseId: programExerciseId,
+          exerciseSessionId: exerciseSessionId,
+          workoutProgramExerciseId: workoutProgramExerciseId,
         );
         _currentLapIndex = lastLap?.setNumber ?? 0;
 
@@ -131,7 +138,8 @@ class RunningSessionManager {
               : null;
           _currentDbSetId = await _repository.createNewActiveSet(
             sessionId: _workoutSessionId!,
-            programExerciseId: _programExerciseId!,
+            exerciseSessionId: _exerciseSessionId!,
+            workoutProgramExerciseId: _workoutProgramExerciseId,
             setNumber: _currentLapIndex + 1,
             trackingMode: mode.dbValue,
             programSegmentId: currentLimit?.segmentId,
@@ -180,14 +188,15 @@ class RunningSessionManager {
 
   Future<void> resumeSession() async {
     // If resuming from a suspended state (e.g. from summary), we need to create a new DB row
-    if (_currentDbSetId == null && _workoutSessionId != null && _programExerciseId != null) {
+    if (_currentDbSetId == null && _workoutSessionId != null && _exerciseSessionId != null) {
       _getEngineForMode(_currentMode)?.reset();
       _latestMetrics = null;
 
       final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
-        programExerciseId: _programExerciseId!,
+        exerciseSessionId: _exerciseSessionId!,
+        workoutProgramExerciseId: _workoutProgramExerciseId,
         setNumber: _currentLapIndex + 1,
         trackingMode: _currentMode!.dbValue,
         programSegmentId: currentLimit?.segmentId,
@@ -336,7 +345,8 @@ class RunningSessionManager {
     _currentMode = null;
     _limits = null;
     _workoutSessionId = null;
-    _programExerciseId = null;
+    _exerciseSessionId = null;
+    _workoutProgramExerciseId = null;
     _currentLapIndex = 0;
     _currentDbSetId = null;
     _latestMetrics = null;
@@ -452,7 +462,7 @@ class RunningSessionManager {
       }
 
       // CRITICAL: Check if the session was ended by the user during the async DB writes!
-      if (_currentMode == null || _workoutSessionId == null || _programExerciseId == null) {
+      if (_currentMode == null || _workoutSessionId == null || _exerciseSessionId == null) {
         logger.d('RunningSessionManager: Session ended during lap completion. Aborting new lap creation.');
         return;
       }
@@ -484,7 +494,8 @@ class RunningSessionManager {
         // Start a new row for the new lap
         _currentDbSetId = await _repository.createNewActiveSet(
           sessionId: _workoutSessionId!,
-          programExerciseId: _programExerciseId!,
+          exerciseSessionId: _exerciseSessionId!,
+          workoutProgramExerciseId: _workoutProgramExerciseId,
           setNumber: _currentLapIndex + 1,
           trackingMode: _currentMode!.dbValue,
           programSegmentId: currentLimit?.segmentId,

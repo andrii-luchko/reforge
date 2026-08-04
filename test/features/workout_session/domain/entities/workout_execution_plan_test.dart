@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
@@ -114,7 +115,7 @@ void main() {
       final execution = ActiveExerciseExecution(
         spec: spec,
         workoutSessionId: 182,
-        exerciseSessionId: 246,
+        session: _exerciseSession,
       );
 
       expect(execution.spec, same(spec));
@@ -133,6 +134,23 @@ void main() {
     });
   });
 }
+
+const _exerciseSession = WorkoutExerciseSessionEntity(
+  id: 246,
+  exerciseId: 4,
+  workoutSessionId: 182,
+  workoutProgramExerciseId: null,
+  isSwapped: false,
+  swappedExerciseId: null,
+  isActive: true,
+  notes: null,
+  lastCompletedSet: null,
+  createdAt: null,
+  updatedAt: null,
+  sets: [],
+  exercise: null,
+  swappedExercise: null,
+);
 
 const _runningExercise = ExerciseDetailsEntity(
   id: 4,

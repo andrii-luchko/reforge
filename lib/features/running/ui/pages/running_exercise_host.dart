@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
 import 'package:reforge/features/running/ui/pages/running_active_page.dart';
@@ -20,7 +21,7 @@ import 'package:reforge/features/running/ui/pages/running_permission_denied_page
 class RunningExerciseHost extends StatelessWidget {
   const RunningExerciseHost({required this.onExerciseFinished, super.key});
 
-  final Future<void> Function() onExerciseFinished;
+  final Future<bool> Function() onExerciseFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +49,16 @@ class RunningExerciseHost extends StatelessWidget {
             child: switch (state.phase) {
               RunningPhase.overview => const RunningOverviewPage(),
               RunningPhase.active => const RunningActivePage(),
-              RunningPhase.finished => RunningLapsSummaryPage(
-                onExerciseFinished: onExerciseFinished,
+              RunningPhase.finished => BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
+                builder: (context, exerciseState) => RunningLapsSummaryPage(
+                  exerciseDetails: exerciseState.effectiveExercise,
+                  measureSystem: exerciseState.measureSystem,
+                  sets: exerciseState.sets,
+                  notes: exerciseState.notes,
+                  isSendingSet: exerciseState.isSendingSet,
+                  onNoteChanged: context.read<ActiveExerciseCubit>().setNote,
+                  onExerciseFinished: onExerciseFinished,
+                ),
               ),
               RunningPhase.permissionDenied => const RunningPermissionDeniedPage(),
             },

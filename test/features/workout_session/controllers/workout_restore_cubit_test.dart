@@ -11,6 +11,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_exercise_s
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
@@ -131,15 +132,15 @@ void main() {
     await restoreCubit.checkForInterrupted();
     await restoreCubit.restoreSession();
 
-    final context = flowCubit.exerciseContextFor(100)!;
-    expect(context.session.id, 228);
-    expect(context.session.swappedExerciseId, 14);
-    expect(context.effectiveExercise.id, 14);
-    expect(context.effectiveExercise.isRunningSwapCandidate, isTrue);
-    expect(context.session.notes, 'restored note');
+    final execution = flowCubit.exerciseExecutionFor(flowCubit.state.currentExercise!.executionKey)!;
+    expect(execution.session.id, 228);
+    expect(execution.session.swappedExerciseId, 14);
+    expect(execution.effectiveExercise.id, 14);
+    expect(execution.effectiveExercise.isRunningSwapCandidate, isTrue);
+    expect(execution.session.notes, 'restored note');
     expect(flowCubit.state.restoredSets[100], hasLength(1));
 
-    final ensured = await flowCubit.ensureExerciseSession(_regularProgramExercise);
+    final ensured = await flowCubit.ensureExerciseSession(flowCubit.state.currentExercise!);
     expect(ensured.orNull?.session.id, 228);
     verifyNever(
       () => exerciseSessionRepository.createWorkoutExerciseSession(
@@ -154,7 +155,8 @@ void main() {
       exerciseSessionRepository,
       analytics,
       userSessionService,
-      context,
+      const ClientIdGenerator(),
+      execution,
     );
     await activeCubit.initialize(restoredSets: flowCubit.state.restoredSets[100]);
     expect(activeCubit.isRunningExercise, isTrue);
@@ -181,15 +183,16 @@ void main() {
     await restoreCubit.checkForInterrupted();
     await restoreCubit.restoreSession();
 
-    final context = flowCubit.exerciseContextFor(101)!;
-    expect(context.session.id, 229);
-    expect(context.effectiveExercise.id, 33);
+    final execution = flowCubit.exerciseExecutionFor(flowCubit.state.currentExercise!.executionKey)!;
+    expect(execution.session.id, 229);
+    expect(execution.effectiveExercise.id, 33);
 
     final activeCubit = ActiveExerciseCubit(
       exerciseSessionRepository,
       analytics,
       userSessionService,
-      context,
+      const ClientIdGenerator(),
+      execution,
     );
     await activeCubit.initialize();
     expect(_runningProgramExercise.isRunningExercise, isTrue);
@@ -229,8 +232,9 @@ void main() {
     await restoreCubit.checkForInterrupted();
     await restoreCubit.restoreSession();
 
-    expect(flowCubit.exerciseContextFor(100)?.session.id, 228);
-    expect(flowCubit.exerciseContextFor(100)?.session.workoutProgramExerciseId, 100);
+    final execution = flowCubit.exerciseExecutionFor(flowCubit.state.currentExercise!.executionKey);
+    expect(execution?.session.id, 228);
+    expect(execution?.session.workoutProgramExerciseId, 100);
     expect(flowCubit.state.restoredSets, hasLength(1));
     expect(flowCubit.state.restoredSets[100], hasLength(1));
   });

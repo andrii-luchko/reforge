@@ -17,11 +17,15 @@ import 'package:reforge/features/workout_program/data/enums/execution_mode.dart'
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 
@@ -76,8 +80,8 @@ void main() {
       ).thenAnswer((_) => completer.future);
       _seedActiveWorkout(cubit);
 
-      final first = cubit.ensureExerciseSession(_programExercise);
-      final second = cubit.ensureExerciseSession(_programExercise);
+      final first = cubit.ensureExerciseSession(cubit.state.currentExercise!);
+      final second = cubit.ensureExerciseSession(cubit.state.currentExercise!);
 
       expect(identical(first, second), isTrue);
       verify(
@@ -95,7 +99,7 @@ void main() {
       expect(contexts.first.orNull?.session.id, 222);
       expect(contexts.last.orNull?.session.id, 222);
 
-      final repeated = await cubit.ensureExerciseSession(_programExercise);
+      final repeated = await cubit.ensureExerciseSession(cubit.state.currentExercise!);
       expect(repeated.orNull?.session.id, 222);
       verifyNoMoreInteractions(exerciseRepository);
     });
@@ -115,14 +119,14 @@ void main() {
       });
       _seedActiveWorkout(cubit);
 
-      final failed = await cubit.ensureExerciseSession(_programExercise);
-      final rebuild = await cubit.ensureExerciseSession(_programExercise);
+      final failed = await cubit.ensureExerciseSession(cubit.state.currentExercise!);
+      final rebuild = await cubit.ensureExerciseSession(cubit.state.currentExercise!);
 
       expect(failed.isError, isTrue);
       expect(rebuild.isError, isTrue);
       expect(attempts, 1);
 
-      final retried = await cubit.retryEnsureExerciseSession(_programExercise);
+      final retried = await cubit.retryEnsureExerciseSession(cubit.state.currentExercise!);
       expect(retried.orNull?.session.id, 223);
       expect(attempts, 2);
     });
@@ -157,7 +161,7 @@ void main() {
       );
       _seedActiveWorkout(cubit);
 
-      final result = await cubit.ensureExerciseSession(_programExercise);
+      final result = await cubit.ensureExerciseSession(cubit.state.currentExercise!);
 
       expect(result.isSuccess, isTrue);
       expect(result.orNull?.session.id, 224);
@@ -177,7 +181,7 @@ void main() {
       final restored = _context(sessionId: 225);
       _seedActiveWorkout(cubit, contexts: {100: restored});
 
-      final result = await cubit.ensureExerciseSession(_programExercise);
+      final result = await cubit.ensureExerciseSession(cubit.state.currentExercise!);
 
       expect(result.orNull?.session.id, 225);
       verifyNever(
@@ -192,48 +196,36 @@ void main() {
 
     test('updates the registered context after a confirmed swap and rejects a stale session id', () {
       _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
-      final updated = ActiveWorkoutExerciseContext(
-        programExercise: _programExercise,
+      final current = _execution(cubit)!;
+      final updated = ActiveExerciseExecution(
+        spec: current.spec,
+        workoutSessionId: current.workoutSessionId,
         session: _session(id: 225, swappedExerciseId: 12),
         effectiveExercise: _replacementExercise,
       );
 
-      expect(cubit.updateExerciseContextAfterSwap(updated), isTrue);
-      expect(cubit.exerciseContextFor(100)?.effectiveExercise.id, 12);
-      expect(cubit.exerciseContextFor(100)?.session.swappedExerciseId, 12);
+      expect(cubit.updateExerciseExecutionAfterSwap(updated), isTrue);
+      expect(_execution(cubit)?.effectiveExercise.id, 12);
+      expect(_execution(cubit)?.session.swappedExerciseId, 12);
 
-      final stale = ActiveWorkoutExerciseContext(
-        programExercise: _programExercise,
+      final stale = ActiveExerciseExecution(
+        spec: current.spec,
+        workoutSessionId: current.workoutSessionId,
         session: _session(id: 999, swappedExerciseId: 13),
         effectiveExercise: _replacementExercise,
       );
-      expect(cubit.updateExerciseContextAfterSwap(stale), isFalse);
-      expect(cubit.exerciseContextFor(100)?.session.id, 225);
+      expect(cubit.updateExerciseExecutionAfterSwap(stale), isFalse);
+      expect(_execution(cubit)?.session.id, 225);
     });
 
-    test('clears restored contexts when a new workout starts', () async {
+    test('does not start a second workout while one is active', () async {
       _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
-      when(() => workoutRepository.startWorkoutSession(25)).thenAnswer(
-        (_) async => const Result.success(
-          WorkoutSession(
-            id: 170,
-            userId: 67,
-            workoutProgramDayId: 25,
-            duration: 0,
-            status: WorkoutSessionStatus.active,
-            totalXpEarned: 0,
-          ),
-        ),
-      );
-      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
-      when(
-        () => sessionCache.saveActiveSession(remoteSessionId: 170, programDayId: 25),
-      ).thenAnswer((_) async {});
 
-      await cubit.startWorkout(_programDay);
+      final result = await cubit.startProgramWorkout(_programDay);
 
-      expect(cubit.exerciseContextFor(100), isNull);
-      expect(cubit.state.workoutSessionId, 170);
+      expect(result.orNull?.exerciseSessionId, 225);
+      expect(cubit.state.workoutSessionId, 169);
+      verifyNever(() => workoutRepository.startWorkoutSession(any()));
     });
 
     test('ignores a stale POST response after a new workout starts', () async {
@@ -247,31 +239,14 @@ void main() {
         ),
       ).thenAnswer((_) => completer.future);
       _seedActiveWorkout(cubit);
-      final pending = cubit.ensureExerciseSession(_programExercise);
+      final pending = cubit.ensureExerciseSession(cubit.state.currentExercise!);
 
-      when(() => workoutRepository.startWorkoutSession(25)).thenAnswer(
-        (_) async => const Result.success(
-          WorkoutSession(
-            id: 170,
-            userId: 67,
-            workoutProgramDayId: 25,
-            duration: 0,
-            status: WorkoutSessionStatus.active,
-            totalXpEarned: 0,
-          ),
-        ),
-      );
-      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
-      when(
-        () => sessionCache.saveActiveSession(remoteSessionId: 170, programDayId: 25),
-      ).thenAnswer((_) async {});
-
-      await cubit.startWorkout(_programDay);
+      _seedActiveWorkout(cubit, sessionId: 170);
       completer.complete(Result.success(_session(id: 222)));
       final staleResult = await pending;
 
       expect(staleResult.isError, isTrue);
-      expect(cubit.exerciseContextFor(100), isNull);
+      expect(_execution(cubit), isNull);
       expect(cubit.state.workoutSessionId, 170);
     });
 
@@ -289,24 +264,213 @@ void main() {
 
       await cubit.cancelWorkout(15);
 
-      expect(cubit.exerciseContextFor(100), isNull);
+      expect(_execution(cubit), isNull);
       expect(cubit.state.isCanceled, isTrue);
+    });
+  });
+
+  group('prepared workout lifecycle', () {
+    test('prepares a program workout without creating backend sessions', () {
+      cubit.prepareProgramWorkout(_programDay);
+
+      expect(cubit.state.isPrepared, isTrue);
+      expect(cubit.state.currentExercise?.exerciseId, 33);
+      expect(cubit.state.currentExercise?.workoutProgramExerciseId, 100);
+      expect(cubit.state.totalExercises, 1);
+      verifyZeroInteractions(workoutRepository);
+      verifyZeroInteractions(exerciseRepository);
+    });
+
+    test('starts a program workout before its first exercise session', () async {
+      final calls = <String>[];
+      when(() => workoutRepository.startWorkoutSession(25)).thenAnswer((_) async {
+        calls.add('workout');
+        return const Result.success(_programWorkoutSession);
+      });
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 33,
+          workoutSessionId: 170,
+          workoutProgramExerciseId: 100,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer((_) async {
+        calls.add('exercise');
+        return Result.success(_session(id: 226, workoutSessionId: 170));
+      });
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+      when(
+        () => sessionCache.saveActiveSession(remoteSessionId: 170, programDayId: 25),
+      ).thenAnswer((_) async {});
+
+      final result = await cubit.startProgramWorkout(_programDay);
+
+      expect(calls, ['workout', 'exercise']);
+      expect(result.orNull?.exerciseSessionId, 226);
+      expect(result.orNull?.spec.workoutProgramExerciseId, 100);
+      expect(cubit.state.isActive, isTrue);
+      expect(cubit.state.isStartingWorkout, isFalse);
+    });
+
+    test('starts Free Run without program bindings or program cache write', () async {
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:one',
+      );
+      when(() => workoutRepository.startAdHocWorkoutSession()).thenAnswer(
+        (_) async => const Result.success(_freeWorkoutSession),
+      );
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer((_) async => Result.success(_freeSession(id: 246)));
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+
+      final result = await cubit.startAdHocWorkout(plan);
+
+      expect(result.orNull?.spec.executionKey, 'free-run:one');
+      expect(result.orNull?.exerciseSessionId, 246);
+      expect(result.orNull?.spec.workoutProgramExerciseId, isNull);
+      expect(cubit.state.programDay, isNull);
+      expect(cubit.state.startIntent, WorkoutStartIntent.freeRun);
+      verifyNever(
+        () => sessionCache.saveActiveSession(
+          remoteSessionId: any(named: 'remoteSessionId'),
+          programDayId: any(named: 'programDayId'),
+        ),
+      );
+    });
+
+    test('completes one-exercise Free Run through the common next path', () async {
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:complete',
+      );
+      when(() => workoutRepository.startAdHocWorkoutSession()).thenAnswer(
+        (_) async => const Result.success(_freeWorkoutSession),
+      );
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer((_) async => Result.success(_freeSession(id: 246)));
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+      when(() => sessionCache.updateDuration(60)).thenAnswer((_) async {});
+      when(() => sessionCache.updateLastExerciseIndex(0)).thenAnswer((_) async {});
+      when(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 182,
+          workoutSessionDuration: 60,
+        ),
+      ).thenAnswer((_) async => const Result.success(_summary));
+      when(() => sessionCache.clearActiveSession()).thenAnswer((_) async {});
+
+      await cubit.startAdHocWorkout(plan);
+      await cubit.nextExercise(60);
+
+      expect(cubit.state.isCompleted, isTrue);
+      expect(cubit.state.summary, _summary);
+    });
+
+    test('coalesces repeated start taps while workout creation is in flight', () async {
+      final completer = Completer<Result<WorkoutSession>>();
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:tap',
+      );
+      cubit.prepareWorkout(plan, intent: WorkoutStartIntent.freeRun);
+      when(() => workoutRepository.startAdHocWorkoutSession()).thenAnswer((_) => completer.future);
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer((_) async => Result.success(_freeSession(id: 246)));
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+
+      final first = cubit.startPreparedWorkout();
+      final repeated = await cubit.startPreparedWorkout();
+      expect(repeated.isError, isTrue);
+
+      completer.complete(const Result.success(_freeWorkoutSession));
+      expect((await first).isSuccess, isTrue);
+      verify(() => workoutRepository.startAdHocWorkoutSession()).called(1);
+    });
+
+    test('reconciles an ambiguous Free Run exercise POST through workout GET', () async {
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:timeout',
+      );
+      final timeout = DioException(
+        requestOptions: RequestOptions(path: '/workout-exercise-sessions'),
+        type: DioExceptionType.receiveTimeout,
+      );
+      when(() => workoutRepository.startAdHocWorkoutSession()).thenAnswer(
+        (_) async => const Result.success(_freeWorkoutSession),
+      );
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer(
+        (_) async => Result.error(AppNetworkException('timeout', originalError: timeout)),
+      );
+      when(() => workoutRepository.getWorkoutSessionDetails(182)).thenAnswer(
+        (_) async => Result.success(
+          WorkoutSessionDetailsDTO(
+            id: 182,
+            duration: 0,
+            status: WorkoutSessionStatus.active,
+            totalXpEarned: 0,
+            exerciseSessions: [_freeSessionDto(id: 246)],
+          ),
+        ),
+      );
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+
+      final result = await cubit.startAdHocWorkout(plan);
+
+      expect(result.orNull?.exerciseSessionId, 246);
+      verify(() => workoutRepository.getWorkoutSessionDetails(182)).called(1);
+      verify(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).called(1);
     });
   });
 }
 
 void _seedActiveWorkout(
   WorkoutSessionFlowCubit cubit, {
+  int sessionId = 169,
   Map<int, ActiveWorkoutExerciseContext> contexts = const {},
 }) {
   cubit.initFromRestore(
-    sessionId: 169,
+    sessionId: sessionId,
     programDay: _programDay,
     durationSec: 0,
     restoredSets: const {},
     startIndex: 0,
     exerciseContexts: contexts,
   );
+}
+
+ActiveExerciseExecution? _execution(WorkoutSessionFlowCubit cubit) {
+  final executionKey = cubit.state.executionPlan?.exercises.first.executionKey;
+  return executionKey == null ? null : cubit.exerciseExecutionFor(executionKey);
 }
 
 ActiveWorkoutExerciseContext _context({required int sessionId}) {
@@ -317,11 +481,15 @@ ActiveWorkoutExerciseContext _context({required int sessionId}) {
   );
 }
 
-WorkoutExerciseSessionEntity _session({required int id, int? swappedExerciseId}) {
+WorkoutExerciseSessionEntity _session({
+  required int id,
+  int workoutSessionId = 169,
+  int? swappedExerciseId,
+}) {
   return WorkoutExerciseSessionEntity(
     id: id,
     exerciseId: 33,
-    workoutSessionId: 169,
+    workoutSessionId: workoutSessionId,
     workoutProgramExerciseId: 100,
     isSwapped: swappedExerciseId != null,
     swappedExerciseId: swappedExerciseId,
@@ -333,6 +501,33 @@ WorkoutExerciseSessionEntity _session({required int id, int? swappedExerciseId})
     sets: const [],
     exercise: null,
     swappedExercise: null,
+  );
+}
+
+WorkoutExerciseSessionEntity _freeSession({required int id}) {
+  return WorkoutExerciseSessionEntity(
+    id: id,
+    exerciseId: 4,
+    workoutSessionId: 182,
+    workoutProgramExerciseId: null,
+    isSwapped: false,
+    swappedExerciseId: null,
+    isActive: true,
+    notes: null,
+    lastCompletedSet: null,
+    createdAt: null,
+    updatedAt: null,
+    sets: const [],
+    exercise: null,
+    swappedExercise: null,
+  );
+}
+
+WorkoutExerciseSessionDTO _freeSessionDto({required int id}) {
+  return WorkoutExerciseSessionDTO(
+    id: id,
+    exerciseId: 4,
+    workoutSessionId: 182,
   );
 }
 
@@ -373,6 +568,21 @@ const _replacementExercise = ExerciseDetailsEntity(
   instructionsSteps: {},
 );
 
+const _freeRunningExercise = ExerciseDetailsEntity(
+  id: 4,
+  name: 'Running',
+  description: 'Run',
+  key: null,
+  factionId: 3,
+  metrics: [WorkoutMetric.time, WorkoutMetric.distance],
+  poseDetectionPreset: null,
+  isTiered: false,
+  tiers: [],
+  videoInstructionUrl: null,
+  thumbnailInstructionUrl: null,
+  instructionsSteps: {},
+);
+
 const _programExercise = ProgramExerciseEntity(
   id: 100,
   programDayId: 25,
@@ -397,6 +607,23 @@ const _summary = WorkoutSessionSummaryEntity(
   earnedMilestones: [],
   isLevelUp: false,
   currentLevel: null,
+);
+
+const _programWorkoutSession = WorkoutSession(
+  id: 170,
+  userId: 67,
+  workoutProgramDayId: 25,
+  duration: 0,
+  status: WorkoutSessionStatus.active,
+  totalXpEarned: 0,
+);
+
+const _freeWorkoutSession = WorkoutSession(
+  id: 182,
+  userId: 67,
+  duration: 0,
+  status: WorkoutSessionStatus.active,
+  totalXpEarned: 0,
 );
 
 User _user() {

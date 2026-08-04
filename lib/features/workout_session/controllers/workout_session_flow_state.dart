@@ -5,6 +5,11 @@ sealed class WorkoutSessionFlowState with _$WorkoutSessionFlowState {
   const WorkoutSessionFlowState._();
 
   const factory WorkoutSessionFlowState({
+    WorkoutExecutionPlan? executionPlan,
+
+    WorkoutStartIntent? startIntent,
+
+    /// Retained as program-definition metadata while program UI is migrated.
     ProgramDayEntity? programDay,
 
     @Default(false) bool isLoading,
@@ -45,7 +50,9 @@ sealed class WorkoutSessionFlowState with _$WorkoutSessionFlowState {
     ActiveRunningSet? restoredInProgressLap,
   }) = _WorkoutSessionFlowState;
 
-  bool get isEmptyData => programDay == null;
+  bool get isEmptyData => executionPlan == null;
+
+  bool get isPrepared => executionPlan != null && workoutSessionId == null;
 
   bool get isFinished =>
       sessionStatus == WorkoutSessionStatus.completed || sessionStatus == WorkoutSessionStatus.canceled;
@@ -56,13 +63,23 @@ sealed class WorkoutSessionFlowState with _$WorkoutSessionFlowState {
 
   bool get isCompleted => sessionStatus == WorkoutSessionStatus.completed;
 
-  ProgramExerciseEntity? get currentExercise {
-    if (programDay == null || programDay!.sortedExercises.isEmpty) return null;
-    if (currentExerciseIndex >= programDay!.sortedExercises.length) return null;
-    return programDay!.sortedExercises[currentExerciseIndex];
+  WorkoutExerciseSpec? get currentExercise {
+    final exercises = executionPlan?.exercises;
+    if (exercises == null || exercises.isEmpty) return null;
+    if (currentExerciseIndex >= exercises.length) return null;
+    return exercises[currentExerciseIndex];
   }
 
-  int get totalExercises => programDay?.sortedExercises.length ?? 0;
+  ProgramExerciseEntity? get currentProgramExercise {
+    final programExerciseId = currentExercise?.workoutProgramExerciseId;
+    if (programExerciseId == null) return null;
+    for (final exercise in programDay?.programExercises ?? const <ProgramExerciseEntity>[]) {
+      if (exercise.id == programExerciseId) return exercise;
+    }
+    return null;
+  }
+
+  int get totalExercises => executionPlan?.exercises.length ?? 0;
 
   bool get isLastExercise => currentExerciseIndex == (totalExercises - 1);
 

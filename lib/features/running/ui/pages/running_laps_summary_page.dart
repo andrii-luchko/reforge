@@ -6,12 +6,14 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
-import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/running_laps_list.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -21,9 +23,24 @@ import 'package:reforge/shared/uikit/fields/app_text_field.dart';
 import 'package:toastification/toastification.dart';
 
 class RunningLapsSummaryPage extends StatelessWidget {
-  const RunningLapsSummaryPage({required this.onExerciseFinished, super.key});
+  const RunningLapsSummaryPage({
+    required this.exerciseDetails,
+    required this.measureSystem,
+    required this.sets,
+    required this.notes,
+    required this.isSendingSet,
+    required this.onNoteChanged,
+    required this.onExerciseFinished,
+    super.key,
+  });
 
-  final Future<void> Function() onExerciseFinished;
+  final ExerciseDetailsEntity exerciseDetails;
+  final MeasurementSystem measureSystem;
+  final List<WorkoutSet> sets;
+  final String notes;
+  final bool isSendingSet;
+  final ValueChanged<String> onNoteChanged;
+  final Future<bool> Function() onExerciseFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +54,7 @@ class RunningLapsSummaryPage extends StatelessWidget {
       child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
         builder: (context, state) {
           final cubit = context.read<RunningTrackerCubit>();
-          final activeExerciseCubit = context.watch<ActiveExerciseCubit>();
-          final exerciseDetails = activeExerciseCubit.effectiveExercise;
-
-          final measureSystem = activeExerciseCubit.state.measureSystem;
-
-          final completedLaps = activeExerciseCubit.state.sets.where((set) => set.isDone).map((set) {
+          final completedLaps = sets.where((set) => set.isLocallyCompleted || set.isDone).map((set) {
             final segment = set.programSegmentId == null
                 ? null
                 : cubit.config.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
@@ -78,8 +90,8 @@ class RunningLapsSummaryPage extends StatelessWidget {
                                 hintText: t.workout.addNotesHint,
                                 maxLines: null,
                                 keyboardType: TextInputType.multiline,
-                                initialValue: context.read<ActiveExerciseCubit>().state.notes,
-                                onChanged: context.read<ActiveExerciseCubit>().setNote,
+                                initialValue: notes,
+                                onChanged: onNoteChanged,
                               ),
                             ),
 
@@ -101,7 +113,7 @@ class RunningLapsSummaryPage extends StatelessWidget {
                       child: RunningSummaryFooter(
                         state: state,
                         onBackToRunning: cubit.goToActive,
-                        onFinishExercise: state.isSubmitting || activeExerciseCubit.state.isSendingSet
+                        onFinishExercise: state.isSubmitting || isSendingSet
                             ? null
                             : () => unawaited(_onFinishExercise(context, cubit)),
                       ),
@@ -117,8 +129,8 @@ class RunningLapsSummaryPage extends StatelessWidget {
   }
 
   Future<void> _onFinishExercise(BuildContext context, RunningTrackerCubit cubit) async {
-    await onExerciseFinished();
-    if (!context.mounted || !context.read<ActiveExerciseCubit>().state.isSubmitted) return;
+    final isSubmitted = await onExerciseFinished();
+    if (!context.mounted || !isSubmitted) return;
 
     await cubit.finishExercise();
   }

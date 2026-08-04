@@ -708,15 +708,15 @@ class ActiveWorkoutShellRoute extends ShellRouteData {
 }
 
 class ActiveExercisePageRoute extends GoRouteData with $ActiveExercisePageRoute {
-  const ActiveExercisePageRoute({required this.programExerciseId});
+  const ActiveExercisePageRoute({required this.executionKey});
 
-  final int programExerciseId;
+  final String executionKey;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return ActiveExerciseGate(
-      key: ValueKey(programExerciseId),
-      programExerciseId: programExerciseId,
+      key: ValueKey(executionKey),
+      executionKey: executionKey,
     );
   }
 }

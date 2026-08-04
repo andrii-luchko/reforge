@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
@@ -24,33 +23,48 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   final RunningExerciseConfig config;
 
   StreamSubscription<List<ActiveRunningSet>>? _databaseSubscription;
-  final Set<int> _syncingRowIds = {};
-  bool _isInitialized = false;
+  final Map<int, Future<bool>> _syncFutures = {};
+  final Set<int> _syncedRowIds = {};
+  final Set<int> _failedRowIds = {};
+  List<ActiveRunningSet> _rows = const [];
+  Future<void>? _initialization;
+  String? _syncError;
 
-  void init() {
-    if (_isInitialized) return;
-    _isInitialized = true;
+  Future<void> init() => _initialization ??= _init();
+
+  Future<void> _init() async {
+    await _localRepository.recoverInterruptedSetSyncs();
+    if (isClosed) return;
 
     _databaseSubscription = _localRepository
         .watchActiveRunningSets(
           sessionId: config.workoutSessionId,
-          programExerciseId: config.workoutProgramExerciseId,
+          exerciseSessionId: config.exerciseSessionId,
+          workoutProgramExerciseId: config.workoutProgramExerciseId,
         )
         .listen(_onDatabaseRowsChanged);
   }
 
   void _onDatabaseRowsChanged(List<ActiveRunningSet> rows) {
-    final exerciseRows = rows.where((row) => row.programExerciseId == config.workoutProgramExerciseId).toList();
-    final mappedSets = exerciseRows.map(_mapRowToSet).toList();
+    _rows = rows
+        .where(
+          (row) =>
+              row.exerciseSessionId == config.exerciseSessionId ||
+              (row.exerciseSessionId == null && row.programExerciseId == config.workoutProgramExerciseId),
+        )
+        .toList();
 
-    emit(
-      RunningSetSyncState(
-        sets: mappedSets,
-        isSending: _syncingRowIds.isNotEmpty,
-      ),
-    );
+    for (final row in _rows) {
+      if (row.isSynced) {
+        _syncedRowIds.add(row.id);
+        _failedRowIds.remove(row.id);
+      } else if (row.hasSyncFailed) {
+        _failedRowIds.add(row.id);
+      }
+    }
+    _emitState();
 
-    for (final row in exerciseRows.where((row) => row.readyToSync)) {
+    for (final row in _rows.where((row) => row.isLocallyCompleted)) {
       unawaited(_syncRunningSet(row));
     }
   }
@@ -58,59 +72,105 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   WorkoutSet _mapRowToSet(ActiveRunningSet row) {
     return WorkoutSet(
       id: row.id,
+      clientSetId: row.clientSetId,
       distance: (row.distanceMeters ?? 0) / 1000,
       time: Duration(seconds: row.durationSeconds ?? 0),
       pace: row.avgSpeedKmH ?? 0,
       setNumber: row.setNumber,
-      isDone: row.isDone || row.readyToSync,
-      isBusy: row.isBusy,
+      isLocallyCompleted: !row.isTracking,
+      isDone: row.isSynced || _syncedRowIds.contains(row.id),
+      isBusy: row.isTracking || row.isSyncing || _syncFutures.containsKey(row.id),
       programSegmentId: row.programSegmentId,
     );
   }
 
-  Future<void> _syncRunningSet(ActiveRunningSet row) async {
-    if (_syncingRowIds.contains(row.id)) return;
-    _syncingRowIds.add(row.id);
-    _emitSendingState();
+  /// Retries every completed unsynced row once and waits for those requests.
+  /// Returns true only when every local row has been synced.
+  Future<bool> flush() async {
+    await init();
+    if (_rows.isEmpty || _rows.any((row) => row.isTracking)) return false;
 
-    try {
-      final set = state.sets.firstWhereOrNull((item) => item.id == row.id) ?? _mapRowToSet(row);
-      final result = await _exerciseSessionRepository.completeSet(
-        exerciseId: config.exercise.id,
-        workoutSessionId: config.workoutSessionId,
-        exerciseSessionId: config.exerciseSessionId,
-        workoutProgramExerciseId: config.workoutProgramExerciseId,
-        system: MeasurementSystem.metric,
-        set: set,
-      );
-
-      await result.fold(
-        onSuccess: (_) => _localRepository.markSetAsDone(row.id),
-        onError: (error, stackTrace) async {
-          logger.e(
-            'Failed to sync running set ${row.id}, retrying in 3s...',
-            error,
-            stackTrace,
-          );
-          _syncingRowIds.remove(row.id);
-          _emitSendingState();
-
-          await Future<void>.delayed(const Duration(seconds: 3));
-          if (!isClosed) unawaited(_syncRunningSet(row));
-        },
-      );
-    } finally {
-      _syncingRowIds.remove(row.id);
-      _emitSendingState();
-    }
+    final pending = _rows.where(
+      (row) => !row.isSynced && !_syncedRowIds.contains(row.id),
+    );
+    final results = await Future.wait(pending.map(_syncRunningSet));
+    _emitState();
+    return results.every((success) => success) && state.canFinish;
   }
 
-  void _emitSendingState() {
+  Future<bool> _syncRunningSet(ActiveRunningSet row) {
+    final inFlight = _syncFutures[row.id];
+    if (inFlight != null) return inFlight;
+    if (row.isSynced || _syncedRowIds.contains(row.id)) return Future.value(true);
+
+    final future = _syncRunningSetOnce(row);
+    _syncFutures[row.id] = future;
+    _failedRowIds.remove(row.id);
+    _syncError = null;
+    _emitState();
+    return future.whenComplete(() {
+      final _ = _syncFutures.remove(row.id);
+      _emitState();
+    });
+  }
+
+  Future<bool> _syncRunningSetOnce(ActiveRunningSet row) async {
+    await _localRepository.markSetAsSyncing(row.id);
+
+    final result = await _exerciseSessionRepository.completeSet(
+      exerciseId: config.exercise.id,
+      workoutSessionId: config.workoutSessionId,
+      exerciseSessionId: config.exerciseSessionId,
+      workoutProgramExerciseId: config.workoutProgramExerciseId,
+      system: MeasurementSystem.metric,
+      set: _mapRowToSet(row),
+    );
+
+    return result.fold(
+      onSuccess: (identity) async {
+        final echoedClientSetId = identity.clientSetId;
+        if (echoedClientSetId != null && echoedClientSetId != row.clientSetId) {
+          const message = 'Backend returned a different clientSetId for a running set.';
+          await _localRepository.markSetSyncFailed(row.id);
+          _failedRowIds.add(row.id);
+          _syncError = message;
+          logger.e(message);
+          return false;
+        }
+
+        await _localRepository.markSetAsSynced(
+          row.id,
+          remoteSetId: identity.remoteSetId,
+        );
+        _syncedRowIds.add(row.id);
+        _failedRowIds.remove(row.id);
+        return true;
+      },
+      onError: (error, stackTrace) async {
+        await _localRepository.markSetSyncFailed(row.id);
+        _failedRowIds.add(row.id);
+        _syncError = error.toString();
+        logger.e('Failed to sync running set ${row.id}', error, stackTrace);
+        return false;
+      },
+    );
+  }
+
+  void _emitState() {
     if (isClosed) return;
+    final sets = _rows.map(_mapRowToSet).toList();
+    final isSending = _syncFutures.isNotEmpty || _rows.any((row) => row.isTracking || row.isSyncing);
+    final hasSyncFailures = _failedRowIds.isNotEmpty || _rows.any((row) => row.hasSyncFailed);
+    final canFinish = sets.isNotEmpty && sets.every((set) => set.isDone);
+
     emit(
       RunningSetSyncState(
-        sets: state.sets,
-        isSending: _syncingRowIds.isNotEmpty,
+        sets: sets,
+        isSending: isSending,
+        hasPendingSync: sets.any((set) => !set.isDone && !set.isBusy),
+        hasSyncFailures: hasSyncFailures,
+        canFinish: canFinish,
+        error: _syncError,
       ),
     );
   }
@@ -126,8 +186,16 @@ class RunningSetSyncState {
   const RunningSetSyncState({
     this.sets = const [],
     this.isSending = false,
+    this.hasPendingSync = false,
+    this.hasSyncFailures = false,
+    this.canFinish = false,
+    this.error,
   });
 
   final List<WorkoutSet> sets;
   final bool isSending;
+  final bool hasPendingSync;
+  final bool hasSyncFailures;
+  final bool canFinish;
+  final String? error;
 }

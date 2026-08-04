@@ -57,8 +57,7 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
         body: BlocBuilder<ActiveExerciseCubit, ActiveExerciseState>(
           builder: (context, exerciseState) {
             final activeExerciseCubit = context.read<ActiveExerciseCubit>();
-            final programExercise = activeExerciseCubit.programExercise;
-            final exerciseDetails = programExercise.exerciseDetails;
+            final exerciseDetails = activeExerciseCubit.effectiveExercise;
 
             return BlocBuilder<CameraDetectionCubit, CameraDetectionState>(
               builder: (context, cameraState) {
@@ -284,8 +283,7 @@ class _CameraDetectionPageState extends State<CameraDetectionPage> {
   }
 
   PoseDetectionPreset _poseDetectionPreset(BuildContext context) {
-    return context.read<ActiveExerciseCubit>().programExercise.exerciseDetails.poseDetectionPreset ??
-        PoseDetectionPreset.legs;
+    return context.read<ActiveExerciseCubit>().effectiveExercise.poseDetectionPreset ?? PoseDetectionPreset.legs;
   }
 
   void _confirmResult(BuildContext context, CameraDetectionAdjusting state) {

@@ -48,9 +48,7 @@ abstract interface class ExerciseSessionRepository {
   });
 
   Future<Result<void>> saveWorkoutNote({
-    required int exerciseId,
-    required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required String note,
   });
 }

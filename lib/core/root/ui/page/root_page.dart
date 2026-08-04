@@ -8,6 +8,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/workout_session/controllers/workout_restore_cubit.dart';
+import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/dialogs/app_dialog.dart';
 import 'package:reforge/shared/dialogs/two_options_dialog_template.dart';
@@ -35,8 +36,11 @@ class _RootPageState extends State<RootPage> {
             switch (restoreState) {
               case WorkoutRestorePending():
                 _showRestoreDialog(ctx, restoreState);
-              case WorkoutRestoreRestored(:final resumeProgramExerciseId):
-                ActiveExercisePageRoute(programExerciseId: resumeProgramExerciseId).go(ctx);
+              case WorkoutRestoreRestored():
+                final executionKey = ctx.read<WorkoutSessionFlowCubit>().state.currentExercise?.executionKey;
+                if (executionKey != null) {
+                  ActiveExercisePageRoute(executionKey: executionKey).go(ctx);
+                }
               case WorkoutRestoreError(:final message):
                 toastification.showErrorToast(message, ctx);
               default:

@@ -85,9 +85,9 @@ class ExerciseSwapButton extends StatelessWidget {
     ).push<AppliedExerciseSwap>(context);
 
     if (result == null || !context.mounted) return;
-    final updatedContext = activeExerciseCubit.applySwap(result);
-    if (updatedContext != null) {
-      flowCubit.updateExerciseContextAfterSwap(updatedContext);
+    final updatedExecution = activeExerciseCubit.applySwap(result);
+    if (updatedExecution != null) {
+      flowCubit.updateExerciseExecutionAfterSwap(updatedExecution);
     }
   }
 }

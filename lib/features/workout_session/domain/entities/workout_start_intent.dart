@@ -1,0 +1,4 @@
+enum WorkoutStartIntent {
+  program,
+  freeRun,
+}
