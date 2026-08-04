@@ -79,7 +79,7 @@ class RunningActivePage extends StatelessWidget {
                   builder: (context, state) {
                     final cubit = context.read<RunningTrackerCubit>();
                     return AnimatedVisibility(
-                      isVisible: KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      isVisible: !KeyboardVisibilityProvider.isKeyboardVisible(context),
                       child: _ActionButtons(state: state, cubit: cubit),
                     );
                   },
@@ -182,8 +182,7 @@ class ActiveGpsSession extends StatelessWidget {
                 children: [
                   BlocProvider(
                     create: (context) => getIt<RunningMapCubit>(
-                      param1: context.read<RunningTrackerCubit>().workoutSessionId,
-                      param2: context.read<RunningTrackerCubit>().workoutProgramExerciseId,
+                      param1: context.read<RunningTrackerCubit>().config,
                       // ignore: discarded_futures
                     )..init(),
                     child: const ActiveRunningMapContainer(),

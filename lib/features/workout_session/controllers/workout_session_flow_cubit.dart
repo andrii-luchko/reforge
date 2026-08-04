@@ -13,6 +13,7 @@ import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
@@ -21,7 +22,13 @@ import 'package:reforge/features/workout_program/domain/entities/program_day_ent
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/cached_workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_exercise_spec.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_source.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_summary_entity.dart';
 import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 
@@ -54,10 +61,11 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
   final WorkoutSessionCacheRepository _sessionCache;
   final UserSessionService _userSessionService;
 
-  final Map<int, ActiveWorkoutExerciseContext> _exerciseContexts = {};
-  final Map<int, Future<Result<ActiveWorkoutExerciseContext>>> _pendingExerciseSessions = {};
-  final Map<int, Exception> _exerciseSessionFailures = {};
+  final Map<String, ActiveExerciseExecution> _exerciseExecutions = {};
+  final Map<String, Future<Result<ActiveExerciseExecution>>> _pendingExerciseSessions = {};
+  final Map<String, Exception> _exerciseSessionFailures = {};
   var _exerciseRegistryGeneration = 0;
+  Future<void>? _terminalMutation;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -72,10 +80,46 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     required int startIndex,
     Map<int, ActiveWorkoutExerciseContext> exerciseContexts = const {},
   }) {
+    final executionPlan = WorkoutExecutionPlan.fromProgramDay(programDay);
+    final executions = <String, ActiveExerciseExecution>{};
+    for (final spec in executionPlan.exercises) {
+      final programExerciseId = spec.workoutProgramExerciseId;
+      final context = programExerciseId == null ? null : exerciseContexts[programExerciseId];
+      if (context == null) continue;
+      executions[spec.executionKey] = ActiveExerciseExecution(
+        spec: spec,
+        workoutSessionId: sessionId,
+        session: context.session,
+      );
+    }
+    initExecutionPlanFromRestore(
+      sessionId: sessionId,
+      executionPlan: executionPlan,
+      durationSec: durationSec,
+      restoredSets: restoredSets,
+      startIndex: startIndex,
+      executions: executions,
+      programDay: programDay,
+      startIntent: WorkoutStartIntent.program,
+    );
+  }
+
+  void initExecutionPlanFromRestore({
+    required int sessionId,
+    required WorkoutExecutionPlan executionPlan,
+    required int durationSec,
+    required Map<int, List<WorkoutSet>> restoredSets,
+    required int startIndex,
+    required Map<String, ActiveExerciseExecution> executions,
+    required WorkoutStartIntent startIntent,
+    ProgramDayEntity? programDay,
+  }) {
     _clearExerciseRegistry();
-    _exerciseContexts.addAll(exerciseContexts);
+    _exerciseExecutions.addAll(executions);
     final newState = state.copyWith(
       isLoading: false,
+      executionPlan: executionPlan,
+      startIntent: startIntent,
       programDay: programDay,
       workoutSessionId: sessionId,
       sessionStatus: WorkoutSessionStatus.active,
@@ -90,36 +134,35 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     emit(newState);
   }
 
-  ActiveWorkoutExerciseContext? exerciseContextFor(int workoutProgramExerciseId) {
-    return _exerciseContexts[workoutProgramExerciseId];
+  ActiveExerciseExecution? exerciseExecutionFor(String executionKey) {
+    return _exerciseExecutions[executionKey];
   }
 
-  bool updateExerciseContextAfterSwap(ActiveWorkoutExerciseContext context) {
-    final programExerciseId = context.programExercise.id;
-    final current = _exerciseContexts[programExerciseId];
+  bool updateExerciseExecutionAfterSwap(ActiveExerciseExecution execution) {
+    final executionKey = execution.spec.executionKey;
+    final current = _exerciseExecutions[executionKey];
     if (current == null ||
-        current.session.id != context.session.id ||
-        context.session.workoutSessionId != state.workoutSessionId ||
+        current.exerciseSessionId != execution.exerciseSessionId ||
+        execution.workoutSessionId != state.workoutSessionId ||
         !state.isActive) {
       logger.w('WorkoutSessionFlowCubit: rejected a stale exercise swap context');
       return false;
     }
 
-    _exerciseContexts[programExerciseId] = context;
+    _exerciseExecutions[executionKey] = execution;
+    unawaited(_cacheExerciseExecution(execution));
     return true;
   }
 
-  Future<Result<ActiveWorkoutExerciseContext>> ensureExerciseSession(
-    ProgramExerciseEntity programExercise,
-  ) {
-    final programExerciseId = programExercise.id;
-    final existing = _exerciseContexts[programExerciseId];
+  Future<Result<ActiveExerciseExecution>> ensureExerciseSession(WorkoutExerciseSpec spec) {
+    final executionKey = spec.executionKey;
+    final existing = _exerciseExecutions[executionKey];
     if (existing != null) return Future.value(Result.success(existing));
 
-    final previousFailure = _exerciseSessionFailures[programExerciseId];
+    final previousFailure = _exerciseSessionFailures[executionKey];
     if (previousFailure != null) return Future.value(Result.error(previousFailure));
 
-    final pending = _pendingExerciseSessions[programExerciseId];
+    final pending = _pendingExerciseSessions[executionKey];
     if (pending != null) return pending;
 
     final workoutSessionId = state.workoutSessionId;
@@ -128,63 +171,143 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     }
 
     final generation = _exerciseRegistryGeneration;
-    late final Future<Result<ActiveWorkoutExerciseContext>> request;
+    late final Future<Result<ActiveExerciseExecution>> request;
     request =
         _createExerciseContext(
-          programExercise: programExercise,
+          spec: spec,
           workoutSessionId: workoutSessionId,
           generation: generation,
         ).whenComplete(() {
-          if (identical(_pendingExerciseSessions[programExerciseId], request)) {
-            final _ = _pendingExerciseSessions.remove(programExerciseId);
+          if (identical(_pendingExerciseSessions[executionKey], request)) {
+            final _ = _pendingExerciseSessions.remove(executionKey);
           }
         });
-    _pendingExerciseSessions[programExerciseId] = request;
+    _pendingExerciseSessions[executionKey] = request;
     return request;
   }
 
-  Future<Result<ActiveWorkoutExerciseContext>> retryEnsureExerciseSession(
-    ProgramExerciseEntity programExercise,
-  ) {
-    _exerciseSessionFailures.remove(programExercise.id);
-    return ensureExerciseSession(programExercise);
+  Future<Result<ActiveExerciseExecution>> retryEnsureExerciseSession(WorkoutExerciseSpec spec) {
+    _exerciseSessionFailures.remove(spec.executionKey);
+    return ensureExerciseSession(spec);
   }
 
-  /// Starts a fresh workout session and persists the session id to Drift so
-  /// it can be restored if the app is killed mid-session.
-  Future<void> startWorkout(ProgramDayEntity programDay) async {
-    final workoutProgramDayId = programDay.id;
+  void prepareProgramWorkout(ProgramDayEntity programDay) {
+    prepareWorkout(
+      WorkoutExecutionPlan.fromProgramDay(programDay),
+      intent: WorkoutStartIntent.program,
+      programDay: programDay,
+    );
+  }
 
+  void prepareWorkout(
+    WorkoutExecutionPlan plan, {
+    required WorkoutStartIntent intent,
+    ProgramDayEntity? programDay,
+  }) {
+    if (state.isStartingWorkout || state.isActive) return;
     _clearExerciseRegistry();
-
     emit(
       state.copyWith(
+        executionPlan: plan,
+        startIntent: intent,
         programDay: programDay,
         workoutSessionId: null,
         currentExerciseIndex: 0,
-        isStartingWorkout: true,
+        sessionStatus: null,
+        isStartingWorkout: false,
+        isRestoredSession: false,
+        restoredDurationSec: 0,
+        restoredSets: const {},
         summary: null,
         error: null,
       ),
     );
+  }
 
-    final result = await _repository.startWorkoutSession(workoutProgramDayId);
+  Future<Result<ActiveExerciseExecution>> startProgramWorkout(ProgramDayEntity programDay) {
+    prepareProgramWorkout(programDay);
+    return startPreparedWorkout();
+  }
+
+  Future<Result<ActiveExerciseExecution>> startAdHocWorkout(WorkoutExecutionPlan plan) {
+    if (plan.source is! AdHocWorkoutSource) {
+      return Future.value(Result.error(AppException('Ad-hoc workout requires an ad-hoc execution plan')));
+    }
+    prepareWorkout(plan, intent: WorkoutStartIntent.freeRun);
+    return startPreparedWorkout();
+  }
+
+  /// Compatibility entry point for the current program details UI.
+  Future<void> startWorkout(ProgramDayEntity programDay) async {
+    await startProgramWorkout(programDay);
+  }
+
+  /// Creates the backend workout and its first exercise session in order.
+  /// The prepared plan survives the readiness quiz; no backend session exists
+  /// until this method is called.
+  Future<Result<ActiveExerciseExecution>> startPreparedWorkout() async {
+    final plan = state.executionPlan;
+    if (plan == null || plan.exercises.isEmpty) {
+      return Result.error(AppException('Cannot start workout without a prepared execution plan'));
+    }
+    if (state.isStartingWorkout) {
+      return Result.error(AppException('Workout start is already in progress'));
+    }
+    if (state.isActive && state.workoutSessionId != null) {
+      emit(state.copyWith(isStartingWorkout: true, error: null));
+      final execution = await retryEnsureExerciseSession(plan.exercises[state.currentExerciseIndex]);
+      if (execution.isSuccess) {
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+      } else if (plan.source is AdHocWorkoutSource) {
+        unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
+      }
+      emit(
+        state.copyWith(
+          isStartingWorkout: false,
+          error: execution.isError ? 'Failed to start first exercise' : null,
+        ),
+      );
+      return execution;
+    }
+
+    final generation = _exerciseRegistryGeneration;
+    emit(state.copyWith(isStartingWorkout: true, summary: null, error: null));
+
+    final source = _sourceName(plan.source);
+    logger.i('Workout mutation start boundary=create_workout source=$source');
+
+    final result = switch (plan.source) {
+      ProgramWorkoutSource(:final programDayId) => await _repository.startWorkoutSession(programDayId),
+      AdHocWorkoutSource() => await _repository.startAdHocWorkoutSession(),
+    };
 
     switch (result) {
       case Success(value: final sessionData):
+        if (generation != _exerciseRegistryGeneration || !identical(state.executionPlan, plan)) {
+          return Result.error(AppException('Prepared workout changed while starting session'));
+        }
         unawaited(_analytics.logEvent(AnalyticsEvents.workoutStart));
-        logger.d('WorkoutSessionFlowCubit: started session ${sessionData.id}');
+        if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStart));
+        }
+        logger.i(
+          'Workout mutation success boundary=create_workout source=$source '
+          'workoutSessionId=${sessionData.id}',
+        );
 
-        unawaited(
-          _sessionCache.saveActiveSession(
-            remoteSessionId: sessionData.id,
-            programDayId: workoutProgramDayId,
-          ),
+        final programDayId = switch (plan.source) {
+          ProgramWorkoutSource(:final programDayId) => programDayId,
+          AdHocWorkoutSource() => null,
+        };
+        await _sessionCache.saveActiveSession(
+          remoteSessionId: sessionData.id,
+          programDayId: programDayId,
+          source: plan.source is ProgramWorkoutSource ? CachedWorkoutSource.program : CachedWorkoutSource.adHoc,
+          executionPlanJson: CachedWorkoutExecutionPlan.fromPlan(plan).encode(),
         );
 
         emit(
           state.copyWith(
-            isStartingWorkout: false,
             workoutSessionId: sessionData.id,
             sessionStatus: WorkoutSessionStatus.active,
             isRestoredSession: false,
@@ -193,13 +316,50 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           ),
         );
 
+        final firstExecution = await ensureExerciseSession(plan.exercises.first);
+        if (generation != _exerciseRegistryGeneration || state.workoutSessionId != sessionData.id) {
+          return Result.error(AppException('Workout session changed while initializing first exercise'));
+        }
+        if (firstExecution.isSuccess) {
+          await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+        } else if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
+        }
+        emit(
+          state.copyWith(
+            isStartingWorkout: false,
+            error: firstExecution.isError ? 'Failed to start first exercise' : null,
+          ),
+        );
+        return firstExecution;
+
       case Failure(:final error):
+        if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
+        }
+        final ambiguous = _isAmbiguousCreateFailure(error);
+        logger.e(
+          'Workout mutation failure boundary=create_workout source=$source '
+          'workoutSessionId=unknown possibleOrphan=$ambiguous',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {
+              'boundary': 'create_workout',
+              'source': source,
+              'ambiguous': ambiguous ? 1 : 0,
+            },
+          ),
+        );
         emit(
           state.copyWith(
             isStartingWorkout: false,
             error: 'Failed to start workout: $error',
           ),
         );
+        return Result.error(error);
     }
   }
 
@@ -237,7 +397,22 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
 
   // ── Private ────────────────────────────────────────────────────────────────
 
-  Future<void> _finishWorkout(WorkoutSessionStatus status, int workoutSessionDuration) async {
+  Future<void> _finishWorkout(WorkoutSessionStatus status, int workoutSessionDuration) {
+    final pending = _terminalMutation;
+    if (pending != null) return pending;
+
+    late final Future<void> mutation;
+    mutation = _finishWorkoutOnce(status, workoutSessionDuration).whenComplete(() {
+      if (identical(_terminalMutation, mutation)) _terminalMutation = null;
+    });
+    _terminalMutation = mutation;
+    return mutation;
+  }
+
+  Future<void> _finishWorkoutOnce(
+    WorkoutSessionStatus status,
+    int workoutSessionDuration,
+  ) async {
     final workoutSessionId = state.workoutSessionId;
 
     if (workoutSessionId == null) {
@@ -246,7 +421,13 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       return;
     }
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, error: null));
+
+    final source = state.executionPlan == null ? 'unknown' : _sourceName(state.executionPlan!.source);
+    logger.i(
+      'Workout mutation start boundary=complete_workout source=$source '
+      'workoutSessionId=$workoutSessionId status=${status.name}',
+    );
 
     final result = await _repository.endWorkoutSession(
       status: status,
@@ -256,8 +437,15 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
 
     switch (result) {
       case Success(value: final summary):
+        logger.i(
+          'Workout mutation success boundary=complete_workout source=$source '
+          'workoutSessionId=$workoutSessionId status=${status.name}',
+        );
         if (status == WorkoutSessionStatus.completed) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutComplete));
+          if (state.executionPlan?.source is AdHocWorkoutSource) {
+            unawaited(_analytics.logEvent(AnalyticsEvents.freeRunComplete));
+          }
           if (summary.isLevelUp && summary.currentLevel != null) {
             unawaited(
               _analytics.logEvent(AnalyticsEvents.workoutLevelUp, {'level': summary.currentLevel}),
@@ -265,31 +453,61 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           }
         } else if (status == WorkoutSessionStatus.canceled) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutCancel));
+          if (state.executionPlan?.source is AdHocWorkoutSource) {
+            unawaited(_analytics.logEvent(AnalyticsEvents.freeRunCancel));
+          }
         }
-        unawaited(_sessionCache.clearActiveSession());
-        emit(state.copyWith(sessionStatus: status, summary: summary, isLoading: false));
-
-      case Failure(:final error):
+        await _sessionCache.clearActiveSession();
+        _clearExerciseRegistry();
         emit(
           state.copyWith(
             sessionStatus: status,
+            summary: summary,
+            isLoading: false,
+            error: null,
+          ),
+        );
+
+      case Failure(:final error):
+        logger.e(
+          'Workout mutation failure boundary=complete_workout source=$source '
+          'workoutSessionId=$workoutSessionId status=${status.name}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {
+              'boundary': 'complete_workout',
+              'source': source,
+              'status': status.name,
+            },
+          ),
+        );
+        emit(
+          state.copyWith(
             error: 'Failed to end workout: $error',
             isLoading: false,
           ),
         );
     }
-    _clearExerciseRegistry();
   }
 
-  Future<Result<ActiveWorkoutExerciseContext>> _createExerciseContext({
-    required ProgramExerciseEntity programExercise,
+  Future<Result<ActiveExerciseExecution>> _createExerciseContext({
+    required WorkoutExerciseSpec spec,
     required int workoutSessionId,
     required int generation,
   }) async {
+    final source = state.executionPlan == null ? 'unknown' : _sourceName(state.executionPlan!.source);
+    logger.i(
+      'Workout mutation start boundary=create_exercise source=$source '
+      'workoutSessionId=$workoutSessionId exerciseId=${spec.exerciseId} '
+      'executionKey=${spec.executionKey}',
+    );
     final result = await _exerciseSessionRepository.createWorkoutExerciseSession(
-      exerciseId: programExercise.exerciseDetails.id,
+      exerciseId: spec.exerciseId,
       workoutSessionId: workoutSessionId,
-      workoutProgramExerciseId: programExercise.id,
+      workoutProgramExerciseId: spec.workoutProgramExerciseId,
       system: _measurementSystem,
     );
 
@@ -298,9 +516,19 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         if (!_isCurrentRegistry(generation, workoutSessionId)) {
           return Result.error(AppException('Workout session changed while creating exercise session'));
         }
-        final context = _buildContext(programExercise, session);
-        _exerciseContexts[programExercise.id] = context;
-        return Result.success(context);
+        final execution = _buildExecution(spec, workoutSessionId, session);
+        logger.i(
+          'Workout mutation success boundary=create_exercise source=$source '
+          'workoutSessionId=$workoutSessionId exerciseSessionId=${session.id} '
+          'exerciseId=${spec.exerciseId} executionKey=${spec.executionKey}',
+        );
+        _exerciseExecutions[spec.executionKey] = execution;
+        await _cacheExerciseExecution(execution);
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated);
+        if (state.isRestoredSession && state.executionPlan?.exercises.first.executionKey == spec.executionKey) {
+          await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+        }
+        return Result.success(execution);
 
       case Failure(:final error):
         if (!_isCurrentRegistry(generation, workoutSessionId)) {
@@ -308,52 +536,121 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         }
         if (_isAmbiguousCreateFailure(error)) {
           final reconciled = await _reconcileExerciseContext(
-            programExercise: programExercise,
+            spec: spec,
             workoutSessionId: workoutSessionId,
             generation: generation,
           );
-          if (reconciled != null) return Result.success(reconciled);
+          if (reconciled != null) {
+            logger.w(
+              'Workout mutation reconciled boundary=create_exercise source=$source '
+              'workoutSessionId=$workoutSessionId '
+              'exerciseSessionId=${reconciled.exerciseSessionId} '
+              'exerciseId=${spec.exerciseId} executionKey=${spec.executionKey}',
+            );
+            unawaited(
+              _analytics.logEvent(
+                AnalyticsEvents.workoutExerciseReconciled,
+                {'source': source},
+              ),
+            );
+            return Result.success(reconciled);
+          }
         }
         if (!_isCurrentRegistry(generation, workoutSessionId)) {
           return Result.error(AppException('Workout session changed while reconciling exercise session'));
         }
-        _exerciseSessionFailures[programExercise.id] = error;
+        _exerciseSessionFailures[spec.executionKey] = error;
+        logger.e(
+          'Workout mutation failure boundary=create_exercise source=$source '
+          'workoutSessionId=$workoutSessionId exerciseId=${spec.exerciseId} '
+          'executionKey=${spec.executionKey}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {'boundary': 'create_exercise', 'source': source},
+          ),
+        );
         return Result.error(error);
     }
   }
 
-  Future<ActiveWorkoutExerciseContext?> _reconcileExerciseContext({
-    required ProgramExerciseEntity programExercise,
+  Future<ActiveExerciseExecution?> _reconcileExerciseContext({
+    required WorkoutExerciseSpec spec,
     required int workoutSessionId,
     required int generation,
   }) async {
     final result = await _repository.getWorkoutSessionDetails(workoutSessionId);
     if (result case Success(value: final details?)) {
-      final rawSessions = details.normalizedExerciseSessions;
-      final selected = details.exerciseSessionsByProgramExerciseId;
-      if (rawSessions.length > selected.length) {
-        logger.w(
-          'WorkoutSessionFlowCubit: duplicate or unbound exercise sessions found during reconciliation',
-        );
-      }
-      final dto = selected[programExercise.id];
+      final programExerciseId = spec.workoutProgramExerciseId;
+      final dto = programExerciseId == null
+          ? _selectUnboundSession(details, spec)
+          : details.exerciseSessionsByProgramExerciseId[programExerciseId];
       if (dto == null || !_isCurrentRegistry(generation, workoutSessionId)) return null;
 
-      final context = _buildContext(programExercise, dto.toEntity(_measurementSystem));
-      _exerciseContexts[programExercise.id] = context;
-      return context;
+      final execution = _buildExecution(
+        spec,
+        workoutSessionId,
+        dto.toEntity(_measurementSystem),
+      );
+      _exerciseExecutions[spec.executionKey] = execution;
+      await _cacheExerciseExecution(execution);
+      await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated);
+      if (state.isRestoredSession && state.executionPlan?.exercises.first.executionKey == spec.executionKey) {
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+      }
+      return execution;
     }
     return null;
   }
 
-  ActiveWorkoutExerciseContext _buildContext(
-    ProgramExerciseEntity programExercise,
+  WorkoutExerciseSessionDTO? _selectUnboundSession(
+    WorkoutSessionDetailsDTO details,
+    WorkoutExerciseSpec spec,
+  ) {
+    final candidates = details.normalizedExerciseSessions
+        .where(
+          (session) =>
+              session.workoutProgramExerciseId == null && session.exerciseId == spec.exerciseId && session.isActive,
+        )
+        .toList();
+    if (candidates.length == 1) return candidates.single;
+    if (candidates.length > 1) {
+      logger.w(
+        'WorkoutSessionFlowCubit: multiple active unbound exercise sessions found for ${spec.executionKey}',
+      );
+    }
+    return null;
+  }
+
+  ActiveExerciseExecution _buildExecution(
+    WorkoutExerciseSpec spec,
+    int workoutSessionId,
     WorkoutExerciseSessionEntity session,
   ) {
-    return ActiveWorkoutExerciseContext(
-      programExercise: programExercise,
+    return ActiveExerciseExecution(
+      spec: spec,
+      workoutSessionId: workoutSessionId,
       session: session,
-      effectiveExercise: session.effectiveExercise ?? programExercise.exerciseDetails,
+    );
+  }
+
+  Future<void> _cacheExerciseExecution(ActiveExerciseExecution execution) {
+    final position =
+        state.executionPlan?.exercises.indexWhere(
+          (spec) => spec.executionKey == execution.spec.executionKey,
+        ) ??
+        0;
+    return _sessionCache.saveExerciseSession(
+      workoutSessionId: execution.workoutSessionId,
+      executionKey: execution.spec.executionKey,
+      exerciseId: execution.session.exerciseId,
+      effectiveExerciseId: execution.effectiveExercise.id,
+      exerciseSessionId: execution.exerciseSessionId,
+      workoutProgramExerciseId: execution.spec.workoutProgramExerciseId,
+      position: position < 0 ? 0 : position,
+      notes: execution.session.notes ?? '',
     );
   }
 
@@ -379,6 +676,10 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     };
   }
 
+  String _sourceName(WorkoutSource source) {
+    return source is AdHocWorkoutSource ? 'ad_hoc' : 'program';
+  }
+
   MeasurementSystem get _measurementSystem {
     return _userSessionService.currentUser?.map(
           newUser: (_) => null,
@@ -389,7 +690,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
 
   void _clearExerciseRegistry() {
     _exerciseRegistryGeneration++;
-    _exerciseContexts.clear();
+    _exerciseExecutions.clear();
     _pendingExerciseSessions.clear();
     _exerciseSessionFailures.clear();
   }

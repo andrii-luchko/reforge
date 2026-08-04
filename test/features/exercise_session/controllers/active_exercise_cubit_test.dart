@@ -2,23 +2,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
+import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
-import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
-import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_exercise_spec.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_program_exercise_binding.dart';
 
 void main() {
   late _MockExerciseSessionRepository repository;
   late _MockAnalyticsService analytics;
   late _MockUserSessionService userSessionService;
+  late _MockWorkoutSessionCacheRepository sessionCache;
 
   setUpAll(() {
     registerFallbackValue(WorkoutSet(id: -1));
@@ -29,7 +34,29 @@ void main() {
     repository = _MockExerciseSessionRepository();
     analytics = _MockAnalyticsService();
     userSessionService = _MockUserSessionService();
+    sessionCache = _MockWorkoutSessionCacheRepository();
     when(() => userSessionService.currentUser).thenReturn(null);
+    when(
+      () => sessionCache.saveExerciseNotesLocally(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+        notes: any(named: 'notes'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => sessionCache.getExerciseSession(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    ).thenAnswer((_) async => null);
+    when(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    ).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
   });
 
   test('swapped initialization is explicit, idempotent, and skips previous result', () async {
@@ -37,6 +64,8 @@ void main() {
       repository,
       analytics,
       userSessionService,
+      const ClientIdGenerator(),
+      sessionCache,
       _swappedContext(notes: 'keep me'),
     );
 
@@ -64,23 +93,28 @@ void main() {
       repository,
       analytics,
       userSessionService,
+      const ClientIdGenerator(),
+      sessionCache,
       _swappedContext(),
     );
     when(
       () => repository.completeSet(
         exerciseId: _swappedExercise.id,
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: 20,
         system: MeasurementSystem.metric,
         set: any(named: 'set'),
       ),
-    ).thenAnswer((_) async => const Result.success(null));
+    ).thenAnswer(
+      (_) async => const Result.success(
+        CompletedSetIdentity(remoteSetId: 1, clientSetId: null),
+      ),
+    );
     when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
     when(
       () => repository.saveWorkoutNote(
-        exerciseId: _swappedExercise.id,
-        workoutSessionId: 10,
-        workoutProgramExerciseId: 20,
+        exerciseSessionId: 100,
         note: 'runtime note',
       ),
     ).thenAnswer((_) async => const Result.success(null));
@@ -99,6 +133,7 @@ void main() {
       () => repository.completeSet(
         exerciseId: _swappedExercise.id,
         workoutSessionId: 10,
+        exerciseSessionId: 100,
         workoutProgramExerciseId: 20,
         system: MeasurementSystem.metric,
         set: any(named: 'set'),
@@ -106,9 +141,7 @@ void main() {
     ).called(1);
     verify(
       () => repository.saveWorkoutNote(
-        exerciseId: _swappedExercise.id,
-        workoutSessionId: 10,
-        workoutProgramExerciseId: 20,
+        exerciseSessionId: 100,
         note: 'runtime note',
       ),
     ).called(1);
@@ -122,6 +155,8 @@ void main() {
             repository,
             analytics,
             userSessionService,
+            const ClientIdGenerator(),
+            sessionCache,
             _swappedContext(notes: 'server note'),
           )
           ..replaceSetsFromExternalSource(
@@ -167,6 +202,8 @@ void main() {
           repository,
           analytics,
           userSessionService,
+          const ClientIdGenerator(),
+          sessionCache,
           _swappedContext(),
         )..replaceSetsFromExternalSource(
           sets: [WorkoutSet(id: 1, reps: 5, isDone: true)],
@@ -177,22 +214,159 @@ void main() {
 
     await cubit.close();
   });
+
+  test('ad-hoc execution skips program behavior and sends set and notes by session identity', () async {
+    final cubit = ActiveExerciseCubit(
+      repository,
+      analytics,
+      userSessionService,
+      const ClientIdGenerator(),
+      sessionCache,
+      _freeRunExecution(),
+    );
+    final set = WorkoutSet(
+      id: 1,
+      clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
+      setNumber: 1,
+      time: const Duration(seconds: 60),
+      distance: 1,
+    );
+    when(
+      () => repository.completeSet(
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.metric,
+        set: any(named: 'set'),
+      ),
+    ).thenAnswer(
+      (_) async => const Result.success(
+        CompletedSetIdentity(remoteSetId: 368, clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93'),
+      ),
+    );
+    when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
+    when(
+      () => repository.saveWorkoutNote(
+        exerciseSessionId: 246,
+        note: 'outdoor intervals',
+      ),
+    ).thenAnswer((_) async => const Result.success(null));
+
+    await cubit.initialize();
+
+    expect(cubit.state.previousResult, isNull);
+    expect(cubit.canSwap, isFalse);
+    expect(cubit.isRunningExercise, isTrue);
+    verifyNever(
+      () => repository.getPreviousResults(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        programExerciseId: any(named: 'programExerciseId'),
+        system: any(named: 'system'),
+      ),
+    );
+
+    cubit.replaceSetsFromExternalSource(sets: [set], isSending: false);
+    await cubit.markSetDone(set.id);
+    cubit.setNote('outdoor intervals');
+    await cubit.finishExercise();
+
+    expect(cubit.state.isSubmitted, isTrue);
+    verify(
+      () => repository.completeSet(
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.metric,
+        set: any(named: 'set'),
+      ),
+    ).called(1);
+    verify(
+      () => repository.saveWorkoutNote(
+        exerciseSessionId: 246,
+        note: 'outdoor intervals',
+      ),
+    ).called(1);
+
+    await cubit.close();
+  });
+
+  test('keeps locally cached notes retryable when notes PATCH fails', () async {
+    var attempts = 0;
+    final cubit =
+        ActiveExerciseCubit(
+          repository,
+          analytics,
+          userSessionService,
+          const ClientIdGenerator(),
+          sessionCache,
+          _freeRunExecution(),
+        )..replaceSetsFromExternalSource(
+          sets: [
+            WorkoutSet(
+              id: 1,
+              clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
+              isLocallyCompleted: true,
+              isDone: true,
+            ),
+          ],
+          isSending: false,
+        );
+    when(
+      () => repository.saveWorkoutNote(
+        exerciseSessionId: 246,
+        note: 'retry me',
+      ),
+    ).thenAnswer((_) async {
+      attempts++;
+      return attempts == 1 ? Result.error(Exception('notes offline')) : const Result.success(null);
+    });
+
+    cubit.setNote('retry me');
+    await cubit.finishExercise();
+
+    expect(cubit.state.isSubmitted, isFalse);
+    expect(cubit.state.notes, 'retry me');
+    expect(cubit.state.error, contains('notes offline'));
+    verifyNever(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    );
+
+    await cubit.finishExercise();
+
+    expect(cubit.state.isSubmitted, isTrue);
+    expect(cubit.state.error, isNull);
+    expect(attempts, 2);
+    verify(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: 182,
+        executionKey: 'adHoc:4',
+      ),
+    ).called(1);
+
+    await cubit.close();
+  });
 }
 
 class _MockExerciseSessionRepository extends Mock implements ExerciseSessionRepository {}
 
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
+class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionCacheRepository {}
+
 class _MockUserSessionService extends Mock implements UserSessionService {}
 
-ActiveWorkoutExerciseContext _swappedContext({String? notes}) {
-  return ActiveWorkoutExerciseContext(
-    programExercise: _programExercise,
+ActiveExerciseExecution _swappedContext({String? notes}) {
+  return ActiveExerciseExecution(
+    spec: _programSpec,
+    workoutSessionId: 10,
     session: WorkoutExerciseSessionEntity(
       id: 100,
       exerciseId: _plannedExercise.id,
       workoutSessionId: 10,
-      workoutProgramExerciseId: _programExercise.id,
+      workoutProgramExerciseId: 20,
       isSwapped: true,
       swappedExerciseId: _swappedExercise.id,
       isActive: true,
@@ -208,12 +382,41 @@ ActiveWorkoutExerciseContext _swappedContext({String? notes}) {
   );
 }
 
+ActiveExerciseExecution _freeRunExecution() {
+  return ActiveExerciseExecution(
+    spec: const WorkoutExerciseSpec(
+      executionKey: 'adHoc:4',
+      details: _freeRunExercise,
+      targetSetCount: null,
+      segments: [],
+      programBinding: null,
+    ),
+    workoutSessionId: 182,
+    session: const WorkoutExerciseSessionEntity(
+      id: 246,
+      exerciseId: 4,
+      workoutSessionId: 182,
+      workoutProgramExerciseId: null,
+      isSwapped: false,
+      swappedExerciseId: null,
+      isActive: true,
+      notes: null,
+      lastCompletedSet: null,
+      createdAt: null,
+      updatedAt: null,
+      sets: [],
+      exercise: _freeRunExercise,
+      swappedExercise: null,
+    ),
+  );
+}
+
 WorkoutExerciseSessionEntity _swapResponse(int swappedExerciseId) {
   return WorkoutExerciseSessionEntity(
     id: 100,
     exerciseId: _plannedExercise.id,
     workoutSessionId: 10,
-    workoutProgramExerciseId: _programExercise.id,
+    workoutProgramExerciseId: 20,
     isSwapped: true,
     swappedExerciseId: swappedExerciseId,
     isActive: true,
@@ -286,12 +489,29 @@ const _runningReplacement = ExerciseDetailsEntity(
   instructionsSteps: {},
 );
 
-const _programExercise = ProgramExerciseEntity(
-  id: 20,
-  programDayId: 1,
-  sets: 1,
-  order: 1,
-  exerciseDetails: _plannedExercise,
-  executionMode: ExecutionMode.standard,
+const _freeRunExercise = ExerciseDetailsEntity(
+  id: 4,
+  name: 'Running',
+  description: 'Free run',
+  key: 'running',
+  metrics: [WorkoutMetric.time, WorkoutMetric.distance],
+  poseDetectionPreset: null,
+  isTiered: false,
+  tiers: [],
+  videoInstructionUrl: null,
+  thumbnailInstructionUrl: null,
+  instructionsSteps: {},
+);
+
+const _programSpec = WorkoutExerciseSpec(
+  executionKey: 'program:20',
+  details: _plannedExercise,
+  targetSetCount: 1,
   segments: [],
+  programBinding: WorkoutProgramExerciseBinding(
+    programDayId: 1,
+    programExerciseId: 20,
+    order: 1,
+    executionMode: ExecutionMode.standard,
+  ),
 );

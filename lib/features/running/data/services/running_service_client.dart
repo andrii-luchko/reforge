@@ -178,7 +178,8 @@ class RunningServiceClient {
     required RunningMode mode,
     required List<LapLimit> limits,
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
     bool startPaused = false,
     bool restoreCompletedPlan = false,
   }) async {
@@ -200,7 +201,8 @@ class RunningServiceClient {
     _hasLoggedFirstMetric = false;
     _service.invoke('start_session', {
       'sessionId': sessionId,
-      'programExerciseId': programExerciseId,
+      'exerciseSessionId': exerciseSessionId,
+      'workoutProgramExerciseId': workoutProgramExerciseId,
       'mode': mode.name,
       'startPaused': startPaused,
       'restoreCompletedPlan': restoreCompletedPlan,

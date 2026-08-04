@@ -1,0 +1,12 @@
+{
+  "data": {
+    "id": 182,
+    "userId": 1,
+    "workoutProgramDayId": null,
+    "exerciseTypeId": null,
+    "duration": 0,
+    "status": "active",
+    "totalXpEarned": 0
+  },
+  "status": "success"
+}

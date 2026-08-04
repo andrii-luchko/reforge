@@ -11,9 +11,11 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
   @JsonSerializable(includeIfNull: false)
   const factory CreateSetSessionRequest({
     @JsonKey(name: 'exerciseId') required int exerciseId,
-    @JsonKey(name: 'workoutProgramExerciseId') required int workoutProgramExerciseId,
     @JsonKey(name: 'workoutSessionId') required int workoutSessionId,
+    @JsonKey(name: 'exerciseSessionId') required int exerciseSessionId,
+    @JsonKey(name: 'workoutProgramExerciseId') int? workoutProgramExerciseId,
     @JsonKey(name: 'programSegmentId') int? programSegmentId,
+    @JsonKey(name: 'idempotencyKey') String? clientSetId,
 
     @JsonKey(name: 'reps') int? reps,
     @JsonKey(name: 'weightKg') double? weightKg,
@@ -30,9 +32,9 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     required WorkoutSet set,
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
-
+    required int exerciseSessionId,
     required MeasurementSystem system,
+    int? workoutProgramExerciseId,
   }) {
     double? finalWeightKg;
     if (set.weight != null) {
@@ -57,9 +59,11 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     return CreateSetSessionRequest(
       exerciseId: exerciseId,
       workoutSessionId: workoutSessionId,
+      exerciseSessionId: exerciseSessionId,
       workoutProgramExerciseId: workoutProgramExerciseId,
 
       programSegmentId: set.programSegmentId,
+      clientSetId: set.clientSetId,
 
       reps: set.reps,
       tier: set.selectedTier,

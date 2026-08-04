@@ -12,6 +12,7 @@ abstract final class AnalyticsEvents {
   static const String quizStart = 'quiz_start';
   static const String quizComplete = 'quiz_complete';
   static const String homeStartWorkoutClick = 'home_start_workout_click';
+  static const String homeFreeRunClick = 'home_free_run_click';
   static const String homeStatsPeriodChange = 'home_stats_period_change';
   static const String calendarTrainingDetailsClick = 'calendar_training_details_click';
   static const String scheduledWorkoutDetailsClick = 'scheduled_training_details_click';
@@ -61,4 +62,13 @@ abstract final class AnalyticsEvents {
   static const String workoutPastResultsClick = 'workout_past_results_click';
   static const String workoutRestTimerClick = 'workout_rest_timer_click';
   static const String workoutSetComplete = 'workout_set_complete';
+  static const String freeRunStart = 'free_run_start';
+  static const String freeRunStartFailure = 'free_run_start_failure';
+  static const String freeRunCancel = 'free_run_cancel';
+  static const String freeRunComplete = 'free_run_complete';
+  static const String workoutMutationFailure = 'workout_mutation_failure';
+  static const String workoutExerciseReconciled = 'workout_exercise_reconciled';
+  static const String runningSetReconciled = 'running_set_reconciled';
+  static const String runningSetSyncFailure = 'running_set_sync_failure';
+  static const String runningOutboxBlocked = 'running_outbox_blocked';
 }

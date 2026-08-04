@@ -7,6 +7,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/controller/map/running_map_state.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
+import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 
@@ -15,14 +16,12 @@ class RunningMapCubit extends Cubit<RunningMapState> {
   RunningMapCubit(
     this._repository,
     this._serviceClient,
-    @factoryParam this.workoutSessionId,
-    @factoryParam this.programExerciseId,
+    @factoryParam this.config,
   ) : super(const RunningMapState());
 
   final LocalWorkoutSessionRepository _repository;
   final RunningServiceClient _serviceClient;
-  final int workoutSessionId;
-  final int programExerciseId;
+  final RunningExerciseConfig config;
 
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<RunningMetrics>? _metricsSub;
@@ -31,8 +30,9 @@ class RunningMapCubit extends Cubit<RunningMapState> {
     try {
       // Load historical points from the repository
       final points = await _repository.getRoutePoints(
-        sessionId: workoutSessionId,
-        programExerciseId: programExerciseId,
+        sessionId: config.workoutSessionId,
+        exerciseSessionId: config.exerciseSessionId,
+        workoutProgramExerciseId: config.workoutProgramExerciseId,
       );
       final lastPoint = points.lastOrNull;
 

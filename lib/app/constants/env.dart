@@ -1,5 +1,16 @@
+import 'package:flutter/foundation.dart';
+
 final class Env {
   Env._();
+
+  /// Free Run stays available in debug/profile builds for development, while
+  /// release builds must opt in explicitly with
+  /// `--dart-define=FREE_RUN_ENABLED=true`.
+  static const freeRunEnabled = bool.fromEnvironment(
+    'FREE_RUN_ENABLED',
+    defaultValue: !kReleaseMode,
+  );
+
   static const privacyPolicyUrl = String.fromEnvironment('PRIVACY_POLICY_URL');
   static const termsOfUseUrl = String.fromEnvironment('TERMS_OF_USE_URL');
 

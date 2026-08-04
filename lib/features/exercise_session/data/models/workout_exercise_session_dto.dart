@@ -32,15 +32,11 @@ sealed class WorkoutExerciseSessionDTO with _$WorkoutExerciseSessionDTO {
   factory WorkoutExerciseSessionDTO.fromJson(Map<String, dynamic> json) => _$WorkoutExerciseSessionDTOFromJson(json);
 
   WorkoutExerciseSessionEntity toEntity(MeasurementSystem system) {
-    final programExerciseId = workoutProgramExerciseId;
-    if (programExerciseId == null) {
-      throw StateError('Cannot map an unbound workout exercise session to the domain');
-    }
     return WorkoutExerciseSessionEntity(
       id: id,
       exerciseId: exerciseId,
       workoutSessionId: workoutSessionId,
-      workoutProgramExerciseId: programExerciseId,
+      workoutProgramExerciseId: workoutProgramExerciseId,
       isSwapped: isSwapped,
       swappedExerciseId: swappedExerciseId,
       isActive: isActive,
@@ -63,13 +59,15 @@ sealed class ExerciseSetDTO with _$ExerciseSetDTO {
     required int id,
     required int exerciseId,
     required int exerciseSessionId,
+    @JsonKey(name: 'idempotencyKey') String? clientSetId,
+    int? programSegmentId,
     int? tier,
     int? reps,
     int? durationSec,
     double? weightKg,
     double? angleDeg,
     double? speedKmH,
-    int? distanceM,
+    double? distanceM,
     int? setNumber,
   }) = _ExerciseSetDTO;
 
@@ -94,6 +92,7 @@ sealed class ExerciseSetDTO with _$ExerciseSetDTO {
 
     return WorkoutSet(
       id: id,
+      clientSetId: clientSetId,
       setNumber: setNumber,
       reps: reps,
       selectedTier: tier,
@@ -102,6 +101,7 @@ sealed class ExerciseSetDTO with _$ExerciseSetDTO {
       pace: finalSpeed,
       degrees: angleDeg,
       time: durationSec != null ? Duration(seconds: durationSec!) : null,
+      programSegmentId: programSegmentId,
     );
   }
 }

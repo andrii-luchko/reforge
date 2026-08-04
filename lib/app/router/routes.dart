@@ -57,6 +57,8 @@ import 'package:reforge/features/subscription/ui/pages/change_plan_page.dart';
 import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
+import 'package:reforge/features/workout_program/controllers/free_run_details_cubit.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/pages/exercise_instruction_page.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/pages/scheduled_workout_details_page.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/pages/workout_details_page.dart';
@@ -64,6 +66,7 @@ import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart
 import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_page.dart';
 import 'package:reforge/features/workout_quiz/ui/pages/workout_quiz_summary_page.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
 import 'package:reforge/features/workout_session/ui/active_workout/pages/active_workout_shell.dart';
 import 'package:reforge/features/workout_session/ui/navigation/workout_navigation_mixin.dart';
 
@@ -630,12 +633,18 @@ class WorkoutShellRoute extends ShellRouteData {
 }
 
 class WorkoutDetailsPageRoute extends GoRouteData with $WorkoutDetailsPageRoute, WorkoutNavigationMixin {
-  const WorkoutDetailsPageRoute();
+  const WorkoutDetailsPageRoute({this.intent = WorkoutStartIntent.program});
+
+  final WorkoutStartIntent intent;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return WorkoutDetailsPage(
-      onStartWorkout: () => handleStartWorkout(context),
+    return BlocProvider(
+      create: (_) => di.getIt<FreeRunDetailsCubit>(),
+      child: WorkoutDetailsPage(
+        intent: intent,
+        onStartWorkout: (plan) => handleStartWorkout(context, plan: plan),
+      ),
     );
   }
 }
@@ -658,16 +667,22 @@ class ScheduledWorkoutDetailsPageRoute extends GoRouteData
 }
 
 class ExerciseInstructionPageRoute extends GoRouteData with $ExerciseInstructionPageRoute {
-  const ExerciseInstructionPageRoute({required this.name, required this.workoutId});
+  const ExerciseInstructionPageRoute({
+    required this.name,
+    required this.workoutId,
+    this.$extra,
+  });
 
   final String name;
   final int workoutId;
+  final ExerciseDetailsEntity? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return ExerciseInstructionPage(
       name: name,
       workoutId: workoutId,
+      exercise: $extra,
     );
   }
 }
@@ -708,15 +723,15 @@ class ActiveWorkoutShellRoute extends ShellRouteData {
 }
 
 class ActiveExercisePageRoute extends GoRouteData with $ActiveExercisePageRoute {
-  const ActiveExercisePageRoute({required this.programExerciseId});
+  const ActiveExercisePageRoute({required this.executionKey});
 
-  final int programExerciseId;
+  final String executionKey;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return ActiveExerciseGate(
-      key: ValueKey(programExerciseId),
-      programExerciseId: programExerciseId,
+      key: ValueKey(executionKey),
+      executionKey: executionKey,
     );
   }
 }

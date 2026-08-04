@@ -2,6 +2,8 @@
 // ignore_for_file: comment_references
 
 import 'package:drift/drift.dart';
+import 'package:reforge/features/running/domain/enums/running_set_sync_status.dart';
+import 'package:uuid/uuid.dart';
 
 // Generates the required boilerplate
 part 'database.g.dart';
@@ -9,13 +11,24 @@ part 'database.g.dart';
 /// Table representing lap/set instances for the active running exercise.
 ///
 /// Each row is one lap. Metrics are null until tracking data arrives.
-/// The [isBusy] flag marks the currently active in-progress lap.
-/// The [isDone] flag marks completed laps that have been sent to the backend.
 extension ActiveRunningSetX on ActiveRunningSet {
-  bool get readyToSync => !isBusy && !isDone;
+  RunningSetSyncStatus get outboxStatus => RunningSetSyncStatus.fromDatabase(syncStatus);
+
+  bool get isTracking => outboxStatus == RunningSetSyncStatus.tracking;
+  bool get isLocallyCompleted => outboxStatus == RunningSetSyncStatus.locallyCompleted;
+  bool get isSyncing => outboxStatus == RunningSetSyncStatus.syncing;
+  bool get hasSyncFailed => outboxStatus == RunningSetSyncStatus.syncFailed;
+  bool get isSynced => outboxStatus == RunningSetSyncStatus.synced;
+  bool get isPendingSync => isLocallyCompleted || isSyncing || hasSyncFailed;
+  bool get canStartSync => isLocallyCompleted || hasSyncFailed;
 }
 
-@TableIndex(name: 'idx_active_running_sets_search', columns: {#sessionId, #isBusy, #isDone})
+@TableIndex(name: 'idx_active_running_sets_search', columns: {#sessionId, #exerciseSessionId, #syncStatus})
+@TableIndex(
+  name: 'idx_active_running_sets_client_identity',
+  columns: {#exerciseSessionId, #clientSetId},
+  unique: true,
+)
 class ActiveRunningSets extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(
@@ -23,7 +36,10 @@ class ActiveRunningSets extends Table {
     #remoteSessionId,
     onDelete: KeyAction.cascade,
   )();
-  IntColumn get programExerciseId => integer()(); // Links to ProgramExerciseEntity.id
+  IntColumn get exerciseSessionId => integer().nullable()();
+  IntColumn get programExerciseId => integer().nullable()();
+  TextColumn get clientSetId => text()();
+  IntColumn get remoteSetId => integer().nullable()();
   IntColumn get setNumber => integer()();
 
   // Real-time tracking metrics (null until tracked)
@@ -35,9 +51,9 @@ class ActiveRunningSets extends Table {
   RealColumn get currentPaceMinKm => real().nullable()();
   IntColumn get stepCount => integer().nullable()();
 
-  // State flags
-  BoolColumn get isDone => boolean().withDefault(const Constant(false))();
-  BoolColumn get isBusy => boolean().withDefault(const Constant(false))();
+  TextColumn get syncStatus => text().withDefault(
+    Constant(RunningSetSyncStatus.tracking.name),
+  )();
 
   // ── Running-specific fields ──────────────────────────────────────────────
 
@@ -66,7 +82,16 @@ class WorkoutSessionCache extends Table {
   IntColumn get remoteSessionId => integer().unique()();
 
   /// Program day id needed to re-fetch ProgramDayEntity with full exercise details
-  IntColumn get programDayId => integer()();
+  IntColumn get programDayId => integer().nullable()();
+
+  /// `program` for scheduled workouts, `adHoc` for workouts assembled at runtime.
+  TextColumn get source => text().withDefault(const Constant('program'))();
+
+  /// Minimal serialized execution plan used when no program day exists.
+  TextColumn get executionPlanJson => text().nullable()();
+
+  /// Last durable initialization boundary reached by the client.
+  TextColumn get initializationPhase => text().withDefault(const Constant('workoutCreated'))();
 
   /// When the session was originally started (for display purposes)
   DateTimeColumn get startedAt => dateTime()();
@@ -81,6 +106,36 @@ class WorkoutSessionCache extends Table {
 
   /// Last time this session had activity. Used for garbage collection.
   DateTimeColumn get updatedAt => dateTime().nullable()();
+}
+
+@TableIndex(
+  name: 'idx_workout_exercise_session_cache_identity',
+  columns: {#workoutSessionId, #executionKey},
+  unique: true,
+)
+@TableIndex(
+  name: 'idx_workout_exercise_session_cache_remote',
+  columns: {#exerciseSessionId},
+  unique: true,
+)
+class WorkoutExerciseSessionCache extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get workoutSessionId => integer().references(
+    WorkoutSessionCache,
+    #remoteSessionId,
+    onDelete: KeyAction.cascade,
+  )();
+
+  TextColumn get executionKey => text()();
+  IntColumn get exerciseId => integer()();
+  IntColumn get effectiveExerciseId => integer()();
+  IntColumn get exerciseSessionId => integer().nullable()();
+  IntColumn get workoutProgramExerciseId => integer().nullable()();
+  IntColumn get position => integer()();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  TextColumn get notesSyncStatus => text().withDefault(const Constant('synced'))();
+  DateTimeColumn get updatedAt => dateTime()();
 }
 
 /// GPS route points collected during a running session.
@@ -106,12 +161,19 @@ class SessionRoutePoints extends Table {
   DateTimeColumn get timestamp => dateTime()();
 }
 
-@DriftDatabase(tables: [ActiveRunningSets, WorkoutSessionCache, SessionRoutePoints])
+@DriftDatabase(
+  tables: [
+    ActiveRunningSets,
+    WorkoutSessionCache,
+    WorkoutExerciseSessionCache,
+    SessionRoutePoints,
+  ],
+)
 class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -121,8 +183,52 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.addColumn(workoutSessionCache, workoutSessionCache.updatedAt);
-        await m.createIndex(idxActiveRunningSetsSearch);
+        if (to < 3) await m.createIndex(idxActiveRunningSetsSearch);
         await m.createIndex(idxSessionRoutePointsLookup);
+      }
+      if (from < 3) {
+        await customStatement('ALTER TABLE active_running_sets ADD COLUMN exercise_session_id INTEGER;');
+        await customStatement('ALTER TABLE active_running_sets ADD COLUMN client_set_id TEXT;');
+        await customStatement('ALTER TABLE active_running_sets ADD COLUMN remote_set_id INTEGER;');
+        await customStatement(
+          "ALTER TABLE active_running_sets ADD COLUMN sync_status TEXT NOT NULL DEFAULT 'tracking';",
+        );
+
+        final legacyRows = await customSelect(
+          'SELECT id, is_done, is_busy FROM active_running_sets;',
+        ).get();
+        const uuid = Uuid();
+        for (final row in legacyRows) {
+          final status = row.read<bool>('is_done')
+              ? RunningSetSyncStatus.synced
+              : row.read<bool>('is_busy')
+              ? RunningSetSyncStatus.tracking
+              : RunningSetSyncStatus.locallyCompleted;
+          await customStatement(
+            'UPDATE active_running_sets SET client_set_id = ?, sync_status = ? WHERE id = ?;',
+            [uuid.v7(), status.name, row.read<int>('id')],
+          );
+        }
+
+        await customStatement('DROP INDEX IF EXISTS idx_active_running_sets_search;');
+        await m.alterTable(TableMigration(activeRunningSets));
+        await m.createIndex(idxActiveRunningSetsSearch);
+        await m.createIndex(idxActiveRunningSetsClientIdentity);
+      }
+      if (from < 4) {
+        await customStatement(
+          "ALTER TABLE workout_session_cache ADD COLUMN source TEXT NOT NULL DEFAULT 'program';",
+        );
+        await customStatement(
+          'ALTER TABLE workout_session_cache ADD COLUMN execution_plan_json TEXT;',
+        );
+        await customStatement(
+          "ALTER TABLE workout_session_cache ADD COLUMN initialization_phase TEXT NOT NULL DEFAULT 'workoutCreated';",
+        );
+        await m.alterTable(TableMigration(workoutSessionCache));
+        await m.createTable(workoutExerciseSessionCache);
+        await m.createIndex(idxWorkoutExerciseSessionCacheIdentity);
+        await m.createIndex(idxWorkoutExerciseSessionCacheRemote);
       }
     },
   );
@@ -131,10 +237,17 @@ class WorkoutDatabase extends _$WorkoutDatabase {
 
   Stream<List<ActiveRunningSet>> watchSetsForExercise({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? programExerciseId,
   }) {
     return (select(activeRunningSets)..where(
-          (t) => t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId),
+          (t) =>
+              t.sessionId.equals(sessionId) &
+              (t.exerciseSessionId.equals(exerciseSessionId) |
+                  (t.exerciseSessionId.isNull() &
+                      (programExerciseId == null
+                          ? const Constant(false)
+                          : t.programExerciseId.equals(programExerciseId)))),
         ))
         .watch();
   }
@@ -164,37 +277,83 @@ class WorkoutDatabase extends _$WorkoutDatabase {
 
   Future<void> markSetAsFinishedLocally(int setId) {
     return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
-      const ActiveRunningSetsCompanion(
-        isDone: Value(false),
-        isBusy: Value(false),
+      ActiveRunningSetsCompanion(
+        syncStatus: Value(RunningSetSyncStatus.locallyCompleted.name),
       ),
     );
   }
 
-  Future<void> markSetAsDone(int setId) {
+  Future<void> markSetAsSyncing(int setId) {
     return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
-      const ActiveRunningSetsCompanion(
-        isDone: Value(true),
-        isBusy: Value(false),
+      ActiveRunningSetsCompanion(
+        syncStatus: Value(RunningSetSyncStatus.syncing.name),
       ),
     );
   }
 
-  Future<void> createNewActiveSet({
-    required int sessionId,
-    required int programExerciseId,
-    required int setNumber,
-    String? trackingMode,
-  }) {
-    return into(activeRunningSets).insert(
-      ActiveRunningSetsCompanion.insert(
-        sessionId: sessionId,
-        programExerciseId: programExerciseId,
-        setNumber: setNumber,
-        isBusy: const Value(true),
-        trackingMode: Value(trackingMode),
+  Future<void> markSetSyncFailed(int setId) {
+    return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
+      ActiveRunningSetsCompanion(
+        syncStatus: Value(RunningSetSyncStatus.syncFailed.name),
       ),
     );
+  }
+
+  Future<void> markSetAsSynced(int setId, {required int remoteSetId}) {
+    return (update(activeRunningSets)..where((t) => t.id.equals(setId))).write(
+      ActiveRunningSetsCompanion(
+        remoteSetId: Value(remoteSetId),
+        syncStatus: Value(RunningSetSyncStatus.synced.name),
+      ),
+    );
+  }
+
+  Future<bool> reconcileSetAsSynced({
+    required int sessionId,
+    required int exerciseSessionId,
+    required String clientSetId,
+    required int remoteSetId,
+    required int durationSeconds,
+    required double distanceMeters,
+    required double speedKmH,
+    int? programSegmentId,
+  }) async {
+    final row =
+        await (select(activeRunningSets)..where(
+              (t) =>
+                  t.sessionId.equals(sessionId) &
+                  t.exerciseSessionId.equals(exerciseSessionId) &
+                  t.clientSetId.equals(clientSetId),
+            ))
+            .getSingleOrNull();
+    if (row == null ||
+        (row.durationSeconds ?? 0) != durationSeconds ||
+        !_sameMetric(row.distanceMeters ?? 0, distanceMeters) ||
+        !_sameMetric(row.avgSpeedKmH ?? 0, speedKmH) ||
+        row.programSegmentId != programSegmentId) {
+      return false;
+    }
+
+    await (update(activeRunningSets)..where((t) => t.id.equals(row.id))).write(
+      ActiveRunningSetsCompanion(
+        remoteSetId: Value(remoteSetId),
+        syncStatus: Value(RunningSetSyncStatus.synced.name),
+      ),
+    );
+    return true;
+  }
+
+  bool _sameMetric(double actual, double expected) => (actual - expected).abs() <= 0.000001;
+
+  Future<void> recoverInterruptedSetSyncs() {
+    return (update(activeRunningSets)..where(
+          (t) => t.syncStatus.equals(RunningSetSyncStatus.syncing.name),
+        ))
+        .write(
+          ActiveRunningSetsCompanion(
+            syncStatus: Value(RunningSetSyncStatus.locallyCompleted.name),
+          ),
+        );
   }
 
   // ── Running-specific methods ──────────────────────────────────────────────
@@ -202,15 +361,19 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   /// Returns the currently in-progress lap for one program exercise.
   Future<ActiveRunningSet?> getInProgressLapForExercise({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? programExerciseId,
   }) {
     return (select(activeRunningSets)
           ..where(
             (t) =>
                 t.sessionId.equals(sessionId) &
-                t.programExerciseId.equals(programExerciseId) &
-                t.isBusy.equals(true) &
-                t.isDone.equals(false),
+                (t.exerciseSessionId.equals(exerciseSessionId) |
+                    (t.exerciseSessionId.isNull() &
+                        (programExerciseId == null
+                            ? const Constant(false)
+                            : t.programExerciseId.equals(programExerciseId)))) &
+                t.syncStatus.equals(RunningSetSyncStatus.tracking.name),
           )
           ..limit(1))
         .getSingleOrNull();
@@ -219,7 +382,9 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   /// Returns any in-progress lap for session-level restore discovery.
   Future<ActiveRunningSet?> getAnyInProgressLapForSession(int sessionId) {
     return (select(activeRunningSets)
-          ..where((t) => t.sessionId.equals(sessionId) & t.isBusy.equals(true) & t.isDone.equals(false))
+          ..where(
+            (t) => t.sessionId.equals(sessionId) & t.syncStatus.equals(RunningSetSyncStatus.tracking.name),
+          )
           ..limit(1))
         .getSingleOrNull();
   }
@@ -227,11 +392,18 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   /// Returns the last lap (highest setNumber) for one program exercise.
   Future<ActiveRunningSet?> getLastLap({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? programExerciseId,
   }) {
     return (select(activeRunningSets)
           ..where(
-            (t) => t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId),
+            (t) =>
+                t.sessionId.equals(sessionId) &
+                (t.exerciseSessionId.equals(exerciseSessionId) |
+                    (t.exerciseSessionId.isNull() &
+                        (programExerciseId == null
+                            ? const Constant(false)
+                            : t.programExerciseId.equals(programExerciseId)))),
           )
           ..orderBy([(t) => OrderingTerm(expression: t.setNumber, mode: OrderingMode.desc)])
           ..limit(1))
@@ -270,12 +442,19 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   /// Returns completed laps for one program exercise, ordered by set number.
   Future<List<ActiveRunningSet>> getCompletedLapsForExercise({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? programExerciseId,
   }) {
     return (select(activeRunningSets)
           ..where(
             (t) =>
-                t.sessionId.equals(sessionId) & t.programExerciseId.equals(programExerciseId) & t.isDone.equals(true),
+                t.sessionId.equals(sessionId) &
+                (t.exerciseSessionId.equals(exerciseSessionId) |
+                    (t.exerciseSessionId.isNull() &
+                        (programExerciseId == null
+                            ? const Constant(false)
+                            : t.programExerciseId.equals(programExerciseId)))) &
+                t.syncStatus.equals(RunningSetSyncStatus.synced.name),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.setNumber)]))
         .get();

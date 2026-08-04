@@ -22,7 +22,7 @@ class WorkoutExerciseSessionEntity {
   final int id;
   final int exerciseId;
   final int workoutSessionId;
-  final int workoutProgramExerciseId;
+  final int? workoutProgramExerciseId;
   final bool isSwapped;
   final int? swappedExerciseId;
   final bool isActive;

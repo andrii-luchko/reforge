@@ -59,7 +59,8 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 42,
-      programExerciseId: 7,
+      exerciseSessionId: 100,
+      workoutProgramExerciseId: 7,
     );
 
     verify(() => service.startService()).called(1);
@@ -69,6 +70,8 @@ void main() {
         any(
           that: isA<Map<String, dynamic>>()
               .having((payload) => payload['sessionId'], 'sessionId', 42)
+              .having((payload) => payload['exerciseSessionId'], 'exerciseSessionId', 100)
+              .having((payload) => payload['workoutProgramExerciseId'], 'workoutProgramExerciseId', 7)
               .having((payload) => payload['mode'], 'mode', 'gps')
               .having(
                 (payload) => payload['restoreCompletedPlan'],
@@ -88,7 +91,8 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 42,
-      programExerciseId: 7,
+      exerciseSessionId: 100,
+      workoutProgramExerciseId: 7,
       startPaused: true,
       restoreCompletedPlan: true,
     );
@@ -116,7 +120,7 @@ void main() {
       mode: RunningMode.pedometer,
       limits: const [],
       sessionId: 42,
-      programExerciseId: 7,
+      exerciseSessionId: 100,
     );
 
     verifyNever(() => service.startService());
@@ -132,7 +136,7 @@ void main() {
         mode: RunningMode.gps,
         limits: const [],
         sessionId: 42,
-        programExerciseId: 7,
+        exerciseSessionId: 100,
       ),
       throwsA(
         isA<RunningServiceException>().having(

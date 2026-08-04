@@ -98,6 +98,7 @@ class _LapRow extends StatelessWidget {
             pace: lap.avgSpeedKmH,
             metrics: metrics,
             system: system,
+            isOverview: true,
           ),
         ),
       ],

@@ -29,19 +29,19 @@ void main() {
     when(
       () => repository.getInProgressLapForExercise(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
       ),
     ).thenAnswer((_) async => null);
     when(
       () => repository.getLastLap(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
       ),
     ).thenAnswer((_) async => null);
     when(
       () => repository.createNewActiveSet(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         setNumber: any(named: 'setNumber'),
         trackingMode: any(named: 'trackingMode'),
         programSegmentId: any(named: 'programSegmentId'),
@@ -73,7 +73,7 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
 
     expect((await firstMetric).durationSeconds, 1);
@@ -87,13 +87,13 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
     await manager.startSession(
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
       startPaused: true,
     );
 
@@ -111,7 +111,7 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
 
     var completed = false;
@@ -131,7 +131,7 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
     await manager.endSession();
 
@@ -140,7 +140,7 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 11,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
 
     expect((await nextMetric).durationSeconds, 1);
@@ -149,26 +149,26 @@ void main() {
     await manager.endSession();
   });
 
-  test('starts lap numbering from one for another program exercise in the same session', () async {
+  test('starts lap numbering from one for another exercise session in the same workout', () async {
     final manager = RunningSessionManager(pedometer, gps, repository, audio);
 
     await manager.startSession(
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 111,
+      exerciseSessionId: 111,
     );
 
     verify(
       () => repository.getLastLap(
         sessionId: 10,
-        programExerciseId: 111,
+        exerciseSessionId: 111,
       ),
     ).called(1);
     verify(
       () => repository.createNewActiveSet(
         sessionId: 10,
-        programExerciseId: 111,
+        exerciseSessionId: 111,
         setNumber: 1,
         trackingMode: RunningMode.gps.dbValue,
       ),
@@ -189,7 +189,7 @@ void main() {
         mode: RunningMode.gps,
         limits: [LapLimit(metric: scenario.metric, limitValue: 1)],
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       );
 
       await completed;
@@ -200,7 +200,7 @@ void main() {
       verifyNever(
         () => repository.createNewActiveSet(
           sessionId: 10,
-          programExerciseId: 20,
+          exerciseSessionId: 20,
           setNumber: 2,
           trackingMode: RunningMode.gps.dbValue,
         ),
@@ -214,7 +214,7 @@ void main() {
     when(
       () => repository.getLastLap(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _completedLap);
     final manager = RunningSessionManager(pedometer, gps, repository, audio);
@@ -225,7 +225,7 @@ void main() {
         LapLimit(metric: WorkoutMetric.distance, limitValue: 3000),
       ],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
       startPaused: true,
       restoreCompletedPlan: true,
     );
@@ -233,7 +233,7 @@ void main() {
     verifyNever(
       () => repository.createNewActiveSet(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         setNumber: any(named: 'setNumber'),
         trackingMode: any(named: 'trackingMode'),
         programSegmentId: any(named: 'programSegmentId'),
@@ -248,7 +248,7 @@ void main() {
     verify(
       () => repository.createNewActiveSet(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
         setNumber: 2,
         trackingMode: RunningMode.gps.dbValue,
       ),
@@ -269,7 +269,7 @@ void main() {
       mode: RunningMode.gps,
       limits: const [],
       sessionId: 10,
-      programExerciseId: 20,
+      exerciseSessionId: 20,
     );
 
     final forwardedError = Completer<Object>();
@@ -362,12 +362,12 @@ final class SynchronousMetricEngine implements TrackingEngine {
 const _completedLap = ActiveRunningSet(
   id: 1,
   sessionId: 10,
-  programExerciseId: 20,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
   setNumber: 1,
   distanceMeters: 3000,
   durationSeconds: 720,
-  isDone: true,
-  isBusy: false,
+  syncStatus: 'synced',
   trackingMode: 'gps',
   segmentType: 'run',
 );

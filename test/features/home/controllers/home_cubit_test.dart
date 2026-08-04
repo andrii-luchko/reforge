@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/domain/enum/stats_period.dart';
@@ -53,6 +54,14 @@ void main() {
   });
 
   group('HomeCubit', () {
+    test('logs the dedicated Free Run entry event', () async {
+      final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit)..onFreeRunTap();
+      await Future<void>.delayed(Duration.zero);
+
+      verify(() => mockAnalytics.logEvent(AnalyticsEvents.homeFreeRunClick)).called(1);
+      await cubit.close();
+    });
+
     group('loadInitialData', () {
       test('Success emits user, statsMap, rank, isLoading false', () async {
         final user = createTestOnboardedUser();

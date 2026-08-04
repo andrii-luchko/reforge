@@ -16,7 +16,9 @@ sealed class WorkoutRestoreState with _$WorkoutRestoreState {
   /// An interrupted active session was found and is awaiting user confirmation.
   const factory WorkoutRestoreState.pendingRestore({
     required int sessionId,
-    required int programDayId,
+    required int? programDayId,
+    required CachedWorkoutSource source,
+    required String? executionPlanJson,
     required int cachedDurationSec,
     required WorkoutSessionDetailsDTO session,
   }) = WorkoutRestorePending;
@@ -25,9 +27,9 @@ sealed class WorkoutRestoreState with _$WorkoutRestoreState {
   const factory WorkoutRestoreState.restoring() = WorkoutRestoreRestoring;
 
   /// Restore complete — [WorkoutSessionFlowCubit] has been populated.
-  /// Navigate to the program exercise at [resumeProgramExerciseId].
+  /// Navigate to the restored execution at [resumeExecutionKey].
   const factory WorkoutRestoreState.restored({
-    required int resumeProgramExerciseId,
+    required String resumeExecutionKey,
   }) = WorkoutRestoreRestored;
 
   /// No interrupted session found, or the user chose to abandon it.

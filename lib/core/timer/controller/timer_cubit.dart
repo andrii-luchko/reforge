@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -71,7 +72,7 @@ class TimerCubit extends Cubit<TimerState> {
   // ── Private ────────────────────────────────────────────────────────────────
 
   void _startTicking() {
-    _startedAt = DateTime.now();
+    _startedAt = clock.now();
     emit(
       state.copyWith(
         duration: _baseSec,
@@ -84,7 +85,7 @@ class TimerCubit extends Cubit<TimerState> {
 
   void _emitElapsed() {
     if (_startedAt == null) return;
-    final elapsed = _baseSec + DateTime.now().difference(_startedAt!).inSeconds;
+    final elapsed = _baseSec + clock.now().difference(_startedAt!).inSeconds;
     emit(state.copyWith(duration: elapsed));
   }
 

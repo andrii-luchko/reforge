@@ -11,6 +11,7 @@ sealed class WorkoutSet with _$WorkoutSet {
 
   factory WorkoutSet({
     required int id,
+    String? clientSetId,
     int? setNumber,
     Duration? time,
     double? distance,
@@ -20,6 +21,7 @@ sealed class WorkoutSet with _$WorkoutSet {
     double? degrees,
     int? selectedTier,
     int? programSegmentId,
+    @Default(false) bool isLocallyCompleted,
     @Default(false) bool isDone,
     @Default(false) bool isBusy,
   }) = _WorkoutSet;

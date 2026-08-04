@@ -36,7 +36,7 @@ class _WorkoutCongratulationsPageState extends State<WorkoutCongratulationsPage>
   void initState() {
     super.initState();
     _summary = context.read<WorkoutSessionFlowCubit>().state.summary;
-    _xpProgress = _summary == null ? 0.2 : _calculateXpProgress(_summary);
+    _xpProgress = _summary == null || _summary.totalXpEarned == 0 ? 0 : _calculateXpProgress(_summary);
 
     if (_summary case WorkoutSessionSummaryEntity(earnedMilestones: [final first, ...])) {
       _logMilestoneShown(first);

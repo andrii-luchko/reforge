@@ -9,6 +9,7 @@ import 'package:reforge/features/running/data/services/gps_tracking_engine.dart'
 import 'package:reforge/features/running/data/services/pedometer_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
 /// A minimal, self-contained GetIt container for the background isolate.
@@ -65,8 +66,12 @@ Future<void> configureBackgroundDependencies() async {
 
   backgroundGetIt
     ..registerSingleton<WorkoutDatabase>(db)
+    ..registerSingleton<ClientIdGenerator>(const ClientIdGenerator())
     ..registerSingleton<LocalWorkoutSessionRepository>(
-      LocalWorkoutSessionRepositoryImpl(db),
+      LocalWorkoutSessionRepositoryImpl(
+        db,
+        backgroundGetIt<ClientIdGenerator>(),
+      ),
     );
 
   // ── Tracking engines ───────────────────────────────────────────────────────

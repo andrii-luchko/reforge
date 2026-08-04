@@ -4,18 +4,20 @@ import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
 /// Repository for managing the local/offline state of a workout session (Drift).
 /// Used by the running tracker to take snapshots and coordinate active laps.
 abstract interface class LocalWorkoutSessionRepository {
-  /// Returns the running sets owned by one program exercise in a workout session.
+  /// Returns the running sets owned by one exercise session.
   Stream<List<ActiveRunningSet>> watchActiveRunningSets({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   });
 
   /// Creates a new active set in the database for tracking.
   Future<int> createNewActiveSet({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
     required int setNumber,
     required String trackingMode,
+    int? workoutProgramExerciseId,
     int? programSegmentId,
     String? segmentType,
   });
@@ -44,16 +46,18 @@ abstract interface class LocalWorkoutSessionRepository {
     required double heading,
   });
 
-  /// Fetches GPS points owned by one program exercise in a workout session.
+  /// Fetches GPS points owned by one exercise session.
   Future<List<RouteCoordinate>> getRoutePoints({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   });
 
   /// Returns the in-progress lap for one program exercise, if any.
   Future<ActiveRunningSet?> getInProgressLapForExercise({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   });
 
   /// Returns any in-progress lap in the session for restore discovery only.
@@ -62,9 +66,29 @@ abstract interface class LocalWorkoutSessionRepository {
   /// Returns the last lap for one program exercise, regardless of status.
   Future<ActiveRunningSet?> getLastLap({
     required int sessionId,
-    required int programExerciseId,
+    required int exerciseSessionId,
+    int? workoutProgramExerciseId,
   });
 
-  /// Marks the set as completely synced to the backend.
-  Future<void> markSetAsDone(int setId);
+  Future<void> markSetAsSyncing(int setId);
+
+  Future<void> markSetSyncFailed(int setId);
+
+  /// Stores backend identity and marks the local outbox row as synced.
+  Future<void> markSetAsSynced(int setId, {required int remoteSetId});
+
+  /// Reconciles a restored backend set with its durable local outbox identity.
+  Future<bool> reconcileSetAsSynced({
+    required int sessionId,
+    required int exerciseSessionId,
+    required String clientSetId,
+    required int remoteSetId,
+    required int durationSeconds,
+    required double distanceMeters,
+    required double speedKmH,
+    int? programSegmentId,
+  });
+
+  /// Makes rows left in `syncing` after process death eligible for retry.
+  Future<void> recoverInterruptedSetSyncs();
 }

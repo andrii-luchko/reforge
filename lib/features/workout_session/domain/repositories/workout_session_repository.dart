@@ -11,6 +11,8 @@ abstract interface class WorkoutSessionRepository {
 
   Future<Result<WorkoutSession>> startWorkoutSession(int workoutProgramDayId);
 
+  Future<Result<WorkoutSession>> startAdHocWorkoutSession();
+
   Future<Result<WorkoutSessionSummaryEntity>> endWorkoutSession({
     required WorkoutSessionStatus status,
     required int workoutSessionId,

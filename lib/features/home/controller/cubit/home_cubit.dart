@@ -178,6 +178,10 @@ class HomeCubit extends Cubit<HomeState> {
     unawaited(_analytics.logEvent(AnalyticsEvents.homeStartWorkoutClick));
   }
 
+  void onFreeRunTap() {
+    unawaited(_analytics.logEvent(AnalyticsEvents.homeFreeRunClick));
+  }
+
   @override
   Future<void> close() async {
     await _userSubscription?.cancel();

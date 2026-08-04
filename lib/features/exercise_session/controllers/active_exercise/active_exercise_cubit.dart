@@ -9,6 +9,7 @@ import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/exercise_swap_context.dart';
@@ -16,10 +17,10 @@ import 'package:reforge/features/exercise_session/domain/entities/previous_exerc
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/workout_program/data/models/tier.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
-import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
-import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'active_exercise_cubit.freezed.dart';
@@ -31,37 +32,47 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     this.repository,
     this._analytics,
     this._userSessionService,
-    @factoryParam this.exerciseContext,
+    this._clientIdGenerator,
+    this._sessionCache,
+    @factoryParam this.execution,
   ) : super(
         ActiveExerciseState(
-          session: exerciseContext.session,
-          effectiveExercise: exerciseContext.effectiveExercise,
-          notes: exerciseContext.session.notes ?? '',
+          session: execution.session,
+          effectiveExercise: execution.effectiveExercise,
+          notes: execution.session.notes ?? '',
         ),
       );
 
-  final ActiveWorkoutExerciseContext exerciseContext;
+  final ActiveExerciseExecution execution;
 
   //dependencies
   final ExerciseSessionRepository repository;
   final AnalyticsService _analytics;
   final UserSessionService _userSessionService;
+  final ClientIdGenerator _clientIdGenerator;
+  final WorkoutSessionCacheRepository _sessionCache;
 
   Future<void>? _initialization;
+  Future<void> _notePersistence = Future.value();
+  var _notesChanged = false;
 
   int get workoutSessionId => state.session.workoutSessionId;
-
-  ProgramExerciseEntity get programExercise => exerciseContext.programExercise;
 
   WorkoutExerciseSessionEntity get workoutExerciseSession => state.session;
 
   ExerciseDetailsEntity get effectiveExercise => state.effectiveExercise;
 
+  int? get workoutProgramExerciseId => execution.spec.workoutProgramExerciseId;
+
   bool get isRunningExercise =>
-      state.session.isSwapped ? state.effectiveExercise.isRunningSwapCandidate : programExercise.isRunningExercise;
+      state.session.isSwapped ? state.effectiveExercise.isRunningSwapCandidate : execution.spec.isRunningExercise;
 
   bool get canSwap =>
-      !state.isLoading && !state.isSendingSet && !state.isSubmitted && !state.sets.any((set) => set.isDone);
+      execution.spec.programBinding != null &&
+      !state.isLoading &&
+      !state.isSendingSet &&
+      !state.isSubmitted &&
+      !state.sets.any((set) => set.isDone);
 
   Future<void> initialize({List<WorkoutSet>? restoredSets}) {
     return _initialization ??= _initialize(restoredSets);
@@ -85,10 +96,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     final initialSets = (restored != null && restored.isNotEmpty)
         ? [
             ...restored.map((s) => s.copyWith(isDone: true)),
-            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: restored.length + 1),
+            _newSet(setNumber: restored.length + 1),
           ]
         : [
-            WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1),
+            _newSet(setNumber: 1),
           ];
 
     emit(
@@ -108,7 +119,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     emit(state.copyWith(sets: sets, isSendingSet: isSending));
   }
 
-  ActiveWorkoutExerciseContext? applySwap(AppliedExerciseSwap swap) {
+  ActiveExerciseExecution? applySwap(AppliedExerciseSwap swap) {
+    if (execution.spec.programBinding == null) return null;
     if (!swap.isConfirmed || swap.session.id != state.session.id) return null;
 
     final response = swap.session;
@@ -125,17 +137,16 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       createdAt: response.createdAt ?? state.session.createdAt,
       updatedAt: response.updatedAt,
       sets: const [],
-      exercise: state.session.exercise ?? programExercise.exerciseDetails,
+      exercise: state.session.exercise ?? execution.spec.details,
       swappedExercise: swap.exercise,
     );
-    final nextContext = ActiveWorkoutExerciseContext(
-      programExercise: programExercise,
+    final nextExecution = ActiveExerciseExecution(
+      spec: execution.spec,
+      workoutSessionId: execution.workoutSessionId,
       session: normalizedSession,
       effectiveExercise: swap.exercise,
     );
-    final replacementSets = swap.exercise.isRunningSwapCandidate
-        ? const <WorkoutSet>[]
-        : [WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: 1)];
+    final replacementSets = swap.exercise.isRunningSwapCandidate ? const <WorkoutSet>[] : [_newSet(setNumber: 1)];
 
     emit(
       state.copyWith(
@@ -148,14 +159,16 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
         setValidationError: null,
       ),
     );
-    return nextContext;
+    return nextExecution;
   }
 
   Future<PreviousExerciseResult?> _getPreviousResult(MeasurementSystem system) async {
     if (state.session.isSwapped) return null;
+    final programExerciseId = workoutProgramExerciseId;
+    if (programExerciseId == null) return null;
 
     final result = await repository.getPreviousResults(
-      programExerciseId: programExercise.id,
+      programExerciseId: programExerciseId,
       workoutSessionId: workoutSessionId,
       system: system,
     );
@@ -183,13 +196,38 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void setNote(String newNote) {
-    logger.d(newNote);
+    logger.d(
+      'Exercise notes cached workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey} '
+      'noteLength=${newNote.length}',
+    );
     emit(state.copyWith(notes: newNote));
+    _notesChanged = true;
+    _notePersistence = _notePersistence
+        .then(
+          (_) => _sessionCache.saveExerciseNotesLocally(
+            workoutSessionId: workoutSessionId,
+            executionKey: execution.spec.executionKey,
+            notes: newNote,
+          ),
+        )
+        .onError((error, stackTrace) {
+          logger.e('ActiveExerciseCubit: failed to cache notes', error, stackTrace);
+        });
+    unawaited(_notePersistence);
   }
 
   void addSet() {
-    final newSet = WorkoutSet(id: DateTime.now().microsecondsSinceEpoch, setNumber: state.sets.length + 1);
+    final newSet = _newSet(setNumber: state.sets.length + 1);
     emit(state.copyWith(sets: [...state.sets, newSet]));
+  }
+
+  WorkoutSet _newSet({required int setNumber}) {
+    return WorkoutSet(
+      id: DateTime.now().microsecondsSinceEpoch,
+      clientSetId: _clientIdGenerator.nextSetId(),
+      setNumber: setNumber,
+    );
   }
 
   void updateSet(int setId, WorkoutSet newSetData) {
@@ -219,22 +257,38 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       return;
     }
 
-    emit(state.copyWith(isSendingSet: true, setValidationError: null));
+    emit(
+      state.copyWith(
+        isSendingSet: true,
+        setValidationError: null,
+        error: null,
+      ),
+    );
 
     updateSet(setId, currentSet.copyWith(isBusy: true));
+
+    logger.i(
+      'Exercise set sync start workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+    );
 
     final tier = effectiveExercise.isTiered ? state.selectedTier?.rank : null;
 
     final result = await repository.completeSet(
       exerciseId: effectiveExercise.id,
-      workoutProgramExerciseId: programExercise.id,
       workoutSessionId: workoutSessionId,
+      exerciseSessionId: state.session.id,
+      workoutProgramExerciseId: workoutProgramExerciseId,
       system: state.measureSystem,
       set: currentSet.copyWith(selectedTier: tier),
     );
 
     switch (result) {
       case Success():
+        logger.i(
+          'Exercise set sync success workoutSessionId=$workoutSessionId '
+          'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+        );
         final setNumber = state.sets.indexWhere((s) => s.id == setId) + 1;
         unawaited(
           _analytics.logEvent(
@@ -245,21 +299,39 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
             },
           ),
         );
-        updateSet(setId, currentSet.copyWith(isBusy: false, isDone: true));
+        updateSet(
+          setId,
+          currentSet.copyWith(
+            isBusy: false,
+            isLocallyCompleted: true,
+            isDone: true,
+          ),
+        );
         emit(state.copyWith(isSendingSet: false));
 
       case Failure(:final error):
+        logger.e(
+          'Exercise set sync failure workoutSessionId=$workoutSessionId '
+          'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {'boundary': 'complete_set', 'source': _sourceName},
+          ),
+        );
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
   }
 
   Future<void> finishExercise() async {
-    logger.d('''
-name: ${effectiveExercise.name}
-loading:${state.isLoading}
-submitted: ${state.isSubmitted}
-''');
+    logger.d(
+      'Exercise finish requested workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey} '
+      'loading=${state.isLoading} submitted=${state.isSubmitted}',
+    );
 
     if (state.isLoading) return;
 
@@ -277,26 +349,48 @@ submitted: ${state.isSubmitted}
       return;
     }
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, error: null));
 
-    final note = state.notes;
+    await _notePersistence;
+    final cachedExercise = await _sessionCache.getExerciseSession(
+      workoutSessionId: workoutSessionId,
+      executionKey: execution.spec.executionKey,
+    );
+    final shouldSyncNotes = _notesChanged || cachedExercise?.noteStatus != CachedNotesSyncStatus.synced;
 
-    if (note.isEmpty) {
+    if (!shouldSyncNotes) {
       emit(state.copyWith(isLoading: false, isSubmitted: true));
     } else {
       final result = await repository.saveWorkoutNote(
-        exerciseId: effectiveExercise.id,
-        workoutProgramExerciseId: programExercise.id,
-        workoutSessionId: workoutSessionId,
-
-        note: note,
+        exerciseSessionId: state.session.id,
+        note: state.notes,
       );
 
       switch (result) {
         case Success():
+          logger.i(
+            'Exercise notes sync success workoutSessionId=$workoutSessionId '
+            'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey}',
+          );
+          await _sessionCache.markExerciseNotesSynced(
+            workoutSessionId: workoutSessionId,
+            executionKey: execution.spec.executionKey,
+          );
+          _notesChanged = false;
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
         case Failure(:final error):
+          logger.e(
+            'Exercise notes sync failure workoutSessionId=$workoutSessionId '
+            'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey}',
+            error,
+          );
+          unawaited(
+            _analytics.logEvent(
+              AnalyticsEvents.workoutMutationFailure,
+              {'boundary': 'save_notes', 'source': _sourceName},
+            ),
+          );
           emit(
             state.copyWith(
               isLoading: false,
@@ -307,4 +401,6 @@ submitted: ${state.isSubmitted}
       }
     }
   }
+
+  String get _sourceName => workoutProgramExerciseId == null ? 'ad_hoc' : 'program';
 }

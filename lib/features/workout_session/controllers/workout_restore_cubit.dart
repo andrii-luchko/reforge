@@ -1,23 +1,32 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
+import 'package:reforge/core/database/database.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
 import 'package:reforge/core/user/domain/services/user_session_service.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
+import 'package:reforge/features/workout_program/domain/repositories/exercise_catalog_repository.dart';
 import 'package:reforge/features/workout_program/domain/repositories/workout_program_repository.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
 import 'package:reforge/features/workout_session/data/models/workout_session_details_dto.dart';
+import 'package:reforge/features/workout_session/domain/entities/active_exercise_execution.dart';
 import 'package:reforge/features/workout_session/domain/entities/active_workout_exercise_context.dart';
+import 'package:reforge/features/workout_session/domain/entities/cached_workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_exercise_spec.dart';
+import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
 import 'package:reforge/features/workout_session/domain/repositories/workout_session_repository.dart';
 
 part 'workout_restore_cubit.freezed.dart';
@@ -38,6 +47,7 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     this._sessionCache,
     this._sessionRepository,
     this._programRepository,
+    this._exerciseCatalogRepository,
     this._localWorkoutRepository,
     this._userSessionService,
     this._flowCubit,
@@ -46,6 +56,7 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
   final WorkoutSessionCacheRepository _sessionCache;
   final WorkoutSessionRepository _sessionRepository;
   final WorkoutProgramRepository _programRepository;
+  final ExerciseCatalogRepository _exerciseCatalogRepository;
   final LocalWorkoutSessionRepository _localWorkoutRepository;
   final UserSessionService _userSessionService;
 
@@ -98,6 +109,8 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
           WorkoutRestoreState.pendingRestore(
             sessionId: cached.remoteSessionId,
             programDayId: cached.programDayId,
+            source: cached.workoutSource,
+            executionPlanJson: cached.executionPlanJson,
             cachedDurationSec: cached.durationSec,
             session: details,
           ),
@@ -113,25 +126,32 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     if (pending is! WorkoutRestorePending) return;
 
     emit(const WorkoutRestoreState.restoring());
+    switch (pending.source) {
+      case CachedWorkoutSource.program:
+        await _restoreProgramSession(pending);
+      case CachedWorkoutSource.adHoc:
+        await _restoreAdHocSession(pending);
+    }
+  }
 
-    // Kick off both requests in parallel.
-
-    final dayFuture = _programRepository.getWorkoutByDay(pending.programDayId);
-
-    final dayResult = await dayFuture;
-
+  Future<void> _restoreProgramSession(WorkoutRestorePending pending) async {
+    final programDayId = pending.programDayId;
+    if (programDayId == null) {
+      emit(const WorkoutRestoreState.error('Cached program workout has no program day'));
+      return;
+    }
+    final dayResult = await _programRepository.getWorkoutByDay(programDayId);
     if (dayResult is Failure) {
       emit(const WorkoutRestoreState.error('Failed to restore workout session'));
       return;
     }
-
-    final details = pending.session;
     final programDay = (dayResult as Success<ProgramDayEntity?>).value;
-
     if (programDay == null) {
       emit(const WorkoutRestoreState.error('Workout program day not found'));
       return;
     }
+
+    final details = pending.session;
 
     final selectedSessions = details.exerciseSessionsByProgramExerciseId;
     final rawSessionCount = details.normalizedExerciseSessions.length;
@@ -150,10 +170,12 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     }
     final system = _measurementSystem;
     final restoredSets = _buildRestoredSetsMap(selectedSessions, system);
+    final cachedExercises = await _sessionCache.getExerciseSessions(pending.sessionId);
     final exerciseContexts = _buildExerciseContexts(
       programDay,
       selectedSessions,
       system,
+      cachedExercises,
     );
     final inProgressLap = await _localWorkoutRepository.getAnyInProgressLapForSession(pending.sessionId);
     final inProgressIndex = inProgressLap == null
@@ -180,7 +202,122 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       exerciseContexts: exerciseContexts,
     );
 
-    emit(WorkoutRestoreState.restored(resumeProgramExerciseId: resumeExercise.id));
+    await _cacheRestoredExecutions(pending.sessionId);
+    await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+    emit(
+      WorkoutRestoreState.restored(
+        resumeExecutionKey: _flowCubit.state.executionPlan!.exercises[resumeIndex].executionKey,
+      ),
+    );
+  }
+
+  Future<void> _restoreAdHocSession(WorkoutRestorePending pending) async {
+    CachedWorkoutExecutionPlan cachedPlan;
+    try {
+      cachedPlan = pending.executionPlanJson == null
+          ? const CachedWorkoutExecutionPlan(
+              isProgram: false,
+              exercises: [
+                CachedWorkoutExerciseSpec(
+                  executionKey: 'free-run:restored',
+                  exerciseId: WorkoutExecutionPlan.freeRunExerciseId,
+                  position: 0,
+                ),
+              ],
+            )
+          : CachedWorkoutExecutionPlan.decode(pending.executionPlanJson!);
+    } on Object catch (error, stackTrace) {
+      logger.e('WorkoutRestoreCubit: invalid cached execution plan', error, stackTrace);
+      emit(const WorkoutRestoreState.error('Failed to restore workout plan'));
+      return;
+    }
+    if (cachedPlan.exercises.isEmpty) {
+      emit(const WorkoutRestoreState.error('Cached workout plan is empty'));
+      return;
+    }
+    if (cachedPlan.isProgram) {
+      emit(const WorkoutRestoreState.error('Cached workout source does not match its plan'));
+      return;
+    }
+
+    final cachedExercises = await _sessionCache.getExerciseSessions(pending.sessionId);
+    final specs = <WorkoutExerciseSpec>[];
+    final executions = <String, ActiveExerciseExecution>{};
+    for (final cachedSpec in cachedPlan.exercises) {
+      final cachedExercise = cachedExercises
+          .where(
+            (item) => item.executionKey == cachedSpec.executionKey,
+          )
+          .firstOrNull;
+      final sessions = pending.session.normalizedExerciseSessions
+          .where(
+            (item) => item.workoutProgramExerciseId == null && item.exerciseId == cachedSpec.exerciseId,
+          )
+          .toList();
+      if (cachedExercise?.exerciseSessionId == null && sessions.length > 1) {
+        emit(const WorkoutRestoreState.error('Multiple matching exercise sessions found'));
+        return;
+      }
+      final dto = cachedExercise?.exerciseSessionId == null
+          ? sessions.firstOrNull
+          : sessions.where((item) => item.id == cachedExercise!.exerciseSessionId).firstOrNull;
+      if (cachedExercise?.exerciseSessionId != null && dto == null && sessions.isNotEmpty) {
+        emit(const WorkoutRestoreState.error('Cached exercise session does not match backend details'));
+        return;
+      }
+      final dtoEntity = dto?.toEntity(_measurementSystem);
+      var details = dtoEntity?.effectiveExercise;
+      if (details == null) {
+        final exerciseResult = await _exerciseCatalogRepository.getExercise(cachedSpec.exerciseId);
+        if (exerciseResult case Success(value: final exercise)) {
+          details = exercise;
+        } else {
+          emit(const WorkoutRestoreState.error('Failed to restore workout exercise'));
+          return;
+        }
+      }
+
+      final spec = WorkoutExerciseSpec(
+        executionKey: cachedSpec.executionKey,
+        details: details,
+        targetSetCount: cachedSpec.targetSetCount,
+        segments: const [],
+        programBinding: null,
+      );
+      specs.add(spec);
+      if (dtoEntity != null) {
+        final session = cachedExercise?.noteStatus == CachedNotesSyncStatus.synced
+            ? dtoEntity
+            : _sessionWithNotes(dtoEntity, cachedExercise?.notes ?? '');
+        executions[spec.executionKey] = ActiveExerciseExecution(
+          spec: spec,
+          workoutSessionId: pending.sessionId,
+          session: session,
+          effectiveExercise: details,
+        );
+      }
+    }
+
+    final plan = WorkoutExecutionPlan.adHoc(exercises: specs);
+    final startIndex = pending.cachedDurationSec == 0
+        ? 0
+        : pending.session.normalizedExerciseSessions.isEmpty
+        ? 0
+        : specs.length - 1;
+    _flowCubit.initExecutionPlanFromRestore(
+      sessionId: pending.sessionId,
+      executionPlan: plan,
+      durationSec: pending.cachedDurationSec,
+      restoredSets: const {},
+      startIndex: startIndex,
+      executions: executions,
+      startIntent: WorkoutStartIntent.freeRun,
+    );
+    await _cacheRestoredExecutions(pending.sessionId);
+    if (executions.isNotEmpty) {
+      await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+    }
+    emit(WorkoutRestoreState.restored(resumeExecutionKey: specs[startIndex].executionKey));
   }
 
   /// Cancels the interrupted session on the backend (best-effort) and clears
@@ -235,13 +372,19 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
     ProgramDayEntity programDay,
     Map<int, WorkoutExerciseSessionDTO> sessions,
     MeasurementSystem system,
+    List<WorkoutExerciseSessionCacheData> cachedExercises,
   ) {
     final contexts = <int, ActiveWorkoutExerciseContext>{};
     for (final programExercise in programDay.programExercises) {
       final dto = sessions[programExercise.id];
       if (dto == null) continue;
 
-      final session = dto.toEntity(system);
+      final executionKey = 'program:${programDay.id}:exercise:${programExercise.id}';
+      final cached = cachedExercises.where((item) => item.executionKey == executionKey).firstOrNull;
+      final backendSession = dto.toEntity(system);
+      final session = cached == null || cached.noteStatus == CachedNotesSyncStatus.synced
+          ? backendSession
+          : _sessionWithNotes(backendSession, cached.notes);
       contexts[programExercise.id] = ActiveWorkoutExerciseContext(
         programExercise: programExercise,
         session: session,
@@ -249,6 +392,48 @@ class WorkoutRestoreCubit extends Cubit<WorkoutRestoreState> {
       );
     }
     return contexts;
+  }
+
+  WorkoutExerciseSessionEntity _sessionWithNotes(
+    WorkoutExerciseSessionEntity session,
+    String notes,
+  ) {
+    return WorkoutExerciseSessionEntity(
+      id: session.id,
+      exerciseId: session.exerciseId,
+      workoutSessionId: session.workoutSessionId,
+      workoutProgramExerciseId: session.workoutProgramExerciseId,
+      isSwapped: session.isSwapped,
+      swappedExerciseId: session.swappedExerciseId,
+      isActive: session.isActive,
+      notes: notes,
+      lastCompletedSet: session.lastCompletedSet,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      sets: session.sets,
+      exercise: session.exercise,
+      swappedExercise: session.swappedExercise,
+    );
+  }
+
+  Future<void> _cacheRestoredExecutions(int workoutSessionId) async {
+    final plan = _flowCubit.state.executionPlan;
+    if (plan == null) return;
+    for (var position = 0; position < plan.exercises.length; position++) {
+      final spec = plan.exercises[position];
+      final execution = _flowCubit.exerciseExecutionFor(spec.executionKey);
+      if (execution == null) continue;
+      await _sessionCache.saveExerciseSession(
+        workoutSessionId: workoutSessionId,
+        executionKey: spec.executionKey,
+        exerciseId: execution.session.exerciseId,
+        effectiveExerciseId: execution.effectiveExercise.id,
+        exerciseSessionId: execution.exerciseSessionId,
+        workoutProgramExerciseId: spec.workoutProgramExerciseId,
+        position: position,
+        notes: execution.session.notes ?? '',
+      );
+    }
   }
 
   MeasurementSystem get _measurementSystem {

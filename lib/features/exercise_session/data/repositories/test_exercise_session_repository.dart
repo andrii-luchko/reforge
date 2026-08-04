@@ -1,6 +1,7 @@
 import 'package:reforge/app/utils/helpers/meta_data.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -12,12 +13,12 @@ class TestExerciseSessionRepository implements ExerciseSessionRepository {
   Future<Result<WorkoutExerciseSessionEntity>> createWorkoutExerciseSession({
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
     required MeasurementSystem system,
+    int? workoutProgramExerciseId,
   }) async {
     return Result.success(
       WorkoutExerciseSessionEntity(
-        id: workoutProgramExerciseId,
+        id: workoutProgramExerciseId ?? exerciseId,
         exerciseId: exerciseId,
         workoutSessionId: workoutSessionId,
         workoutProgramExerciseId: workoutProgramExerciseId,
@@ -90,21 +91,25 @@ class TestExerciseSessionRepository implements ExerciseSessionRepository {
   }
 
   @override
-  Future<Result<void>> completeSet({
+  Future<Result<CompletedSetIdentity>> completeSet({
     required WorkoutSet set,
     required int exerciseId,
     required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required MeasurementSystem system,
+    int? workoutProgramExerciseId,
   }) async {
-    return const Result.success(null);
+    return Result.success(
+      CompletedSetIdentity(
+        remoteSetId: set.id,
+        clientSetId: set.clientSetId,
+      ),
+    );
   }
 
   @override
   Future<Result<void>> saveWorkoutNote({
-    required int exerciseId,
-    required int workoutSessionId,
-    required int workoutProgramExerciseId,
+    required int exerciseSessionId,
     required String note,
   }) async {
     return const Result.success(null);

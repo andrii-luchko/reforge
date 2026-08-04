@@ -59,10 +59,11 @@ class ActiveExerciseHost extends StatelessWidget {
 
           final config = RunningExerciseConfig(
             workoutSessionId: state.session.workoutSessionId,
-            workoutProgramExerciseId: cubit.programExercise.id,
+            exerciseSessionId: state.session.id,
+            workoutProgramExerciseId: cubit.workoutProgramExerciseId,
             exercise: state.effectiveExercise,
-            segments: state.session.isSwapped ? const [] : cubit.programExercise.segments,
-            staticTargetSetCount: state.session.isSwapped ? 1 : cubit.programExercise.sets,
+            segments: state.session.isSwapped ? const [] : cubit.execution.spec.segments,
+            staticTargetSetCount: state.session.isSwapped ? 1 : (cubit.execution.spec.targetSetCount ?? 1),
           );
           return _RunningExerciseBranch(
             key: ValueKey(state.effectiveExercise.id),
@@ -91,7 +92,16 @@ class _RunningExerciseBranch extends StatelessWidget {
           },
         ),
         BlocProvider(
-          create: (_) => di.getIt<RunningSetSyncCubit>(param1: config)..init(),
+          create: (context) {
+            final cubit = di.getIt<RunningSetSyncCubit>(param1: config);
+            unawaited(
+              cubit.init(
+                restoredSets: context.read<ActiveExerciseCubit>().state.sets,
+                restoredSetSystem: context.read<ActiveExerciseCubit>().state.measureSystem,
+              ),
+            );
+            return cubit;
+          },
         ),
       ],
       child: MultiBlocListener(
@@ -116,10 +126,16 @@ class _RunningExerciseBranch extends StatelessWidget {
               );
             },
           ),
+          BlocListener<RunningSetSyncCubit, RunningSetSyncState>(
+            listenWhen: (previous, current) => previous.error != current.error,
+            listener: (context, syncState) {
+              if (syncState.error case final error?) {
+                toastification.showErrorToast(error, context);
+              }
+            },
+          ),
         ],
-        child: RunningExerciseHost(
-          onExerciseFinished: context.read<ActiveExerciseCubit>().finishExercise,
-        ),
+        child: const RunningExerciseHost(),
       ),
     );
   }

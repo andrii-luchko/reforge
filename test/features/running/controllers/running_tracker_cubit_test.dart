@@ -42,13 +42,13 @@ void main() {
     when(
       () => repository.getInProgressLapForExercise(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
       ),
     ).thenAnswer((_) async => null);
     when(
       () => repository.getLastLap(
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
       ),
     ).thenAnswer((_) async => null);
 
@@ -72,7 +72,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     ).thenAnswer((_) => dispatched.future);
@@ -96,7 +96,7 @@ void main() {
       MockRunningPreferencesService(),
       RunningExerciseConfig(
         workoutSessionId: 10,
-        workoutProgramExerciseId: _programExercise.id,
+        exerciseSessionId: 20,
         exercise: _programExercise.exerciseDetails,
         segments: const [],
         staticTargetSetCount: 1,
@@ -107,7 +107,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     ).thenAnswer((_) async {});
@@ -120,7 +120,7 @@ void main() {
                 mode: RunningMode.gps,
                 limits: captureAny(named: 'limits'),
                 sessionId: 10,
-                programExerciseId: 20,
+                exerciseSessionId: 20,
               ),
             ).captured.single
             as List<LapLimit>;
@@ -142,7 +142,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     );
@@ -154,7 +154,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     ).thenThrow(
@@ -178,7 +178,7 @@ void main() {
     when(
       () => repository.getInProgressLapForExercise(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => null);
 
@@ -192,7 +192,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     );
@@ -202,7 +202,7 @@ void main() {
     when(
       () => repository.getInProgressLapForExercise(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _activeLap);
     final dispatched = Completer<void>();
@@ -211,7 +211,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     ).thenAnswer((_) => dispatched.future);
@@ -231,7 +231,7 @@ void main() {
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
         startPaused: true,
       ),
     ).called(1);
@@ -241,7 +241,7 @@ void main() {
     when(
       () => repository.getLastLap(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _completedLap);
     when(
@@ -249,7 +249,7 @@ void main() {
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
         startPaused: true,
         restoreCompletedPlan: true,
       ),
@@ -277,7 +277,7 @@ void main() {
     when(
       () => repository.getLastLap(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _completedLap);
     when(
@@ -285,7 +285,7 @@ void main() {
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
         startPaused: true,
         restoreCompletedPlan: true,
       ),
@@ -312,7 +312,7 @@ void main() {
     when(
       () => repository.getInProgressLapForExercise(
         sessionId: 10,
-        programExerciseId: 20,
+        exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _activeLap);
     _stubSuccessfulStart(service);
@@ -353,7 +353,7 @@ void main() {
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
         sessionId: any(named: 'sessionId'),
-        programExerciseId: any(named: 'programExerciseId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
       ),
     ).thenAnswer((_) async {});
@@ -527,7 +527,7 @@ void _stubSuccessfulStart(MockRunningServiceClient service) {
       mode: any(named: 'mode'),
       limits: any(named: 'limits'),
       sessionId: any(named: 'sessionId'),
-      programExerciseId: any(named: 'programExerciseId'),
+      exerciseSessionId: any(named: 'exerciseSessionId'),
       startPaused: any(named: 'startPaused'),
     ),
   ).thenAnswer((_) async {});
@@ -544,12 +544,12 @@ class MockRunningPreferencesService extends Mock implements RunningPreferencesSe
 const _activeLap = ActiveRunningSet(
   id: 1,
   sessionId: 10,
-  programExerciseId: 20,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
   setNumber: 1,
   distanceMeters: 30,
   durationSeconds: 12,
-  isDone: false,
-  isBusy: true,
+  syncStatus: 'tracking',
   trackingMode: 'gps',
   segmentType: 'run',
 );
@@ -557,12 +557,12 @@ const _activeLap = ActiveRunningSet(
 const _completedLap = ActiveRunningSet(
   id: 1,
   sessionId: 10,
-  programExerciseId: 20,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
   setNumber: 1,
   distanceMeters: 3000,
   durationSeconds: 720,
-  isDone: true,
-  isBusy: false,
+  syncStatus: 'synced',
   trackingMode: 'gps',
   segmentType: 'run',
 );
@@ -600,7 +600,7 @@ final _programExercise = ProgramExerciseEntity(
 
 final _runningConfig = RunningExerciseConfig(
   workoutSessionId: 10,
-  workoutProgramExerciseId: _programExercise.id,
+  exerciseSessionId: 20,
   exercise: _programExercise.exerciseDetails,
   segments: _programExercise.segments,
   staticTargetSetCount: 1,

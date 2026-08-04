@@ -88,11 +88,16 @@ Future<void> onStart(ServiceInstance service) async {
         _logBackground(
           'start_session_received payloadTypes= '
           'sessionId:${event['sessionId']?.runtimeType},'
-          'programExerciseId:${event['programExerciseId']?.runtimeType}',
+          'exerciseSessionId:${event['exerciseSessionId']?.runtimeType},'
+          'workoutProgramExerciseId:${event['workoutProgramExerciseId']?.runtimeType}',
         );
         try {
           final sessionId = RunningServiceProtocol.requiredInt(event, 'sessionId');
-          final programExerciseId = RunningServiceProtocol.requiredInt(event, 'programExerciseId');
+          final exerciseSessionId = RunningServiceProtocol.requiredInt(event, 'exerciseSessionId');
+          final workoutProgramExerciseId = RunningServiceProtocol.optionalInt(
+            event,
+            'workoutProgramExerciseId',
+          );
           final modeStr = RunningServiceProtocol.requiredString(event, 'mode');
           final startPaused = RunningServiceProtocol.optionalBool(event, 'startPaused', fallback: false);
           final restoreCompletedPlan = RunningServiceProtocol.optionalBool(
@@ -180,7 +185,11 @@ Future<void> onStart(ServiceInstance service) async {
           );
 
           // Teleport Guard
-          await _handleSessionRestore(sessionId, programExerciseId);
+          await _handleSessionRestore(
+            sessionId,
+            exerciseSessionId,
+            workoutProgramExerciseId,
+          );
 
           _logBackground(
             'manager_start_begin mode=$mode startPaused=$startPaused '
@@ -190,7 +199,8 @@ Future<void> onStart(ServiceInstance service) async {
             mode: mode,
             limits: limits,
             sessionId: sessionId,
-            programExerciseId: programExerciseId,
+            exerciseSessionId: exerciseSessionId,
+            workoutProgramExerciseId: workoutProgramExerciseId,
             startPaused: startPaused,
             restoreCompletedPlan: restoreCompletedPlan,
           );
@@ -333,12 +343,17 @@ void _logBackground(String stage, {bool error = false}) {
   }
 }
 
-Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
+Future<void> _handleSessionRestore(
+  int sessionId,
+  int exerciseSessionId,
+  int? workoutProgramExerciseId,
+) async {
   try {
     final repo = backgroundGetIt<LocalWorkoutSessionRepository>();
     final inProgressLap = await repo.getInProgressLapForExercise(
       sessionId: sessionId,
-      programExerciseId: programExerciseId,
+      exerciseSessionId: exerciseSessionId,
+      workoutProgramExerciseId: workoutProgramExerciseId,
     );
     if (inProgressLap == null) return;
 
@@ -350,7 +365,7 @@ Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
     // Rule 1: Stale Session Check
     if (staleness > RunningConstants.maxSessionStaleness) {
       logger.d('Background: Session is stale ($staleness). Auto-finishing.');
-      await repo.markSetAsDone(inProgressLap.id);
+      await repo.markSetAsFinishedLocally(inProgressLap.id);
       return;
     }
 
@@ -358,7 +373,8 @@ Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
     if (inProgressLap.trackingMode == RunningMode.gps.dbValue && staleness.inSeconds > 0) {
       final points = await repo.getRoutePoints(
         sessionId: sessionId,
-        programExerciseId: programExerciseId,
+        exerciseSessionId: exerciseSessionId,
+        workoutProgramExerciseId: workoutProgramExerciseId,
       );
       final lastPos = points.lastOrNull;
       if (lastPos != null) {
@@ -378,7 +394,7 @@ Future<void> _handleSessionRestore(int sessionId, int programExerciseId) async {
         final speedKmh = (distanceM / staleness.inSeconds) * 3.6;
         if (speedKmh > RunningConstants.maxHumanSpeedKmh) {
           logger.d('Background: Teleport detected ($speedKmh km/h). Auto-finishing.');
-          await repo.markSetAsDone(inProgressLap.id);
+          await repo.markSetAsFinishedLocally(inProgressLap.id);
         }
       }
     }

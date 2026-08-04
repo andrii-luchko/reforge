@@ -15,7 +15,7 @@ void main() {
     expect(config.limits, hasLength(3));
     expect(config.limits.map((limit) => limit.metric), everyElement(WorkoutMetric.distance));
     expect(config.limits.map((limit) => limit.limitValue), everyElement(3000));
-    expect(config.isFreeRun, isFalse);
+    expect(config.isOpenEnded, isFalse);
   });
 
   test('uses one static target when the configured swap count is one', () {
@@ -55,7 +55,20 @@ void main() {
     final config = _config();
 
     expect(config.limits, isEmpty);
-    expect(config.isFreeRun, isTrue);
+    expect(config.isOpenEnded, isTrue);
+  });
+
+  test('uses exercise session as transitional local identity without a program binding', () {
+    final config = RunningExerciseConfig(
+      workoutSessionId: 182,
+      exerciseSessionId: 246,
+      exercise: _details(),
+      segments: const [],
+      staticTargetSetCount: 1,
+    );
+
+    expect(config.workoutProgramExerciseId, isNull);
+    expect(config.exerciseSessionId, 246);
   });
 }
 
@@ -66,22 +79,27 @@ RunningExerciseConfig _config({
 }) {
   return RunningExerciseConfig(
     workoutSessionId: 1,
+    exerciseSessionId: 10,
     workoutProgramExerciseId: 2,
-    exercise: ExerciseDetailsEntity(
-      id: 3,
-      name: 'Run',
-      description: 'Run',
-      key: 'run',
-      metrics: const [WorkoutMetric.time, WorkoutMetric.distance],
-      poseDetectionPreset: null,
-      runningTarget: target,
-      isTiered: false,
-      tiers: const [],
-      videoInstructionUrl: null,
-      thumbnailInstructionUrl: null,
-      instructionsSteps: const {},
-    ),
+    exercise: _details(target: target),
     segments: segments,
     staticTargetSetCount: staticTargetSetCount,
+  );
+}
+
+ExerciseDetailsEntity _details({ExerciseRunningTarget? target}) {
+  return ExerciseDetailsEntity(
+    id: 3,
+    name: 'Run',
+    description: 'Run',
+    key: 'run',
+    metrics: const [WorkoutMetric.time, WorkoutMetric.distance],
+    poseDetectionPreset: null,
+    runningTarget: target,
+    isTiered: false,
+    tiers: const [],
+    videoInstructionUrl: null,
+    thumbnailInstructionUrl: null,
+    instructionsSteps: const {},
   );
 }
