@@ -95,6 +95,11 @@ Future<void> onStart(ServiceInstance service) async {
           final programExerciseId = RunningServiceProtocol.requiredInt(event, 'programExerciseId');
           final modeStr = RunningServiceProtocol.requiredString(event, 'mode');
           final startPaused = RunningServiceProtocol.optionalBool(event, 'startPaused', fallback: false);
+          final restoreCompletedPlan = RunningServiceProtocol.optionalBool(
+            event,
+            'restoreCompletedPlan',
+            fallback: false,
+          );
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
 
           final rawLimits = RunningServiceProtocol.optionalList(event, 'limits');
@@ -177,13 +182,17 @@ Future<void> onStart(ServiceInstance service) async {
           // Teleport Guard
           await _handleSessionRestore(sessionId, programExerciseId);
 
-          _logBackground('manager_start_begin mode=$mode startPaused=$startPaused');
+          _logBackground(
+            'manager_start_begin mode=$mode startPaused=$startPaused '
+            'restoreCompletedPlan=$restoreCompletedPlan',
+          );
           await manager.startSession(
             mode: mode,
             limits: limits,
             sessionId: sessionId,
             programExerciseId: programExerciseId,
             startPaused: startPaused,
+            restoreCompletedPlan: restoreCompletedPlan,
           );
           _logBackground('manager_start_complete');
 

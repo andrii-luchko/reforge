@@ -6,7 +6,6 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/running/data/services/running_service_client.dart';
 import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
-import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
@@ -19,7 +18,6 @@ import 'package:reforge/features/running/domain/services/running_permissions_ser
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
-import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 part 'running_tracker_cubit.freezed.dart';
 part 'running_tracker_state.dart';
@@ -65,11 +63,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
     if (lap != null) {
       // Background restore logic: jump to active but paused
-      final modeStr = lap.trackingMode ?? RunningMode.gps.dbValue;
-      final mode = RunningMode.values.firstWhere(
-        (m) => m.dbValue == modeStr,
-        orElse: () => RunningMode.gps,
-      );
+      final mode = _modeFromDbValue(lap.trackingMode);
 
       // Calculate real activity from playlist
       final index = lap.setNumber - 1;
@@ -108,16 +102,62 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       }
 
       logger.d('RunningTrackerCubit: restored tracking (mode: ${mode.dbValue}) paused');
-    } else {
-      // Start fresh
+      return;
+    }
+
+    final limits = config.limits;
+    final lastLap = limits.isEmpty
+        ? null
+        : await _repository.getLastLap(
+            sessionId: workoutSessionId,
+            programExerciseId: workoutProgramExerciseId,
+          );
+
+    if (lastLap != null && lastLap.setNumber >= limits.length) {
+      final mode = _modeFromDbValue(lastLap.trackingMode);
       emit(
         state.copyWith(
-          phase: RunningPhase.overview,
-          sessionStatus: RunningSessionStatus.idle,
+          phase: RunningPhase.finished,
+          mode: mode,
+          sessionStatus: RunningSessionStatus.suspended,
           terminalFailure: null,
+          isPaused: true,
+          currentLap: null,
+          error: null,
         ),
       );
+
+      try {
+        await _subscribeToTracking(
+          mode,
+          startPaused: true,
+          restoreCompletedPlan: true,
+        );
+      } on Object catch (error, stackTrace) {
+        logger.e('RunningTrackerCubit: failed to restore completed plan', error, stackTrace);
+        await _handleCompletedPlanRestoreFailure(error);
+        return;
+      }
+
+      logger.d('RunningTrackerCubit: restored completed plan (mode: ${mode.dbValue}) paused');
+      return;
     }
+
+    // Start fresh
+    emit(
+      state.copyWith(
+        phase: RunningPhase.overview,
+        sessionStatus: RunningSessionStatus.idle,
+        terminalFailure: null,
+      ),
+    );
+  }
+
+  RunningMode _modeFromDbValue(String? value) {
+    return RunningMode.values.firstWhere(
+      (mode) => mode.dbValue == (value ?? RunningMode.gps.dbValue),
+      orElse: () => RunningMode.gps,
+    );
   }
 
   void setMode(RunningMode mode) {
@@ -219,14 +259,24 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   Future<void> endWorkout() async {
-    if (state.isSubmitting || !state.canControlTracking) return;
+    if (state.isSubmitting) return;
 
-    _serviceClient.suspendSessionForSummary();
+    switch (state.sessionStatus) {
+      case RunningSessionStatus.running:
+        _serviceClient.suspendSessionForSummary();
+
+      case RunningSessionStatus.suspended:
+        break;
+      case RunningSessionStatus.starting:
+      case RunningSessionStatus.idle:
+      case RunningSessionStatus.terminated:
+        return;
+    }
+
     emit(
       state.copyWith(
         phase: RunningPhase.finished,
         sessionStatus: RunningSessionStatus.suspended,
-        terminalFailure: null,
         isPaused: true,
         currentLap: null,
         error: null,
@@ -253,22 +303,12 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> _subscribeToTracking(
     RunningMode mode, {
     bool startPaused = false,
+    bool restoreCompletedPlan = false,
   }) async {
     // A real start failure may be retried by the same Cubit instance.
     _hasSentStopSession = false;
     await _metricsSub?.cancel();
     await _eventsSub?.cancel();
-
-    final limits = config.segments
-        .map(
-          (s) => LapLimit(
-            metric: s.targetMetric,
-            limitValue: s.targetMetric == WorkoutMetric.time ? s.durationSec.toDouble() : s.distanceM.toDouble(),
-            segmentId: s.id,
-            activityType: s.activity,
-          ),
-        )
-        .toList();
 
     _metricsSub = _serviceClient.metricsStream.listen(
       _onMetricsReceived,
@@ -281,13 +321,24 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       },
     );
 
-    await _serviceClient.startSession(
-      mode: mode,
-      limits: limits,
-      sessionId: workoutSessionId,
-      programExerciseId: workoutProgramExerciseId,
-      startPaused: startPaused,
-    );
+    if (restoreCompletedPlan) {
+      await _serviceClient.startSession(
+        mode: mode,
+        limits: config.limits,
+        sessionId: workoutSessionId,
+        programExerciseId: workoutProgramExerciseId,
+        startPaused: startPaused,
+        restoreCompletedPlan: true,
+      );
+    } else {
+      await _serviceClient.startSession(
+        mode: mode,
+        limits: config.limits,
+        sessionId: workoutSessionId,
+        programExerciseId: workoutProgramExerciseId,
+        startPaused: startPaused,
+      );
+    }
   }
 
   void _onEventReceived(RunningEvent event) {
@@ -298,7 +349,16 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       // Immediately reset flag so BlocListener fires only once.
       emit(state.copyWith(lapJustCompleted: false));
     } else if (event is PlannedWorkoutCompletedEvent) {
-      unawaited(endWorkout());
+      emit(
+        state.copyWith(
+          phase: RunningPhase.finished,
+          sessionStatus: RunningSessionStatus.suspended,
+          terminalFailure: null,
+          isPaused: true,
+          currentLap: null,
+          error: null,
+        ),
+      );
     }
   }
 
@@ -395,6 +455,33 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         ),
       );
     }
+  }
+
+  Future<void> _handleCompletedPlanRestoreFailure(Object error) async {
+    await _closeTrackingSession();
+    if (isClosed) return;
+
+    final failure = switch (error) {
+      RunningServiceException() => RunningSessionFailure(
+        code: error.code,
+        message: error.message,
+      ),
+      _ => RunningSessionFailure(
+        code: 'completed_plan_restore_failed',
+        message: error.toString(),
+      ),
+    };
+
+    emit(
+      state.copyWith(
+        phase: RunningPhase.finished,
+        sessionStatus: RunningSessionStatus.terminated,
+        terminalFailure: failure,
+        isPaused: false,
+        currentLap: null,
+        error: failure.message,
+      ),
+    );
   }
 
   @override

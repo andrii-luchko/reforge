@@ -11,6 +11,7 @@ import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exe
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/generated/flutter_gen/assets.gen.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/buttons/icon_button.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -90,22 +91,15 @@ class RegularExercisePage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 150),
-                      child: isKeyboardVisible
-                          ? const SizedBox.shrink()
-                          : AnimatedOpacity(
-                              opacity: 1,
-                              duration: const Duration(milliseconds: 150),
-                              child: RegularExerciseFooter(
-                                isPoseDetectionEnabled: exerciseDetails.poseDetectionPreset != null,
-                                onCameraButtonPressed: () =>
-                                    CameraDetectionPageRoute($extra: cubit).push<void>(context),
-                                onPrimaryButtonPressed: () async {
-                                  await context.read<ActiveExerciseCubit>().finishExercise();
-                                },
-                              ),
-                            ),
+                    AnimatedVisibility(
+                      isVisible: !isKeyboardVisible,
+                      child: RegularExerciseFooter(
+                        isPoseDetectionEnabled: exerciseDetails.poseDetectionPreset != null,
+                        onCameraButtonPressed: () => CameraDetectionPageRoute($extra: cubit).push<void>(context),
+                        onPrimaryButtonPressed: () async {
+                          await context.read<ActiveExerciseCubit>().finishExercise();
+                        },
+                      ),
                     ),
                   ],
                 ),

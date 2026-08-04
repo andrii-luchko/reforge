@@ -44,6 +44,24 @@ void main() {
       expect(exercise.isRunningExercise, isTrue);
     });
 
+    test('returns true for a distance target with a time result', () {
+      final exercise = _programExercise(
+        metrics: [WorkoutMetric.time],
+        runningTarget: const ExerciseRunningTarget.distance(3000),
+      );
+
+      expect(exercise.isRunningExercise, isTrue);
+    });
+
+    test('returns true for a time target with a distance result', () {
+      final exercise = _programExercise(
+        metrics: [WorkoutMetric.distance],
+        runningTarget: const ExerciseRunningTarget.duration(720),
+      );
+
+      expect(exercise.isRunningExercise, isTrue);
+    });
+
     test('returns true when the key contains run regardless of case', () {
       final exercise = _programExercise(key: 'OutdoorRunning');
 
@@ -68,6 +86,7 @@ ProgramExerciseEntity _programExercise({
   List<WorkoutMetric> metrics = const [],
   ExerciseType? type,
   String key = 'exercise',
+  ExerciseRunningTarget? runningTarget,
   List<ExerciseSegmentEntity> segments = const [],
 }) {
   return ProgramExerciseEntity(
@@ -83,6 +102,7 @@ ProgramExerciseEntity _programExercise({
       key: key,
       metrics: metrics,
       poseDetectionPreset: null,
+      runningTarget: runningTarget,
       isTiered: false,
       tiers: const [],
       videoInstructionUrl: null,

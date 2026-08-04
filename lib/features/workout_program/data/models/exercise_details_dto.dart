@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/features/camera_detection/domain/enums/pose_detection_preset.dart';
 import 'package:reforge/features/workout_program/data/enums/exercise_type.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
@@ -62,11 +63,34 @@ List<Map<String, String>> _instructionsToJson(Map<String, String> instructions) 
 @freezed
 sealed class StaticDataDTO with _$StaticDataDTO {
   const factory StaticDataDTO({
-    // TODO(Masayoshi): Add static metric support.
     @JsonKey(name: 'tier') @Default([]) List<Tier> tiers,
+    int? distanceM,
+    int? durationSec,
   }) = _StaticDataDTO;
 
   factory StaticDataDTO.fromJson(Map<String, dynamic> json) => _$StaticDataDTOFromJson(json);
+}
+
+extension StaticDataToRunningTargetX on StaticDataDTO {
+  ExerciseRunningTarget? toRunningTarget() {
+    final hasDistance = distanceM != null;
+    final hasDuration = durationSec != null;
+
+    if (!hasDistance && !hasDuration) return null;
+
+    if ((distanceM ?? 1) <= 0 || (durationSec ?? 1) <= 0 || (hasDistance && hasDuration)) {
+      logger.w(
+        'Invalid static running target: distanceM=$distanceM, durationSec=$durationSec. Falling back to free run.',
+      );
+      return null;
+    }
+
+    if (distanceM case final meters?) {
+      return ExerciseRunningTarget.distance(meters);
+    }
+
+    return ExerciseRunningTarget.duration(durationSec!);
+  }
 }
 
 extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
@@ -81,6 +105,7 @@ extension ExerciseDetailsToEntityX on ExerciseDetailsDTO {
       metrics: metrics.map(WorkoutMetric.fromApiValue).whereType<WorkoutMetric>().toList(),
       isPoseDetectionEnabled: isPoseDetectionEnabled,
       poseDetectionPreset: _mapPoseDetectionPreset(poseDetectionPreset),
+      runningTarget: staticData?.toRunningTarget(),
       isTiered: isTiered,
       tiers: staticData?.tiers ?? [],
       videoInstructionUrl: videoInstructionUrl,

@@ -68,6 +68,7 @@ class RunningSessionManager {
     required int sessionId,
     required int programExerciseId,
     bool startPaused = false,
+    bool restoreCompletedPlan = false,
   }) async {
     final endingSession = _endSessionFuture;
     if (endingSession != null) await endingSession;
@@ -112,25 +113,32 @@ class RunningSessionManager {
         }
         logger.d('RunningSessionManager: Resuming lap $_currentLapIndex with offset ${initialOffset?.distanceMeters}m');
       } else {
-        // Start a fresh lap
         final lastLap = await _repository.getLastLap(
           sessionId: sessionId,
           programExerciseId: programExerciseId,
         );
         _currentLapIndex = lastLap?.setNumber ?? 0;
 
-        final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)
-            ? _limits![_currentLapIndex]
-            : null;
-        _currentDbSetId = await _repository.createNewActiveSet(
-          sessionId: _workoutSessionId!,
-          programExerciseId: _programExerciseId!,
-          setNumber: _currentLapIndex + 1,
-          trackingMode: mode.dbValue,
-          programSegmentId: currentLimit?.segmentId,
-          segmentType: currentLimit?.activityType.name,
-        );
-        logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
+        final canRestoreCompletedPlan =
+            restoreCompletedPlan && lastLap != null && limits.isNotEmpty && _currentLapIndex >= limits.length;
+
+        if (canRestoreCompletedPlan) {
+          _currentDbSetId = null;
+          logger.d('RunningSessionManager: Restored completed plan at lap $_currentLapIndex without active set');
+        } else {
+          final currentLimit = (_limits != null && _currentLapIndex < _limits!.length)
+              ? _limits![_currentLapIndex]
+              : null;
+          _currentDbSetId = await _repository.createNewActiveSet(
+            sessionId: _workoutSessionId!,
+            programExerciseId: _programExerciseId!,
+            setNumber: _currentLapIndex + 1,
+            trackingMode: mode.dbValue,
+            programSegmentId: currentLimit?.segmentId,
+            segmentType: currentLimit?.activityType.name,
+          );
+          logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
+        }
       }
 
       final engine = _getEngineForMode(mode);
@@ -173,6 +181,9 @@ class RunningSessionManager {
   Future<void> resumeSession() async {
     // If resuming from a suspended state (e.g. from summary), we need to create a new DB row
     if (_currentDbSetId == null && _workoutSessionId != null && _programExerciseId != null) {
+      _getEngineForMode(_currentMode)?.reset();
+      _latestMetrics = null;
+
       final currentLimit = (_limits != null && _currentLapIndex < _limits!.length) ? _limits![_currentLapIndex] : null;
       _currentDbSetId = await _repository.createNewActiveSet(
         sessionId: _workoutSessionId!,
@@ -182,7 +193,7 @@ class RunningSessionManager {
         programSegmentId: currentLimit?.segmentId,
         segmentType: currentLimit?.activityType.name,
       );
-      logger.d('RunningSessionManager: Created new lap $_currentLapIndex on resume');
+      logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} on resume');
     }
 
     _getEngineForMode(_currentMode)?.resume();
@@ -199,12 +210,15 @@ class RunningSessionManager {
       _getEngineForMode(_currentMode)?.pause();
 
       final oldDbSetId = _currentDbSetId;
+      if (oldDbSetId == null) {
+        logger.d('RunningSessionManager: Active lap already suspended');
+        return;
+      }
+
       _currentDbSetId = null;
 
-      if (oldDbSetId != null) {
-        await _writeDriftSnapshot(oldDbSetId);
-        await _repository.markSetAsFinishedLocally(oldDbSetId);
-      }
+      await _writeDriftSnapshot(oldDbSetId);
+      await _repository.markSetAsFinishedLocally(oldDbSetId);
 
       // Check if session was killed during DB writes
       if (_currentMode == null || _workoutSessionId == null) {

@@ -62,6 +62,7 @@ class ActiveExerciseHost extends StatelessWidget {
             workoutProgramExerciseId: cubit.programExercise.id,
             exercise: state.effectiveExercise,
             segments: state.session.isSwapped ? const [] : cubit.programExercise.segments,
+            staticTargetSetCount: state.session.isSwapped ? 1 : cubit.programExercise.sets,
           );
           return _RunningExerciseBranch(
             key: ValueKey(state.effectiveExercise.id),

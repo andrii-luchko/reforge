@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 
 void main() {
   group('ExerciseDetailsDTO instructions', () {
@@ -44,4 +45,43 @@ void main() {
       expect(dto.toJson(), isNot(contains('instructionsSteps')));
     });
   });
+
+  group('ExerciseDetailsDTO static running target', () {
+    test('maps distanceM to a distance target', () {
+      final entity = _dtoWithStaticData(const StaticDataDTO(distanceM: 3000)).toEntity();
+
+      expect(entity.runningTarget, const ExerciseRunningTarget.distance(3000));
+    });
+
+    test('maps durationSec to a duration target', () {
+      final entity = _dtoWithStaticData(const StaticDataDTO(durationSec: 720)).toEntity();
+
+      expect(entity.runningTarget, const ExerciseRunningTarget.duration(720));
+    });
+
+    test('ignores conflicting targets', () {
+      final entity = _dtoWithStaticData(
+        const StaticDataDTO(distanceM: 3000, durationSec: 720),
+      ).toEntity();
+
+      expect(entity.runningTarget, isNull);
+    });
+
+    test('ignores a non-positive target', () {
+      final entity = _dtoWithStaticData(const StaticDataDTO(distanceM: 0)).toEntity();
+
+      expect(entity.runningTarget, isNull);
+    });
+  });
+}
+
+ExerciseDetailsDTO _dtoWithStaticData(StaticDataDTO staticData) {
+  return ExerciseDetailsDTO(
+    id: 1,
+    name: 'Exercise',
+    description: 'Description',
+    type: 2,
+    key: 'exercise',
+    staticData: staticData,
+  );
 }

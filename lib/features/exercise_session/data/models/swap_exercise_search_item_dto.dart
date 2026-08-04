@@ -44,6 +44,7 @@ sealed class SwapExerciseSearchItemDTO with _$SwapExerciseSearchItemDTO {
         'legs' => PoseDetectionPreset.legs,
         _ => null,
       },
+      runningTarget: staticData?.toRunningTarget(),
       isTiered: tiers.isNotEmpty,
       tiers: tiers,
       videoInstructionUrl: videoInstructionUrl,

@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
@@ -13,6 +13,7 @@ import 'package:reforge/features/running/domain/entities/exercise_lap.dart';
 import 'package:reforge/features/running/ui/widgets/running_laps_list.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
@@ -95,12 +96,15 @@ class RunningLapsSummaryPage extends StatelessWidget {
                       ),
                     ),
 
-                    RunningSummaryFooter(
-                      state: state,
-                      onBackToRunning: cubit.goToActive,
-                      onFinishExercise: state.isSubmitting || activeExerciseCubit.state.isSendingSet
-                          ? null
-                          : () => unawaited(_onFinishExercise(context, cubit)),
+                    AnimatedVisibility(
+                      isVisible: !KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      child: RunningSummaryFooter(
+                        state: state,
+                        onBackToRunning: cubit.goToActive,
+                        onFinishExercise: state.isSubmitting || activeExerciseCubit.state.isSendingSet
+                            ? null
+                            : () => unawaited(_onFinishExercise(context, cubit)),
+                      ),
                     ),
                   ],
                 ),

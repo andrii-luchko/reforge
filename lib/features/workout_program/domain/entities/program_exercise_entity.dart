@@ -35,6 +35,11 @@ class ProgramExerciseEntity {
     final hasTime = metrics.contains(WorkoutMetric.time);
     final hasDistance = metrics.contains(WorkoutMetric.distance);
     final hasPace = metrics.contains(WorkoutMetric.pace);
+    final runningTarget = exerciseDetails.runningTarget;
+
+    if (runningTarget != null && (runningTarget.metric == WorkoutMetric.distance || hasDistance)) {
+      return true;
+    }
 
     if (hasDistance && (hasTime || hasPace)) return true;
     if (hasTime && exerciseDetails.type == ExerciseType.endurance) return true;

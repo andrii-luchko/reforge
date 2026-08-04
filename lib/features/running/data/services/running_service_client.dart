@@ -180,6 +180,7 @@ class RunningServiceClient {
     required int sessionId,
     required int programExerciseId,
     bool startPaused = false,
+    bool restoreCompletedPlan = false,
   }) async {
     await initialize();
 
@@ -202,6 +203,7 @@ class RunningServiceClient {
       'programExerciseId': programExerciseId,
       'mode': mode.name,
       'startPaused': startPaused,
+      'restoreCompletedPlan': restoreCompletedPlan,
       'limits': limits
           .map(
             (limit) => {
@@ -213,7 +215,10 @@ class RunningServiceClient {
           )
           .toList(),
     });
-    _log('start_session_sent mode=${mode.name} startPaused=$startPaused');
+    _log(
+      'start_session_sent mode=${mode.name} startPaused=$startPaused '
+      'restoreCompletedPlan=$restoreCompletedPlan',
+    );
   }
 
   void pauseSession() => _invokeControl('pause_session');

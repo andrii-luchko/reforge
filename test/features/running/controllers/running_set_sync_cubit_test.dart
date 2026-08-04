@@ -110,4 +110,5 @@ final _runningConfig = RunningExerciseConfig(
   workoutProgramExerciseId: 20,
   exercise: _runningProgramExercise.exerciseDetails,
   segments: [],
+  staticTargetSetCount: 1,
 );

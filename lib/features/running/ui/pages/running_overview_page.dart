@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/exercise_results/previous_exercise_result_list_tile.dart';
@@ -14,6 +15,7 @@ import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_mode_dialog.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
 import 'package:reforge/shared/uikit/fields/app_text_field.dart';
@@ -130,16 +132,21 @@ class RunningOverviewPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 16),
-                    SecondaryButton(
-                      text: t.workout.startRunning,
-                      onPressed: () async {
-                        final mode = await RunningModeDialog.show(context);
+                    AnimatedVisibility(
+                      isVisible: !KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: SecondaryButton(
+                          text: t.workout.startRunning,
+                          onPressed: () async {
+                            final mode = await RunningModeDialog.show(context);
 
-                        if (mode != null) {
-                          cubit.setMode(mode);
-                        }
-                      },
+                            if (mode != null) {
+                              cubit.setMode(mode);
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),

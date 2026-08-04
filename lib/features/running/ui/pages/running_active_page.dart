@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart';
+import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
@@ -12,6 +13,7 @@ import 'package:reforge/features/running/ui/widgets/active_running_map_container
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
@@ -76,7 +78,10 @@ class RunningActivePage extends StatelessWidget {
                 child: BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
                   builder: (context, state) {
                     final cubit = context.read<RunningTrackerCubit>();
-                    return _ActionButtons(state: state, cubit: cubit);
+                    return AnimatedVisibility(
+                      isVisible: KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      child: _ActionButtons(state: state, cubit: cubit),
+                    );
                   },
                 ),
               ),
