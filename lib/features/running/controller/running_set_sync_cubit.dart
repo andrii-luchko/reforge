@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/exceptions/set_idempotency_conflict_exception.dart';
@@ -16,11 +18,13 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   RunningSetSyncCubit(
     this._localRepository,
     this._exerciseSessionRepository,
+    this._analytics,
     @factoryParam this.config,
   ) : super(const RunningSetSyncState());
 
   final LocalWorkoutSessionRepository _localRepository;
   final ExerciseSessionRepository _exerciseSessionRepository;
+  final AnalyticsService _analytics;
   final RunningExerciseConfig config;
 
   StreamSubscription<List<ActiveRunningSet>>? _databaseSubscription;
@@ -45,7 +49,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
       final clientSetId = set.clientSetId;
       if (clientSetId == null) continue;
       final metricSet = restoredSetSystem == MeasurementSystem.imperial ? set.toMetric() : set;
-      await _localRepository.reconcileSetAsSynced(
+      final reconciled = await _localRepository.reconcileSetAsSynced(
         sessionId: config.workoutSessionId,
         exerciseSessionId: config.exerciseSessionId,
         clientSetId: clientSetId,
@@ -55,6 +59,19 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         speedKmH: metricSet.pace ?? 0,
         programSegmentId: metricSet.programSegmentId,
       );
+      if (reconciled) {
+        logger.i(
+          'Running set reconciled workoutSessionId=${config.workoutSessionId} '
+          'exerciseSessionId=${config.exerciseSessionId} clientSetId=$clientSetId '
+          'remoteSetId=${set.id}',
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.runningSetReconciled,
+            {'source': _sourceName},
+          ),
+        );
+      }
     }
     await _localRepository.recoverInterruptedSetSyncs();
     if (isClosed) return;
@@ -118,7 +135,25 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
     );
     final results = await Future.wait(pending.map(_syncRunningSet));
     _emitState();
-    return _nonRetryableRowIds.isEmpty && results.every((success) => success) && state.canFinish;
+    final succeeded = _nonRetryableRowIds.isEmpty && results.every((success) => success) && state.canFinish;
+    if (!succeeded) {
+      logger.w(
+        'Running outbox blocked workoutSessionId=${config.workoutSessionId} '
+        'exerciseSessionId=${config.exerciseSessionId} pending=${state.sets.where((set) => !set.isDone).length} '
+        'nonRetryable=${_nonRetryableRowIds.length}',
+      );
+      unawaited(
+        _analytics.logEvent(
+          AnalyticsEvents.runningOutboxBlocked,
+          {
+            'source': _sourceName,
+            'pending_count': state.sets.where((set) => !set.isDone).length,
+            'non_retryable_count': _nonRetryableRowIds.length,
+          },
+        ),
+      );
+    }
+    return succeeded;
   }
 
   Future<bool> _syncRunningSet(ActiveRunningSet row) {
@@ -138,6 +173,10 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   }
 
   Future<bool> _syncRunningSetOnce(ActiveRunningSet row) async {
+    logger.i(
+      'Running set sync start workoutSessionId=${config.workoutSessionId} '
+      'exerciseSessionId=${config.exerciseSessionId} clientSetId=${row.clientSetId}',
+    );
     await _localRepository.markSetAsSyncing(row.id);
 
     final result = await _exerciseSessionRepository.completeSet(
@@ -168,6 +207,11 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         _syncedRowIds.add(row.id);
         _failedRowIds.remove(row.id);
         _nonRetryableRowIds.remove(row.id);
+        logger.i(
+          'Running set sync success workoutSessionId=${config.workoutSessionId} '
+          'exerciseSessionId=${config.exerciseSessionId} clientSetId=${row.clientSetId} '
+          'remoteSetId=${identity.remoteSetId}',
+        );
         return true;
       },
       onError: (error, stackTrace) async {
@@ -177,11 +221,28 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
           _nonRetryableRowIds.add(row.id);
         }
         _syncError = error.toString();
-        logger.e('Failed to sync running set ${row.id}', error, stackTrace);
+        logger.e(
+          'Running set sync failure workoutSessionId=${config.workoutSessionId} '
+          'exerciseSessionId=${config.exerciseSessionId} clientSetId=${row.clientSetId} '
+          'nonRetryable=${error is SetIdempotencyConflictException}',
+          error,
+          stackTrace,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.runningSetSyncFailure,
+            {
+              'source': _sourceName,
+              'non_retryable': error is SetIdempotencyConflictException ? 1 : 0,
+            },
+          ),
+        );
         return false;
       },
     );
   }
+
+  String get _sourceName => config.workoutProgramExerciseId == null ? 'ad_hoc' : 'program';
 
   void _emitState() {
     if (isClosed) return;

@@ -65,6 +65,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
   final Map<String, Future<Result<ActiveExerciseExecution>>> _pendingExerciseSessions = {};
   final Map<String, Exception> _exerciseSessionFailures = {};
   var _exerciseRegistryGeneration = 0;
+  Future<void>? _terminalMutation;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -272,6 +273,9 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     final generation = _exerciseRegistryGeneration;
     emit(state.copyWith(isStartingWorkout: true, summary: null, error: null));
 
+    final source = _sourceName(plan.source);
+    logger.i('Workout mutation start boundary=create_workout source=$source');
+
     final result = switch (plan.source) {
       ProgramWorkoutSource(:final programDayId) => await _repository.startWorkoutSession(programDayId),
       AdHocWorkoutSource() => await _repository.startAdHocWorkoutSession(),
@@ -286,7 +290,10 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         if (plan.source is AdHocWorkoutSource) {
           unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStart));
         }
-        logger.d('WorkoutSessionFlowCubit: started session ${sessionData.id}');
+        logger.i(
+          'Workout mutation success boundary=create_workout source=$source '
+          'workoutSessionId=${sessionData.id}',
+        );
 
         final programDayId = switch (plan.source) {
           ProgramWorkoutSource(:final programDayId) => programDayId,
@@ -330,6 +337,22 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         if (plan.source is AdHocWorkoutSource) {
           unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
         }
+        final ambiguous = _isAmbiguousCreateFailure(error);
+        logger.e(
+          'Workout mutation failure boundary=create_workout source=$source '
+          'workoutSessionId=unknown possibleOrphan=$ambiguous',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {
+              'boundary': 'create_workout',
+              'source': source,
+              'ambiguous': ambiguous ? 1 : 0,
+            },
+          ),
+        );
         emit(
           state.copyWith(
             isStartingWorkout: false,
@@ -374,7 +397,22 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
 
   // ── Private ────────────────────────────────────────────────────────────────
 
-  Future<void> _finishWorkout(WorkoutSessionStatus status, int workoutSessionDuration) async {
+  Future<void> _finishWorkout(WorkoutSessionStatus status, int workoutSessionDuration) {
+    final pending = _terminalMutation;
+    if (pending != null) return pending;
+
+    late final Future<void> mutation;
+    mutation = _finishWorkoutOnce(status, workoutSessionDuration).whenComplete(() {
+      if (identical(_terminalMutation, mutation)) _terminalMutation = null;
+    });
+    _terminalMutation = mutation;
+    return mutation;
+  }
+
+  Future<void> _finishWorkoutOnce(
+    WorkoutSessionStatus status,
+    int workoutSessionDuration,
+  ) async {
     final workoutSessionId = state.workoutSessionId;
 
     if (workoutSessionId == null) {
@@ -383,7 +421,13 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       return;
     }
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, error: null));
+
+    final source = state.executionPlan == null ? 'unknown' : _sourceName(state.executionPlan!.source);
+    logger.i(
+      'Workout mutation start boundary=complete_workout source=$source '
+      'workoutSessionId=$workoutSessionId status=${status.name}',
+    );
 
     final result = await _repository.endWorkoutSession(
       status: status,
@@ -393,6 +437,10 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
 
     switch (result) {
       case Success(value: final summary):
+        logger.i(
+          'Workout mutation success boundary=complete_workout source=$source '
+          'workoutSessionId=$workoutSessionId status=${status.name}',
+        );
         if (status == WorkoutSessionStatus.completed) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutComplete));
           if (state.executionPlan?.source is AdHocWorkoutSource) {
@@ -411,9 +459,31 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         }
         await _sessionCache.clearActiveSession();
         _clearExerciseRegistry();
-        emit(state.copyWith(sessionStatus: status, summary: summary, isLoading: false));
+        emit(
+          state.copyWith(
+            sessionStatus: status,
+            summary: summary,
+            isLoading: false,
+            error: null,
+          ),
+        );
 
       case Failure(:final error):
+        logger.e(
+          'Workout mutation failure boundary=complete_workout source=$source '
+          'workoutSessionId=$workoutSessionId status=${status.name}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {
+              'boundary': 'complete_workout',
+              'source': source,
+              'status': status.name,
+            },
+          ),
+        );
         emit(
           state.copyWith(
             error: 'Failed to end workout: $error',
@@ -428,6 +498,12 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     required int workoutSessionId,
     required int generation,
   }) async {
+    final source = state.executionPlan == null ? 'unknown' : _sourceName(state.executionPlan!.source);
+    logger.i(
+      'Workout mutation start boundary=create_exercise source=$source '
+      'workoutSessionId=$workoutSessionId exerciseId=${spec.exerciseId} '
+      'executionKey=${spec.executionKey}',
+    );
     final result = await _exerciseSessionRepository.createWorkoutExerciseSession(
       exerciseId: spec.exerciseId,
       workoutSessionId: workoutSessionId,
@@ -441,6 +517,11 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           return Result.error(AppException('Workout session changed while creating exercise session'));
         }
         final execution = _buildExecution(spec, workoutSessionId, session);
+        logger.i(
+          'Workout mutation success boundary=create_exercise source=$source '
+          'workoutSessionId=$workoutSessionId exerciseSessionId=${session.id} '
+          'exerciseId=${spec.exerciseId} executionKey=${spec.executionKey}',
+        );
         _exerciseExecutions[spec.executionKey] = execution;
         await _cacheExerciseExecution(execution);
         await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.exerciseSessionCreated);
@@ -459,12 +540,38 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
             workoutSessionId: workoutSessionId,
             generation: generation,
           );
-          if (reconciled != null) return Result.success(reconciled);
+          if (reconciled != null) {
+            logger.w(
+              'Workout mutation reconciled boundary=create_exercise source=$source '
+              'workoutSessionId=$workoutSessionId '
+              'exerciseSessionId=${reconciled.exerciseSessionId} '
+              'exerciseId=${spec.exerciseId} executionKey=${spec.executionKey}',
+            );
+            unawaited(
+              _analytics.logEvent(
+                AnalyticsEvents.workoutExerciseReconciled,
+                {'source': source},
+              ),
+            );
+            return Result.success(reconciled);
+          }
         }
         if (!_isCurrentRegistry(generation, workoutSessionId)) {
           return Result.error(AppException('Workout session changed while reconciling exercise session'));
         }
         _exerciseSessionFailures[spec.executionKey] = error;
+        logger.e(
+          'Workout mutation failure boundary=create_exercise source=$source '
+          'workoutSessionId=$workoutSessionId exerciseId=${spec.exerciseId} '
+          'executionKey=${spec.executionKey}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {'boundary': 'create_exercise', 'source': source},
+          ),
+        );
         return Result.error(error);
     }
   }
@@ -567,6 +674,10 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       DioExceptionType.badResponse ||
       DioExceptionType.cancel => false,
     };
+  }
+
+  String _sourceName(WorkoutSource source) {
+    return source is AdHocWorkoutSource ? 'ad_hoc' : 'program';
   }
 
   MeasurementSystem get _measurementSystem {

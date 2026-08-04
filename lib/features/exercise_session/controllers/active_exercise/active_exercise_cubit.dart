@@ -196,7 +196,11 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
   }
 
   void setNote(String newNote) {
-    logger.d(newNote);
+    logger.d(
+      'Exercise notes cached workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey} '
+      'noteLength=${newNote.length}',
+    );
     emit(state.copyWith(notes: newNote));
     _notesChanged = true;
     _notePersistence = _notePersistence
@@ -253,9 +257,20 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
       return;
     }
 
-    emit(state.copyWith(isSendingSet: true, setValidationError: null));
+    emit(
+      state.copyWith(
+        isSendingSet: true,
+        setValidationError: null,
+        error: null,
+      ),
+    );
 
     updateSet(setId, currentSet.copyWith(isBusy: true));
+
+    logger.i(
+      'Exercise set sync start workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+    );
 
     final tier = effectiveExercise.isTiered ? state.selectedTier?.rank : null;
 
@@ -270,6 +285,10 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
     switch (result) {
       case Success():
+        logger.i(
+          'Exercise set sync success workoutSessionId=$workoutSessionId '
+          'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+        );
         final setNumber = state.sets.indexWhere((s) => s.id == setId) + 1;
         unawaited(
           _analytics.logEvent(
@@ -291,17 +310,28 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
         emit(state.copyWith(isSendingSet: false));
 
       case Failure(:final error):
+        logger.e(
+          'Exercise set sync failure workoutSessionId=$workoutSessionId '
+          'exerciseSessionId=${state.session.id} clientSetId=${currentSet.clientSetId}',
+          error,
+        );
+        unawaited(
+          _analytics.logEvent(
+            AnalyticsEvents.workoutMutationFailure,
+            {'boundary': 'complete_set', 'source': _sourceName},
+          ),
+        );
         updateSet(setId, currentSet.copyWith(isBusy: false, isDone: false));
         emit(state.copyWith(isSendingSet: false, error: error.toString()));
     }
   }
 
   Future<void> finishExercise() async {
-    logger.d('''
-name: ${effectiveExercise.name}
-loading:${state.isLoading}
-submitted: ${state.isSubmitted}
-''');
+    logger.d(
+      'Exercise finish requested workoutSessionId=$workoutSessionId '
+      'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey} '
+      'loading=${state.isLoading} submitted=${state.isSubmitted}',
+    );
 
     if (state.isLoading) return;
 
@@ -319,7 +349,7 @@ submitted: ${state.isSubmitted}
       return;
     }
 
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, error: null));
 
     await _notePersistence;
     final cachedExercise = await _sessionCache.getExerciseSession(
@@ -338,6 +368,10 @@ submitted: ${state.isSubmitted}
 
       switch (result) {
         case Success():
+          logger.i(
+            'Exercise notes sync success workoutSessionId=$workoutSessionId '
+            'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey}',
+          );
           await _sessionCache.markExerciseNotesSynced(
             workoutSessionId: workoutSessionId,
             executionKey: execution.spec.executionKey,
@@ -346,6 +380,17 @@ submitted: ${state.isSubmitted}
           emit(state.copyWith(isLoading: false, isSubmitted: true));
 
         case Failure(:final error):
+          logger.e(
+            'Exercise notes sync failure workoutSessionId=$workoutSessionId '
+            'exerciseSessionId=${state.session.id} executionKey=${execution.spec.executionKey}',
+            error,
+          );
+          unawaited(
+            _analytics.logEvent(
+              AnalyticsEvents.workoutMutationFailure,
+              {'boundary': 'save_notes', 'source': _sourceName},
+            ),
+          );
           emit(
             state.copyWith(
               isLoading: false,
@@ -356,4 +401,6 @@ submitted: ${state.isSubmitted}
       }
     }
   }
+
+  String get _sourceName => workoutProgramExerciseId == null ? 'ad_hoc' : 'program';
 }

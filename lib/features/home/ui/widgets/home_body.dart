@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/constants/env.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/achievements/domain/entities/rank_entity.dart';
@@ -91,12 +92,13 @@ class HomeBody extends StatelessWidget {
                         child: const StartWorkoutListTile().animateEntrance(),
                       ),
                     ),
-                    SliverPadding(
-                      padding: horizontalPadding.copyWith(bottom: 32),
-                      sliver: SliverToBoxAdapter(
-                        child: const FreeRunListTile().animateEntrance(),
+                    if (Env.freeRunEnabled)
+                      SliverPadding(
+                        padding: horizontalPadding.copyWith(bottom: 32),
+                        sliver: SliverToBoxAdapter(
+                          child: const FreeRunListTile().animateEntrance(),
+                        ),
                       ),
-                    ),
                     SliverPadding(
                       padding: horizontalPadding.copyWith(bottom: 16),
                       sliver: const WorkoutResultHeader(),

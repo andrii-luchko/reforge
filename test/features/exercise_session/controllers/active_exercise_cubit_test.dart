@@ -55,6 +55,8 @@ void main() {
         executionKey: any(named: 'executionKey'),
       ),
     ).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
   });
 
   test('swapped initialization is explicit, idempotent, and skips previous result', () async {
@@ -282,6 +284,65 @@ void main() {
       () => repository.saveWorkoutNote(
         exerciseSessionId: 246,
         note: 'outdoor intervals',
+      ),
+    ).called(1);
+
+    await cubit.close();
+  });
+
+  test('keeps locally cached notes retryable when notes PATCH fails', () async {
+    var attempts = 0;
+    final cubit =
+        ActiveExerciseCubit(
+          repository,
+          analytics,
+          userSessionService,
+          const ClientIdGenerator(),
+          sessionCache,
+          _freeRunExecution(),
+        )..replaceSetsFromExternalSource(
+          sets: [
+            WorkoutSet(
+              id: 1,
+              clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
+              isLocallyCompleted: true,
+              isDone: true,
+            ),
+          ],
+          isSending: false,
+        );
+    when(
+      () => repository.saveWorkoutNote(
+        exerciseSessionId: 246,
+        note: 'retry me',
+      ),
+    ).thenAnswer((_) async {
+      attempts++;
+      return attempts == 1 ? Result.error(Exception('notes offline')) : const Result.success(null);
+    });
+
+    cubit.setNote('retry me');
+    await cubit.finishExercise();
+
+    expect(cubit.state.isSubmitted, isFalse);
+    expect(cubit.state.notes, 'retry me');
+    expect(cubit.state.error, contains('notes offline'));
+    verifyNever(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: any(named: 'workoutSessionId'),
+        executionKey: any(named: 'executionKey'),
+      ),
+    );
+
+    await cubit.finishExercise();
+
+    expect(cubit.state.isSubmitted, isTrue);
+    expect(cubit.state.error, isNull);
+    expect(attempts, 2);
+    verify(
+      () => sessionCache.markExerciseNotesSynced(
+        workoutSessionId: 182,
+        executionKey: 'adHoc:4',
       ),
     ).called(1);
 

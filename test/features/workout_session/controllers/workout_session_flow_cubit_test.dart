@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/exceptions/app_exception.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/database/workout_session_cache_repository.dart';
@@ -83,6 +84,8 @@ void main() {
     when(
       () => sessionCache.updateInitializationPhase(any()),
     ).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
     cubit = WorkoutSessionFlowCubit(
       workoutRepository,
       exerciseRepository,
@@ -392,6 +395,31 @@ void main() {
       ).called(1);
     });
 
+    test('keeps a prepared Free Run retryable when workout creation fails', () async {
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:create-failure',
+      );
+      when(
+        () => workoutRepository.startAdHocWorkoutSession(),
+      ).thenAnswer((_) async => Result.error(Exception('offline')));
+
+      final result = await cubit.startAdHocWorkout(plan);
+
+      expect(result.isError, isTrue);
+      expect(cubit.state.isPrepared, isTrue);
+      expect(cubit.state.workoutSessionId, isNull);
+      expect(cubit.state.isStartingWorkout, isFalse);
+      expect(cubit.state.error, contains('offline'));
+      verifyZeroInteractions(exerciseRepository);
+      verify(
+        () => analytics.logEvent(
+          AnalyticsEvents.workoutMutationFailure,
+          any(),
+        ),
+      ).called(1);
+    });
+
     test('retries the first Free Run exercise after the workout session was created', () async {
       var exerciseAttempts = 0;
       final plan = WorkoutExecutionPlan.freeRun(
@@ -462,6 +490,70 @@ void main() {
       expect(cubit.state.summary, _summary);
     });
 
+    test('keeps completion retryable after a network failure', () async {
+      var attempts = 0;
+      _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
+      when(() => sessionCache.updateDuration(60)).thenAnswer((_) async {});
+      when(() => sessionCache.updateLastExerciseIndex(0)).thenAnswer((_) async {});
+      when(() => sessionCache.clearActiveSession()).thenAnswer((_) async {});
+      when(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 169,
+          workoutSessionDuration: 60,
+        ),
+      ).thenAnswer((_) async {
+        attempts++;
+        return attempts == 1 ? Result.error(Exception('completion offline')) : const Result.success(_summary);
+      });
+
+      await cubit.nextExercise(60);
+
+      expect(cubit.state.isActive, isTrue);
+      expect(cubit.state.summary, isNull);
+      expect(cubit.state.error, contains('completion offline'));
+      verifyNever(() => sessionCache.clearActiveSession());
+
+      await cubit.nextExercise(60);
+
+      expect(cubit.state.isCompleted, isTrue);
+      expect(cubit.state.error, isNull);
+      expect(attempts, 2);
+      verify(() => sessionCache.clearActiveSession()).called(1);
+    });
+
+    test('coalesces concurrent terminal mutations', () async {
+      final completer = Completer<Result<WorkoutSessionSummaryEntity>>();
+      _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
+      when(() => sessionCache.updateDuration(60)).thenAnswer((_) async {});
+      when(() => sessionCache.updateLastExerciseIndex(0)).thenAnswer((_) async {});
+      when(() => sessionCache.clearActiveSession()).thenAnswer((_) async {});
+      when(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 169,
+          workoutSessionDuration: 60,
+        ),
+      ).thenAnswer((_) => completer.future);
+
+      final first = cubit.nextExercise(60);
+      final second = cubit.nextExercise(60);
+
+      verify(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 169,
+          workoutSessionDuration: 60,
+        ),
+      ).called(1);
+
+      completer.complete(const Result.success(_summary));
+      await Future.wait([first, second]);
+
+      expect(cubit.state.isCompleted, isTrue);
+      verify(() => sessionCache.clearActiveSession()).called(1);
+    });
+
     test('coalesces repeated start taps while workout creation is in flight', () async {
       final completer = Completer<Result<WorkoutSession>>();
       final plan = WorkoutExecutionPlan.freeRun(
@@ -525,6 +617,12 @@ void main() {
       final result = await cubit.startAdHocWorkout(plan);
 
       expect(result.orNull?.exerciseSessionId, 246);
+      verify(
+        () => analytics.logEvent(
+          AnalyticsEvents.workoutExerciseReconciled,
+          any(),
+        ),
+      ).called(1);
       verify(() => workoutRepository.getWorkoutSessionDetails(182)).called(1);
       verify(
         () => exerciseRepository.createWorkoutExerciseSession(

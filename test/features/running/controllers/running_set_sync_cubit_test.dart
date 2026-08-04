@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/core/analytics/domain/analytics_events.dart';
+import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
@@ -135,6 +137,12 @@ void main() {
       ),
       harness.localRepository.recoverInterruptedSetSyncs,
     ]);
+    verify(
+      () => harness.analytics.logEvent(
+        AnalyticsEvents.runningSetReconciled,
+        any(),
+      ),
+    ).called(1);
 
     await harness.close();
   });
@@ -271,6 +279,18 @@ void main() {
 
     expect(flushed, isFalse);
     expect(attempts, 1);
+    verify(
+      () => harness.analytics.logEvent(
+        AnalyticsEvents.runningSetSyncFailure,
+        any(),
+      ),
+    ).called(1);
+    verify(
+      () => harness.analytics.logEvent(
+        AnalyticsEvents.runningOutboxBlocked,
+        any(),
+      ),
+    ).called(1);
 
     await harness.close();
   });
@@ -280,15 +300,18 @@ class _Harness {
   _Harness(RunningExerciseConfig config) {
     localRepository = _MockLocalWorkoutSessionRepository();
     exerciseRepository = _MockExerciseSessionRepository();
+    analytics = _MockAnalyticsService();
     cubit = RunningSetSyncCubit(
       localRepository,
       exerciseRepository,
+      analytics,
       config,
     );
   }
 
   late final _MockLocalWorkoutSessionRepository localRepository;
   late final _MockExerciseSessionRepository exerciseRepository;
+  late final _MockAnalyticsService analytics;
 
   final rows = StreamController<List<ActiveRunningSet>>();
   late final RunningSetSyncCubit cubit;
@@ -296,6 +319,7 @@ class _Harness {
   void stubBase() {
     reset(localRepository);
     reset(exerciseRepository);
+    reset(analytics);
     when(localRepository.recoverInterruptedSetSyncs).thenAnswer((_) async {});
     when(
       () => localRepository.reconcileSetAsSynced(
@@ -318,6 +342,8 @@ class _Harness {
     ).thenAnswer((_) => rows.stream);
     when(() => localRepository.markSetAsSyncing(any())).thenAnswer((_) async {});
     when(() => localRepository.markSetSyncFailed(any())).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+    when(() => analytics.logEvent(any(), any())).thenAnswer((_) async {});
   }
 
   Future<void> close() async {
@@ -337,6 +363,8 @@ Future<void> _waitForState(
 class _MockLocalWorkoutSessionRepository extends Mock implements LocalWorkoutSessionRepository {}
 
 class _MockExerciseSessionRepository extends Mock implements ExerciseSessionRepository {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
 const _clientSetId = '019893a2-7078-76f9-8e8f-bf8e3b16bf93';
 const _adHocClientSetId = '019893a2-7078-76f9-8e8f-bf8e3b16bf94';

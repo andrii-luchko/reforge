@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
+import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
@@ -71,7 +72,16 @@ class _ActiveWorkoutShellState extends State<ActiveWorkoutShell> with WidgetsBin
     if (state == AppLifecycleState.resumed) {
       // Force an immediate timer update instead of waiting up to 1 second
       // for the next tick. Without this, the displayed time can lag briefly.
-      context.read<TimerCubit>().onAppResumed();
+      final timerCubit = context.read<TimerCubit>()..onAppResumed();
+      context.read<WorkoutSessionFlowCubit>().syncDuration(timerCubit.state.duration);
+      logger.d('ActiveWorkoutShell: foreground duration synced');
+    } else if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      final duration = context.read<TimerCubit>().state.duration;
+      context.read<WorkoutSessionFlowCubit>().syncDuration(duration);
+      logger.d('ActiveWorkoutShell: background duration synced state=${state.name}');
     }
   }
 

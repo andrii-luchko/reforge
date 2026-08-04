@@ -66,4 +66,9 @@ abstract final class AnalyticsEvents {
   static const String freeRunStartFailure = 'free_run_start_failure';
   static const String freeRunCancel = 'free_run_cancel';
   static const String freeRunComplete = 'free_run_complete';
+  static const String workoutMutationFailure = 'workout_mutation_failure';
+  static const String workoutExerciseReconciled = 'workout_exercise_reconciled';
+  static const String runningSetReconciled = 'running_set_reconciled';
+  static const String runningSetSyncFailure = 'running_set_sync_failure';
+  static const String runningOutboxBlocked = 'running_outbox_blocked';
 }
