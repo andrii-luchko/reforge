@@ -308,6 +308,43 @@ class WorkoutDatabase extends _$WorkoutDatabase {
     );
   }
 
+  Future<bool> reconcileSetAsSynced({
+    required int sessionId,
+    required int exerciseSessionId,
+    required String clientSetId,
+    required int remoteSetId,
+    required int durationSeconds,
+    required double distanceMeters,
+    required double speedKmH,
+    int? programSegmentId,
+  }) async {
+    final row =
+        await (select(activeRunningSets)..where(
+              (t) =>
+                  t.sessionId.equals(sessionId) &
+                  t.exerciseSessionId.equals(exerciseSessionId) &
+                  t.clientSetId.equals(clientSetId),
+            ))
+            .getSingleOrNull();
+    if (row == null ||
+        (row.durationSeconds ?? 0) != durationSeconds ||
+        !_sameMetric(row.distanceMeters ?? 0, distanceMeters) ||
+        !_sameMetric(row.avgSpeedKmH ?? 0, speedKmH) ||
+        row.programSegmentId != programSegmentId) {
+      return false;
+    }
+
+    await (update(activeRunningSets)..where((t) => t.id.equals(row.id))).write(
+      ActiveRunningSetsCompanion(
+        remoteSetId: Value(remoteSetId),
+        syncStatus: Value(RunningSetSyncStatus.synced.name),
+      ),
+    );
+    return true;
+  }
+
+  bool _sameMetric(double actual, double expected) => (actual - expected).abs() <= 0.000001;
+
   Future<void> recoverInterruptedSetSyncs() {
     return (update(activeRunningSets)..where(
           (t) => t.syncStatus.equals(RunningSetSyncStatus.syncing.name),

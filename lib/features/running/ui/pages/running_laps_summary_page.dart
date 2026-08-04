@@ -115,7 +115,7 @@ class RunningLapsSummaryPage extends StatelessWidget {
                         onBackToRunning: cubit.goToActive,
                         onFinishExercise: state.isSubmitting || isSendingSet
                             ? null
-                            : () => unawaited(_onFinishExercise(context, cubit)),
+                            : () => unawaited(onExerciseFinished()),
                       ),
                     ),
                   ],
@@ -126,13 +126,6 @@ class RunningLapsSummaryPage extends StatelessWidget {
         },
       ),
     );
-  }
-
-  Future<void> _onFinishExercise(BuildContext context, RunningTrackerCubit cubit) async {
-    final isSubmitted = await onExerciseFinished();
-    if (!context.mounted || !isSubmitted) return;
-
-    await cubit.finishExercise();
   }
 }
 

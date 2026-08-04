@@ -75,7 +75,7 @@ void main() {
         'exerciseId': 4,
         'workoutSessionId': 182,
         'exerciseSessionId': 246,
-        'clientSetId': '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
+        'idempotencyKey': '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
         'durationSec': 60,
         'speedKmH': 10.5,
         'distanceM': 1000.0,
@@ -123,13 +123,14 @@ void main() {
       expect(history.exercises.single.sets.single.distance, 1);
     });
 
-    test('parses a create-set response even before clientSetId is echoed', () {
+    test('maps backend idempotencyKey to the local client set identity', () {
       final response = BaseResponse<ExerciseSetDTO>.fromJson(
         {
           'data': {
             'id': 368,
             'exerciseId': 4,
             'exerciseSessionId': 246,
+            'idempotencyKey': '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
             'durationSec': 60,
             'distanceM': 1000,
             'setNumber': 1,
@@ -140,7 +141,7 @@ void main() {
       );
 
       expect(response.data.id, 368);
-      expect(response.data.clientSetId, isNull);
+      expect(response.data.clientSetId, '019893a2-7078-76f9-8e8f-bf8e3b16bf93');
     });
   });
 }

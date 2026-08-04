@@ -79,7 +79,7 @@ class RunningActivePage extends StatelessWidget {
                   builder: (context, state) {
                     final cubit = context.read<RunningTrackerCubit>();
                     return AnimatedVisibility(
-                      isVisible: KeyboardVisibilityProvider.isKeyboardVisible(context),
+                      isVisible: !KeyboardVisibilityProvider.isKeyboardVisible(context),
                       child: _ActionButtons(state: state, cubit: cubit),
                     );
                   },

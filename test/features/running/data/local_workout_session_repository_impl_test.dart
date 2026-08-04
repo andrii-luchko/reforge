@@ -175,4 +175,56 @@ void main() {
     expect(after.single.clientSetId, before.single.clientSetId);
     expect(after.single.syncStatus, 'locallyCompleted');
   });
+
+  test('reconciles a restored backend set by session, exercise session, and idempotency key', () async {
+    final setId = await repository.createNewActiveSet(
+      sessionId: 10,
+      exerciseSessionId: 110,
+      setNumber: 1,
+      trackingMode: 'gps',
+    );
+    await repository.markSetAsFinishedLocally(setId);
+    await repository.markSetAsSyncing(setId);
+    final before = await repository.watchActiveRunningSets(sessionId: 10, exerciseSessionId: 110).first;
+
+    await repository.reconcileSetAsSynced(
+      sessionId: 10,
+      exerciseSessionId: 110,
+      clientSetId: before.single.clientSetId,
+      remoteSetId: 901,
+      durationSeconds: 0,
+      distanceMeters: 0,
+      speedKmH: 0,
+    );
+
+    final after = await repository.watchActiveRunningSets(sessionId: 10, exerciseSessionId: 110).first;
+    expect(after.single.syncStatus, 'synced');
+    expect(after.single.remoteSetId, 901);
+  });
+
+  test('does not reconcile a restored set when its immutable metrics differ', () async {
+    final setId = await repository.createNewActiveSet(
+      sessionId: 10,
+      exerciseSessionId: 110,
+      setNumber: 1,
+      trackingMode: 'gps',
+    );
+    await repository.markSetAsFinishedLocally(setId);
+    final before = await repository.watchActiveRunningSets(sessionId: 10, exerciseSessionId: 110).first;
+
+    final reconciled = await repository.reconcileSetAsSynced(
+      sessionId: 10,
+      exerciseSessionId: 110,
+      clientSetId: before.single.clientSetId,
+      remoteSetId: 901,
+      durationSeconds: 1,
+      distanceMeters: 100,
+      speedKmH: 10,
+    );
+
+    final after = await repository.watchActiveRunningSets(sessionId: 10, exerciseSessionId: 110).first;
+    expect(reconciled, isFalse);
+    expect(after.single.syncStatus, 'locallyCompleted');
+    expect(after.single.remoteSetId, null);
+  });
 }

@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
+import 'package:reforge/features/exercise_session/domain/exceptions/set_idempotency_conflict_exception.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
@@ -26,13 +27,35 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   final Map<int, Future<bool>> _syncFutures = {};
   final Set<int> _syncedRowIds = {};
   final Set<int> _failedRowIds = {};
+  final Set<int> _nonRetryableRowIds = {};
   List<ActiveRunningSet> _rows = const [];
   Future<void>? _initialization;
   String? _syncError;
 
-  Future<void> init() => _initialization ??= _init();
+  Future<void> init({
+    Iterable<WorkoutSet> restoredSets = const [],
+    MeasurementSystem restoredSetSystem = MeasurementSystem.metric,
+  }) => _initialization ??= _init(restoredSets, restoredSetSystem);
 
-  Future<void> _init() async {
+  Future<void> _init(
+    Iterable<WorkoutSet> restoredSets,
+    MeasurementSystem restoredSetSystem,
+  ) async {
+    for (final set in restoredSets) {
+      final clientSetId = set.clientSetId;
+      if (clientSetId == null) continue;
+      final metricSet = restoredSetSystem == MeasurementSystem.imperial ? set.toMetric() : set;
+      await _localRepository.reconcileSetAsSynced(
+        sessionId: config.workoutSessionId,
+        exerciseSessionId: config.exerciseSessionId,
+        clientSetId: clientSetId,
+        remoteSetId: set.id,
+        durationSeconds: metricSet.time?.inSeconds ?? 0,
+        distanceMeters: (metricSet.distance ?? 0) * 1000,
+        speedKmH: metricSet.pace ?? 0,
+        programSegmentId: metricSet.programSegmentId,
+      );
+    }
     await _localRepository.recoverInterruptedSetSyncs();
     if (isClosed) return;
 
@@ -91,11 +114,11 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
     if (_rows.isEmpty || _rows.any((row) => row.isTracking)) return false;
 
     final pending = _rows.where(
-      (row) => !row.isSynced && !_syncedRowIds.contains(row.id),
+      (row) => !row.isSynced && !_syncedRowIds.contains(row.id) && !_nonRetryableRowIds.contains(row.id),
     );
     final results = await Future.wait(pending.map(_syncRunningSet));
     _emitState();
-    return results.every((success) => success) && state.canFinish;
+    return _nonRetryableRowIds.isEmpty && results.every((success) => success) && state.canFinish;
   }
 
   Future<bool> _syncRunningSet(ActiveRunningSet row) {
@@ -144,11 +167,15 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         );
         _syncedRowIds.add(row.id);
         _failedRowIds.remove(row.id);
+        _nonRetryableRowIds.remove(row.id);
         return true;
       },
       onError: (error, stackTrace) async {
         await _localRepository.markSetSyncFailed(row.id);
         _failedRowIds.add(row.id);
+        if (error is SetIdempotencyConflictException) {
+          _nonRetryableRowIds.add(row.id);
+        }
         _syncError = error.toString();
         logger.e('Failed to sync running set ${row.id}', error, stackTrace);
         return false;

@@ -27,6 +27,7 @@ class ExerciseListView extends StatelessWidget {
             await ExerciseInstructionPageRoute(
               name: exercise.name,
               workoutId: exercise.id,
+              $extra: exercise,
               // ignore: inference_failure_on_function_invocation
             ).push(context);
           },

@@ -92,9 +92,14 @@ class _RunningExerciseBranch extends StatelessWidget {
           },
         ),
         BlocProvider(
-          create: (_) {
+          create: (context) {
             final cubit = di.getIt<RunningSetSyncCubit>(param1: config);
-            unawaited(cubit.init());
+            unawaited(
+              cubit.init(
+                restoredSets: context.read<ActiveExerciseCubit>().state.sets,
+                restoredSetSystem: context.read<ActiveExerciseCubit>().state.measureSystem,
+              ),
+            );
             return cubit;
           },
         ),
@@ -130,21 +135,7 @@ class _RunningExerciseBranch extends StatelessWidget {
             },
           ),
         ],
-        child: RunningExerciseHost(
-          onExerciseFinished: () async {
-            final syncCubit = context.read<RunningSetSyncCubit>();
-            final activeExerciseCubit = context.read<ActiveExerciseCubit>();
-            final isSynced = await syncCubit.flush();
-            if (!isSynced) return false;
-
-            await (activeExerciseCubit..replaceSetsFromExternalSource(
-                  sets: syncCubit.state.sets,
-                  isSending: syncCubit.state.isSending,
-                ))
-                .finishExercise();
-            return activeExerciseCubit.state.isSubmitted;
-          },
-        ),
+        child: const RunningExerciseHost(),
       ),
     );
   }

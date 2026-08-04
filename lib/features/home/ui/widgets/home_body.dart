@@ -11,6 +11,7 @@ import 'package:reforge/features/guides/ui/widgets/guide_target.dart';
 import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/home/domain/user_stats.dart';
 import 'package:reforge/features/home/ui/guide/home_page_guide_scope.dart';
+import 'package:reforge/features/home/ui/widgets/free_run_list_tile.dart';
 import 'package:reforge/features/home/ui/widgets/home_app_bar.dart';
 import 'package:reforge/features/home/ui/widgets/home_workout_result_empty.dart';
 import 'package:reforge/features/home/ui/widgets/home_workout_result_section.dart';
@@ -85,9 +86,15 @@ class HomeBody extends StatelessWidget {
                       ),
                     ),
                     SliverPadding(
-                      padding: horizontalPadding.copyWith(bottom: 32),
+                      padding: horizontalPadding.copyWith(bottom: 8),
                       sliver: SliverToBoxAdapter(
                         child: const StartWorkoutListTile().animateEntrance(),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: horizontalPadding.copyWith(bottom: 32),
+                      sliver: SliverToBoxAdapter(
+                        child: const FreeRunListTile().animateEntrance(),
                       ),
                     ),
                     SliverPadding(

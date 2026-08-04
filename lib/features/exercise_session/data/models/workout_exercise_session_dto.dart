@@ -59,7 +59,7 @@ sealed class ExerciseSetDTO with _$ExerciseSetDTO {
     required int id,
     required int exerciseId,
     required int exerciseSessionId,
-    String? clientSetId,
+    @JsonKey(name: 'idempotencyKey') String? clientSetId,
     int? programSegmentId,
     int? tier,
     int? reps,

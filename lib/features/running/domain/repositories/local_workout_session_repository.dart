@@ -77,6 +77,18 @@ abstract interface class LocalWorkoutSessionRepository {
   /// Stores backend identity and marks the local outbox row as synced.
   Future<void> markSetAsSynced(int setId, {required int remoteSetId});
 
+  /// Reconciles a restored backend set with its durable local outbox identity.
+  Future<bool> reconcileSetAsSynced({
+    required int sessionId,
+    required int exerciseSessionId,
+    required String clientSetId,
+    required int remoteSetId,
+    required int durationSeconds,
+    required double distanceMeters,
+    required double speedKmH,
+    int? programSegmentId,
+  });
+
   /// Makes rows left in `syncing` after process death eligible for retry.
   Future<void> recoverInterruptedSetSyncs();
 }

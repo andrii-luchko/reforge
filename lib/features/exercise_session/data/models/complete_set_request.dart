@@ -15,7 +15,7 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     @JsonKey(name: 'exerciseSessionId') required int exerciseSessionId,
     @JsonKey(name: 'workoutProgramExerciseId') int? workoutProgramExerciseId,
     @JsonKey(name: 'programSegmentId') int? programSegmentId,
-    @JsonKey(name: 'clientSetId') String? clientSetId,
+    @JsonKey(name: 'idempotencyKey') String? clientSetId,
 
     @JsonKey(name: 'reps') int? reps,
     @JsonKey(name: 'weightKg') double? weightKg,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
+import 'package:reforge/features/running/controller/running_set_sync_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
 import 'package:reforge/features/running/ui/pages/running_active_page.dart';
@@ -18,10 +19,15 @@ import 'package:reforge/features/running/ui/pages/running_permission_denied_page
 /// - [RunningPhase.overview]  → [RunningOverviewPage]
 /// - [RunningPhase.active]    → [RunningActivePage]
 /// - [RunningPhase.finished]  → [RunningLapsSummaryPage]
-class RunningExerciseHost extends StatelessWidget {
-  const RunningExerciseHost({required this.onExerciseFinished, super.key});
+class RunningExerciseHost extends StatefulWidget {
+  const RunningExerciseHost({super.key});
 
-  final Future<bool> Function() onExerciseFinished;
+  @override
+  State<RunningExerciseHost> createState() => _RunningExerciseHostState();
+}
+
+class _RunningExerciseHostState extends State<RunningExerciseHost> {
+  Future<bool>? _finishInFlight;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +63,7 @@ class RunningExerciseHost extends StatelessWidget {
                   notes: exerciseState.notes,
                   isSendingSet: exerciseState.isSendingSet,
                   onNoteChanged: context.read<ActiveExerciseCubit>().setNote,
-                  onExerciseFinished: onExerciseFinished,
+                  onExerciseFinished: _finishExercise,
                 ),
               ),
               RunningPhase.permissionDenied => const RunningPermissionDeniedPage(),
@@ -66,5 +72,36 @@ class RunningExerciseHost extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<bool> _finishExercise() {
+    final inFlight = _finishInFlight;
+    if (inFlight != null) return inFlight;
+
+    late final Future<bool> request;
+    request = _finishExerciseOnce().whenComplete(() {
+      if (identical(_finishInFlight, request)) _finishInFlight = null;
+    });
+    _finishInFlight = request;
+    return request;
+  }
+
+  Future<bool> _finishExerciseOnce() async {
+    final syncCubit = context.read<RunningSetSyncCubit>();
+    final trackerCubit = context.read<RunningTrackerCubit>();
+    final activeExerciseCubit = context.read<ActiveExerciseCubit>();
+
+    final isSynced = await syncCubit.flush();
+    if (!mounted || !isSynced) return false;
+
+    final isTrackerClosed = await trackerCubit.finishExercise();
+    if (!mounted || !isTrackerClosed) return false;
+
+    activeExerciseCubit.replaceSetsFromExternalSource(
+      sets: syncCubit.state.sets,
+      isSending: syncCubit.state.isSending,
+    );
+    await activeExerciseCubit.finishExercise();
+    return activeExerciseCubit.state.isSubmitted;
   }
 }

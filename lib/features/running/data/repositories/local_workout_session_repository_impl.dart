@@ -184,6 +184,29 @@ class LocalWorkoutSessionRepositoryImpl implements LocalWorkoutSessionRepository
   }
 
   @override
+  Future<bool> reconcileSetAsSynced({
+    required int sessionId,
+    required int exerciseSessionId,
+    required String clientSetId,
+    required int remoteSetId,
+    required int durationSeconds,
+    required double distanceMeters,
+    required double speedKmH,
+    int? programSegmentId,
+  }) {
+    return _db.reconcileSetAsSynced(
+      sessionId: sessionId,
+      exerciseSessionId: exerciseSessionId,
+      clientSetId: clientSetId,
+      remoteSetId: remoteSetId,
+      durationSeconds: durationSeconds,
+      distanceMeters: distanceMeters,
+      speedKmH: speedKmH,
+      programSegmentId: programSegmentId,
+    );
+  }
+
+  @override
   Future<void> recoverInterruptedSetSyncs() {
     return _db.recoverInterruptedSetSyncs();
   }

@@ -296,6 +296,24 @@ void main() {
       expect(_execution(cubit), isNull);
       expect(cubit.state.isCanceled, isTrue);
     });
+
+    test('keeps the active session and registry when cancellation fails', () async {
+      _seedActiveWorkout(cubit, contexts: {100: _context(sessionId: 225)});
+      when(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.canceled,
+          workoutSessionId: 169,
+          workoutSessionDuration: 15,
+        ),
+      ).thenAnswer((_) async => Result.error(Exception('cancel failed')));
+
+      await cubit.cancelWorkout(15);
+
+      expect(cubit.state.isActive, isTrue);
+      expect(cubit.state.error, contains('cancel failed'));
+      expect(_execution(cubit)?.exerciseSessionId, 225);
+      verifyNever(() => sessionCache.clearActiveSession());
+    });
   });
 
   group('prepared workout lifecycle', () {
@@ -372,6 +390,42 @@ void main() {
           executionPlanJson: any(named: 'executionPlanJson'),
         ),
       ).called(1);
+    });
+
+    test('retries the first Free Run exercise after the workout session was created', () async {
+      var exerciseAttempts = 0;
+      final plan = WorkoutExecutionPlan.freeRun(
+        details: _freeRunningExercise,
+        executionKey: 'free-run:retry',
+      );
+      when(() => workoutRepository.startAdHocWorkoutSession()).thenAnswer(
+        (_) async => const Result.success(_freeWorkoutSession),
+      );
+      when(
+        () => exerciseRepository.createWorkoutExerciseSession(
+          exerciseId: 4,
+          workoutSessionId: 182,
+          system: MeasurementSystem.metric,
+        ),
+      ).thenAnswer((_) async {
+        exerciseAttempts++;
+        return exerciseAttempts == 1
+            ? Result.error(Exception('exercise create failed'))
+            : Result.success(_freeSession(id: 247));
+      });
+      when(() => analytics.logEvent(any())).thenAnswer((_) async {});
+
+      cubit.prepareWorkout(plan, intent: WorkoutStartIntent.freeRun);
+
+      final first = await cubit.startPreparedWorkout();
+      final retry = await cubit.startPreparedWorkout();
+
+      expect(first.isError, isTrue);
+      expect(retry.orNull?.exerciseSessionId, 247);
+      expect(exerciseAttempts, 2);
+      expect(cubit.state.isStartingWorkout, isFalse);
+      expect(cubit.state.error, isNull);
+      verify(() => workoutRepository.startAdHocWorkoutSession()).called(1);
     });
 
     test('completes one-exercise Free Run through the common next path', () async {

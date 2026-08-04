@@ -338,6 +338,10 @@
             "title": "Forge Today's Workout",
             "subtitle": "Start workout"
         },
+        "free_run": {
+            "title": "Free Run",
+            "subtitle": "Run without a program"
+        },
         "workout_results": {
             "title": "Workout results",
             "empty_data": "Empty data",
@@ -509,6 +513,7 @@
         "endurance_title": "Stamina Builder Routine",
         "flexibility_title": "Agility Builder Routine",
         "startWorkout": "Start Workout",
+        "freeRunTitle": "Free Run",
         "exercise_count": {
             "one": "$n Exercise",
             "other": "$n Exercises"

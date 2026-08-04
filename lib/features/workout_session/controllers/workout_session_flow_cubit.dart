@@ -253,7 +253,20 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       return Result.error(AppException('Workout start is already in progress'));
     }
     if (state.isActive && state.workoutSessionId != null) {
-      return ensureExerciseSession(plan.exercises[state.currentExerciseIndex]);
+      emit(state.copyWith(isStartingWorkout: true, error: null));
+      final execution = await retryEnsureExerciseSession(plan.exercises[state.currentExerciseIndex]);
+      if (execution.isSuccess) {
+        await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+      } else if (plan.source is AdHocWorkoutSource) {
+        unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
+      }
+      emit(
+        state.copyWith(
+          isStartingWorkout: false,
+          error: execution.isError ? 'Failed to start first exercise' : null,
+        ),
+      );
+      return execution;
     }
 
     final generation = _exerciseRegistryGeneration;
@@ -270,6 +283,9 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           return Result.error(AppException('Prepared workout changed while starting session'));
         }
         unawaited(_analytics.logEvent(AnalyticsEvents.workoutStart));
+        if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStart));
+        }
         logger.d('WorkoutSessionFlowCubit: started session ${sessionData.id}');
 
         final programDayId = switch (plan.source) {
@@ -299,6 +315,8 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         }
         if (firstExecution.isSuccess) {
           await _sessionCache.updateInitializationPhase(WorkoutInitializationPhase.active);
+        } else if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
         }
         emit(
           state.copyWith(
@@ -309,6 +327,9 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
         return firstExecution;
 
       case Failure(:final error):
+        if (plan.source is AdHocWorkoutSource) {
+          unawaited(_analytics.logEvent(AnalyticsEvents.freeRunStartFailure));
+        }
         emit(
           state.copyWith(
             isStartingWorkout: false,
@@ -374,6 +395,9 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       case Success(value: final summary):
         if (status == WorkoutSessionStatus.completed) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutComplete));
+          if (state.executionPlan?.source is AdHocWorkoutSource) {
+            unawaited(_analytics.logEvent(AnalyticsEvents.freeRunComplete));
+          }
           if (summary.isLevelUp && summary.currentLevel != null) {
             unawaited(
               _analytics.logEvent(AnalyticsEvents.workoutLevelUp, {'level': summary.currentLevel}),
@@ -381,20 +405,22 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           }
         } else if (status == WorkoutSessionStatus.canceled) {
           unawaited(_analytics.logEvent(AnalyticsEvents.workoutCancel));
+          if (state.executionPlan?.source is AdHocWorkoutSource) {
+            unawaited(_analytics.logEvent(AnalyticsEvents.freeRunCancel));
+          }
         }
         await _sessionCache.clearActiveSession();
+        _clearExerciseRegistry();
         emit(state.copyWith(sessionStatus: status, summary: summary, isLoading: false));
 
       case Failure(:final error):
         emit(
           state.copyWith(
-            sessionStatus: status,
             error: 'Failed to end workout: $error',
             isLoading: false,
           ),
         );
     }
-    _clearExerciseRegistry();
   }
 
   Future<Result<ActiveExerciseExecution>> _createExerciseContext({

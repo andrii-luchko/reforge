@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/core/analytics/domain/analytics_events.dart';
 import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_quiz/ui/widgets/summary_widget.dart';
-import 'package:reforge/features/workout_quiz/ui/widgets/workout_quiz_loader.dart';
+import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/ui/navigation/workout_navigation_mixin.dart';
+import 'package:reforge/features/workout_session/ui/widgets/workout_flow_loader.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/shaders/sunrays_shader.dart';
 import 'package:reforge/shared/centered_title_section.dart';
@@ -37,7 +39,7 @@ class WorkoutQuizSummaryPage extends StatelessWidget {
             ),
           ),
         ],
-        loader: const Positioned.fill(child: WorkoutQuizLoader()),
+        loader: const Positioned.fill(child: WorkoutFlowLoader()),
       ),
     );
   }
@@ -62,12 +64,21 @@ class WorkoutQuizSummaryBody extends StatelessWidget with WorkoutNavigationMixin
             const SizedBox(height: 32),
             const SummaryQuizWidget(),
             const Spacer(),
-            PrimaryButton(
-              text: t.workout_quiz.quiz_summary.button_label,
-              onPressed: () async {
-                unawaited(di.getIt<AnalyticsService>().logEvent(AnalyticsEvents.workoutQuizSummaryStartWorkoutClick));
-                await handleStartPreparedWorkout(context);
-              },
+            BlocSelector<WorkoutSessionFlowCubit, WorkoutSessionFlowState, bool>(
+              selector: (state) => state.isStartingWorkout,
+              builder: (context, isStarting) => PrimaryButton(
+                text: t.workout_quiz.quiz_summary.button_label,
+                onPressed: isStarting
+                    ? null
+                    : () async {
+                        unawaited(
+                          di.getIt<AnalyticsService>().logEvent(
+                            AnalyticsEvents.workoutQuizSummaryStartWorkoutClick,
+                          ),
+                        );
+                        await handleStartPreparedWorkout(context);
+                      },
+              ),
             ),
           ],
         ),

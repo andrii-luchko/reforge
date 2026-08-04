@@ -20,7 +20,7 @@
         "sets": [
           {
             "id": 368,
-            "clientSetId": "019893a2-7078-76f9-8e8f-bf8e3b16bf93",
+            "idempotencyKey": "019893a2-7078-76f9-8e8f-bf8e3b16bf93",
             "exerciseId": 4,
             "exerciseSessionId": 246,
             "programSegmentId": null,

@@ -5,12 +5,14 @@ import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/network/api_client.dart';
 import 'package:reforge/core/network/repository_error_handler.dart';
 import 'package:reforge/features/exercise_session/data/models/complete_set_request.dart';
+import 'package:reforge/features/exercise_session/data/models/workout_exercise_session_dto.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/data/requests/create_workout_exercise_session_request.dart';
 import 'package:reforge/features/exercise_session/data/requests/swap_exercise_request.dart';
 import 'package:reforge/features/exercise_session/data/requests/swap_exercise_search_request.dart';
 import 'package:reforge/features/exercise_session/domain/entities/completed_set_identity.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
+import 'package:reforge/features/exercise_session/domain/exceptions/set_idempotency_conflict_exception.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 
@@ -136,15 +138,46 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
         () => _apiClient.completeSet(request),
         label: 'completeSet',
       );
+      final completedSet = response.data;
+      if (!_matchesImmutableSetPayload(request, completedSet)) {
+        return Result.error(
+          SetIdempotencyConflictException(
+            idempotencyKey: request.clientSetId ?? '<missing>',
+          ),
+        );
+      }
       return Result.success(
         CompletedSetIdentity(
-          remoteSetId: response.data.id,
-          clientSetId: response.data.clientSetId,
+          remoteSetId: completedSet.id,
+          clientSetId: completedSet.clientSetId,
         ),
       );
     } on Exception catch (error) {
       return Result.error(error);
     }
+  }
+
+  bool _matchesImmutableSetPayload(
+    CreateSetSessionRequest request,
+    ExerciseSetDTO response,
+  ) {
+    return response.exerciseId == request.exerciseId &&
+        response.exerciseSessionId == request.exerciseSessionId &&
+        response.clientSetId == request.clientSetId &&
+        response.programSegmentId == request.programSegmentId &&
+        response.reps == request.reps &&
+        response.tier == request.tier &&
+        response.durationSec == request.durationSec &&
+        _sameMetric(response.weightKg, request.weightKg) &&
+        _sameMetric(response.angleDeg, request.angleDeg) &&
+        _sameMetric(response.speedKmH, request.speedKmH) &&
+        _sameMetric(response.distanceM, request.distanceM);
+  }
+
+  bool _sameMetric(double? actual, double? expected) {
+    if (actual == null || expected == null) return actual == expected;
+    const tolerance = 0.000001;
+    return (actual - expected).abs() <= tolerance;
   }
 
   @override

@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/router/routes.dart';
+import 'package:reforge/app/utils/helpers/result.dart';
+import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/workout_program/controllers/workout_program_cubit.dart';
 import 'package:reforge/features/workout_quiz/controller/workout_quiz_cubit.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_execution_plan.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_source.dart';
 import 'package:reforge/features/workout_session/domain/entities/workout_start_intent.dart';
+import 'package:toastification/toastification.dart';
 
 /// Provides [handleStartWorkout] — the single entry point for starting a fresh workout session from any screen.
 ///
@@ -45,8 +48,11 @@ mixin WorkoutNavigationMixin {
     final result = await context.read<WorkoutSessionFlowCubit>().startPreparedWorkout();
     if (!context.mounted) return;
 
-    final execution = result.orNull;
-    if (execution == null) return;
-    ActiveExercisePageRoute(executionKey: execution.spec.executionKey).go(context);
+    switch (result) {
+      case Success(value: final execution):
+        ActiveExercisePageRoute(executionKey: execution.spec.executionKey).go(context);
+      case Failure(:final error):
+        toastification.showErrorToast(error.toString(), context);
+    }
   }
 }
