@@ -512,6 +512,10 @@ class RunningSessionManager {
     switch (mode) {
       case RunningMode.pedometer:
         return _pedometerEngine;
+      // Transitional bridge. Phase 2 replaces this route with the dedicated
+      // adjustable-speed treadmill engine.
+      case RunningMode.treadmill:
+        return _pedometerEngine;
       case RunningMode.gps:
         return _gpsEngine;
     }

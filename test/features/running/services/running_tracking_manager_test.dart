@@ -80,6 +80,30 @@ void main() {
     await manager.endSession();
   });
 
+  test('routes treadmill through the transitional pedometer bridge', () async {
+    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+    );
+
+    expect(pedometer.startCalls, 1);
+    expect(gps.startCalls, 0);
+    verify(
+      () => repository.createNewActiveSet(
+        sessionId: 10,
+        exerciseSessionId: 20,
+        setNumber: 1,
+        trackingMode: RunningMode.treadmill.dbValue,
+      ),
+    ).called(1);
+
+    await manager.endSession();
+  });
+
   test('ignores duplicate start without pausing or restarting the engine', () async {
     final manager = RunningSessionManager(pedometer, gps, repository, audio);
 

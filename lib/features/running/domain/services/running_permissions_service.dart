@@ -17,6 +17,9 @@ class RunningPermissionsService {
     try {
       final isGranted = await switch (mode) {
         RunningMode.pedometer => _requestPedometerPermission(),
+        // Transitional bridge until the manual treadmill engine receives its
+        // iOS location-only keep-alive permission flow in Phase 2.
+        RunningMode.treadmill => _requestPedometerPermission(),
         RunningMode.gps => _requestGpsPermission(),
       };
 

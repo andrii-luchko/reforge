@@ -154,10 +154,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   RunningMode _modeFromDbValue(String? value) {
-    return RunningMode.values.firstWhere(
-      (mode) => mode.dbValue == (value ?? RunningMode.gps.dbValue),
-      orElse: () => RunningMode.gps,
-    );
+    return RunningMode.fromDb(value) ?? RunningMode.gps;
   }
 
   void setMode(RunningMode mode) {

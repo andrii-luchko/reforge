@@ -65,7 +65,7 @@ class RunningActivePage extends StatelessWidget {
                   return switch (mode) {
                     .gps => const Expanded(child: ActiveGpsSession()),
 
-                    .pedometer => const Expanded(child: ActivePedometerSession()),
+                    .treadmill || .pedometer => const Expanded(child: ActivePedometerSession()),
 
                     _ => Container(),
                   };

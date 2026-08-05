@@ -127,6 +127,31 @@ void main() {
     verify(() => service.invoke('start_session', any())).called(1);
   });
 
+  test('startSession serializes the new treadmill mode explicitly', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+
+    await client.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 42,
+      exerciseSessionId: 100,
+    );
+
+    verify(
+      () => service.invoke(
+        'start_session',
+        any(
+          that: isA<Map<String, dynamic>>().having(
+            (payload) => payload['mode'],
+            'mode',
+            RunningMode.treadmill.name,
+          ),
+        ),
+      ),
+    ).called(1);
+    expect(client.currentMode, RunningMode.treadmill);
+  });
+
   test('a real native start failure is surfaced', () async {
     when(() => service.isRunning()).thenAnswer((_) async => false);
     when(() => service.startService()).thenAnswer((_) async => false);
