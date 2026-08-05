@@ -83,6 +83,31 @@ void main() {
       });
     });
 
+    test('omits zero running speed while preserving a manually completed set', () {
+      final request = CreateSetSessionRequest.fromWorkoutSet(
+        set: WorkoutSet(
+          id: 1,
+          time: const Duration(seconds: 2),
+          distance: 0,
+          speed: 0,
+          pace: 0,
+        ),
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.metric,
+      );
+
+      expect(request.speedKmH, isNull);
+      expect(request.toJson(), {
+        'exerciseId': 4,
+        'workoutSessionId': 182,
+        'exerciseSessionId': 246,
+        'durationSec': 2,
+        'distanceM': 0.0,
+      });
+    });
+
     test('keeps the legacy program set payload and adds runtime identity', () {
       final request = CreateSetSessionRequest.fromWorkoutSet(
         set: WorkoutSet(id: 1, reps: 10, weight: 80),

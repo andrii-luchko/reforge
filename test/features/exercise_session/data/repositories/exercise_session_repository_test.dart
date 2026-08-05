@@ -134,6 +134,51 @@ void main() {
       verify(() => apiClient.completeSet(request)).called(1);
     });
 
+    test('treats omitted and zero running speed as the same payload', () async {
+      const clientSetId = '019893a2-7078-76f9-8e8f-bf8e3b16bf94';
+      final set = WorkoutSet(
+        id: 1,
+        clientSetId: clientSetId,
+        time: const Duration(seconds: 2),
+        distance: 0,
+        speed: 0,
+        pace: 0,
+      );
+      final request = CreateSetSessionRequest.fromWorkoutSet(
+        set: set,
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.metric,
+      );
+      when(() => apiClient.completeSet(request)).thenAnswer(
+        (_) async => const BaseResponse(
+          data: ExerciseSetDTO(
+            id: 369,
+            exerciseId: 4,
+            exerciseSessionId: 246,
+            clientSetId: clientSetId,
+            durationSec: 2,
+            distanceM: 0,
+            speedKmH: 0,
+          ),
+          status: 'success',
+        ),
+      );
+
+      final result = await repository.completeSet(
+        set: set,
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.metric,
+      );
+
+      expect(request.speedKmH, isNull);
+      expect(result.isSuccess, isTrue);
+      expect(result.orNull?.remoteSetId, 369);
+    });
+
     test('rejects a successful duplicate response with a different immutable payload', () async {
       const clientSetId = '019893a2-7078-76f9-8e8f-bf8e3b16bf93';
       final set = WorkoutSet(
