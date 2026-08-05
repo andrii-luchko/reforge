@@ -90,7 +90,7 @@ class RunningSessionManager {
       return;
     }
 
-    _configureInitialSpeed(mode, initialSpeedKmH);
+    _validateInitialSpeed(mode, initialSpeedKmH);
 
     _currentMode = mode;
     _limits = limits;
@@ -156,6 +156,14 @@ class RunningSessionManager {
         }
       }
 
+      if (mode == RunningMode.treadmill) {
+        final persistedSpeedKmH = inProgressLap?.currentSpeedKmH;
+        final effectiveSpeedKmH = TreadmillSpeedValidation.isValid(persistedSpeedKmH)
+            ? persistedSpeedKmH!
+            : initialSpeedKmH!;
+        _treadmillEngine.setSpeedKmH(effectiveSpeedKmH);
+      }
+
       final engine = _getEngineForMode(mode);
       await _metricsSub?.cancel();
       _metricsSub = engine?.metricsStream.listen(
@@ -169,11 +177,18 @@ class RunningSessionManager {
       // Subscribe before start so synchronous engine errors or an immediate
       // first metric cannot be lost during initialization.
       await engine?.start(initialOffset: initialOffset);
-      _startSnapshotTimer();
 
       if (startPaused) {
         engine?.pause();
       }
+
+      if (mode == RunningMode.treadmill) {
+        // Persist the initial/restored speed immediately. Otherwise a process
+        // kill before the periodic timer fires would leave a new active row
+        // without the configured speed required for deterministic restore.
+        await _writeDriftSnapshot(_currentDbSetId);
+      }
+      _startSnapshotTimer();
 
       logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
     } on TrackingEngineFailureException {
@@ -347,13 +362,12 @@ class RunningSessionManager {
 
   // ── Private ────────────────────────────────────────────────────────────────
 
-  void _configureInitialSpeed(RunningMode mode, double? speedKmH) {
+  void _validateInitialSpeed(RunningMode mode, double? speedKmH) {
     if (mode == RunningMode.treadmill) {
       if (speedKmH == null) {
         throw ArgumentError.notNull('initialSpeedKmH');
       }
       TreadmillSpeedValidation.validate(speedKmH);
-      _treadmillEngine.setSpeedKmH(speedKmH);
       return;
     }
 

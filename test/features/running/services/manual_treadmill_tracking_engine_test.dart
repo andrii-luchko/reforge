@@ -141,6 +141,33 @@ void main() {
     await subscription.cancel();
   });
 
+  test('paused restore does not add wall-clock time or distance', () async {
+    final metrics = <RunningMetrics>[];
+    final subscription = engine.metricsStream.listen(metrics.add);
+    engine.setSpeedKmH(9.4);
+    await engine.start(
+      initialOffset: const RunningMetrics(
+        distanceMeters: 120,
+        durationSeconds: 60,
+        avgSpeedKmH: 7.2,
+        currentSpeedKmH: 9.4,
+        avgPaceMinKm: 60 / 7.2,
+        currentPaceMinKm: 60 / 9.4,
+        stepCount: 0,
+      ),
+    );
+    engine.pause();
+
+    clock.advance(const Duration(hours: 1));
+    ticks.add(null);
+
+    expect(metrics.last.distanceMeters, 120);
+    expect(metrics.last.durationSeconds, 60);
+    expect(metrics.last.currentSpeedKmH, 9.4);
+
+    await subscription.cancel();
+  });
+
   test('requires a valid speed before start and rejects invalid updates', () async {
     await expectLater(engine.start(), throwsArgumentError);
 

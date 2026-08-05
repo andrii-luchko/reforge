@@ -335,6 +335,76 @@ void main() {
     ).called(1);
   });
 
+  test('treadmill restore sends persisted current speed instead of average speed', () async {
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        exerciseSessionId: 20,
+      ),
+    ).thenAnswer((_) async => _activeTreadmillLap);
+    when(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        startPaused: true,
+        initialSpeedKmH: 9.4,
+      ),
+    ).thenAnswer((_) async {});
+
+    await cubit.init();
+
+    expect(cubit.state.phase, RunningPhase.active);
+    expect(cubit.state.isPaused, isTrue);
+    expect(cubit.state.currentLap?.avgSpeedKmH, 7.2);
+    expect(cubit.state.currentLap?.currentSpeedKmH, 9.4);
+    expect(cubit.state.treadmillSpeedKmH, 9.4);
+    verify(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        startPaused: true,
+        initialSpeedKmH: 9.4,
+      ),
+    ).called(1);
+  });
+
+  test('treadmill restore without a persisted speed falls back to the product default', () async {
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        exerciseSessionId: 20,
+      ),
+    ).thenAnswer((_) async => _activeTreadmillLapWithoutSpeed);
+    when(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        startPaused: true,
+        initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
+      ),
+    ).thenAnswer((_) async {});
+
+    await cubit.init();
+
+    expect(cubit.state.treadmillSpeedKmH, RunningTrackerCubit.defaultTreadmillSpeedKmH);
+    verify(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        startPaused: true,
+        initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
+      ),
+    ).called(1);
+  });
+
   test('restore opens a completed planned run in resumable summary', () async {
     when(
       () => repository.getLastLap(
@@ -662,6 +732,37 @@ const _completedLap = ActiveRunningSet(
   durationSeconds: 720,
   syncStatus: 'synced',
   trackingMode: 'gps',
+  segmentType: 'run',
+);
+
+const _activeTreadmillLap = ActiveRunningSet(
+  id: 2,
+  sessionId: 10,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf94',
+  setNumber: 1,
+  distanceMeters: 120,
+  durationSeconds: 60,
+  avgSpeedKmH: 7.2,
+  currentSpeedKmH: 9.4,
+  avgPaceMinKm: 60 / 7.2,
+  currentPaceMinKm: 60 / 9.4,
+  stepCount: 0,
+  syncStatus: 'tracking',
+  trackingMode: 'treadmill',
+  segmentType: 'run',
+);
+
+const _activeTreadmillLapWithoutSpeed = ActiveRunningSet(
+  id: 3,
+  sessionId: 10,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf95',
+  setNumber: 1,
+  distanceMeters: 0,
+  durationSeconds: 0,
+  syncStatus: 'tracking',
+  trackingMode: 'treadmill',
   segmentType: 'run',
 );
 

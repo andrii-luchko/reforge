@@ -123,6 +123,83 @@ void main() {
     await manager.endSession();
   });
 
+  test('persists the initial treadmill speed without waiting for the snapshot timer', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      initialSpeedKmH: 8,
+    );
+
+    verify(
+      () => repository.snapshotActiveLap(
+        setId: 1,
+        distance: 1,
+        duration: 1,
+        avgSpeedKmH: 8,
+        currentSpeedKmH: 8,
+        avgPaceMinKm: 7.5,
+        currentPaceMinKm: 7.5,
+        stepCount: 0,
+      ),
+    ).called(1);
+
+    await manager.endSession();
+  });
+
+  test('restore prefers persisted current treadmill speed over the startup fallback', () async {
+    when(
+      () => repository.getInProgressLapForExercise(
+        sessionId: 10,
+        exerciseSessionId: 20,
+      ),
+    ).thenAnswer((_) async => _activeTreadmillLap);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      startPaused: true,
+      initialSpeedKmH: 1,
+    );
+
+    expect(treadmill.appliedSpeeds, [9.4]);
+    expect(treadmill.lastInitialOffset?.distanceMeters, 120);
+    expect(treadmill.lastInitialOffset?.durationSeconds, 60);
+    expect(treadmill.lastInitialOffset?.avgSpeedKmH, 7.2);
+    expect(treadmill.lastInitialOffset?.currentSpeedKmH, 9.4);
+    expect(treadmill.pauseCalls, 1);
+    verifyNever(
+      () => repository.createNewActiveSet(
+        sessionId: any(named: 'sessionId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
+        setNumber: any(named: 'setNumber'),
+        trackingMode: any(named: 'trackingMode'),
+        programSegmentId: any(named: 'programSegmentId'),
+        segmentType: any(named: 'segmentType'),
+      ),
+    );
+
+    await manager.endSession();
+  });
+
   test('rejects treadmill start before creating a lap when speed is absent', () async {
     final manager = RunningSessionManager(
       pedometer,
@@ -609,6 +686,7 @@ final class SynchronousMetricEngine implements AdjustableSpeedTrackingEngine {
   int stopCalls = 0;
   Completer<void>? stopCompleter;
   final appliedSpeeds = <double>[];
+  RunningMetrics? lastInitialOffset;
   double currentSpeedKmH = 1;
   bool isRunning = false;
 
@@ -620,6 +698,7 @@ final class SynchronousMetricEngine implements AdjustableSpeedTrackingEngine {
   @override
   Future<void> start({RunningMetrics? initialOffset}) async {
     startCalls++;
+    lastInitialOffset = initialOffset;
     isRunning = true;
     _emitMetrics();
   }
@@ -672,5 +751,23 @@ const _completedLap = ActiveRunningSet(
   durationSeconds: 720,
   syncStatus: 'synced',
   trackingMode: 'gps',
+  segmentType: 'run',
+);
+
+const _activeTreadmillLap = ActiveRunningSet(
+  id: 2,
+  sessionId: 10,
+  exerciseSessionId: 20,
+  clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf94',
+  setNumber: 1,
+  distanceMeters: 120,
+  durationSeconds: 60,
+  avgSpeedKmH: 7.2,
+  currentSpeedKmH: 9.4,
+  avgPaceMinKm: 60 / 7.2,
+  currentPaceMinKm: 60 / 9.4,
+  stepCount: 0,
+  syncStatus: 'tracking',
+  trackingMode: 'treadmill',
   segmentType: 'run',
 );
