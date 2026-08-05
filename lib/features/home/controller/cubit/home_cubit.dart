@@ -33,6 +33,13 @@ class HomeCubit extends Cubit<HomeState> {
   OnboardedUser? _lastUser;
   int _userRevision = 0;
 
+  Future<void> ensureInitialDataLoaded() async {
+    if (state.isLoading) return;
+    if (state.currentStats != null) return;
+
+    await loadInitialData();
+  }
+
   Future<void> loadInitialData() async {
     emit(state.copyWith(isLoading: true, error: null));
 
