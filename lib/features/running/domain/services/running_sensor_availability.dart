@@ -10,6 +10,8 @@ import 'package:reforge/features/running/domain/exceptions/running_service_excep
 abstract interface class RunningSensorAvailability {
   Future<TrackingEngineFailureException?> gpsFailure();
 
+  Future<TrackingEngineFailureException?> treadmillFailure();
+
   Future<TrackingEngineFailureException?> pedometerFailure();
 }
 
@@ -21,6 +23,24 @@ class RunningSensorAvailabilityService implements RunningSensorAvailability {
   @override
   Future<TrackingEngineFailureException?> gpsFailure() {
     return _locationFailure(TrackingEngineType.gps);
+  }
+
+  @override
+  Future<TrackingEngineFailureException?> treadmillFailure() async {
+    if (_platform == TargetPlatform.iOS || _platform == TargetPlatform.macOS) {
+      return _locationFailure(TrackingEngineType.treadmill);
+    }
+
+    if (_platform == TargetPlatform.android) return null;
+
+    return TrackingEngineFailureException(
+      engine: TrackingEngineType.treadmill,
+      dependency: TrackingDependency.location,
+      reason: TrackingEngineFailureReason.sensorUnavailable,
+      cause: UnsupportedError(
+        'Manual treadmill tracking is not supported on ${_platform.name}',
+      ),
+    );
   }
 
   @override
