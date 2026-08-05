@@ -16,6 +16,7 @@ sealed class WorkoutSet with _$WorkoutSet {
     Duration? time,
     double? distance,
     double? pace,
+    double? speed,
     double? weight,
     int? reps,
     double? degrees,
@@ -27,12 +28,19 @@ sealed class WorkoutSet with _$WorkoutSet {
   }) = _WorkoutSet;
 
   bool get isEmpty =>
-      time == null && distance == null && pace == null && weight == null && reps == null && degrees == null;
+      time == null &&
+      distance == null &&
+      pace == null &&
+      speed == null &&
+      weight == null &&
+      reps == null &&
+      degrees == null;
 
   WorkoutSet toImperial() {
     return copyWith(
       distance: distance != null ? MeasureSystemValues.toMiles(distance!) : null,
-      pace: pace != null ? MeasureSystemValues.toMiles(pace!) : null,
+      pace: pace != null ? MeasureSystemValues.toMinutesPerMile(pace!) : null,
+      speed: speed != null ? MeasureSystemValues.toMiles(speed!) : null,
       weight: weight != null ? MeasureSystemValues.toPounds(weight!) : null,
     );
   }
@@ -40,7 +48,8 @@ sealed class WorkoutSet with _$WorkoutSet {
   WorkoutSet toMetric() {
     return copyWith(
       distance: distance != null ? MeasureSystemValues.toKm(distance!) : null,
-      pace: pace != null ? MeasureSystemValues.toKm(pace!) : null,
+      pace: pace != null ? MeasureSystemValues.toMinutesPerKm(pace!) : null,
+      speed: speed != null ? MeasureSystemValues.toKm(speed!) : null,
       weight: weight != null ? MeasureSystemValues.toKg(weight!) : null,
     );
   }
@@ -50,6 +59,7 @@ sealed class WorkoutSet with _$WorkoutSet {
       WorkoutMetric.time => copyWith(time: value as Duration?),
       WorkoutMetric.distance => copyWith(distance: value as double?),
       WorkoutMetric.pace => copyWith(pace: value as double?),
+      WorkoutMetric.speed => copyWith(speed: value as double?),
       WorkoutMetric.weight => copyWith(weight: value as double?),
       WorkoutMetric.reps => copyWith(reps: (value as num?)?.toInt()),
       WorkoutMetric.degrees => copyWith(degrees: value as double?),
@@ -61,6 +71,7 @@ sealed class WorkoutSet with _$WorkoutSet {
       WorkoutMetric.time => time,
       WorkoutMetric.distance => distance,
       WorkoutMetric.pace => pace,
+      WorkoutMetric.speed => speed,
       WorkoutMetric.weight => weight,
       WorkoutMetric.reps => reps,
       WorkoutMetric.degrees => degrees,
@@ -77,6 +88,9 @@ sealed class WorkoutSet with _$WorkoutSet {
         return _formatDouble(distance);
       case WorkoutMetric.weight:
         return _formatDouble(weight);
+
+      case WorkoutMetric.speed:
+        return _formatDouble(speed);
       case WorkoutMetric.pace:
         return _formatDouble(pace);
 
@@ -126,6 +140,10 @@ extension WorkoutSetValidation on WorkoutSet {
 
     if (metrics.contains(WorkoutMetric.pace)) {
       if (pace == null || pace! <= 0) return false;
+    }
+
+    if (metrics.contains(WorkoutMetric.speed)) {
+      if (speed == null || speed! <= 0) return false;
     }
 
     if (metrics.contains(WorkoutMetric.degrees)) {

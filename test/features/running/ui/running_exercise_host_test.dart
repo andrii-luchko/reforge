@@ -208,7 +208,8 @@ final _syncedSet = WorkoutSet(
   setNumber: 1,
   time: const Duration(seconds: 60),
   distance: 1,
-  pace: 10,
+  speed: 10,
+  pace: 6,
   isLocallyCompleted: true,
   isDone: true,
 );

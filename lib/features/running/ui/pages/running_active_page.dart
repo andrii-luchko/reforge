@@ -172,7 +172,7 @@ class ActiveGpsSession extends StatelessWidget {
                       distanceMeters: 0,
                       durationSeconds: 0,
                       speedKmH: 0,
-
+                      paceMinKm: 0,
                       system: measureSystem,
                     ),
             ),
@@ -275,7 +275,7 @@ class ActivePedometerSession extends StatelessWidget {
                   distanceMeters: 0,
                   durationSeconds: 0,
                   speedKmH: 0,
-
+                  paceMinKm: 0,
                   system: measureSystem,
                 ),
 

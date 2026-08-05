@@ -231,6 +231,9 @@ class WorkoutDialogs {
         (currentValue as num?)?.toDouble() ?? 0.0,
         system,
       ),
+      // Speed temporarily reuses the pace dialog until it gets a dedicated picker.
+      WorkoutMetric.speed => WorkoutDialogs.showPaceDialog(context, (currentValue as num?)?.toDouble() ?? 0.0, system),
+
       WorkoutMetric.pace => WorkoutDialogs.showPaceDialog(context, (currentValue as num?)?.toDouble() ?? 0.0, system),
 
       WorkoutMetric.weight => WorkoutDialogs.showWeightDialog(

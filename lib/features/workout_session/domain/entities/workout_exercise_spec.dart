@@ -29,13 +29,13 @@ class WorkoutExerciseSpec {
     final metrics = details.metrics;
     final hasTime = metrics.contains(WorkoutMetric.time);
     final hasDistance = metrics.contains(WorkoutMetric.distance);
-    final hasPace = metrics.contains(WorkoutMetric.pace);
+    final hasRunningRate = metrics.contains(WorkoutMetric.speed) || metrics.contains(WorkoutMetric.pace);
     final runningTarget = details.runningTarget;
 
     if (runningTarget != null && (runningTarget.metric == WorkoutMetric.distance || hasDistance)) {
       return true;
     }
-    if (hasDistance && (hasTime || hasPace)) return true;
+    if (hasDistance && (hasTime || hasRunningRate)) return true;
     if (hasTime && details.type == ExerciseType.endurance) return true;
 
     return details.key?.toLowerCase().contains('run') ?? false;

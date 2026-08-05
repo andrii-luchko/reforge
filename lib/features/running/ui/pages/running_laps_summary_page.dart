@@ -60,7 +60,11 @@ class RunningLapsSummaryPage extends StatelessWidget {
                 : cubit.config.segments.firstWhereOrNull((segment) => segment.id == set.programSegmentId);
 
             final distanceM = (set.distance ?? 0) * 1000;
-            final speedKmH = set.pace ?? 0;
+            final speedKmH = set.speed ?? 0;
+            final storedPaceMinKm = set.pace;
+            final paceMinKm = storedPaceMinKm != null && storedPaceMinKm > 0
+                ? storedPaceMinKm
+                : (speedKmH > 0 ? 60.0 / speedKmH : 0.0);
 
             return ExerciseLap(
               lapNumber: set.setNumber ?? 0,
@@ -68,7 +72,7 @@ class RunningLapsSummaryPage extends StatelessWidget {
               durationSeconds: set.time?.inSeconds ?? 0,
               avgSpeedKmH: speedKmH,
               currentSpeedKmH: 0,
-              avgPaceMinKm: speedKmH > 0 ? 60.0 / speedKmH : 0,
+              avgPaceMinKm: paceMinKm,
               currentPaceMinKm: 0,
               activity: segment?.activity ?? SegmentActivity.run,
             );

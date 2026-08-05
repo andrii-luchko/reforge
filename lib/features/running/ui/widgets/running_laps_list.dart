@@ -95,7 +95,8 @@ class _LapRow extends StatelessWidget {
           child: WorkoutRunExerciseRow(
             distanceKm: km,
             durationInSeconds: lap.durationSeconds,
-            pace: lap.avgSpeedKmH,
+            speedKmH: lap.avgSpeedKmH,
+            paceMinKm: lap.avgPaceMinKm,
             metrics: metrics,
             system: system,
             isOverview: true,

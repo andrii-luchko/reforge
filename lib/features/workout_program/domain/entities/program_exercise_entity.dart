@@ -34,14 +34,14 @@ class ProgramExerciseEntity {
     final metrics = exerciseDetails.metrics;
     final hasTime = metrics.contains(WorkoutMetric.time);
     final hasDistance = metrics.contains(WorkoutMetric.distance);
-    final hasPace = metrics.contains(WorkoutMetric.pace);
+    final hasRunningRate = metrics.contains(WorkoutMetric.speed) || metrics.contains(WorkoutMetric.pace);
     final runningTarget = exerciseDetails.runningTarget;
 
     if (runningTarget != null && (runningTarget.metric == WorkoutMetric.distance || hasDistance)) {
       return true;
     }
 
-    if (hasDistance && (hasTime || hasPace)) return true;
+    if (hasDistance && (hasTime || hasRunningRate)) return true;
     if (hasTime && exerciseDetails.type == ExerciseType.endurance) return true;
 
     return exerciseDetails.key?.toLowerCase().contains('run') ?? false;

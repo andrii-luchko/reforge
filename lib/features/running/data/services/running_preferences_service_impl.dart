@@ -14,6 +14,11 @@ class RunningPreferencesServiceImpl implements RunningPreferencesService {
 
   @override
   Future<void> markAudioHintSeen() async {
-    await _prefs.setBool(_audioHintKey, true);
+    try {
+      await _prefs.setBool(_audioHintKey, true);
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
+      // Handle error
+    }
   }
 }

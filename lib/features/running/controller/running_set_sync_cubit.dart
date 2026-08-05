@@ -34,7 +34,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   final Set<int> _nonRetryableRowIds = {};
   List<ActiveRunningSet> _rows = const [];
   Future<void>? _initialization;
-  String? _syncError;
+  RunningSetSyncIssue? _syncIssue;
 
   Future<void> init({
     Iterable<WorkoutSet> restoredSets = const [],
@@ -56,7 +56,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         remoteSetId: set.id,
         durationSeconds: metricSet.time?.inSeconds ?? 0,
         distanceMeters: (metricSet.distance ?? 0) * 1000,
-        speedKmH: metricSet.pace ?? 0,
+        speedKmH: metricSet.speed ?? 0,
         programSegmentId: metricSet.programSegmentId,
       );
       if (reconciled) {
@@ -110,12 +110,23 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   }
 
   WorkoutSet _mapRowToSet(ActiveRunningSet row) {
+    final rawSpeed = row.avgSpeedKmH;
+    final speed = rawSpeed != null && rawSpeed > 0 ? rawSpeed : null;
+
+    final rawPace = row.avgPaceMinKm;
+    final pace = rawPace != null && rawPace > 0
+        ? rawPace
+        : speed != null
+        ? 60 / speed
+        : null;
+
     return WorkoutSet(
       id: row.id,
       clientSetId: row.clientSetId,
       distance: (row.distanceMeters ?? 0) / 1000,
       time: Duration(seconds: row.durationSeconds ?? 0),
-      pace: row.avgSpeedKmH ?? 0,
+      speed: speed,
+      pace: pace,
       setNumber: row.setNumber,
       isLocallyCompleted: !row.isTracking,
       isDone: row.isSynced || _syncedRowIds.contains(row.id),
@@ -164,7 +175,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
     final future = _syncRunningSetOnce(row);
     _syncFutures[row.id] = future;
     _failedRowIds.remove(row.id);
-    _syncError = null;
+    _syncIssue = null;
     _emitState();
     return future.whenComplete(() {
       final _ = _syncFutures.remove(row.id);
@@ -195,7 +206,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
           const message = 'Backend returned a different clientSetId for a running set.';
           await _localRepository.markSetSyncFailed(row.id);
           _failedRowIds.add(row.id);
-          _syncError = message;
+          _syncIssue = RunningSetSyncIssue.inconsistentResponse;
           logger.e(message);
           return false;
         }
@@ -220,7 +231,9 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         if (error is SetIdempotencyConflictException) {
           _nonRetryableRowIds.add(row.id);
         }
-        _syncError = error.toString();
+        _syncIssue = error is SetIdempotencyConflictException
+            ? RunningSetSyncIssue.inconsistentResponse
+            : RunningSetSyncIssue.retryable;
         logger.e(
           'Running set sync failure workoutSessionId=${config.workoutSessionId} '
           'exerciseSessionId=${config.exerciseSessionId} clientSetId=${row.clientSetId} '
@@ -258,7 +271,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         hasPendingSync: sets.any((set) => !set.isDone && !set.isBusy),
         hasSyncFailures: hasSyncFailures,
         canFinish: canFinish,
-        error: _syncError,
+        issue: _syncIssue,
       ),
     );
   }
@@ -277,7 +290,7 @@ class RunningSetSyncState {
     this.hasPendingSync = false,
     this.hasSyncFailures = false,
     this.canFinish = false,
-    this.error,
+    this.issue,
   });
 
   final List<WorkoutSet> sets;
@@ -285,5 +298,7 @@ class RunningSetSyncState {
   final bool hasPendingSync;
   final bool hasSyncFailures;
   final bool canFinish;
-  final String? error;
+  final RunningSetSyncIssue? issue;
 }
+
+enum RunningSetSyncIssue { retryable, inconsistentResponse }

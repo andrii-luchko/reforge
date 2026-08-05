@@ -11,6 +11,7 @@ import 'package:reforge/features/running/controller/running_set_sync_cubit.dart'
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/entities/running_exercise_config.dart';
 import 'package:reforge/features/running/ui/pages/running_exercise_host.dart';
+import 'package:reforge/features/running/ui/running_set_sync_issue_localization.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
 import 'package:toastification/toastification.dart';
 
@@ -127,10 +128,10 @@ class _RunningExerciseBranch extends StatelessWidget {
             },
           ),
           BlocListener<RunningSetSyncCubit, RunningSetSyncState>(
-            listenWhen: (previous, current) => previous.error != current.error,
+            listenWhen: (previous, current) => previous.issue != current.issue,
             listener: (context, syncState) {
-              if (syncState.error case final error?) {
-                toastification.showErrorToast(error, context);
+              if (syncState.issue case final issue?) {
+                toastification.showErrorToast(issue.localizedMessage, context);
               }
             },
           ),

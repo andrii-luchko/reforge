@@ -131,6 +131,23 @@ void main() {
       expect(details.exerciseSessionsByProgramExerciseId[100]?.id, 228);
     });
 
+    test('maps backend speed separately and derives display pace', () {
+      const dto = ExerciseSetDTO(
+        id: 1,
+        exerciseId: 4,
+        exerciseSessionId: 246,
+        speedKmH: 10.5,
+      );
+
+      final metric = dto.toWorkoutSet(MeasurementSystem.metric);
+      expect(metric.speed, 10.5);
+      expect(metric.pace, closeTo(60 / 10.5, 0.000001));
+
+      final imperial = dto.toWorkoutSet(MeasurementSystem.imperial);
+      expect(imperial.speed, closeTo(6.5243955, 0.000001));
+      expect(imperial.pace, closeTo(60 / 6.5243955, 0.000001));
+    });
+
     test('parses an unbound swapped execution session and merges its sets into the parent', () {
       final details = WorkoutSessionDetailsDTO.fromJson({
         'id': 175,

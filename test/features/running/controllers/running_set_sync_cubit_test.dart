@@ -56,6 +56,8 @@ void main() {
     await _waitForState(harness.cubit, (state) => state.canFinish);
 
     expect(sentSet?.clientSetId, _clientSetId);
+    expect(sentSet?.speed, 9);
+    expect(sentSet?.pace, closeTo(60 / 9, 0.000001));
     expect(harness.cubit.state.sets.single.isDone, isTrue);
     expect(harness.cubit.state.canFinish, isTrue);
     verify(
@@ -147,7 +149,7 @@ void main() {
     await harness.close();
   });
 
-  test('accepts a completed ad-hoc set with zero distance and duration', () async {
+  test('syncs a manually completed ad-hoc set with zero movement', () async {
     final config = RunningExerciseConfig(
       workoutSessionId: 182,
       exerciseSessionId: 246,
@@ -185,7 +187,9 @@ void main() {
     await _waitForState(harness.cubit, (state) => state.canFinish);
 
     expect(sentSet?.distance, 0);
-    expect(sentSet?.time, Duration.zero);
+    expect(sentSet?.time, const Duration(seconds: 2));
+    expect(sentSet?.speed, isNull);
+    expect(sentSet?.pace, isNull);
     expect(harness.cubit.state.canFinish, isTrue);
 
     await harness.close();
@@ -232,6 +236,7 @@ void main() {
     expect(attempts, 1);
     expect(harness.cubit.state.canFinish, isFalse);
     expect(harness.cubit.state.hasSyncFailures, isTrue);
+    expect(harness.cubit.state.issue, RunningSetSyncIssue.retryable);
 
     final flushed = await harness.cubit.flush();
 
@@ -279,6 +284,10 @@ void main() {
 
     expect(flushed, isFalse);
     expect(attempts, 1);
+    expect(
+      harness.cubit.state.issue,
+      RunningSetSyncIssue.inconsistentResponse,
+    );
     verify(
       () => harness.analytics.logEvent(
         AnalyticsEvents.runningSetSyncFailure,
@@ -380,6 +389,7 @@ const _locallyCompletedRow = ActiveRunningSet(
   distanceMeters: 1500,
   durationSeconds: 300,
   avgSpeedKmH: 9,
+  avgPaceMinKm: 60 / 9,
   syncStatus: 'locallyCompleted',
   trackingMode: 'gps',
   segmentType: 'run',
@@ -394,6 +404,7 @@ const _adHocLocallyCompletedRow = ActiveRunningSet(
   distanceMeters: 1000,
   durationSeconds: 60,
   avgSpeedKmH: 10.5,
+  avgPaceMinKm: 60 / 10.5,
   syncStatus: 'locallyCompleted',
   trackingMode: 'gps',
   segmentType: 'run',
@@ -406,8 +417,9 @@ const _zeroAdHocLocallyCompletedRow = ActiveRunningSet(
   clientSetId: _zeroClientSetId,
   setNumber: 1,
   distanceMeters: 0,
-  durationSeconds: 0,
+  durationSeconds: 2,
   avgSpeedKmH: 0,
+  avgPaceMinKm: 0,
   syncStatus: 'locallyCompleted',
   trackingMode: 'gps',
   segmentType: 'run',

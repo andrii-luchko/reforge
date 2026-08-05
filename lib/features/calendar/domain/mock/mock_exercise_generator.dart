@@ -29,13 +29,17 @@ class MockExerciseGenerator {
   }
 
   static List<WorkoutMetric> _getMetricsForExercise(String name) {
-    if (name == 'Fusion') return [WorkoutMetric.distance, WorkoutMetric.time, WorkoutMetric.pace];
+    if (name == 'Fusion') {
+      return [WorkoutMetric.distance, WorkoutMetric.time, WorkoutMetric.speed, WorkoutMetric.pace];
+    }
     if (name == 'Fusion') return [WorkoutMetric.time];
     return [WorkoutMetric.weight, WorkoutMetric.reps];
   }
 
   static List<WorkoutSet> _generateSets(List<WorkoutMetric> metrics) {
     return List.generate(3, (i) {
+      final speed = metrics.contains(WorkoutMetric.speed) ? (8.5 + _random.nextDouble() % 5) : null;
+
       return WorkoutSet(
         id: _random.nextInt(10000),
         setNumber: i + 1,
@@ -44,7 +48,8 @@ class MockExerciseGenerator {
         reps: metrics.contains(WorkoutMetric.reps) ? (8 + _random.nextInt(7)) : null,
         distance: metrics.contains(WorkoutMetric.distance) ? (1000.0 + _random.nextInt(5000)) : null,
         time: metrics.contains(WorkoutMetric.time) ? Duration(seconds: 30 + _random.nextInt(300)) : null,
-        pace: metrics.contains(WorkoutMetric.pace) ? (8.5 + _random.nextDouble() % 5) : null,
+        speed: speed,
+        pace: metrics.contains(WorkoutMetric.pace) && speed != null ? 60 / speed : null,
       );
     });
   }

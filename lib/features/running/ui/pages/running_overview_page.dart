@@ -66,10 +66,8 @@ class RunningOverviewPage extends StatelessWidget {
             unawaited(runningCubit.warmUpTracking());
 
             if (context.mounted) {
-              if (!runningCubit.hasSeenAudioHint) {
-                await AudioHintDialog.show(context);
-                await runningCubit.markAudioHintSeen();
-              }
+              await AudioHintDialog.show(context);
+              await runningCubit.markAudioHintSeen();
 
               if (context.mounted) {
                 final started = await const StartRunningPageRoute().push<bool>(context);

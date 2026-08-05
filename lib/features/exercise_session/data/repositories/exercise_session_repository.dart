@@ -170,8 +170,14 @@ class ExerciseSessionRepositoryImpl with RepositoryErrorHandler implements Exerc
         response.durationSec == request.durationSec &&
         _sameMetric(response.weightKg, request.weightKg) &&
         _sameMetric(response.angleDeg, request.angleDeg) &&
-        _sameMetric(response.speedKmH, request.speedKmH) &&
+        _sameOptionalPositiveMetric(response.speedKmH, request.speedKmH) &&
         _sameMetric(response.distanceM, request.distanceM);
+  }
+
+  bool _sameOptionalPositiveMetric(double? actual, double? expected) {
+    final normalizedActual = actual != null && actual > 0 ? actual : null;
+    final normalizedExpected = expected != null && expected > 0 ? expected : null;
+    return _sameMetric(normalizedActual, normalizedExpected);
   }
 
   bool _sameMetric(double? actual, double? expected) {
