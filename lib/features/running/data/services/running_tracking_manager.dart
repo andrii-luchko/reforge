@@ -11,7 +11,9 @@ import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
+import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
@@ -19,6 +21,7 @@ class RunningSessionManager {
   RunningSessionManager(
     @Named('pedometer') this._pedometerEngine,
     @Named('gps') this._gpsEngine,
+    @Named('treadmill') this._treadmillEngine,
     this._repository,
     this._audioFeedbackService,
   );
@@ -26,6 +29,7 @@ class RunningSessionManager {
   // Use the interface type, not the concrete implementation classes
   final TrackingEngine _pedometerEngine;
   final TrackingEngine _gpsEngine;
+  final AdjustableSpeedTrackingEngine _treadmillEngine;
   final LocalWorkoutSessionRepository _repository;
   final AudioFeedbackService _audioFeedbackService;
 
@@ -73,6 +77,7 @@ class RunningSessionManager {
     int? workoutProgramExerciseId,
     bool startPaused = false,
     bool restoreCompletedPlan = false,
+    double? initialSpeedKmH,
   }) async {
     final endingSession = _endSessionFuture;
     if (endingSession != null) await endingSession;
@@ -84,6 +89,8 @@ class RunningSessionManager {
       );
       return;
     }
+
+    _validateInitialSpeed(mode, initialSpeedKmH);
 
     _currentMode = mode;
     _limits = limits;
@@ -149,6 +156,14 @@ class RunningSessionManager {
         }
       }
 
+      if (mode == RunningMode.treadmill) {
+        final persistedSpeedKmH = inProgressLap?.currentSpeedKmH;
+        final effectiveSpeedKmH = TreadmillSpeedValidation.isValid(persistedSpeedKmH)
+            ? persistedSpeedKmH!
+            : initialSpeedKmH!;
+        _treadmillEngine.setSpeedKmH(effectiveSpeedKmH);
+      }
+
       final engine = _getEngineForMode(mode);
       await _metricsSub?.cancel();
       _metricsSub = engine?.metricsStream.listen(
@@ -162,11 +177,18 @@ class RunningSessionManager {
       // Subscribe before start so synchronous engine errors or an immediate
       // first metric cannot be lost during initialization.
       await engine?.start(initialOffset: initialOffset);
-      _startSnapshotTimer();
 
       if (startPaused) {
         engine?.pause();
       }
+
+      if (mode == RunningMode.treadmill) {
+        // Persist the initial/restored speed immediately. Otherwise a process
+        // kill before the periodic timer fires would leave a new active row
+        // without the configured speed required for deterministic restore.
+        await _writeDriftSnapshot(_currentDbSetId);
+      }
+      _startSnapshotTimer();
 
       logger.d('RunningSessionManager: Session started with mode $mode (paused: $startPaused)');
     } on TrackingEngineFailureException {
@@ -184,6 +206,22 @@ class RunningSessionManager {
 
   void pauseSession() {
     _getEngineForMode(_currentMode)?.pause();
+  }
+
+  Future<void> setTreadmillSpeed(double speedKmH) async {
+    if (_currentMode != RunningMode.treadmill) {
+      throw StateError(
+        'Treadmill speed can only be changed during a treadmill session.',
+      );
+    }
+
+    TreadmillSpeedValidation.validate(speedKmH);
+    _treadmillEngine.setSpeedKmH(speedKmH);
+
+    // Manual engine emits synchronously, making [_latestMetrics] the applied
+    // worker value before the persistence write begins.
+    await _writeDriftSnapshot(_currentDbSetId);
+    logger.d('RunningSessionManager: treadmill speed updated');
   }
 
   Future<void> resumeSession() async {
@@ -323,6 +361,24 @@ class RunningSessionManager {
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
+
+  void _validateInitialSpeed(RunningMode mode, double? speedKmH) {
+    if (mode == RunningMode.treadmill) {
+      if (speedKmH == null) {
+        throw ArgumentError.notNull('initialSpeedKmH');
+      }
+      TreadmillSpeedValidation.validate(speedKmH);
+      return;
+    }
+
+    if (speedKmH != null) {
+      throw ArgumentError.value(
+        speedKmH,
+        'initialSpeedKmH',
+        'Initial treadmill speed is not valid for ${mode.name} mode.',
+      );
+    }
+  }
 
   void _onEngineError(Object error, StackTrace stackTrace) {
     logger.e('RunningSessionManager: engine stream error', error, stackTrace);
@@ -512,6 +568,8 @@ class RunningSessionManager {
     switch (mode) {
       case RunningMode.pedometer:
         return _pedometerEngine;
+      case RunningMode.treadmill:
+        return _treadmillEngine;
       case RunningMode.gps:
         return _gpsEngine;
     }

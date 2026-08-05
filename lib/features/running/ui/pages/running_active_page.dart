@@ -12,6 +12,7 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
+import 'package:reforge/features/running/ui/widgets/treadmill_speed_stepper.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -64,6 +65,10 @@ class RunningActivePage extends StatelessWidget {
                 builder: (context, mode) {
                   return switch (mode) {
                     .gps => const Expanded(child: ActiveGpsSession()),
+
+                    .treadmill => const Expanded(
+                      child: ActivePedometerSession(showTreadmillSpeedControl: true),
+                    ),
 
                     .pedometer => const Expanded(child: ActivePedometerSession()),
 
@@ -233,7 +238,12 @@ class ActiveGpsSession extends StatelessWidget {
 }
 
 class ActivePedometerSession extends StatelessWidget {
-  const ActivePedometerSession({super.key});
+  const ActivePedometerSession({
+    this.showTreadmillSpeedControl = false,
+    super.key,
+  });
+
+  final bool showTreadmillSpeedControl;
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +288,16 @@ class ActivePedometerSession extends StatelessWidget {
                   paceMinKm: 0,
                   system: measureSystem,
                 ),
+
+              if (showTreadmillSpeedControl) ...[
+                const SizedBox(height: 20),
+                TreadmillSpeedStepper(
+                  speedKmH: state.treadmillSpeedKmH ?? RunningTrackerCubit.defaultTreadmillSpeedKmH,
+                  measureSystem: measureSystem,
+                  enabled: state.canControlTracking && !state.isSubmitting,
+                  onChangedKmH: context.read<RunningTrackerCubit>().setTreadmillSpeedKmH,
+                ),
+              ],
 
               const SizedBox(height: 32),
               AnimatedOpacity(

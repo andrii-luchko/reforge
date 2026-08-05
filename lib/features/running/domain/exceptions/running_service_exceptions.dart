@@ -6,10 +6,10 @@
 library;
 
 /// Tracking engine that can no longer produce valid metrics for this session.
-enum TrackingEngineType { gps, pedometer }
+enum TrackingEngineType { gps, treadmill, pedometer }
 
 /// Required platform dependency whose loss stopped a tracking engine.
-enum TrackingDependency { location, motion }
+enum TrackingDependency { location, motion, clock }
 
 /// Stable, transport-safe reason why a tracking engine stopped.
 enum TrackingEngineFailureReason {

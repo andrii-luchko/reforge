@@ -158,6 +158,41 @@ void main() {
     expect(first.syncStatus, 'syncing');
   });
 
+  test('snapshot stores current and average treadmill speed independently', () async {
+    final setId = await repository.createNewActiveSet(
+      sessionId: 10,
+      exerciseSessionId: 110,
+      setNumber: 1,
+      trackingMode: 'treadmill',
+    );
+
+    await repository.snapshotActiveLap(
+      setId: setId,
+      distance: 120,
+      duration: 60,
+      avgSpeedKmH: 7.2,
+      currentSpeedKmH: 9.4,
+      avgPaceMinKm: 60 / 7.2,
+      currentPaceMinKm: 60 / 9.4,
+      stepCount: 0,
+    );
+
+    final row = await repository.getInProgressLapForExercise(
+      sessionId: 10,
+      exerciseSessionId: 110,
+    );
+
+    expect(row?.trackingMode, 'treadmill');
+    expect(row?.distanceMeters, 120);
+    expect(row?.durationSeconds, 60);
+    expect(row?.avgSpeedKmH, 7.2);
+    expect(row?.currentSpeedKmH, 9.4);
+    expect(row?.avgPaceMinKm, closeTo(60 / 7.2, 0.000001));
+    expect(row?.currentPaceMinKm, closeTo(60 / 9.4, 0.000001));
+    expect(row?.stepCount, 0);
+    expect(row?.lastSnapshotAt, isA<DateTime>());
+  });
+
   test('recovers interrupted syncing rows without changing client identity', () async {
     final setId = await repository.createNewActiveSet(
       sessionId: 10,

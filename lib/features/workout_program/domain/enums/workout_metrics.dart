@@ -37,14 +37,14 @@ enum WorkoutMetric {
 }
 
 extension WorkoutMetricsX on WorkoutMetric {
-  String title(Translations t, MeasurementSystem? system) {
+  String title(Translations t, [MeasurementSystem? system]) {
     final name = switch (this) {
       WorkoutMetric.weight => t.metrics.weight,
       WorkoutMetric.reps => t.metrics.reps,
       WorkoutMetric.time => t.metrics.time,
       WorkoutMetric.distance => t.metrics.distance,
       WorkoutMetric.pace => t.metrics.pace,
-      WorkoutMetric.speed => t.metrics.pace,
+      WorkoutMetric.speed => t.metrics.speed,
       WorkoutMetric.degrees => t.metrics.degrees,
     };
 
@@ -63,8 +63,13 @@ extension WorkoutMetricsX on WorkoutMetric {
             ? t.measure_system.distance.imperial_symbol.toCapitalized()
             : t.measure_system.distance.metric_symbol.toCapitalized();
 
-      case WorkoutMetric.pace:
       case WorkoutMetric.speed:
+        final speedUnit = system == MeasurementSystem.imperial
+            ? t.measure_system.speed.imperial_symbol
+            : t.measure_system.speed.metric_symbol;
+        return '$name ($speedUnit)';
+
+      case WorkoutMetric.pace:
       case WorkoutMetric.degrees:
       case WorkoutMetric.time:
       case WorkoutMetric.reps:

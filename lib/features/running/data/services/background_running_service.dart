@@ -17,10 +17,11 @@ import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
-Future<void> initializeBackgroundService() async {
+Future<void> initializeBackgroundService({RunningMode? mode}) async {
   if (Platform.isAndroid) {
     const channel = AndroidNotificationChannel(
       RunningConstants.notificationChannelId,
@@ -43,10 +44,7 @@ Future<void> initializeBackgroundService() async {
       onStart: onStart,
       autoStart: false,
       isForegroundMode: true,
-      foregroundServiceTypes: [
-        AndroidForegroundType.location,
-        AndroidForegroundType.health,
-      ],
+      foregroundServiceTypes: androidForegroundServiceTypesForMode(mode),
       notificationChannelId: RunningConstants.notificationChannelId,
       initialNotificationTitle: RunningConstants.notificationTitle,
       initialNotificationContent: RunningConstants.notificationText,
@@ -56,6 +54,17 @@ Future<void> initializeBackgroundService() async {
       onForeground: onStart,
     ),
   );
+}
+
+List<AndroidForegroundType> androidForegroundServiceTypesForMode(
+  RunningMode? mode,
+) {
+  return switch (mode) {
+    RunningMode.gps => const [AndroidForegroundType.location],
+    RunningMode.treadmill || RunningMode.pedometer || null => const [
+      AndroidForegroundType.health,
+    ],
+  };
 }
 
 @pragma('vm:entry-point')
@@ -106,6 +115,10 @@ Future<void> onStart(ServiceInstance service) async {
             fallback: false,
           );
           final mode = RunningMode.values.firstWhere((m) => m.name == modeStr);
+          final initialSpeedKmH = RunningServiceProtocol.initialTreadmillSpeed(
+            event,
+            mode,
+          );
 
           final rawLimits = RunningServiceProtocol.optionalList(event, 'limits');
           final limits = rawLimits.map((rawLimit) {
@@ -203,6 +216,7 @@ Future<void> onStart(ServiceInstance service) async {
             workoutProgramExerciseId: workoutProgramExerciseId,
             startPaused: startPaused,
             restoreCompletedPlan: restoreCompletedPlan,
+            initialSpeedKmH: initialSpeedKmH,
           );
           _logBackground('manager_start_complete');
 
@@ -275,7 +289,49 @@ Future<void> onStart(ServiceInstance service) async {
         }
       });
 
-      // 6. Stop the session. Android also tears down its foreground service;
+      // 6. Apply a canonical manual treadmill speed without pausing tracking.
+      service.on('set_treadmill_speed').listen((event) async {
+        _logBackground('set_treadmill_speed_received');
+        try {
+          if (event == null) {
+            throw const ServiceProtocolException(
+              key: 'set_treadmill_speed',
+              expectedType: 'Map',
+              actualValue: null,
+            );
+          }
+          final speedKmH = RunningServiceProtocol.requiredDouble(
+            event,
+            'speedKmH',
+          );
+          TreadmillSpeedValidation.validate(speedKmH);
+          await manager.setTreadmillSpeed(speedKmH);
+          _logBackground('set_treadmill_speed_applied');
+        } on Object catch (e, st) {
+          logger.e('Background: Error in set_treadmill_speed', e, st);
+          final payload = switch (e) {
+            ServiceProtocolException() || ArgumentError() => (
+              code: 'invalid_treadmill_speed',
+              message: 'Enter a treadmill speed greater than zero.',
+            ),
+            StateError() => (
+              code: 'treadmill_speed_unavailable',
+              message: 'Treadmill speed can only be changed during a treadmill run.',
+            ),
+            _ => (
+              code: 'treadmill_speed_update_failed',
+              message: 'The treadmill speed could not be updated.',
+            ),
+          };
+          service.invoke('sensor_error', {
+            'code': payload.code,
+            'message': payload.message,
+            'isFatal': false,
+          });
+        }
+      });
+
+      // 7. Stop the session. Android also tears down its foreground service;
       // iOS keeps the initialized worker idle for the next workout.
       service.on('stop_session').listen((_) async {
         _logBackground('stop_session_received');

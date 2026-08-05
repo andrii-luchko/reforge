@@ -71,7 +71,7 @@ class WorkoutRunExerciseRow extends StatelessWidget {
           children: [
             for (final metric in metrics)
               Text(
-                metric.title(t, system),
+                metric.title(t, metric == .speed ? null : system),
                 style: textStyle,
                 textAlign: TextAlign.center,
                 maxLines: 1,

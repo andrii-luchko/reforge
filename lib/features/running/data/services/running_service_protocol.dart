@@ -1,4 +1,6 @@
+import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
+import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 
 /// Strict, platform-neutral readers for messages crossing the service channel.
 ///
@@ -61,5 +63,27 @@ abstract final class RunningServiceProtocol {
   static Map<String, dynamic> stringMap(Object? value, {required String key}) {
     if (value is Map) return Map<String, dynamic>.from(value);
     throw ServiceProtocolException(key: key, expectedType: 'Map', actualValue: value);
+  }
+
+  /// Reads the canonical initial speed required only by manual treadmill mode.
+  static double? initialTreadmillSpeed(
+    Map<String, dynamic> payload,
+    RunningMode mode,
+  ) {
+    const key = 'initialSpeedKmH';
+    if (mode != RunningMode.treadmill) {
+      if (payload.containsKey(key)) {
+        throw ServiceProtocolException(
+          key: key,
+          expectedType: 'absent outside treadmill mode',
+          actualValue: payload[key],
+        );
+      }
+      return null;
+    }
+
+    final speedKmH = requiredDouble(payload, key);
+    TreadmillSpeedValidation.validate(speedKmH);
+    return speedKmH;
   }
 }

@@ -74,6 +74,11 @@ void main() {
               .having((payload) => payload['workoutProgramExerciseId'], 'workoutProgramExerciseId', 7)
               .having((payload) => payload['mode'], 'mode', 'gps')
               .having(
+                (payload) => payload.containsKey('initialSpeedKmH'),
+                'does not send treadmill speed',
+                false,
+              )
+              .having(
                 (payload) => payload['restoreCompletedPlan'],
                 'restoreCompletedPlan',
                 false,
@@ -125,6 +130,113 @@ void main() {
 
     verifyNever(() => service.startService());
     verify(() => service.invoke('start_session', any())).called(1);
+  });
+
+  test('startSession serializes the new treadmill mode explicitly', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+
+    await client.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 42,
+      exerciseSessionId: 100,
+      initialSpeedKmH: 8,
+    );
+
+    verify(
+      () => service.invoke(
+        'start_session',
+        any(
+          that: isA<Map<String, dynamic>>()
+              .having(
+                (payload) => payload['mode'],
+                'mode',
+                RunningMode.treadmill.name,
+              )
+              .having(
+                (payload) => payload['initialSpeedKmH'],
+                'initialSpeedKmH',
+                8,
+              ),
+        ),
+      ),
+    ).called(1);
+    expect(client.currentMode, RunningMode.treadmill);
+  });
+
+  test('treadmill start rejects missing and invalid initial speed', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+
+    await expectLater(
+      client.startSession(
+        mode: RunningMode.treadmill,
+        limits: const [],
+        sessionId: 42,
+        exerciseSessionId: 100,
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      client.startSession(
+        mode: RunningMode.treadmill,
+        limits: const [],
+        sessionId: 42,
+        exerciseSessionId: 100,
+        initialSpeedKmH: 0,
+      ),
+      throwsArgumentError,
+    );
+
+    verifyNever(() => service.invoke('start_session', any()));
+  });
+
+  test('runtime treadmill speed sends only canonical speed', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+    await client.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 42,
+      exerciseSessionId: 100,
+      initialSpeedKmH: 8,
+    );
+
+    client.setTreadmillSpeed(9.5);
+
+    verify(
+      () => service.invoke('set_treadmill_speed', {'speedKmH': 9.5}),
+    ).called(1);
+  });
+
+  test('runtime treadmill speed is rejected outside treadmill mode', () async {
+    when(() => service.isRunning()).thenAnswer((_) async => true);
+    await client.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      sessionId: 42,
+      exerciseSessionId: 100,
+    );
+
+    expect(() => client.setTreadmillSpeed(9.5), throwsStateError);
+    verifyNever(() => service.invoke('set_treadmill_speed', any()));
+  });
+
+  test('cold start configures the worker for the selected mode', () async {
+    final configuredModes = <RunningMode?>[];
+    client = RunningServiceClient.withService(
+      service,
+      configureWorker: ({mode}) async => configuredModes.add(mode),
+    );
+    when(() => service.isRunning()).thenAnswer((_) async => false);
+    when(() => service.startService()).thenAnswer((_) async => true);
+
+    await client.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      sessionId: 42,
+      exerciseSessionId: 100,
+    );
+
+    expect(configuredModes, [RunningMode.gps]);
   });
 
   test('a real native start failure is surfaced', () async {

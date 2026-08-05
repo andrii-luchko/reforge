@@ -57,7 +57,7 @@ class ActiveRunningSets extends Table {
 
   // ── Running-specific fields ──────────────────────────────────────────────
 
-  /// Tracking mode used for this lap: 'gps' or 'pedometer'.
+  /// Tracking mode used for this lap: 'gps', 'treadmill', or legacy 'pedometer'.
   TextColumn get trackingMode => text().nullable()();
 
   /// Segment type for future segment-based running (e.g. 'run', 'walk').

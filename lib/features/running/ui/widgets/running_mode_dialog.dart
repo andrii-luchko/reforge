@@ -47,7 +47,7 @@ class RunningModeDialog extends StatelessWidget {
             icon: Icons.fitness_center_rounded,
             title: t.running.mode.treadmill_run,
 
-            mode: RunningMode.pedometer,
+            mode: RunningMode.treadmill,
             onTap: (mode) => _onModeSelected(context, mode),
           ),
 
@@ -87,6 +87,7 @@ class _RunningModeOption extends StatelessWidget {
       opacity: isDisabled ? 0.4 : 1.0,
       duration: const Duration(milliseconds: 200),
       child: PressableAnimation(
+        key: ValueKey(mode),
         scaleAmount: 0.98,
         onTap: isDisabled ? null : () => onTap(mode),
         child: Container(

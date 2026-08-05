@@ -17,6 +17,7 @@ class RunningPermissionsService {
     try {
       final isGranted = await switch (mode) {
         RunningMode.pedometer => _requestPedometerPermission(),
+        RunningMode.treadmill => _requestTreadmillPermission(),
         RunningMode.gps => _requestGpsPermission(),
       };
 
@@ -59,6 +60,23 @@ class RunningPermissionsService {
     final status = await Permission.location.request();
     logger.d('RunningPermissionsService: Location status = $status');
     return status.isGranted || status.isLimited;
+  }
+
+  Future<bool> _requestTreadmillPermission() async {
+    if (Platform.isIOS) {
+      // Core Location is used only to keep manual tracking alive while locked.
+      final status = await Permission.location.request();
+      return status.isGranted || status.isLimited;
+    }
+
+    if (Platform.isAndroid) {
+      // Manual metrics use no location or motion sensor. The health foreground
+      // service prerequisite is fulfilled by the manifest-only sensor rate
+      // permission, so no activity-recognition prompt is necessary.
+      return true;
+    }
+
+    return false;
   }
 
   Future<void> _requestRequiredBackgroundNotifications() async {

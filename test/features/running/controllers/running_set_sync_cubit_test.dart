@@ -389,9 +389,11 @@ const _locallyCompletedRow = ActiveRunningSet(
   distanceMeters: 1500,
   durationSeconds: 300,
   avgSpeedKmH: 9,
+  currentSpeedKmH: 12,
   avgPaceMinKm: 60 / 9,
+  currentPaceMinKm: 5,
   syncStatus: 'locallyCompleted',
-  trackingMode: 'gps',
+  trackingMode: 'treadmill',
   segmentType: 'run',
 );
 
@@ -419,9 +421,11 @@ const _zeroAdHocLocallyCompletedRow = ActiveRunningSet(
   distanceMeters: 0,
   durationSeconds: 2,
   avgSpeedKmH: 0,
+  currentSpeedKmH: 1,
   avgPaceMinKm: 0,
+  currentPaceMinKm: 60,
   syncStatus: 'locallyCompleted',
-  trackingMode: 'gps',
+  trackingMode: 'treadmill',
   segmentType: 'run',
 );
 
