@@ -56,7 +56,7 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
         remoteSetId: set.id,
         durationSeconds: metricSet.time?.inSeconds ?? 0,
         distanceMeters: (metricSet.distance ?? 0) * 1000,
-        speedKmH: metricSet.pace ?? 0,
+        speedKmH: metricSet.speed ?? 0,
         programSegmentId: metricSet.programSegmentId,
       );
       if (reconciled) {
@@ -110,12 +110,16 @@ class RunningSetSyncCubit extends Cubit<RunningSetSyncState> {
   }
 
   WorkoutSet _mapRowToSet(ActiveRunningSet row) {
+    final speedKmH = row.avgSpeedKmH ?? 0;
+    final paceMinKm = row.avgPaceMinKm;
+
     return WorkoutSet(
       id: row.id,
       clientSetId: row.clientSetId,
       distance: (row.distanceMeters ?? 0) / 1000,
       time: Duration(seconds: row.durationSeconds ?? 0),
-      pace: row.avgSpeedKmH ?? 0,
+      speed: speedKmH,
+      pace: paceMinKm != null && paceMinKm > 0 ? paceMinKm : (speedKmH > 0 ? 60.0 / speedKmH : 0.0),
       setNumber: row.setNumber,
       isLocallyCompleted: !row.isTracking,
       isDone: row.isSynced || _syncedRowIds.contains(row.id),

@@ -63,7 +63,8 @@ void main() {
           clientSetId: '019893a2-7078-76f9-8e8f-bf8e3b16bf93',
           time: const Duration(seconds: 60),
           distance: 1,
-          pace: 10.5,
+          speed: 10.5,
+          pace: 60 / 10.5,
         ),
         exerciseId: 4,
         workoutSessionId: 182,
@@ -102,6 +103,29 @@ void main() {
       });
     });
 
+    test('serializes imperial speed as km/h without sending derived pace', () {
+      final request = CreateSetSessionRequest.fromWorkoutSet(
+        set: WorkoutSet(
+          id: 1,
+          speed: 5.1,
+          pace: 60 / 5.1,
+        ),
+        exerciseId: 4,
+        workoutSessionId: 182,
+        exerciseSessionId: 246,
+        system: MeasurementSystem.imperial,
+      );
+
+      expect(request.speedKmH, closeTo(8.2076544, 0.000001));
+      final json = request.toJson();
+      expect(json, {
+        'exerciseId': 4,
+        'workoutSessionId': 182,
+        'exerciseSessionId': 246,
+        'speedKmH': request.speedKmH,
+      });
+    });
+
     test('parses active and completed unbound exercise sessions', () {
       final active = _detailsFixture('free_run_active_details.json');
       final completed = _detailsFixture('free_run_completed_details.json');
@@ -121,6 +145,8 @@ void main() {
       expect(history.exercises, hasLength(1));
       expect(history.exercises.single.name, 'Running');
       expect(history.exercises.single.sets.single.distance, 1);
+      expect(history.exercises.single.sets.single.speed, 10.5);
+      expect(history.exercises.single.sets.single.pace, closeTo(60 / 10.5, 0.000001));
     });
 
     test('maps backend idempotencyKey to the local client set identity', () {

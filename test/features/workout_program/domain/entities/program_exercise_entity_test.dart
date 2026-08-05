@@ -8,6 +8,11 @@ import 'package:reforge/features/workout_program/domain/entities/program_exercis
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
+  test('parses speed and pace as distinct API metrics', () {
+    expect(WorkoutMetric.fromApiValue('speedKmH'), WorkoutMetric.speed);
+    expect(WorkoutMetric.fromApiValue('paceMinKm'), WorkoutMetric.pace);
+  });
+
   group('ProgramExerciseEntity.isRunningExercise', () {
     test('returns true when the exercise has segments', () {
       final exercise = _programExercise(
@@ -34,6 +39,12 @@ void main() {
 
     test('returns true for distance with pace', () {
       final exercise = _programExercise(metrics: [WorkoutMetric.distance, WorkoutMetric.pace]);
+
+      expect(exercise.isRunningExercise, isTrue);
+    });
+
+    test('returns true for distance with speed', () {
+      final exercise = _programExercise(metrics: [WorkoutMetric.distance, WorkoutMetric.speed]);
 
       expect(exercise.isRunningExercise, isTrue);
     });

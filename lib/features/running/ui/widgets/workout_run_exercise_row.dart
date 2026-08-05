@@ -13,7 +13,8 @@ class WorkoutRunExerciseRow extends StatelessWidget {
     required this.system,
     required this.durationInSeconds,
     required this.distanceKm,
-    required this.pace,
+    required this.speedKmH,
+    required this.paceMinKm,
     this.isOverview = false,
     super.key,
   });
@@ -26,7 +27,8 @@ class WorkoutRunExerciseRow extends StatelessWidget {
 
   final int durationInSeconds;
   final double distanceKm;
-  final double pace;
+  final double speedKmH;
+  final double paceMinKm;
   final bool isOverview;
 
   @override
@@ -40,7 +42,10 @@ class WorkoutRunExerciseRow extends StatelessWidget {
 
     final displayDistance = isImperial ? MeasureSystemValues.toMiles(distanceKm) : distanceKm;
 
-    final displayPace = isImperial ? MeasureSystemValues.toMiles(pace) : pace;
+    final displaySpeed = isImperial ? MeasureSystemValues.toMiles(speedKmH) : speedKmH;
+
+    // ignore: unused_local_variable
+    final displayPace = isImperial ? MeasureSystemValues.toMiles(paceMinKm) : paceMinKm;
 
     final metricValues = <Widget>[
       _buildDurationValue(textStyle),
@@ -49,9 +54,13 @@ class WorkoutRunExerciseRow extends StatelessWidget {
         textStyle,
       ),
       _buildMetricValue(
-        displayPace.toStringAsFixed(1),
+        displaySpeed.toStringAsFixed(1),
         textStyle,
       ),
+      //      _buildMetricValue(
+      //   displayPace.toStringAsFixed(1),
+      //   textStyle,
+      // ),
     ];
 
     return Column(

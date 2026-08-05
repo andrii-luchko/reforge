@@ -77,6 +77,12 @@ class MeasureSystemValues {
   // Geometry
   static double toRadians(double degrees) => degrees * degreeToRadianMultiplier;
   static double toDegrees(double radians) => radians * radianToDegreeMultiplier;
+
+  /// min/km → min/mi
+  static double toMinutesPerMile(double minutesPerKm) => minutesPerKm * kmMultiplier;
+
+  /// min/mi → min/km
+  static double toMinutesPerKm(double minutesPerMile) => minutesPerMile * milesMultiplier;
 }
 
 extension WeightConverter on double {

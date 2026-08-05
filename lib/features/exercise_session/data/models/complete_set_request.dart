@@ -52,8 +52,8 @@ sealed class CreateSetSessionRequest with _$CreateSetSessionRequest {
     }
 
     double? finalSpeedKmH;
-    if (set.pace != null) {
-      finalSpeedKmH = system == MeasurementSystem.imperial ? MeasureSystemValues.toKm(set.pace!) : set.pace;
+    if (set.speed != null) {
+      finalSpeedKmH = system == MeasurementSystem.imperial ? MeasureSystemValues.toKm(set.speed!) : set.speed;
     }
 
     return CreateSetSessionRequest(

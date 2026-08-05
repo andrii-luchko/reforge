@@ -14,11 +14,13 @@ enum WorkoutMetric {
   @JsonValue('distanceM')
   distance,
   @JsonValue('speedKmH')
+  speed,
+  @JsonValue('paceMinKm')
   pace,
   @JsonValue('angleDeg')
   degrees;
 
-  static const List<WorkoutMetric> runningMetrics = [.time, .distance, .pace];
+  static const List<WorkoutMetric> runningMetrics = [.time, .distance, .speed];
 
   static WorkoutMetric? fromApiValue(String value) {
     return switch (value) {
@@ -26,7 +28,8 @@ enum WorkoutMetric {
       'reps' => WorkoutMetric.reps,
       'durationSec' || 'duration' => WorkoutMetric.time,
       'distanceM' => WorkoutMetric.distance,
-      'speedKmH' => WorkoutMetric.pace,
+      'speedKmH' => WorkoutMetric.speed,
+      'paceMinKm' => WorkoutMetric.pace,
       'angleDeg' => WorkoutMetric.degrees,
       _ => null,
     };
@@ -41,6 +44,7 @@ extension WorkoutMetricsX on WorkoutMetric {
       WorkoutMetric.time => t.metrics.time,
       WorkoutMetric.distance => t.metrics.distance,
       WorkoutMetric.pace => t.metrics.pace,
+      WorkoutMetric.speed => t.metrics.pace,
       WorkoutMetric.degrees => t.metrics.degrees,
     };
 
@@ -60,6 +64,7 @@ extension WorkoutMetricsX on WorkoutMetric {
             : t.measure_system.distance.metric_symbol.toCapitalized();
 
       case WorkoutMetric.pace:
+      case WorkoutMetric.speed:
       case WorkoutMetric.degrees:
       case WorkoutMetric.time:
       case WorkoutMetric.reps:

@@ -10,6 +10,7 @@ class RunningMetricsPanel extends StatelessWidget {
     required this.durationSeconds,
     required this.speedKmH,
     required this.system,
+    required this.paceMinKm,
     this.stepCount,
     super.key,
   });
@@ -19,6 +20,7 @@ class RunningMetricsPanel extends StatelessWidget {
       distanceMeters: lap.distanceMeters,
       durationSeconds: lap.durationSeconds,
       speedKmH: isLive ? lap.currentSpeedKmH : lap.avgSpeedKmH,
+      paceMinKm: isLive ? lap.currentPaceMinKm : lap.avgPaceMinKm,
       stepCount: isLive ? lap.stepCount : null,
       system: system,
     );
@@ -27,6 +29,7 @@ class RunningMetricsPanel extends StatelessWidget {
   final double distanceMeters;
   final int durationSeconds;
   final double speedKmH;
+  final double paceMinKm;
   final MeasurementSystem system;
   final int? stepCount;
 
@@ -39,7 +42,8 @@ class RunningMetricsPanel extends StatelessWidget {
       system: system,
       durationInSeconds: durationSeconds,
       distanceKm: km,
-      pace: speedKmH,
+      speedKmH: speedKmH,
+      paceMinKm: paceMinKm,
     );
   }
 }

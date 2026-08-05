@@ -56,6 +56,8 @@ void main() {
     await _waitForState(harness.cubit, (state) => state.canFinish);
 
     expect(sentSet?.clientSetId, _clientSetId);
+    expect(sentSet?.speed, 9);
+    expect(sentSet?.pace, closeTo(60 / 9, 0.000001));
     expect(harness.cubit.state.sets.single.isDone, isTrue);
     expect(harness.cubit.state.canFinish, isTrue);
     verify(
@@ -380,6 +382,7 @@ const _locallyCompletedRow = ActiveRunningSet(
   distanceMeters: 1500,
   durationSeconds: 300,
   avgSpeedKmH: 9,
+  avgPaceMinKm: 60 / 9,
   syncStatus: 'locallyCompleted',
   trackingMode: 'gps',
   segmentType: 'run',
@@ -394,6 +397,7 @@ const _adHocLocallyCompletedRow = ActiveRunningSet(
   distanceMeters: 1000,
   durationSeconds: 60,
   avgSpeedKmH: 10.5,
+  avgPaceMinKm: 60 / 10.5,
   syncStatus: 'locallyCompleted',
   trackingMode: 'gps',
   segmentType: 'run',
