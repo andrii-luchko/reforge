@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
+import 'package:reforge/features/running/data/services/background_running_service.dart';
 import 'package:reforge/features/running/data/services/running_service_protocol.dart';
 import 'package:reforge/features/running/domain/entities/lap_limit.dart';
 import 'package:reforge/features/running/domain/entities/route_coordinate.dart';
@@ -11,7 +12,10 @@ import 'package:reforge/features/running/domain/entities/running_event.dart';
 import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
+import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+
+typedef RunningWorkerConfigurator = Future<void> Function({RunningMode? mode});
 
 /// Fire-and-forget UI-isolate client for the running background worker.
 ///
@@ -20,12 +24,18 @@ import 'package:reforge/features/workout_program/data/enums/segment_activity.dar
 /// events such as `service_ready`.
 @lazySingleton
 class RunningServiceClient {
-  RunningServiceClient() : _service = FlutterBackgroundService();
+  RunningServiceClient() : _service = FlutterBackgroundService(), _configureWorker = initializeBackgroundService;
 
   @visibleForTesting
-  RunningServiceClient.withService(this._service);
+  RunningServiceClient.withService(
+    this._service, {
+    RunningWorkerConfigurator? configureWorker,
+  }) : _configureWorker = configureWorker ?? _noopConfigureWorker;
+
+  static Future<void> _noopConfigureWorker({RunningMode? mode}) async {}
 
   final FlutterBackgroundService _service;
+  final RunningWorkerConfigurator _configureWorker;
 
   final _metricsController = StreamController<RunningMetrics>.broadcast();
   final _eventsController = StreamController<RunningEvent>.broadcast();
@@ -143,11 +153,11 @@ class RunningServiceClient {
   ///
   /// Warm-up is best effort by design. A real failure is logged here and will
   /// be retried by [startSession], where it can be surfaced to the Cubit.
-  Future<void> warmUp() {
+  Future<void> warmUp({RunningMode? mode}) {
     final inFlight = _warmUpFuture;
     if (inFlight != null) return inFlight;
 
-    final future = _warmUpInternal();
+    final future = _warmUpInternal(mode);
     _warmUpFuture = future;
     unawaited(
       future.whenComplete(() {
@@ -157,7 +167,7 @@ class RunningServiceClient {
     return future;
   }
 
-  Future<void> _warmUpInternal() async {
+  Future<void> _warmUpInternal(RunningMode? mode) async {
     try {
       await initialize();
       if (await _service.isRunning()) {
@@ -165,6 +175,7 @@ class RunningServiceClient {
         return;
       }
 
+      await _configureWorker(mode: mode);
       _log('warm_up_start_service');
       final started = await _service.startService();
       _log('warm_up_start_service_result=$started');
@@ -182,10 +193,13 @@ class RunningServiceClient {
     int? workoutProgramExerciseId,
     bool startPaused = false,
     bool restoreCompletedPlan = false,
+    double? initialSpeedKmH,
   }) async {
+    _validateInitialSpeed(mode, initialSpeedKmH);
     await initialize();
 
     if (!await _service.isRunning()) {
+      await _configureWorker(mode: mode);
       _log('start_session_cold_start');
       final started = await _service.startService();
       if (!started) {
@@ -206,6 +220,7 @@ class RunningServiceClient {
       'mode': mode.name,
       'startPaused': startPaused,
       'restoreCompletedPlan': restoreCompletedPlan,
+      if (mode == RunningMode.treadmill) 'initialSpeedKmH': initialSpeedKmH,
       'limits': limits
           .map(
             (limit) => {
@@ -228,6 +243,17 @@ class RunningServiceClient {
   void suspendSessionForSummary() => _invokeControl('suspend_session');
   void forceNextLap() => _invokeControl('force_next_lap');
 
+  void setTreadmillSpeed(double speedKmH) {
+    TreadmillSpeedValidation.validate(speedKmH);
+    if (_currentMode != RunningMode.treadmill) {
+      throw StateError(
+        'Treadmill speed can only be changed during a treadmill session.',
+      );
+    }
+    _service.invoke('set_treadmill_speed', {'speedKmH': speedKmH});
+    _log('set_treadmill_speed_sent');
+  }
+
   void endSession() {
     _currentMode = null;
     _invokeControl('stop_session');
@@ -236,6 +262,24 @@ class RunningServiceClient {
   void _invokeControl(String method) {
     _service.invoke(method, const {});
     _log('${method}_sent');
+  }
+
+  void _validateInitialSpeed(RunningMode mode, double? speedKmH) {
+    if (mode == RunningMode.treadmill) {
+      if (speedKmH == null) {
+        throw ArgumentError.notNull('initialSpeedKmH');
+      }
+      TreadmillSpeedValidation.validate(speedKmH);
+      return;
+    }
+
+    if (speedKmH != null) {
+      throw ArgumentError.value(
+        speedKmH,
+        'initialSpeedKmH',
+        'Initial treadmill speed is not valid for ${mode.name} mode.',
+      );
+    }
   }
 
   void _reportProtocolError<T>(

@@ -72,6 +72,28 @@ class WorkoutConstants {
     return system == MeasurementSystem.metric ? _maxSpeedMetric : _maxSpeedImperial;
   }
 
+  // --- Treadmill Speed ---
+
+  /// Minimum supported treadmill speed.
+  static const double _minTreadmillSpeedMetric = 0.8;
+
+  /// Approximately 0.5 mph.
+  static const double _minTreadmillSpeedImperial = 0.5;
+
+  /// Maximum supported treadmill speed.
+  static const double _maxTreadmillSpeedMetric = 20;
+
+  /// Approximately 12.4 mph.
+  static const double _maxTreadmillSpeedImperial = 12.4;
+
+  static double minTreadmillSpeed(MeasurementSystem system) {
+    return system == MeasurementSystem.metric ? _minTreadmillSpeedMetric : _minTreadmillSpeedImperial;
+  }
+
+  static double maxTreadmillSpeed(MeasurementSystem system) {
+    return system == MeasurementSystem.metric ? _maxTreadmillSpeedMetric : _maxTreadmillSpeedImperial;
+  }
+
   // =======================
   // --- Reps ---
   // =======================

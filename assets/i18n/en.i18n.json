@@ -292,6 +292,10 @@
             "imperial_symbol": "mi",
             "metric_name": "Kilometers",
             "imperial_name": "Miles"
+        },
+        "speed": {
+            "metric_symbol": "kmh",
+            "imperial_symbol": "mph"
         }
     },
     "metrics": {
@@ -299,6 +303,7 @@
         "reps": "Reps",
         "time": "Time",
         "distance": "Dist",
+        "speed": "Speed",
         "pace": "Pace",
         "degrees": "Deg"
     },

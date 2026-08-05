@@ -16,6 +16,7 @@ import 'package:reforge/features/running/domain/exceptions/running_service_excep
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/running_permissions_service.dart';
 import 'package:reforge/features/running/domain/services/running_preferences_service.dart';
+import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
 
@@ -31,6 +32,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
     this._preferencesService,
     @factoryParam this.config,
   ) : super(const RunningTrackerState());
+
+  static const double defaultTreadmillSpeedKmH = 1;
 
   final RunningServiceClient _serviceClient;
   final LocalWorkoutSessionRepository _repository;
@@ -89,6 +92,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           isPaused: true,
           error: null,
           currentLap: restoredLap,
+          treadmillSpeedKmH: mode == RunningMode.treadmill ? _restoredTreadmillSpeed(lap.currentSpeedKmH) : null,
         ),
       );
 
@@ -124,6 +128,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           isPaused: true,
           currentLap: null,
           error: null,
+          treadmillSpeedKmH: mode == RunningMode.treadmill ? _restoredTreadmillSpeed(lastLap.currentSpeedKmH) : null,
         ),
       );
 
@@ -164,6 +169,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         sessionStatus: RunningSessionStatus.idle,
         terminalFailure: null,
         error: null,
+        treadmillSpeedKmH: mode == RunningMode.treadmill ? defaultTreadmillSpeedKmH : null,
       ),
     );
   }
@@ -181,6 +187,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         terminalFailure: null,
         isPermissionGranted: false,
         error: null,
+        treadmillSpeedKmH: null,
       ),
     );
   }
@@ -198,13 +205,22 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   }
 
   /// Best-effort worker warm-up. It never starts a tracking engine.
-  Future<void> warmUpTracking() => _serviceClient.warmUp();
+  Future<void> warmUpTracking() => _serviceClient.warmUp(mode: state.mode);
 
   Future<void> startLap() async {
     if (state.phase != RunningPhase.overview || state.sessionStatus != RunningSessionStatus.idle) return;
 
     final mode = state.mode;
     if (mode == null) return;
+
+    if (mode == RunningMode.treadmill && !TreadmillSpeedValidation.isValid(state.treadmillSpeedKmH)) {
+      emit(
+        state.copyWith(
+          error: 'Enter a treadmill speed greater than zero.',
+        ),
+      );
+      return;
+    }
 
     if (state.phase == .permissionDenied) return;
 
@@ -253,6 +269,19 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> forceNextLap() async {
     if (state.isSubmitting || !state.canControlTracking || state.isPaused) return;
     _serviceClient.forceNextLap();
+  }
+
+  void setTreadmillSpeedKmH(double speedKmH) {
+    TreadmillSpeedValidation.validate(speedKmH);
+    if (state.mode != RunningMode.treadmill ||
+        state.phase != RunningPhase.active ||
+        state.sessionStatus != RunningSessionStatus.running) {
+      return;
+    }
+
+    // Do not update state optimistically. The engine metrics event confirms
+    // exactly when the new speed became the runtime source of truth.
+    _serviceClient.setTreadmillSpeed(speedKmH);
   }
 
   Future<void> endWorkout() async {
@@ -318,6 +347,8 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       },
     );
 
+    final initialSpeedKmH = mode == RunningMode.treadmill ? state.treadmillSpeedKmH : null;
+
     if (restoreCompletedPlan) {
       await _serviceClient.startSession(
         mode: mode,
@@ -327,6 +358,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         workoutProgramExerciseId: config.workoutProgramExerciseId,
         startPaused: startPaused,
         restoreCompletedPlan: true,
+        initialSpeedKmH: initialSpeedKmH,
       );
     } else {
       await _serviceClient.startSession(
@@ -336,6 +368,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
         exerciseSessionId: config.exerciseSessionId,
         workoutProgramExerciseId: config.workoutProgramExerciseId,
         startPaused: startPaused,
+        initialSpeedKmH: initialSpeedKmH,
       );
     }
   }
@@ -363,8 +396,21 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
 
   void _onMetricsReceived(RunningMetrics metrics) {
     final sessionStatus = state.sessionStatus;
-    if (state.isPaused ||
-        (sessionStatus != RunningSessionStatus.starting && sessionStatus != RunningSessionStatus.running)) {
+    final confirmedTreadmillSpeed =
+        state.mode == RunningMode.treadmill && TreadmillSpeedValidation.isValid(metrics.currentSpeedKmH)
+        ? metrics.currentSpeedKmH
+        : state.treadmillSpeedKmH;
+
+    if (state.isPaused) {
+      if (confirmedTreadmillSpeed != state.treadmillSpeedKmH) {
+        emit(
+          state.copyWith(treadmillSpeedKmH: confirmedTreadmillSpeed),
+        );
+      }
+      return;
+    }
+
+    if (sessionStatus != RunningSessionStatus.starting && sessionStatus != RunningSessionStatus.running) {
       return;
     }
 
@@ -385,6 +431,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           stepCount: metrics.stepCount,
           activity: activity,
         ),
+        treadmillSpeedKmH: confirmedTreadmillSpeed,
       ),
     );
   }
@@ -408,6 +455,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           isPaused: false,
           currentLap: null,
           error: error.message,
+          treadmillSpeedKmH: failedDuringStart ? null : state.treadmillSpeedKmH,
         ),
       );
 
@@ -451,6 +499,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
           isPaused: false,
           currentLap: null,
           error: error.toString(),
+          treadmillSpeedKmH: null,
         ),
       );
     }
@@ -487,5 +536,9 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
   Future<void> close() async {
     await _closeTrackingSession();
     return super.close();
+  }
+
+  double _restoredTreadmillSpeed(double? speedKmH) {
+    return TreadmillSpeedValidation.isValid(speedKmH) ? speedKmH! : defaultTreadmillSpeedKmH;
   }
 }

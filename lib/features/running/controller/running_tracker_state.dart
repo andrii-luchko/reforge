@@ -19,6 +19,12 @@ sealed class RunningTrackerState with _$RunningTrackerState {
     /// Selected tracking mode. Null until the user picks one.
     RunningMode? mode,
 
+    /// Last speed confirmed by the treadmill worker, in canonical km/h.
+    ///
+    /// Fresh treadmill selection starts with the product default before the
+    /// worker exists; runtime changes replace it only after a metrics event.
+    double? treadmillSpeedKmH,
+
     // True after check permission.
     @Default(false) bool isPermissionGranted,
 

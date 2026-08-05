@@ -6,9 +6,11 @@ import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/running/data/repositories/local_workout_session_repository_impl.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/data/services/gps_tracking_engine.dart';
+import 'package:reforge/features/running/data/services/manual_treadmill_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/pedometer_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
 import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
@@ -21,9 +23,9 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 ///
 ///   [WorkoutDatabase] → [LocalWorkoutSessionRepository]
 ///         ↓
-///   [GpsTrackingEngine]  [PedometerTrackingEngine]
-///         ↓                      ↓
-///              [RunningSessionManager]
+///   [GpsTrackingEngine] [ManualTreadmillTrackingEngine] [PedometerTrackingEngine]
+///         ↓                         ↓                         ↓
+///                       [RunningSessionManager]
 ///
 final GetIt backgroundGetIt = GetIt.instance;
 
@@ -75,15 +77,20 @@ Future<void> configureBackgroundDependencies() async {
     );
 
   // ── Tracking engines ───────────────────────────────────────────────────────
-  // Both engines self-contain their own state (KalmanFilter, step counters).
+  // Engines self-contain their own state (KalmanFilter, manual speed, steps).
   // They are registered as singletons so [RunningSessionManager] can hold
   // stable references across pause/resume cycles.
   final gpsEngine = GpsTrackingEngine();
+  final treadmillEngine = ManualTreadmillTrackingEngine();
   final pedometerEngine = PedometerTrackingEngine();
 
   backgroundGetIt
     ..registerSingleton<TrackingEngine>(gpsEngine, instanceName: 'gps')
-    ..registerSingleton<TrackingEngine>(pedometerEngine, instanceName: 'pedometer');
+    ..registerSingleton<TrackingEngine>(pedometerEngine, instanceName: 'pedometer')
+    ..registerSingleton<AdjustableSpeedTrackingEngine>(
+      treadmillEngine,
+      instanceName: 'treadmill',
+    );
 
   // ── Audio Feedback ─────────────────────────────────────────────────────────
   final audioService = AudioFeedbackService();
@@ -95,6 +102,7 @@ Future<void> configureBackgroundDependencies() async {
     RunningSessionManager(
       pedometerEngine,
       gpsEngine,
+      treadmillEngine,
       backgroundGetIt<LocalWorkoutSessionRepository>(),
       audioService,
     ),

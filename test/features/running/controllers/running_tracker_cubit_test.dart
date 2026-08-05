@@ -130,11 +130,14 @@ void main() {
   });
 
   test('cancel after warm-up never starts a session', () async {
-    when(() => service.warmUp()).thenAnswer((_) async {});
+    when(
+      () => service.warmUp(mode: any(named: 'mode')),
+    ).thenAnswer((_) async {});
 
     await cubit.warmUpTracking();
     cubit.cancelStart();
 
+    verify(() => service.warmUp(mode: RunningMode.gps)).called(1);
     expect(cubit.state.phase, RunningPhase.overview);
     expect(cubit.state.sessionStatus, RunningSessionStatus.idle);
     verifyNever(
@@ -146,6 +149,101 @@ void main() {
         startPaused: any(named: 'startPaused'),
       ),
     );
+  });
+
+  test('treadmill selection uses 1 km/h default and other modes clear it', () {
+    cubit.setMode(RunningMode.treadmill);
+
+    expect(cubit.state.treadmillSpeedKmH, RunningTrackerCubit.defaultTreadmillSpeedKmH);
+
+    cubit.setMode(RunningMode.gps);
+
+    expect(cubit.state.treadmillSpeedKmH, isNull);
+  });
+
+  test('treadmill starts with the default speed and confirms runtime changes from metrics', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    when(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
+      ),
+    ).thenAnswer((_) async {});
+    cubit.setMode(RunningMode.treadmill);
+
+    await cubit.startLap();
+
+    verify(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
+      ),
+    ).called(1);
+
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    cubit.setTreadmillSpeedKmH(1.2);
+
+    verify(() => service.setTreadmillSpeed(1.2)).called(1);
+    verifyNever(() => service.pauseSession());
+    verifyNever(() => service.resumeSession());
+    expect(cubit.state.treadmillSpeedKmH, 1);
+
+    metrics.add(_metric.copyWith(currentSpeedKmH: 1.2));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(cubit.state.treadmillSpeedKmH, 1.2);
+
+    await metrics.close();
+  });
+
+  test('paused treadmill accepts speed changes but keeps the paused lap snapshot', () async {
+    final metrics = StreamController<RunningMetrics>.broadcast();
+    when(() => service.metricsStream).thenAnswer((_) => metrics.stream);
+    when(
+      () => service.startSession(
+        mode: RunningMode.treadmill,
+        limits: any(named: 'limits'),
+        sessionId: 10,
+        exerciseSessionId: 20,
+        initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
+      ),
+    ).thenAnswer((_) async {});
+    cubit.setMode(RunningMode.treadmill);
+    await cubit.startLap();
+    metrics.add(_metric);
+    await Future<void>.delayed(Duration.zero);
+    cubit
+      ..pauseLap()
+      ..setTreadmillSpeedKmH(1.3);
+    metrics.add(
+      _metric.copyWith(
+        durationSeconds: 99,
+        currentSpeedKmH: 1.3,
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    verify(() => service.setTreadmillSpeed(1.3)).called(1);
+    expect(cubit.state.treadmillSpeedKmH, 1.3);
+    expect(cubit.state.currentLap?.durationSeconds, 1);
+    expect(cubit.state.isPaused, isTrue);
+
+    await metrics.close();
+  });
+
+  test('zero treadmill runtime speed is rejected before dispatch', () {
+    cubit.setMode(RunningMode.treadmill);
+
+    expect(() => cubit.setTreadmillSpeedKmH(0), throwsArgumentError);
+    verifyNever(() => service.setTreadmillSpeed(any()));
   });
 
   test('a real start failure returns to overview', () async {

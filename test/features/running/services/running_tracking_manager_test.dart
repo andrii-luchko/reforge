@@ -11,7 +11,7 @@ import 'package:reforge/features/running/domain/entities/running_metrics.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
-import 'package:reforge/features/running/domain/services/tracking_engine.dart';
+import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
@@ -19,12 +19,14 @@ void main() {
   late MockAudioFeedbackService audio;
   late SynchronousMetricEngine pedometer;
   late SynchronousMetricEngine gps;
+  late SynchronousMetricEngine treadmill;
 
   setUp(() {
     repository = MockLocalWorkoutSessionRepository();
     audio = MockAudioFeedbackService();
     pedometer = SynchronousMetricEngine();
     gps = SynchronousMetricEngine();
+    treadmill = SynchronousMetricEngine();
 
     when(
       () => repository.getInProgressLapForExercise(
@@ -66,7 +68,13 @@ void main() {
   });
 
   test('subscribes to engine metrics before engine.start', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
     final firstMetric = manager.metricsStream.first;
 
     await manager.startSession(
@@ -80,17 +88,28 @@ void main() {
     await manager.endSession();
   });
 
-  test('routes treadmill through the transitional pedometer bridge', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+  test('applies treadmill speed before the first engine metric', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    final firstMetric = manager.metricsStream.first;
 
     await manager.startSession(
       mode: RunningMode.treadmill,
       limits: const [],
       sessionId: 10,
       exerciseSessionId: 20,
+      initialSpeedKmH: 8,
     );
 
-    expect(pedometer.startCalls, 1);
+    expect((await firstMetric).currentSpeedKmH, 8);
+    expect(treadmill.appliedSpeeds, [8]);
+    expect(treadmill.startCalls, 1);
+    expect(pedometer.startCalls, 0);
     expect(gps.startCalls, 0);
     verify(
       () => repository.createNewActiveSet(
@@ -104,8 +123,216 @@ void main() {
     await manager.endSession();
   });
 
+  test('rejects treadmill start before creating a lap when speed is absent', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+
+    await expectLater(
+      manager.startSession(
+        mode: RunningMode.treadmill,
+        limits: const [],
+        sessionId: 10,
+        exerciseSessionId: 20,
+      ),
+      throwsArgumentError,
+    );
+
+    expect(manager.currentMode, isNull);
+    verifyNever(
+      () => repository.createNewActiveSet(
+        sessionId: any(named: 'sessionId'),
+        exerciseSessionId: any(named: 'exerciseSessionId'),
+        setNumber: any(named: 'setNumber'),
+        trackingMode: any(named: 'trackingMode'),
+        programSegmentId: any(named: 'programSegmentId'),
+        segmentType: any(named: 'segmentType'),
+      ),
+    );
+  });
+
+  test('runtime treadmill speed emits and snapshots the applied value', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      initialSpeedKmH: 8,
+    );
+    final appliedMetric = manager.metricsStream.first;
+
+    await manager.setTreadmillSpeed(10);
+
+    expect((await appliedMetric).currentSpeedKmH, 10);
+    expect(treadmill.appliedSpeeds, [8, 10]);
+    verify(
+      () => repository.snapshotActiveLap(
+        setId: 1,
+        distance: 1,
+        duration: 1,
+        avgSpeedKmH: 10,
+        currentSpeedKmH: 10,
+        avgPaceMinKm: 6,
+        currentPaceMinKm: 6,
+        stepCount: 0,
+      ),
+    ).called(1);
+
+    await manager.endSession();
+  });
+
+  test('runtime treadmill speed is rejected in GPS mode', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    await manager.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+    );
+
+    await expectLater(manager.setTreadmillSpeed(10), throwsStateError);
+
+    expect(treadmill.appliedSpeeds, isEmpty);
+    expect(manager.currentMode, RunningMode.gps);
+    expect(gps.stopCalls, 0);
+    await manager.endSession();
+  });
+
+  test('runtime treadmill speed is rejected in pedometer mode', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    await manager.startSession(
+      mode: RunningMode.pedometer,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+    );
+
+    await expectLater(manager.setTreadmillSpeed(10), throwsStateError);
+
+    expect(treadmill.appliedSpeeds, isEmpty);
+    expect(manager.currentMode, RunningMode.pedometer);
+    expect(pedometer.stopCalls, 0);
+    await manager.endSession();
+  });
+
+  test('invalid runtime speed leaves the treadmill session unchanged', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      initialSpeedKmH: 8,
+    );
+
+    await expectLater(manager.setTreadmillSpeed(0), throwsArgumentError);
+
+    expect(treadmill.appliedSpeeds, [8]);
+    expect(treadmill.currentSpeedKmH, 8);
+    expect(manager.currentMode, RunningMode.treadmill);
+    await manager.endSession();
+  });
+
+  test('lap reset retains the last treadmill speed', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    final completed = manager.eventsStream.firstWhere(
+      (event) => event is LapCompletedEvent,
+    );
+
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [
+        LapLimit(metric: WorkoutMetric.distance, limitValue: 1),
+        LapLimit(metric: WorkoutMetric.distance, limitValue: 100),
+      ],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      initialSpeedKmH: 8,
+    );
+    await completed;
+
+    expect(treadmill.resetCalls, 1);
+    expect(treadmill.currentSpeedKmH, 8);
+    expect(treadmill.appliedSpeeds, [8]);
+    await manager.endSession();
+  });
+
+  test('summary resume creates a new lap with the last treadmill speed', () async {
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
+    await manager.startSession(
+      mode: RunningMode.treadmill,
+      limits: const [],
+      sessionId: 10,
+      exerciseSessionId: 20,
+      initialSpeedKmH: 8,
+    );
+
+    await manager.suspendSessionForSummary();
+    await manager.resumeSession();
+
+    expect(treadmill.resetCalls, 2);
+    expect(treadmill.resumeCalls, 1);
+    expect(treadmill.currentSpeedKmH, 8);
+    verify(
+      () => repository.createNewActiveSet(
+        sessionId: 10,
+        exerciseSessionId: 20,
+        setNumber: 2,
+        trackingMode: RunningMode.treadmill.dbValue,
+      ),
+    ).called(1);
+    await manager.endSession();
+  });
+
   test('ignores duplicate start without pausing or restarting the engine', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
 
     await manager.startSession(
       mode: RunningMode.gps,
@@ -127,7 +354,13 @@ void main() {
   });
 
   test('waits for engine shutdown before endSession completes', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
     final stopCompleter = Completer<void>();
     gps.stopCompleter = stopCompleter;
 
@@ -149,7 +382,13 @@ void main() {
   });
 
   test('starts and emits metrics again after endSession', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
 
     await manager.startSession(
       mode: RunningMode.gps,
@@ -174,7 +413,13 @@ void main() {
   });
 
   test('starts lap numbering from one for another exercise session in the same workout', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
 
     await manager.startSession(
       mode: RunningMode.gps,
@@ -206,7 +451,13 @@ void main() {
     (metric: WorkoutMetric.time, name: 'time'),
   ]) {
     test('${scenario.name} limit automatically completes the planned set', () async {
-      final manager = RunningSessionManager(pedometer, gps, repository, audio);
+      final manager = RunningSessionManager(
+        pedometer,
+        gps,
+        treadmill,
+        repository,
+        audio,
+      );
       final completed = manager.eventsStream.firstWhere((event) => event is PlannedWorkoutCompletedEvent);
 
       await manager.startSession(
@@ -241,7 +492,13 @@ void main() {
         exerciseSessionId: 20,
       ),
     ).thenAnswer((_) async => _completedLap);
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
 
     await manager.startSession(
       mode: RunningMode.gps,
@@ -284,7 +541,13 @@ void main() {
   });
 
   test('finalizes the active lap before forwarding a terminal engine failure', () async {
-    final manager = RunningSessionManager(pedometer, gps, repository, audio);
+    final manager = RunningSessionManager(
+      pedometer,
+      gps,
+      treadmill,
+      repository,
+      audio,
+    );
     final markCompleted = Completer<void>();
     Future<void> waitForMark(Invocation _) => markCompleted.future;
     when(() => repository.markSetAsFinishedLocally(1)).thenAnswer(waitForMark);
@@ -321,8 +584,8 @@ void main() {
         duration: 1,
         avgSpeedKmH: 1,
         currentSpeedKmH: 1,
-        avgPaceMinKm: 1,
-        currentPaceMinKm: 1,
+        avgPaceMinKm: 60,
+        currentPaceMinKm: 60,
         stepCount: 0,
       ),
     ).called(1);
@@ -337,7 +600,7 @@ class MockLocalWorkoutSessionRepository extends Mock implements LocalWorkoutSess
 
 class MockAudioFeedbackService extends Mock implements AudioFeedbackService {}
 
-final class SynchronousMetricEngine implements TrackingEngine {
+final class SynchronousMetricEngine implements AdjustableSpeedTrackingEngine {
   final _controller = StreamController<RunningMetrics>.broadcast(sync: true);
   int startCalls = 0;
   int pauseCalls = 0;
@@ -345,6 +608,9 @@ final class SynchronousMetricEngine implements TrackingEngine {
   int resumeCalls = 0;
   int stopCalls = 0;
   Completer<void>? stopCompleter;
+  final appliedSpeeds = <double>[];
+  double currentSpeedKmH = 1;
+  bool isRunning = false;
 
   void emitError(Object error) => _controller.addError(error, StackTrace.current);
 
@@ -354,17 +620,29 @@ final class SynchronousMetricEngine implements TrackingEngine {
   @override
   Future<void> start({RunningMetrics? initialOffset}) async {
     startCalls++;
+    isRunning = true;
+    _emitMetrics();
+  }
+
+  void _emitMetrics() {
     _controller.add(
-      const RunningMetrics(
+      RunningMetrics(
         distanceMeters: 1,
         durationSeconds: 1,
-        avgSpeedKmH: 1,
-        currentSpeedKmH: 1,
-        avgPaceMinKm: 1,
-        currentPaceMinKm: 1,
+        avgSpeedKmH: currentSpeedKmH,
+        currentSpeedKmH: currentSpeedKmH,
+        avgPaceMinKm: 60 / currentSpeedKmH,
+        currentPaceMinKm: 60 / currentSpeedKmH,
         stepCount: 0,
       ),
     );
+  }
+
+  @override
+  void setSpeedKmH(double speedKmH) {
+    appliedSpeeds.add(speedKmH);
+    currentSpeedKmH = speedKmH;
+    if (isRunning) _emitMetrics();
   }
 
   @override
@@ -379,6 +657,7 @@ final class SynchronousMetricEngine implements TrackingEngine {
   @override
   Future<void> stop() async {
     stopCalls++;
+    isRunning = false;
     await stopCompleter?.future;
   }
 }
