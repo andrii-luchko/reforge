@@ -122,7 +122,7 @@ void main() {
     when(() => service.isRunning()).thenAnswer((_) async => true);
 
     await client.startSession(
-      mode: RunningMode.pedometer,
+      mode: RunningMode.gps,
       limits: const [],
       sessionId: 42,
       exerciseSessionId: 100,

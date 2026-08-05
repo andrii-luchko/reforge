@@ -148,7 +148,6 @@ class MockGeolocatorPlatform extends Mock implements GeolocatorPlatform {}
 
 class FakeRunningSensorAvailability implements RunningSensorAvailability {
   TrackingEngineFailureException? gpsResult;
-  TrackingEngineFailureException? pedometerResult;
   int gpsChecks = 0;
 
   @override
@@ -159,7 +158,4 @@ class FakeRunningSensorAvailability implements RunningSensorAvailability {
 
   @override
   Future<TrackingEngineFailureException?> treadmillFailure() async => null;
-
-  @override
-  Future<TrackingEngineFailureException?> pedometerFailure() async => pedometerResult;
 }

@@ -1,5 +1,5 @@
 class RunningConstants {
-  /// The global interval at which tracking engines (GPS, Pedometer)
+  /// The global interval at which tracking engines (GPS, Treadmill)
   /// tick to update metrics like duration and pace.
   static const Duration engineTickInterval = Duration(seconds: 1);
 
@@ -11,9 +11,6 @@ class RunningConstants {
   /// services. This catches plugins that silently stop delivering events after
   /// a permission is revoked.
   static const Duration sensorHealthCheckInterval = Duration(seconds: 3);
-
-  /// Average human stride length in meters, used by the pedometer engine.
-  static const double defaultStrideMeters = 0.78;
 
   // ── Notifications ─────────────────────────────────────────────────────────
 

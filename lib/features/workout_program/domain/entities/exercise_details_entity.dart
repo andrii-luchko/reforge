@@ -94,7 +94,11 @@ extension ExerciseDetailsEntityX on ExerciseDetailsEntity {
   List<String> availableTags(Translations t) {
     final tags = <String>[
       if (faction != null) faction!.name,
-      ...metrics.map((metric) => metric.title(t, null)),
+      ...metrics.map(
+        (metric) => metric.title(
+          t,
+        ),
+      ),
     ];
     return tags;
   }

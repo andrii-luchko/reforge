@@ -54,7 +54,7 @@ class RunningMetrics {
   /// Current instantaneous pace in minutes per kilometer.
   final double currentPaceMinKm;
 
-  /// Raw step count from the pedometer (0 when in GPS mode).
+  /// Raw step count, retained for DB compatibility. Always 0.
   final int stepCount;
 
   /// Latest GPS coordinate, if available.

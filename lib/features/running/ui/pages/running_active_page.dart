@@ -67,10 +67,8 @@ class RunningActivePage extends StatelessWidget {
                     .gps => const Expanded(child: ActiveGpsSession()),
 
                     .treadmill => const Expanded(
-                      child: ActivePedometerSession(showTreadmillSpeedControl: true),
+                      child: ActiveTreadmillSession(),
                     ),
-
-                    .pedometer => const Expanded(child: ActivePedometerSession()),
 
                     _ => Container(),
                   };
@@ -237,13 +235,10 @@ class ActiveGpsSession extends StatelessWidget {
   }
 }
 
-class ActivePedometerSession extends StatelessWidget {
-  const ActivePedometerSession({
-    this.showTreadmillSpeedControl = false,
+class ActiveTreadmillSession extends StatelessWidget {
+  const ActiveTreadmillSession({
     super.key,
   });
-
-  final bool showTreadmillSpeedControl;
 
   @override
   Widget build(BuildContext context) {
@@ -289,15 +284,13 @@ class ActivePedometerSession extends StatelessWidget {
                   system: measureSystem,
                 ),
 
-              if (showTreadmillSpeedControl) ...[
-                const SizedBox(height: 20),
-                TreadmillSpeedStepper(
-                  speedKmH: state.treadmillSpeedKmH ?? RunningTrackerCubit.defaultTreadmillSpeedKmH,
-                  measureSystem: measureSystem,
-                  enabled: state.canControlTracking && !state.isSubmitting,
-                  onChangedKmH: context.read<RunningTrackerCubit>().setTreadmillSpeedKmH,
-                ),
-              ],
+              const SizedBox(height: 20),
+              TreadmillSpeedStepper(
+                speedKmH: state.treadmillSpeedKmH ?? RunningTrackerCubit.defaultTreadmillSpeedKmH,
+                measureSystem: measureSystem,
+                enabled: state.canControlTracking && !state.isSubmitting,
+                onChangedKmH: context.read<RunningTrackerCubit>().setTreadmillSpeedKmH,
+              ),
 
               const SizedBox(height: 32),
               AnimatedOpacity(

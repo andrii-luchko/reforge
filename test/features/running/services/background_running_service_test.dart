@@ -11,11 +11,7 @@ void main() {
     );
     expect(
       androidForegroundServiceTypesForMode(RunningMode.treadmill),
-      [AndroidForegroundType.health],
-    );
-    expect(
-      androidForegroundServiceTypesForMode(RunningMode.pedometer),
-      [AndroidForegroundType.health],
+      [AndroidForegroundType.location],
     );
   });
 }

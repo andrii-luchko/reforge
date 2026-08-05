@@ -56,9 +56,6 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app requires access to your location to track your running route, calculate
 			distance, and determine your pace while you are working out.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Motion access enables the application to accurately track your steps and monitor
-			your activity goals.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Photo library access enables you to save your workout achievements and progress
 			reports directly to your device.</string>

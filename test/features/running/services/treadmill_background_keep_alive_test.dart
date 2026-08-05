@@ -140,7 +140,4 @@ class FakeRunningSensorAvailability implements RunningSensorAvailability {
     treadmillChecks++;
     return treadmillResult;
   }
-
-  @override
-  Future<TrackingEngineFailureException?> pedometerFailure() async => null;
 }

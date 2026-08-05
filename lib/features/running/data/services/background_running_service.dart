@@ -60,9 +60,8 @@ List<AndroidForegroundType> androidForegroundServiceTypesForMode(
   RunningMode? mode,
 ) {
   return switch (mode) {
-    RunningMode.gps => const [AndroidForegroundType.location],
-    RunningMode.treadmill || RunningMode.pedometer || null => const [
-      AndroidForegroundType.health,
+    RunningMode.gps || RunningMode.treadmill || null => const [
+      AndroidForegroundType.location,
     ],
   };
 }
@@ -465,7 +464,6 @@ Future<void> _handleSessionRestore(
       code: switch (reason) {
         TrackingEngineFailureReason.locationServiceDisabled => 'location_service_disabled',
         TrackingEngineFailureReason.locationPermissionDenied => 'location_permission_denied',
-        TrackingEngineFailureReason.motionPermissionDenied => 'motion_permission_denied',
         TrackingEngineFailureReason.sensorUnavailable => 'sensor_unavailable',
         TrackingEngineFailureReason.streamClosed => 'sensor_stream_closed',
         TrackingEngineFailureReason.unrecoverableStreamFailure => 'sensor_stream_failed',
@@ -475,7 +473,6 @@ Future<void> _handleSessionRestore(
           'Location services were turned off. Tracking has stopped.',
         TrackingEngineFailureReason.locationPermissionDenied =>
           'Location permission was removed. Tracking has stopped.',
-        TrackingEngineFailureReason.motionPermissionDenied => 'Motion permission was removed. Tracking has stopped.',
         TrackingEngineFailureReason.sensorUnavailable => 'A required tracking sensor is unavailable.',
         TrackingEngineFailureReason.streamClosed ||
         TrackingEngineFailureReason.unrecoverableStreamFailure => 'The tracking sensor stopped unexpectedly.',

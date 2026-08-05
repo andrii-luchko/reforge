@@ -17,14 +17,12 @@ import 'package:reforge/features/workout_program/domain/enums/workout_metrics.da
 void main() {
   late MockLocalWorkoutSessionRepository repository;
   late MockAudioFeedbackService audio;
-  late SynchronousMetricEngine pedometer;
   late SynchronousMetricEngine gps;
   late SynchronousMetricEngine treadmill;
 
   setUp(() {
     repository = MockLocalWorkoutSessionRepository();
     audio = MockAudioFeedbackService();
-    pedometer = SynchronousMetricEngine();
     gps = SynchronousMetricEngine();
     treadmill = SynchronousMetricEngine();
 
@@ -69,7 +67,6 @@ void main() {
 
   test('subscribes to engine metrics before engine.start', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -90,7 +87,6 @@ void main() {
 
   test('applies treadmill speed before the first engine metric', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -109,7 +105,7 @@ void main() {
     expect((await firstMetric).currentSpeedKmH, 8);
     expect(treadmill.appliedSpeeds, [8]);
     expect(treadmill.startCalls, 1);
-    expect(pedometer.startCalls, 0);
+    expect(gps.startCalls, 0);
     expect(gps.startCalls, 0);
     verify(
       () => repository.createNewActiveSet(
@@ -125,7 +121,6 @@ void main() {
 
   test('persists the initial treadmill speed without waiting for the snapshot timer', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -164,7 +159,6 @@ void main() {
       ),
     ).thenAnswer((_) async => _activeTreadmillLap);
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -202,7 +196,6 @@ void main() {
 
   test('rejects treadmill start before creating a lap when speed is absent', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -234,7 +227,6 @@ void main() {
 
   test('runtime treadmill speed emits and snapshots the applied value', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -271,7 +263,6 @@ void main() {
 
   test('runtime treadmill speed is rejected in GPS mode', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -292,32 +283,9 @@ void main() {
     await manager.endSession();
   });
 
-  test('runtime treadmill speed is rejected in pedometer mode', () async {
-    final manager = RunningSessionManager(
-      pedometer,
-      gps,
-      treadmill,
-      repository,
-      audio,
-    );
-    await manager.startSession(
-      mode: RunningMode.pedometer,
-      limits: const [],
-      sessionId: 10,
-      exerciseSessionId: 20,
-    );
-
-    await expectLater(manager.setTreadmillSpeed(10), throwsStateError);
-
-    expect(treadmill.appliedSpeeds, isEmpty);
-    expect(manager.currentMode, RunningMode.pedometer);
-    expect(pedometer.stopCalls, 0);
-    await manager.endSession();
-  });
 
   test('invalid runtime speed leaves the treadmill session unchanged', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -341,7 +309,6 @@ void main() {
 
   test('lap reset retains the last treadmill speed', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -371,7 +338,6 @@ void main() {
 
   test('summary resume creates a new lap with the last treadmill speed', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -404,7 +370,6 @@ void main() {
 
   test('ignores duplicate start without pausing or restarting the engine', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -432,7 +397,6 @@ void main() {
 
   test('waits for engine shutdown before endSession completes', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -460,7 +424,6 @@ void main() {
 
   test('starts and emits metrics again after endSession', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -491,7 +454,6 @@ void main() {
 
   test('starts lap numbering from one for another exercise session in the same workout', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -529,7 +491,6 @@ void main() {
   ]) {
     test('${scenario.name} limit automatically completes the planned set', () async {
       final manager = RunningSessionManager(
-        pedometer,
         gps,
         treadmill,
         repository,
@@ -570,7 +531,6 @@ void main() {
       ),
     ).thenAnswer((_) async => _completedLap);
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,
@@ -619,7 +579,6 @@ void main() {
 
   test('finalizes the active lap before forwarding a terminal engine failure', () async {
     final manager = RunningSessionManager(
-      pedometer,
       gps,
       treadmill,
       repository,

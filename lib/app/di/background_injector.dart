@@ -7,7 +7,6 @@ import 'package:reforge/features/running/data/repositories/local_workout_session
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/data/services/gps_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/manual_treadmill_tracking_engine.dart';
-import 'package:reforge/features/running/data/services/pedometer_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
@@ -23,7 +22,7 @@ import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 ///
 ///   [WorkoutDatabase] → [LocalWorkoutSessionRepository]
 ///         ↓
-///   [GpsTrackingEngine] [ManualTreadmillTrackingEngine] [PedometerTrackingEngine]
+///   [GpsTrackingEngine] [ManualTreadmillTrackingEngine]
 ///         ↓                         ↓                         ↓
 ///                       [RunningSessionManager]
 ///
@@ -82,11 +81,9 @@ Future<void> configureBackgroundDependencies() async {
   // stable references across pause/resume cycles.
   final gpsEngine = GpsTrackingEngine();
   final treadmillEngine = ManualTreadmillTrackingEngine();
-  final pedometerEngine = PedometerTrackingEngine();
 
   backgroundGetIt
     ..registerSingleton<TrackingEngine>(gpsEngine, instanceName: 'gps')
-    ..registerSingleton<TrackingEngine>(pedometerEngine, instanceName: 'pedometer')
     ..registerSingleton<AdjustableSpeedTrackingEngine>(
       treadmillEngine,
       instanceName: 'treadmill',
@@ -100,7 +97,6 @@ Future<void> configureBackgroundDependencies() async {
   // ignore: cascade_invocations
   backgroundGetIt.registerSingleton<RunningSessionManager>(
     RunningSessionManager(
-      pedometerEngine,
       gpsEngine,
       treadmillEngine,
       backgroundGetIt<LocalWorkoutSessionRepository>(),

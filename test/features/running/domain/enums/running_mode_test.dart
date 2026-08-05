@@ -8,8 +8,8 @@ void main() {
     }
   });
 
-  test('legacy pedometer and new treadmill modes remain distinct', () {
-    expect(RunningMode.fromDb('pedometer'), RunningMode.pedometer);
+  test('legacy pedometer DB value maps to treadmill', () {
+    expect(RunningMode.fromDb('pedometer'), RunningMode.treadmill);
     expect(RunningMode.fromDb('treadmill'), RunningMode.treadmill);
     expect(RunningMode.fromDb(null), isNull);
     expect(RunningMode.fromDb('unknown'), isNull);

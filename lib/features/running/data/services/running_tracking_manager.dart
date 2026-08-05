@@ -19,7 +19,6 @@ import 'package:reforge/features/workout_program/domain/enums/workout_metrics.da
 
 class RunningSessionManager {
   RunningSessionManager(
-    @Named('pedometer') this._pedometerEngine,
     @Named('gps') this._gpsEngine,
     @Named('treadmill') this._treadmillEngine,
     this._repository,
@@ -27,7 +26,6 @@ class RunningSessionManager {
   );
 
   // Use the interface type, not the concrete implementation classes
-  final TrackingEngine _pedometerEngine;
   final TrackingEngine _gpsEngine;
   final AdjustableSpeedTrackingEngine _treadmillEngine;
   final LocalWorkoutSessionRepository _repository;
@@ -566,8 +564,6 @@ class RunningSessionManager {
   TrackingEngine? _getEngineForMode(RunningMode? mode) {
     if (mode == null) return null;
     switch (mode) {
-      case RunningMode.pedometer:
-        return _pedometerEngine;
       case RunningMode.treadmill:
         return _treadmillEngine;
       case RunningMode.gps:

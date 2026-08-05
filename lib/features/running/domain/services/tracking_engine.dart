@@ -3,7 +3,7 @@ import 'package:reforge/features/running/domain/exceptions/running_service_excep
 
 /// Abstract interface for a low-level tracking engine.
 ///
-/// Implementations (e.g., Pedometer, GPS) are solely responsible for generating
+/// Implementations (e.g., GPS, ManualTreadmill) are solely responsible for generating
 /// raw metric streams (distance, time, steps, coordinates). They do not handle
 /// business logic like laps, segments, or database synchronization.
 abstract interface class TrackingEngine {

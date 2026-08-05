@@ -36,7 +36,6 @@ void main() {
     expect(find.text(t.running.mode.treadmill_run), findsOneWidget);
     expect(find.byKey(const ValueKey(RunningMode.gps)), findsOneWidget);
     expect(find.byKey(const ValueKey(RunningMode.treadmill)), findsOneWidget);
-    expect(find.byKey(const ValueKey(RunningMode.pedometer)), findsNothing);
 
     await tester.tap(find.text(t.running.mode.treadmill_run));
     await tester.pumpAndSettle();

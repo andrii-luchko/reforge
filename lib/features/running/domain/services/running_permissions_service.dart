@@ -16,7 +16,6 @@ class RunningPermissionsService {
   Future<bool> requestPermissionsForMode(RunningMode mode) async {
     try {
       final isGranted = await switch (mode) {
-        RunningMode.pedometer => _requestPedometerPermission(),
         RunningMode.treadmill => _requestTreadmillPermission(),
         RunningMode.gps => _requestGpsPermission(),
       };
@@ -39,23 +38,6 @@ class RunningPermissionsService {
     }
   }
 
-  Future<bool> _requestPedometerPermission() async {
-    if (Platform.isIOS) {
-      // iOS requires both sensors and location to keep the pedometer alive in background
-      final sensorStatus = await Permission.sensors.request();
-      final locationStatus = await Permission.location.request();
-
-      return sensorStatus.isGranted && (locationStatus.isGranted || locationStatus.isLimited);
-    }
-
-    if (Platform.isAndroid) {
-      final activityStatus = await Permission.activityRecognition.request();
-      return activityStatus.isGranted;
-    }
-
-    return false;
-  }
-
   Future<bool> _requestGpsPermission() async {
     final status = await Permission.location.request();
     logger.d('RunningPermissionsService: Location status = $status');
@@ -70,9 +52,8 @@ class RunningPermissionsService {
     }
 
     if (Platform.isAndroid) {
-      // Manual metrics use no location or motion sensor. The health foreground
-      // service prerequisite is fulfilled by the manifest-only sensor rate
-      // permission, so no activity-recognition prompt is necessary.
+      // Manual metrics use no location or motion sensor. The foreground
+      // service runs with location type but does not start a location stream.
       return true;
     }
 
