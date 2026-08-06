@@ -9,14 +9,16 @@ class ExerciseSegmentEntity {
     required this.targetMetric,
     required this.distanceM,
     required this.durationSec,
+    required this.recommendedSpeed,
   });
 
   final int id;
   final int order;
   final SegmentActivity activity;
   final WorkoutMetric targetMetric;
-  final int distanceM;
+  final double distanceM;
   final int durationSec;
+  final double? recommendedSpeed;
 
   @override
   String toString() {

@@ -119,6 +119,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
           targetMetric: 'distance',
           label: 'Sprint block',
           distanceM: 100,
+          recommendedPace: 5.1,
         ),
         ExerciseSegmentDTO(
           id: 2,

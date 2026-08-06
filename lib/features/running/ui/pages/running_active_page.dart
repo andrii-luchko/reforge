@@ -11,6 +11,7 @@ import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
 import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
+import 'package:reforge/features/running/ui/widgets/recommended_speed_hint.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/features/running/ui/widgets/treadmill_speed_stepper.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
@@ -159,6 +160,7 @@ class ActiveGpsSession extends StatelessWidget {
       builder: (context, state) {
         final lap = state.currentLap;
         final segmentActivity = lap?.activity;
+        final currentSegmentRecommendedSpeed = context.read<RunningTrackerCubit>().currentSegment?.recommendedSpeed;
 
         return Column(
           children: [
@@ -178,6 +180,16 @@ class ActiveGpsSession extends StatelessWidget {
                       paceMinKm: 0,
                       system: measureSystem,
                     ),
+            ),
+
+            AnimatedSize(
+              duration: Durations.short3,
+              child: currentSegmentRecommendedSpeed != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                      child: RecommendedSpeedHint(recommendedSpeed: currentSegmentRecommendedSpeed),
+                    )
+                  : const SizedBox.shrink(),
             ),
 
             Expanded(
@@ -250,6 +262,7 @@ class ActiveTreadmillSession extends StatelessWidget {
 
         final lap = state.currentLap;
         final segmentActivity = lap?.activity;
+        final currentSegmentRecommendedSpeed = context.read<RunningTrackerCubit>().currentSegment?.recommendedSpeed;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -284,6 +297,15 @@ class ActiveTreadmillSession extends StatelessWidget {
                   system: measureSystem,
                 ),
 
+              AnimatedSize(
+                duration: Durations.short3,
+                child: currentSegmentRecommendedSpeed != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: RecommendedSpeedHint(recommendedSpeed: currentSegmentRecommendedSpeed),
+                      )
+                    : const SizedBox.shrink(),
+              ),
               const SizedBox(height: 20),
               TreadmillSpeedStepper(
                 speedKmH: state.treadmillSpeedKmH ?? RunningTrackerCubit.defaultTreadmillSpeedKmH,

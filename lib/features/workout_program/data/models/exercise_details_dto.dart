@@ -131,8 +131,9 @@ sealed class ExerciseSegmentDTO with _$ExerciseSegmentDTO {
     required String activity,
     required String targetMetric,
     String? label,
-    int? distanceM,
+    double? distanceM,
     int? durationSec,
+    double? recommendedPace,
   }) = _ExerciseSegmentDTO;
 
   factory ExerciseSegmentDTO.fromJson(Map<String, dynamic> json) => _$ExerciseSegmentDTOFromJson(json);
@@ -147,8 +148,9 @@ extension ExerciseSegmentToEntityX on ExerciseSegmentDTO {
       order: order,
       activity: SegmentActivity.fromJson(activity),
       targetMetric: metric,
-      distanceM: distanceM ?? 0,
+      distanceM: distanceM ?? 0.0,
       durationSec: durationSec ?? 0,
+      recommendedSpeed: recommendedPace,
     );
   }
 }

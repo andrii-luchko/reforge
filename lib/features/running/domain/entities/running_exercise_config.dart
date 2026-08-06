@@ -28,7 +28,7 @@ class RunningExerciseConfig {
               metric: segment.targetMetric,
               limitValue: segment.targetMetric == WorkoutMetric.time
                   ? segment.durationSec.toDouble()
-                  : segment.distanceM.toDouble(),
+                  : segment.distanceM,
               segmentId: segment.id,
               activityType: segment.activity,
             ),

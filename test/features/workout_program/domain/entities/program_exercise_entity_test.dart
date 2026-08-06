@@ -24,6 +24,7 @@ void main() {
             targetMetric: WorkoutMetric.distance,
             distanceM: 1000,
             durationSec: 0,
+            recommendedSpeed: null,
           ),
         ],
       );

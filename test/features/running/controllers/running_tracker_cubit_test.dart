@@ -793,6 +793,7 @@ final _programExercise = ProgramExerciseEntity(
       targetMetric: WorkoutMetric.time,
       distanceM: 0,
       durationSec: 60,
+      recommendedSpeed: null,
     ),
   ],
 );

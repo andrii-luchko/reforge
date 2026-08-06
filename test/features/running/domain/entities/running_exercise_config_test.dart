@@ -40,6 +40,7 @@ void main() {
           targetMetric: WorkoutMetric.time,
           distanceM: 0,
           durationSec: 60,
+          recommendedSpeed: null,
         ),
       ],
     );
