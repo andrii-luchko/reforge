@@ -4,6 +4,20 @@ import 'package:reforge/core/database/database.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
+  test('creates running milestone candidates when upgrading from schema v4', () async {
+    final sqlite = sqlite3.openInMemory()..execute('PRAGMA user_version = 4;');
+    final database = WorkoutDatabase(NativeDatabase.opened(sqlite));
+    addTearDown(database.close);
+
+    final columns = await database.customSelect('PRAGMA table_info(running_milestone_candidates);').get();
+
+    expect(columns, isNotEmpty);
+    expect(
+      columns.map((row) => row.read<String>('name')),
+      containsAll(['running_set_id', 'milestone_key', 'distance_m', 'duration_sec', 'status']),
+    );
+  });
+
   test('migrates v2 running rows to durable outbox identities without data loss', () async {
     final sqlite = sqlite3.openInMemory()
       ..execute('''

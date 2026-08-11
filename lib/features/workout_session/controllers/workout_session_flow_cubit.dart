@@ -18,6 +18,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/data/services/running_milestone_sender.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_exercise_entity.dart';
 import 'package:reforge/features/workout_session/data/enums/workout_session_status.dart';
@@ -53,6 +54,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     this._analytics,
     this._sessionCache,
     this._userSessionService,
+    this._runningMilestoneSender,
   ) : super(const WorkoutSessionFlowState());
 
   final WorkoutSessionRepository _repository;
@@ -60,6 +62,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
   final AnalyticsService _analytics;
   final WorkoutSessionCacheRepository _sessionCache;
   final UserSessionService _userSessionService;
+  final RunningMilestoneSender _runningMilestoneSender;
 
   final Map<String, ActiveExerciseExecution> _exerciseExecutions = {};
   final Map<String, Future<Result<ActiveExerciseExecution>>> _pendingExerciseSessions = {};
@@ -132,6 +135,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
     );
     logger.d(newState);
     emit(newState);
+    unawaited(_runningMilestoneSender.start(sessionId));
   }
 
   ActiveExerciseExecution? exerciseExecutionFor(String executionKey) {
@@ -254,6 +258,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       return Result.error(AppException('Workout start is already in progress'));
     }
     if (state.isActive && state.workoutSessionId != null) {
+      unawaited(_runningMilestoneSender.start(state.workoutSessionId!));
       emit(state.copyWith(isStartingWorkout: true, error: null));
       final execution = await retryEnsureExerciseSession(plan.exercises[state.currentExerciseIndex]);
       if (execution.isSuccess) {
@@ -305,6 +310,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
           source: plan.source is ProgramWorkoutSource ? CachedWorkoutSource.program : CachedWorkoutSource.adHoc,
           executionPlanJson: CachedWorkoutExecutionPlan.fromPlan(plan).encode(),
         );
+        unawaited(_runningMilestoneSender.start(sessionData.id));
 
         emit(
           state.copyWith(
@@ -429,6 +435,10 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
       'workoutSessionId=$workoutSessionId status=${status.name}',
     );
 
+    if (status == WorkoutSessionStatus.completed) {
+      await _runningMilestoneSender.drain(workoutSessionId);
+    }
+
     final result = await _repository.endWorkoutSession(
       status: status,
       workoutSessionId: workoutSessionId,
@@ -457,6 +467,7 @@ class WorkoutSessionFlowCubit extends Cubit<WorkoutSessionFlowState> {
             unawaited(_analytics.logEvent(AnalyticsEvents.freeRunCancel));
           }
         }
+        await _runningMilestoneSender.stop(workoutSessionId);
         await _sessionCache.clearActiveSession();
         _clearExerciseRegistry();
         emit(

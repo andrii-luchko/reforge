@@ -2,6 +2,7 @@
 // ignore_for_file: comment_references
 
 import 'package:drift/drift.dart';
+import 'package:reforge/features/running/domain/enums/running_milestone_candidate_status.dart';
 import 'package:reforge/features/running/domain/enums/running_set_sync_status.dart';
 import 'package:uuid/uuid.dart';
 
@@ -70,6 +71,35 @@ class ActiveRunningSets extends Table {
   /// Timestamp of the last background snapshot written by the background
   /// service. Used to detect stale in-progress laps after a force-kill.
   DateTimeColumn get lastSnapshotAt => dateTime().nullable()();
+}
+
+@TableIndex(
+  name: 'idx_running_milestone_candidates_identity',
+  columns: {#runningSetId, #milestoneKey},
+  unique: true,
+)
+@TableIndex(
+  name: 'idx_running_milestone_candidates_pending',
+  columns: {#workoutSessionId, #status},
+)
+class RunningMilestoneCandidates extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get runningSetId => integer().references(
+    ActiveRunningSets,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
+  IntColumn get exerciseId => integer()();
+  IntColumn get workoutSessionId => integer()();
+  IntColumn get exerciseSessionId => integer()();
+  IntColumn get durationSec => integer()();
+  RealColumn get distanceM => real()();
+  TextColumn get milestoneKey => text()();
+  TextColumn get status => text().withDefault(
+    Constant(RunningMilestoneCandidateStatus.pending.name),
+  )();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get attemptedAt => dateTime().nullable()();
 }
 
 /// Cache table for the currently active workout session.
@@ -164,6 +194,7 @@ class SessionRoutePoints extends Table {
 @DriftDatabase(
   tables: [
     ActiveRunningSets,
+    RunningMilestoneCandidates,
     WorkoutSessionCache,
     WorkoutExerciseSessionCache,
     SessionRoutePoints,
@@ -173,7 +204,7 @@ class WorkoutDatabase extends _$WorkoutDatabase {
   WorkoutDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -229,6 +260,11 @@ class WorkoutDatabase extends _$WorkoutDatabase {
         await m.createTable(workoutExerciseSessionCache);
         await m.createIndex(idxWorkoutExerciseSessionCacheIdentity);
         await m.createIndex(idxWorkoutExerciseSessionCacheRemote);
+      }
+      if (from < 5) {
+        await m.createTable(runningMilestoneCandidates);
+        await m.createIndex(idxRunningMilestoneCandidatesIdentity);
+        await m.createIndex(idxRunningMilestoneCandidatesPending);
       }
     },
   );

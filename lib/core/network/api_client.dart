@@ -35,6 +35,7 @@ import 'package:reforge/features/notifications/data/models/notification_model_dt
 import 'package:reforge/features/notifications/data/models/notification_test_request.dart';
 import 'package:reforge/features/notifications/data/models/register_tokens_request.dart';
 import 'package:reforge/features/quiz/data/requests/update_profile_request.dart';
+import 'package:reforge/features/running/data/requests/calculate_running_milestone_request.dart';
 import 'package:reforge/features/settings/data/request/profile_requests.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_catalog_item_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_day_dto.dart';
@@ -221,6 +222,11 @@ abstract class ApiClient {
 
   @GET('/workout-milestones')
   Future<BaseResponse<List<AchievementBadgeDto>>> getUserBadges();
+
+  @POST('/workout-milestones/calculate-running')
+  Future<void> calculateRunningMilestone(
+    @Body() CalculateRunningMilestoneRequest request,
+  );
 
   @GET('/users/me/rank-info/{faction}')
   Future<BaseResponse<UserRankData>> getUserRanks(@Path('faction') String faction);

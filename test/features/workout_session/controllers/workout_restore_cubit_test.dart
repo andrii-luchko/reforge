@@ -11,6 +11,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_exercise_s
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/data/services/running_milestone_sender.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/client_id_generator.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
@@ -44,6 +45,8 @@ class _MockExerciseSessionRepository extends Mock implements ExerciseSessionRepo
 
 class _MockAnalyticsService extends Mock implements AnalyticsService {}
 
+class _MockRunningMilestoneSender extends Mock implements RunningMilestoneSender {}
+
 void main() {
   late _MockWorkoutSessionCacheRepository sessionCache;
   late _MockWorkoutSessionRepository sessionRepository;
@@ -53,6 +56,7 @@ void main() {
   late _MockUserSessionService userSessionService;
   late _MockExerciseSessionRepository exerciseSessionRepository;
   late _MockAnalyticsService analytics;
+  late _MockRunningMilestoneSender runningMilestoneSender;
   late WorkoutSessionFlowCubit flowCubit;
   late WorkoutRestoreCubit restoreCubit;
   late void Function({
@@ -70,8 +74,12 @@ void main() {
     userSessionService = _MockUserSessionService();
     exerciseSessionRepository = _MockExerciseSessionRepository();
     analytics = _MockAnalyticsService();
+    runningMilestoneSender = _MockRunningMilestoneSender();
 
     when(() => userSessionService.currentUser).thenReturn(_user());
+    when(() => runningMilestoneSender.start(any())).thenAnswer((_) async {});
+    when(() => runningMilestoneSender.drain(any())).thenAnswer((_) async {});
+    when(() => runningMilestoneSender.stop(any())).thenAnswer((_) async {});
     when(() => sessionCache.getActiveSession()).thenAnswer(
       (_) async => WorkoutSessionCacheData(
         id: 1,
@@ -120,6 +128,7 @@ void main() {
       analytics,
       sessionCache,
       userSessionService,
+      runningMilestoneSender,
     );
     restoreCubit = WorkoutRestoreCubit(
       sessionCache,

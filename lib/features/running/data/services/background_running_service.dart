@@ -100,6 +100,7 @@ Future<void> onStart(ServiceInstance service) async {
           'workoutProgramExerciseId:${event['workoutProgramExerciseId']?.runtimeType}',
         );
         try {
+          final exerciseId = RunningServiceProtocol.requiredInt(event, 'exerciseId');
           final sessionId = RunningServiceProtocol.requiredInt(event, 'sessionId');
           final exerciseSessionId = RunningServiceProtocol.requiredInt(event, 'exerciseSessionId');
           final workoutProgramExerciseId = RunningServiceProtocol.optionalInt(
@@ -210,6 +211,7 @@ Future<void> onStart(ServiceInstance service) async {
           await manager.startSession(
             mode: mode,
             limits: limits,
+            exerciseId: exerciseId,
             sessionId: sessionId,
             exerciseSessionId: exerciseSessionId,
             workoutProgramExerciseId: workoutProgramExerciseId,

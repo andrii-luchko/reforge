@@ -14,6 +14,7 @@ import 'package:reforge/features/exercise_session/data/models/workout_exercise_s
 import 'package:reforge/features/exercise_session/domain/entities/workout_exercise_session_entity.dart';
 import 'package:reforge/features/exercise_session/domain/repositories/exercise_session_repository.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
+import 'package:reforge/features/running/data/services/running_milestone_sender.dart';
 import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_program/domain/entities/program_day_entity.dart';
@@ -40,12 +41,15 @@ class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionC
 
 class _MockUserSessionService extends Mock implements UserSessionService {}
 
+class _MockRunningMilestoneSender extends Mock implements RunningMilestoneSender {}
+
 void main() {
   late _MockWorkoutSessionRepository workoutRepository;
   late _MockExerciseSessionRepository exerciseRepository;
   late _MockAnalyticsService analytics;
   late _MockWorkoutSessionCacheRepository sessionCache;
   late _MockUserSessionService userSessionService;
+  late _MockRunningMilestoneSender runningMilestoneSender;
   late WorkoutSessionFlowCubit cubit;
 
   setUpAll(() {
@@ -59,7 +63,11 @@ void main() {
     analytics = _MockAnalyticsService();
     sessionCache = _MockWorkoutSessionCacheRepository();
     userSessionService = _MockUserSessionService();
+    runningMilestoneSender = _MockRunningMilestoneSender();
     when(() => userSessionService.currentUser).thenReturn(_user());
+    when(() => runningMilestoneSender.start(any())).thenAnswer((_) async {});
+    when(() => runningMilestoneSender.drain(any())).thenAnswer((_) async {});
+    when(() => runningMilestoneSender.stop(any())).thenAnswer((_) async {});
     when(
       () => sessionCache.saveActiveSession(
         remoteSessionId: any(named: 'remoteSessionId'),
@@ -92,6 +100,7 @@ void main() {
       analytics,
       sessionCache,
       userSessionService,
+      runningMilestoneSender,
     );
   });
 
@@ -488,6 +497,14 @@ void main() {
 
       expect(cubit.state.isCompleted, isTrue);
       expect(cubit.state.summary, _summary);
+      verifyInOrder([
+        () => runningMilestoneSender.drain(182),
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 182,
+          workoutSessionDuration: 60,
+        ),
+      ]);
     });
 
     test('keeps completion retryable after a network failure', () async {
@@ -539,6 +556,13 @@ void main() {
       final first = cubit.nextExercise(60);
       final second = cubit.nextExercise(60);
 
+      await untilCalled(
+        () => workoutRepository.endWorkoutSession(
+          status: WorkoutSessionStatus.completed,
+          workoutSessionId: 169,
+          workoutSessionDuration: 60,
+        ),
+      );
       verify(
         () => workoutRepository.endWorkoutSession(
           status: WorkoutSessionStatus.completed,

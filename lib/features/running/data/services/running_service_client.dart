@@ -188,6 +188,7 @@ class RunningServiceClient {
   Future<void> startSession({
     required RunningMode mode,
     required List<LapLimit> limits,
+    required int exerciseId,
     required int sessionId,
     required int exerciseSessionId,
     int? workoutProgramExerciseId,
@@ -214,6 +215,7 @@ class RunningServiceClient {
     _currentMode = mode;
     _hasLoggedFirstMetric = false;
     _service.invoke('start_session', {
+      'exerciseId': exerciseId,
       'sessionId': sessionId,
       'exerciseSessionId': exerciseSessionId,
       'workoutProgramExerciseId': workoutProgramExerciseId,

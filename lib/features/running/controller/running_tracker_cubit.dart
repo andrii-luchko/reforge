@@ -353,6 +353,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       await _serviceClient.startSession(
         mode: mode,
         limits: config.limits,
+        exerciseId: config.exercise.id,
         sessionId: workoutSessionId,
         exerciseSessionId: config.exerciseSessionId,
         workoutProgramExerciseId: config.workoutProgramExerciseId,
@@ -364,6 +365,7 @@ class RunningTrackerCubit extends Cubit<RunningTrackerState> {
       await _serviceClient.startSession(
         mode: mode,
         limits: config.limits,
+        exerciseId: config.exercise.id,
         sessionId: workoutSessionId,
         exerciseSessionId: config.exerciseSessionId,
         workoutProgramExerciseId: config.workoutProgramExerciseId,

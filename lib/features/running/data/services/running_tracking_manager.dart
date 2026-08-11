@@ -12,6 +12,7 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
+import 'package:reforge/features/running/domain/services/running_milestone_tracker.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 import 'package:reforge/features/running/domain/services/treadmill_speed_validation.dart';
 import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
@@ -23,6 +24,7 @@ class RunningSessionManager {
     @Named('treadmill') this._treadmillEngine,
     this._repository,
     this._audioFeedbackService,
+    [this._milestoneTracker]
   );
 
   // Use the interface type, not the concrete implementation classes
@@ -30,6 +32,7 @@ class RunningSessionManager {
   final AdjustableSpeedTrackingEngine _treadmillEngine;
   final LocalWorkoutSessionRepository _repository;
   final AudioFeedbackService _audioFeedbackService;
+  final RunningMilestoneTracker? _milestoneTracker;
 
   RunningMode? _currentMode;
   List<LapLimit>? _limits;
@@ -41,6 +44,7 @@ class RunningSessionManager {
   final _eventsController = StreamController<RunningEvent>.broadcast();
 
   int? _workoutSessionId;
+  int? _exerciseId;
   int? _exerciseSessionId;
   int? _workoutProgramExerciseId;
   int? _currentDbSetId;
@@ -72,6 +76,7 @@ class RunningSessionManager {
     required List<LapLimit> limits,
     required int sessionId,
     required int exerciseSessionId,
+    int? exerciseId,
     int? workoutProgramExerciseId,
     bool startPaused = false,
     bool restoreCompletedPlan = false,
@@ -93,6 +98,7 @@ class RunningSessionManager {
     _currentMode = mode;
     _limits = limits;
     _workoutSessionId = sessionId;
+    _exerciseId = exerciseId;
     _exerciseSessionId = exerciseSessionId;
     _workoutProgramExerciseId = workoutProgramExerciseId;
 
@@ -153,6 +159,8 @@ class RunningSessionManager {
           logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} in DB');
         }
       }
+
+      await _startMilestoneLap(initialMetrics: initialOffset);
 
       if (mode == RunningMode.treadmill) {
         final persistedSpeedKmH = inProgressLap?.currentSpeedKmH;
@@ -238,6 +246,7 @@ class RunningSessionManager {
         programSegmentId: currentLimit?.segmentId,
         segmentType: currentLimit?.activityType.name,
       );
+      await _startMilestoneLap();
       logger.d('RunningSessionManager: Created new lap ${_currentLapIndex + 1} on resume');
     }
 
@@ -262,6 +271,7 @@ class RunningSessionManager {
 
       _currentDbSetId = null;
 
+      await _milestoneTracker?.flushLap();
       await _writeDriftSnapshot(oldDbSetId);
       await _repository.markSetAsFinishedLocally(oldDbSetId);
 
@@ -340,6 +350,7 @@ class RunningSessionManager {
     }
 
     if (finalizeCurrentLap && dbSetId != null) {
+      await _milestoneTracker?.flushLap();
       await _writeDriftSnapshot(dbSetId);
       try {
         await _repository.markSetAsFinishedLocally(dbSetId);
@@ -354,6 +365,7 @@ class RunningSessionManager {
       }
     }
 
+    await _milestoneTracker?.clear();
     _clearSessionState();
     logger.d('RunningSessionManager: Session ended');
   }
@@ -399,6 +411,7 @@ class RunningSessionManager {
     _currentMode = null;
     _limits = null;
     _workoutSessionId = null;
+    _exerciseId = null;
     _exerciseSessionId = null;
     _workoutProgramExerciseId = null;
     _currentLapIndex = 0;
@@ -443,6 +456,7 @@ class RunningSessionManager {
 
     // Write to snapshot timer uses _latestMetrics
     _latestMetrics = contextualMetrics;
+    _milestoneTracker?.track(contextualMetrics);
 
     // Evaluate target limit if it exists
     if (currentLimit != null) {
@@ -511,6 +525,7 @@ class RunningSessionManager {
 
       // Write final snapshot to local DB and mark as finished locally
       if (oldDbSetId != null) {
+        await _milestoneTracker?.flushLap();
         await _writeDriftSnapshot(oldDbSetId);
         await _repository.markSetAsFinishedLocally(oldDbSetId);
       }
@@ -555,6 +570,7 @@ class RunningSessionManager {
           programSegmentId: currentLimit?.segmentId,
           segmentType: currentLimit?.activityType.name,
         );
+        await _startMilestoneLap();
       }
     } finally {
       _isCompletingLap = false;
@@ -569,5 +585,25 @@ class RunningSessionManager {
       case RunningMode.gps:
         return _gpsEngine;
     }
+  }
+
+  Future<void> _startMilestoneLap({RunningMetrics? initialMetrics}) async {
+    final tracker = _milestoneTracker;
+    final runningSetId = _currentDbSetId;
+    if (tracker == null || runningSetId == null) return;
+
+    final exerciseId = _exerciseId;
+    final workoutSessionId = _workoutSessionId;
+    final exerciseSessionId = _exerciseSessionId;
+    if (exerciseId == null || workoutSessionId == null || exerciseSessionId == null) {
+      throw StateError('Running milestone context is incomplete.');
+    }
+    await tracker.startLap(
+      runningSetId: runningSetId,
+      exerciseId: exerciseId,
+      workoutSessionId: workoutSessionId,
+      exerciseSessionId: exerciseSessionId,
+      initialMetrics: initialMetrics,
+    );
   }
 }

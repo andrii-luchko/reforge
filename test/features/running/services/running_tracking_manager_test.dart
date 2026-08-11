@@ -12,6 +12,7 @@ import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/domain/exceptions/running_service_exceptions.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
 import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
+import 'package:reforge/features/running/domain/services/running_milestone_tracker.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 
 void main() {
@@ -19,6 +20,10 @@ void main() {
   late MockAudioFeedbackService audio;
   late SynchronousMetricEngine gps;
   late SynchronousMetricEngine treadmill;
+
+  setUpAll(() {
+    registerFallbackValue(const RunningMetrics.zero());
+  });
 
   setUp(() {
     repository = MockLocalWorkoutSessionRepository();
@@ -82,6 +87,45 @@ void main() {
     );
 
     expect((await firstMetric).durationSeconds, 1);
+    await manager.endSession();
+  });
+
+  test('initializes milestone tracking for the DB lap before forwarding metrics', () async {
+    final milestoneTracker = MockRunningMilestoneTracker();
+    when(
+      () => milestoneTracker.startLap(
+        runningSetId: 1,
+        exerciseId: 4,
+        workoutSessionId: 10,
+        exerciseSessionId: 20,
+      ),
+    ).thenAnswer((_) async {});
+    when(milestoneTracker.clear).thenAnswer((_) async {});
+    final manager = RunningSessionManager(
+      gps,
+      treadmill,
+      repository,
+      audio,
+      milestoneTracker,
+    );
+
+    await manager.startSession(
+      mode: RunningMode.gps,
+      limits: const [],
+      exerciseId: 4,
+      sessionId: 10,
+      exerciseSessionId: 20,
+    );
+
+    verify(
+      () => milestoneTracker.startLap(
+        runningSetId: 1,
+        exerciseId: 4,
+        workoutSessionId: 10,
+        exerciseSessionId: 20,
+      ),
+    ).called(1);
+    verify(() => milestoneTracker.track(any())).called(1);
     await manager.endSession();
   });
 
@@ -282,7 +326,6 @@ void main() {
     expect(gps.stopCalls, 0);
     await manager.endSession();
   });
-
 
   test('invalid runtime speed leaves the treadmill session unchanged', () async {
     final manager = RunningSessionManager(
@@ -635,6 +678,8 @@ void main() {
 class MockLocalWorkoutSessionRepository extends Mock implements LocalWorkoutSessionRepository {}
 
 class MockAudioFeedbackService extends Mock implements AudioFeedbackService {}
+
+class MockRunningMilestoneTracker extends Mock implements RunningMilestoneTracker {}
 
 final class SynchronousMetricEngine implements AdjustableSpeedTrackingEngine {
   final _controller = StreamController<RunningMetrics>.broadcast(sync: true);

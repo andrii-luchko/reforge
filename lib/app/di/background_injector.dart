@@ -4,13 +4,16 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:reforge/core/database/database.dart';
 import 'package:reforge/features/running/data/repositories/local_workout_session_repository_impl.dart';
+import 'package:reforge/features/running/data/repositories/running_milestone_candidate_repository_impl.dart';
 import 'package:reforge/features/running/data/services/audio_feedback_service.dart';
 import 'package:reforge/features/running/data/services/gps_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/manual_treadmill_tracking_engine.dart';
 import 'package:reforge/features/running/data/services/running_tracking_manager.dart';
 import 'package:reforge/features/running/domain/repositories/local_workout_session_repository.dart';
+import 'package:reforge/features/running/domain/repositories/running_milestone_candidate_repository.dart';
 import 'package:reforge/features/running/domain/services/adjustable_speed_tracking_engine.dart';
 import 'package:reforge/features/running/domain/services/client_id_generator.dart';
+import 'package:reforge/features/running/domain/services/running_milestone_tracker.dart';
 import 'package:reforge/features/running/domain/services/tracking_engine.dart';
 
 /// A minimal, self-contained GetIt container for the background isolate.
@@ -73,6 +76,9 @@ Future<void> configureBackgroundDependencies() async {
         db,
         backgroundGetIt<ClientIdGenerator>(),
       ),
+    )
+    ..registerSingleton<RunningMilestoneCandidateRepository>(
+      RunningMilestoneCandidateRepositoryImpl(db),
     );
 
   // ── Tracking engines ───────────────────────────────────────────────────────
@@ -101,6 +107,9 @@ Future<void> configureBackgroundDependencies() async {
       treadmillEngine,
       backgroundGetIt<LocalWorkoutSessionRepository>(),
       audioService,
+      RunningMilestoneTracker(
+        backgroundGetIt<RunningMilestoneCandidateRepository>(),
+      ),
     ),
   );
 

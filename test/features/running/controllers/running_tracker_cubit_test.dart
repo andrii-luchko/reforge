@@ -71,6 +71,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -106,6 +107,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -119,6 +121,7 @@ void main() {
               () => service.startSession(
                 mode: RunningMode.gps,
                 limits: captureAny(named: 'limits'),
+                exerciseId: _runningConfig.exercise.id,
                 sessionId: 10,
                 exerciseSessionId: 20,
               ),
@@ -144,6 +147,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -168,6 +172,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
@@ -181,6 +186,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
@@ -211,6 +217,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         initialSpeedKmH: RunningTrackerCubit.defaultTreadmillSpeedKmH,
@@ -251,6 +258,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -289,6 +297,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -308,6 +317,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -328,6 +338,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -346,6 +357,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -364,6 +376,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -383,6 +396,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -397,6 +411,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.treadmill,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -416,6 +431,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -452,6 +468,7 @@ void main() {
       () => service.startSession(
         mode: RunningMode.gps,
         limits: any(named: 'limits'),
+        exerciseId: _runningConfig.exercise.id,
         sessionId: 10,
         exerciseSessionId: 20,
         startPaused: true,
@@ -520,6 +537,7 @@ void main() {
       () => service.startSession(
         mode: any(named: 'mode'),
         limits: any(named: 'limits'),
+        exerciseId: any(named: 'exerciseId'),
         sessionId: any(named: 'sessionId'),
         exerciseSessionId: any(named: 'exerciseSessionId'),
         startPaused: any(named: 'startPaused'),
@@ -694,6 +712,7 @@ void _stubSuccessfulStart(MockRunningServiceClient service) {
     () => service.startSession(
       mode: any(named: 'mode'),
       limits: any(named: 'limits'),
+      exerciseId: any(named: 'exerciseId'),
       sessionId: any(named: 'sessionId'),
       exerciseSessionId: any(named: 'exerciseSessionId'),
       startPaused: any(named: 'startPaused'),

@@ -58,6 +58,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.gps,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
       workoutProgramExerciseId: 7,
@@ -70,6 +71,7 @@ void main() {
         any(
           that: isA<Map<String, dynamic>>()
               .having((payload) => payload['sessionId'], 'sessionId', 42)
+              .having((payload) => payload['exerciseId'], 'exerciseId', 4)
               .having((payload) => payload['exerciseSessionId'], 'exerciseSessionId', 100)
               .having((payload) => payload['workoutProgramExerciseId'], 'workoutProgramExerciseId', 7)
               .having((payload) => payload['mode'], 'mode', 'gps')
@@ -95,6 +97,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.gps,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
       workoutProgramExerciseId: 7,
@@ -124,6 +127,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.gps,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
     );
@@ -138,6 +142,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.treadmill,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
       initialSpeedKmH: 8,
@@ -171,6 +176,7 @@ void main() {
       client.startSession(
         mode: RunningMode.treadmill,
         limits: const [],
+        exerciseId: 4,
         sessionId: 42,
         exerciseSessionId: 100,
       ),
@@ -180,6 +186,7 @@ void main() {
       client.startSession(
         mode: RunningMode.treadmill,
         limits: const [],
+        exerciseId: 4,
         sessionId: 42,
         exerciseSessionId: 100,
         initialSpeedKmH: 0,
@@ -195,6 +202,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.treadmill,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
       initialSpeedKmH: 8,
@@ -212,6 +220,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.gps,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
     );
@@ -232,6 +241,7 @@ void main() {
     await client.startSession(
       mode: RunningMode.gps,
       limits: const [],
+      exerciseId: 4,
       sessionId: 42,
       exerciseSessionId: 100,
     );
@@ -247,6 +257,7 @@ void main() {
       client.startSession(
         mode: RunningMode.gps,
         limits: const [],
+        exerciseId: 4,
         sessionId: 42,
         exerciseSessionId: 100,
       ),
