@@ -91,8 +91,12 @@ class NotificationPermissionCubit extends Cubit<NotificationPermissionState> {
   }
 
   Future<void> saveToken(String token) async {
-    await _repository.saveFcmToken(token);
-    if (isClosed) return;
+    final isAuthorized = _authCubit.state.maybeWhen(authenticated: (_) => true, orElse: () => false);
+
+    if (isAuthorized) {
+      await _repository.saveFcmToken(token);
+      if (isClosed) return;
+    }
   }
 
   @override
