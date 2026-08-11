@@ -97,6 +97,31 @@ void main() {
 
     await _disposeStepper(tester);
   });
+
+  testWidgets('reaching maximum speed does not update button state during build', (tester) async {
+    final changes = <double>[];
+    await _pumpStepper(
+      tester,
+      speedKmH: 19.9,
+      measureSystem: MeasurementSystem.metric,
+      onChangedKmH: changes.add,
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(TreadmillSpeedStepper.incrementKey)),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('20.0'), findsOneWidget);
+    expect(changes, [closeTo(20, 0.0001)]);
+
+    await gesture.up();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+
+    await _disposeStepper(tester);
+  });
 }
 
 Future<void> _pumpStepper(

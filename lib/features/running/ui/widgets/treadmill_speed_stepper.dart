@@ -266,11 +266,18 @@ class _SpeedButton extends StatefulWidget {
 class _SpeedButtonState extends State<_SpeedButton> {
   bool _isPressed = false;
 
+  void _start() {
+    if (!widget.enabled || _isPressed) return;
+
+    setState(() => _isPressed = true);
+    widget.onStart();
+  }
+
   void _stop() {
+    if (!_isPressed) return;
+
+    setState(() => _isPressed = false);
     widget.onStop();
-    if (_isPressed && mounted) {
-      setState(() => _isPressed = false);
-    }
   }
 
   @override
@@ -283,14 +290,9 @@ class _SpeedButtonState extends State<_SpeedButton> {
       enabled: enabled,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: enabled
-            ? (_) {
-                setState(() => _isPressed = true);
-                widget.onStart();
-              }
-            : null,
-        onTapUp: enabled ? (_) => _stop() : null,
-        onTapCancel: enabled ? _stop : null,
+        onTapDown: (_) => _start(),
+        onTapUp: (_) => _stop(),
+        onTapCancel: _stop,
         child: AnimatedContainer(
           duration: Durations.short3,
           curve: Curves.easeInOut,
