@@ -804,7 +804,9 @@
             "paused": "Paused",
             "walk": "Walk",
 
-            "speed_hint": "Recommended speed for current lap:"
+            "speed_hint": "Recommended speed for current lap:",
+
+            "current_lap":"Current lap"
         },
         "permission": {
             "title": "Permission Required",

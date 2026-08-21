@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reforge/app/constants/measure_system.dart';
 import 'package:reforge/app/di/service_injector.dart';
+import 'package:reforge/app/utils/extensions/duration_extensions.dart';
 import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
-import 'package:reforge/app/utils/logger/logger.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
+import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/running/controller/map/running_map_cubit.dart';
 import 'package:reforge/features/running/controller/running_tracker_cubit.dart';
 import 'package:reforge/features/running/domain/enums/running_mode.dart';
 import 'package:reforge/features/running/ui/widgets/active_running_map_container.dart';
-import 'package:reforge/features/running/ui/widgets/audio_hint_dialog.dart';
 import 'package:reforge/features/running/ui/widgets/recommended_speed_hint.dart';
 import 'package:reforge/features/running/ui/widgets/running_metrics_panel.dart';
 import 'package:reforge/features/running/ui/widgets/treadmill_speed_stepper.dart';
+import 'package:reforge/features/running/ui/widgets/walk_audio_hint_dialog.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
+import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/animations/animate_visibility.dart';
 import 'package:reforge/shared/uikit/app_tag.dart';
@@ -38,13 +43,13 @@ class RunningActivePage extends StatelessWidget {
             }
           },
         ),
+
         BlocListener<RunningTrackerCubit, RunningTrackerState>(
           listenWhen: (prev, curr) => curr.phase == .active && curr.lapJustCompleted && !prev.lapJustCompleted,
           listener: (context, state) async {
             // state.currentSegmentIndex is already the NEW active segment index.
             // The segment that just finished = currentSegmentIndex - 1.
 
-            logger.d(state.currentSegmentIndex);
             final cubit = context.read<RunningTrackerCubit>();
 
             final segment = cubit.config.segments.elementAtOrNull(state.currentSegmentIndex);
@@ -159,8 +164,7 @@ class ActiveGpsSession extends StatelessWidget {
     return BlocBuilder<RunningTrackerCubit, RunningTrackerState>(
       builder: (context, state) {
         final lap = state.currentLap;
-        final segmentActivity = lap?.activity;
-        final currentSegmentRecommendedSpeed = context.read<RunningTrackerCubit>().currentSegment?.recommendedSpeed;
+        final currentSegment = context.read<RunningTrackerCubit>().currentSegment;
 
         return Column(
           children: [
@@ -184,10 +188,10 @@ class ActiveGpsSession extends StatelessWidget {
 
             AnimatedSize(
               duration: Durations.short3,
-              child: currentSegmentRecommendedSpeed != null
+              child: currentSegment?.recommendedSpeed != null
                   ? Padding(
                       padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-                      child: RecommendedSpeedHint(recommendedSpeed: currentSegmentRecommendedSpeed),
+                      child: RecommendedSpeedHint(recommendedSpeed: currentSegment!.recommendedSpeed!),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -226,13 +230,13 @@ class ActiveGpsSession extends StatelessWidget {
                       right: 16,
                       top: 16,
                       child: IgnorePointer(
-                        ignoring: segmentActivity == .walk,
+                        ignoring: currentSegment != null,
                         child: AnimatedOpacity(
-                          opacity: segmentActivity == .walk ? 1 : 0,
+                          opacity: currentSegment != null ? 1 : 0,
                           duration: const Duration(milliseconds: 200),
-                          child: AppTag(
-                            text: t.running.active.walk,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          child: CurrentPhaseHint(
+                            measureSystem: measureSystem,
+                            segment: currentSegment!,
                           ),
                         ),
                       ),
@@ -261,8 +265,7 @@ class ActiveTreadmillSession extends StatelessWidget {
         final exerciseDetails = context.read<ActiveExerciseCubit>().effectiveExercise;
 
         final lap = state.currentLap;
-        final segmentActivity = lap?.activity;
-        final currentSegmentRecommendedSpeed = context.read<RunningTrackerCubit>().currentSegment?.recommendedSpeed;
+        final currentSegment = context.read<RunningTrackerCubit>().currentSegment;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -299,10 +302,12 @@ class ActiveTreadmillSession extends StatelessWidget {
 
               AnimatedSize(
                 duration: Durations.short3,
-                child: currentSegmentRecommendedSpeed != null
+                child: currentSegment?.recommendedSpeed != null
                     ? Padding(
                         padding: const EdgeInsets.only(top: 16),
-                        child: RecommendedSpeedHint(recommendedSpeed: currentSegmentRecommendedSpeed),
+                        child: RecommendedSpeedHint(
+                          recommendedSpeed: currentSegment!.recommendedSpeed!,
+                        ),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -327,11 +332,11 @@ class ActiveTreadmillSession extends StatelessWidget {
               ),
 
               AnimatedOpacity(
-                opacity: !state.isPaused && segmentActivity == .walk ? 1 : 0,
+                opacity: !state.isPaused && currentSegment != null ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: AppTag(
-                  text: t.running.active.walk,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: CurrentPhaseHint(
+                  measureSystem: measureSystem,
+                  segment: currentSegment!,
                 ),
               ),
               const SizedBox(height: 32),
@@ -340,5 +345,54 @@ class ActiveTreadmillSession extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class CurrentPhaseHint extends StatelessWidget {
+  const CurrentPhaseHint({required this.measureSystem, required this.segment, super.key});
+
+  final ExerciseSegmentEntity segment;
+  final MeasurementSystem measureSystem;
+
+  @override
+  Widget build(BuildContext context) {
+    final target = _formatTarget(segment);
+
+    return AppTag(
+      text: '${segment.activity.title}  · ${target ?? ''}',
+
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    );
+  }
+
+  String? _formatTarget(ExerciseSegmentEntity segment) {
+    return switch (segment.targetMetric) {
+      WorkoutMetric.time => Duration(seconds: segment.durationSec).toDigital(),
+      WorkoutMetric.distance => _formatDistance(segment.distanceM, measureSystem),
+      _ => null,
+    };
+  }
+
+  String _formatDistance(double meters, MeasurementSystem system) {
+    if (system == MeasurementSystem.imperial) {
+      final miles = MeasureSystemValues.toMiles(meters / 1000);
+      final value = miles == miles.roundToDouble()
+          ? miles.toInt().toString()
+          : miles < 1
+          ? miles.toStringAsFixed(2)
+          : miles.toStringAsFixed(1);
+      return '$value ${t.measure_system.distance.imperial_symbol}';
+    }
+
+    if (meters >= 1000) {
+      final kilometers = meters / 1000;
+      final value = kilometers == kilometers.roundToDouble()
+          ? kilometers.toInt().toString()
+          : kilometers.toStringAsFixed(1);
+      return '$value km';
+    }
+
+    final value = meters == meters.roundToDouble() ? meters.toInt().toString() : meters.toStringAsFixed(1);
+    return '$value m';
   }
 }

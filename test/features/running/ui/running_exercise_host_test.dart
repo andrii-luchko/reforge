@@ -16,9 +16,12 @@ import 'package:reforge/features/running/domain/entities/running_exercise_config
 import 'package:reforge/features/running/domain/enums/running_phase.dart';
 import 'package:reforge/features/running/domain/enums/running_session_status.dart';
 import 'package:reforge/features/running/ui/pages/running_exercise_host.dart';
+import 'package:reforge/features/workout_program/data/enums/segment_activity.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/domain/entities/exercise_segment_entity.dart';
 import 'package:reforge/features/workout_program/domain/enums/workout_metrics.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
+import 'package:toastification/toastification.dart';
 
 import '../../../helpers/test_setup.dart';
 
@@ -124,6 +127,45 @@ void main() {
     await tester.pump();
     await _disposeHost(tester);
   });
+
+  testWidgets('shows the first segment hint when a fresh run becomes active', (tester) async {
+    final tracker = _MockRunningTrackerCubit();
+    final sync = _MockRunningSetSyncCubit();
+    final active = _MockActiveExerciseCubit();
+    final states = StreamController<RunningTrackerState>();
+    final config = _config(null, segments: [_runSegment]);
+
+    whenListen(
+      tracker,
+      states.stream,
+      initialState: const RunningTrackerState(),
+    );
+    when(() => tracker.config).thenReturn(config);
+    when(() => sync.state).thenReturn(_syncState);
+    when(() => active.state).thenReturn(_activeState(null));
+    when(() => active.effectiveExercise).thenReturn(_runningExercise);
+    when(() => active.canSwap).thenReturn(false);
+
+    await _pumpHost(tester, tracker: tracker, sync: sync, active: active);
+    await tester.pumpAndSettle();
+
+    states.add(
+      const RunningTrackerState(
+        phase: RunningPhase.active,
+        sessionStatus: RunningSessionStatus.starting,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    verify(() => tracker.config).called(1);
+    expect(toastification.managers[Alignment.topCenter]?.notifications, hasLength(1));
+    verifyNever(tracker.clearLapCompleted);
+
+    toastification.dismissAll(delayForAnimation: false);
+    await states.close();
+    await _disposeHost(tester);
+  });
 }
 
 Future<void> _disposeHost(WidgetTester tester) async {
@@ -141,29 +183,31 @@ Future<void> _pumpHost(
   required ActiveExerciseCubit active,
 }) {
   return tester.pumpWidget(
-    MaterialApp(
-      theme: ThemeDataValues.darkThemeData,
-      home: KeyboardVisibilityProvider(
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<RunningTrackerCubit>.value(value: tracker),
-            BlocProvider<RunningSetSyncCubit>.value(value: sync),
-            BlocProvider<ActiveExerciseCubit>.value(value: active),
-          ],
-          child: const Scaffold(body: RunningExerciseHost()),
+    ToastificationWrapper(
+      child: MaterialApp(
+        theme: ThemeDataValues.darkThemeData,
+        home: KeyboardVisibilityProvider(
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider<RunningTrackerCubit>.value(value: tracker),
+              BlocProvider<RunningSetSyncCubit>.value(value: sync),
+              BlocProvider<ActiveExerciseCubit>.value(value: active),
+            ],
+            child: const Scaffold(body: RunningExerciseHost()),
+          ),
         ),
       ),
     ),
   );
 }
 
-RunningExerciseConfig _config(int? programExerciseId) {
+RunningExerciseConfig _config(int? programExerciseId, {List<ExerciseSegmentEntity> segments = const []}) {
   return RunningExerciseConfig(
     workoutSessionId: 182,
     exerciseSessionId: 246,
     workoutProgramExerciseId: programExerciseId,
     exercise: _runningExercise,
-    segments: const [],
+    segments: segments,
     staticTargetSetCount: 1,
   );
 }
@@ -226,4 +270,14 @@ const _runningExercise = ExerciseDetailsEntity(
   videoInstructionUrl: null,
   thumbnailInstructionUrl: null,
   instructionsSteps: {},
+);
+
+final _runSegment = ExerciseSegmentEntity(
+  id: 1,
+  order: 1,
+  activity: SegmentActivity.run,
+  targetMetric: WorkoutMetric.distance,
+  distanceM: 400,
+  durationSec: 0,
+  recommendedSpeed: null,
 );

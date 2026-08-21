@@ -1,4 +1,3 @@
-import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_exercise_dto.dart';
@@ -80,22 +79,21 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
   name: 'Day 1 with Intervals',
   dayNumber: 1,
   exercises: [
-    ProgramExerciseDTO(
-      id: 1,
-      order: 1,
-      executionMode: ExecutionMode.standard.name,
-      sets: 4,
-      exerciseDetails: newMockExercises[0],
-    ),
+    // ProgramExerciseDTO(
+    //   id: 1,
+    //   order: 1,
+    //   executionMode: ExecutionMode.standard.name,
+    //   sets: 4,
+    //   exerciseDetails: newMockExercises[0],
+    // ),
 
-    ProgramExerciseDTO(
-      id: 2,
-      order: 2,
-      executionMode: ExecutionMode.standard.name,
-      sets: 4,
-      exerciseDetails: newMockExercises[1],
-    ),
-
+    // ProgramExerciseDTO(
+    //   id: 2,
+    //   order: 2,
+    //   executionMode: ExecutionMode.standard.name,
+    //   sets: 4,
+    //   exerciseDetails: newMockExercises[1],
+    // ),
     const ProgramExerciseDTO(
       id: 110,
       order: 3,
@@ -131,40 +129,41 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
         ),
       ],
     ),
-    const ProgramExerciseDTO(
-      id: 111,
-      order: 5,
-      executionMode: 'segmented',
-      sets: 2,
-      exerciseDetails: ExerciseDetailsDTO(
-        id: 4,
-        name: 'Running Intervals',
-        type: 2,
-        key: 'running',
-        metrics: ['durationSec', 'distanceM', 'speedKmH'],
-        videoInstructionUrl: 'https://video.url/running',
-        thumbnailInstructionUrl: 'https://thumb.url/running',
-        description: 'Cardiovascular endurance exercise that improves heart health.',
-      ),
-      segments: [
-        ExerciseSegmentDTO(
-          id: 3,
-          order: 1,
-          activity: 'run',
-          targetMetric: 'distance',
-          label: 'Sprint block',
-          distanceM: 100,
-        ),
-        ExerciseSegmentDTO(
-          id: 4,
-          order: 2,
-          activity: 'walk',
-          targetMetric: 'duration',
-          label: 'Rest block',
-          durationSec: 60,
-        ),
-      ],
-    ),
+
+    // const ProgramExerciseDTO(
+    //   id: 111,
+    //   order: 5,
+    //   executionMode: 'segmented',
+    //   sets: 2,
+    //   exerciseDetails: ExerciseDetailsDTO(
+    //     id: 4,
+    //     name: 'Running Intervals',
+    //     type: 2,
+    //     key: 'running',
+    //     metrics: ['durationSec', 'distanceM', 'speedKmH'],
+    //     videoInstructionUrl: 'https://video.url/running',
+    //     thumbnailInstructionUrl: 'https://thumb.url/running',
+    //     description: 'Cardiovascular endurance exercise that improves heart health.',
+    //   ),
+    //   segments: [
+    //     ExerciseSegmentDTO(
+    //       id: 3,
+    //       order: 1,
+    //       activity: 'run',
+    //       targetMetric: 'distance',
+    //       label: 'Sprint block',
+    //       distanceM: 100,
+    //     ),
+    //     ExerciseSegmentDTO(
+    //       id: 4,
+    //       order: 2,
+    //       activity: 'walk',
+    //       targetMetric: 'duration',
+    //       label: 'Rest block',
+    //       durationSec: 60,
+    //     ),
+    //   ],
+    // ),
   ],
 ).toEntity();
 
