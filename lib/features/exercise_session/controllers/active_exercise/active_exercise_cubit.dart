@@ -93,13 +93,14 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
     // If we have restored sets from an interrupted session, show them as completed.
     // A fresh empty set is appended so the user can continue recording.
     final restored = restoredSets;
+    final targetSetCount = execution.spec.targetSetCount ?? 1;
     final initialSets = (restored != null && restored.isNotEmpty)
         ? [
             ...restored.map((s) => s.copyWith(isDone: true)),
             _newSet(setNumber: restored.length + 1),
           ]
         : [
-            _newSet(setNumber: 1),
+            for (var setNumber = 1; setNumber <= targetSetCount; setNumber++) _newSet(setNumber: setNumber),
           ];
 
     emit(

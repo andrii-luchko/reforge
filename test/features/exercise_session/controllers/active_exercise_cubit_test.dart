@@ -88,6 +88,23 @@ void main() {
     await cubit.close();
   });
 
+  test('fresh initialization creates the configured target set count', () async {
+    final cubit = ActiveExerciseCubit(
+      repository,
+      analytics,
+      userSessionService,
+      const ClientIdGenerator(),
+      sessionCache,
+      _swappedContext(targetSetCount: 3),
+    );
+
+    await cubit.initialize();
+
+    expect(cubit.state.sets.map((set) => set.setNumber), [1, 2, 3]);
+
+    await cubit.close();
+  });
+
   test('set and notes use effective exercise but retain original program exercise id', () async {
     final cubit = ActiveExerciseCubit(
       repository,
@@ -358,9 +375,15 @@ class _MockWorkoutSessionCacheRepository extends Mock implements WorkoutSessionC
 
 class _MockUserSessionService extends Mock implements UserSessionService {}
 
-ActiveExerciseExecution _swappedContext({String? notes}) {
+ActiveExerciseExecution _swappedContext({String? notes, int targetSetCount = 1}) {
   return ActiveExerciseExecution(
-    spec: _programSpec,
+    spec: WorkoutExerciseSpec(
+      executionKey: _programSpec.executionKey,
+      details: _programSpec.details,
+      targetSetCount: targetSetCount,
+      segments: _programSpec.segments,
+      programBinding: _programSpec.programBinding,
+    ),
     workoutSessionId: 10,
     session: WorkoutExerciseSessionEntity(
       id: 100,
