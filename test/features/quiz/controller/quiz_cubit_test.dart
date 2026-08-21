@@ -163,6 +163,18 @@ void main() {
       );
 
       blocTest<QuizCubit, QuizState>(
+        'setMainFaction removes the same faction from secondary selection',
+        build: createCubit,
+        seed: () => const QuizState(secondFactions: [Faction.seiren]),
+        act: (cubit) => cubit.setMainFaction(Faction.seiren),
+        expect: () => [
+          isA<QuizState>()
+              .having((s) => s.mainFaction, 'mainFaction', Faction.seiren)
+              .having((s) => s.secondFactions, 'secondFactions', isEmpty),
+        ],
+      );
+
+      blocTest<QuizCubit, QuizState>(
         'toggleSecondFaction adds faction when not in list',
         build: createCubit,
         act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
@@ -178,6 +190,16 @@ void main() {
         act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
         expect: () => [
           isA<QuizState>().having((s) => s.secondFactions, 'secondFactions', isEmpty),
+        ],
+      );
+
+      blocTest<QuizCubit, QuizState>(
+        'toggleSecondFaction replaces the previous secondary faction',
+        build: createCubit,
+        seed: () => const QuizState(secondFactions: [Faction.gakki]),
+        act: (cubit) => cubit.toggleSecondFaction(Faction.gyohyo),
+        expect: () => [
+          isA<QuizState>().having((s) => s.secondFactions, 'secondFactions', [Faction.gyohyo]),
         ],
       );
 

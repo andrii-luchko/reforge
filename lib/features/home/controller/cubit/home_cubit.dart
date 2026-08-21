@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -69,6 +68,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     if (previousUser != null && previousUser.id != user.id) {
       emit(HomeState(user: user));
+      _scheduleInitialDataLoad();
       return;
     }
 
@@ -78,18 +78,30 @@ class HomeCubit extends Cubit<HomeState> {
         previousUser.rank != user.rank ||
         previousUser.japanRank != user.japanRank;
 
+    final rank = rankProfileChanged
+        ? _createRank(
+            user,
+            state.currentStats,
+            previousRank: state.rank,
+          )
+        : state.rank;
+
     emit(
       state.copyWith(
         user: user,
-        rank: rankProfileChanged
-            ? _createRank(
-                user,
-                state.currentStats,
-                previousRank: state.rank,
-              )
-            : state.rank,
+        rank: rank,
       ),
     );
+
+    if (state.currentStats == null) {
+      _scheduleInitialDataLoad();
+    }
+  }
+
+  void _scheduleInitialDataLoad() {
+    scheduleMicrotask(() {
+      if (!isClosed) unawaited(ensureInitialDataLoaded());
+    });
   }
 
   Future<void> loadStatsByPeriod(StatsPeriod period, {bool isInitial = false}) async {

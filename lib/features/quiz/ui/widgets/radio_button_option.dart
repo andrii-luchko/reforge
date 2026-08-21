@@ -12,6 +12,7 @@ class RadioButtonOption extends StatelessWidget {
     required this.title,
     required this.isSelected,
     required this.onTap,
+    this.radioColor,
     this.description,
     super.key,
   });
@@ -20,10 +21,12 @@ class RadioButtonOption extends StatelessWidget {
   final String? description;
   final bool isSelected;
   final VoidCallback onTap;
+  final Color? radioColor;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
+    final radioColor = this.radioColor ?? appTheme.beige100;
 
     return PressableAnimation(
       scaleAmount: 0.99,
@@ -82,7 +85,7 @@ class RadioButtonOption extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: appTheme.beige700,
+                    color: radioColor.withValues(alpha: .5),
                   ),
                 ),
                 child: isSelected
@@ -95,7 +98,7 @@ class RadioButtonOption extends StatelessWidget {
                             height: 12,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: appTheme.beige100,
+                              color: radioColor,
                             ),
                           ),
                         ),

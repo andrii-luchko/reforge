@@ -54,6 +54,23 @@ void main() {
   });
 
   group('HomeCubit', () {
+    test('loads initial stats when created with an onboarded user', () async {
+      final user = createTestOnboardedUser();
+      final stats = createTestUserStats();
+      when(() => mockUserCubit.currentOnboardedUser).thenReturn(user);
+      when(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).thenAnswer((_) async => Result.success(stats));
+
+      final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.user, user);
+      expect(cubit.state.currentStats, stats);
+      expect(cubit.state.rank?.lvl, stats.level);
+      verify(() => mockRepository.getUserStats(StatsPeriod.lastWeek)).called(1);
+
+      await cubit.close();
+    });
+
     test('logs the dedicated Free Run entry event', () async {
       final cubit = HomeCubit(mockRepository, mockAnalytics, mockUserCubit)..onFreeRunTap();
       await Future<void>.delayed(Duration.zero);

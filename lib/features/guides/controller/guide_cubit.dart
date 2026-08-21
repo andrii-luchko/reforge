@@ -75,6 +75,9 @@ class GuideCubit extends Cubit<GuideState> {
       }
 
       _session = session;
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
       emit(
         GuideState.running(
           guideId: session.id,

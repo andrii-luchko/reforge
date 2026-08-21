@@ -68,10 +68,12 @@ class QuizCubit extends Cubit<QuizState> {
   }
 
   void setMainGoal(MainGoal goal) {
+    final mainFaction = goal.faction;
     emit(
       state.copyWith(
         mainGoal: goal,
-        mainFaction: goal.faction,
+        mainFaction: mainFaction,
+        secondFactions: state.secondFactions.where((faction) => faction != mainFaction).toList(),
       ),
     );
   }
@@ -89,7 +91,12 @@ class QuizCubit extends Cubit<QuizState> {
   }
 
   void setMainFaction(Faction faction) {
-    emit(state.copyWith(mainFaction: faction));
+    emit(
+      state.copyWith(
+        mainFaction: faction,
+        secondFactions: state.secondFactions.where((secondary) => secondary != faction).toList(),
+      ),
+    );
   }
 
   // void setSecondFaction(Faction faction) {
@@ -97,15 +104,8 @@ class QuizCubit extends Cubit<QuizState> {
   // }
 
   void toggleSecondFaction(Faction faction) {
-    final currentList = List<Faction>.from(state.secondFactions);
-
-    if (currentList.contains(faction)) {
-      currentList.remove(faction);
-    } else {
-      currentList.add(faction);
-    }
-
-    emit(state.copyWith(secondFactions: currentList));
+    final updatedSelection = state.secondFactions.contains(faction) ? <Faction>[] : [faction];
+    emit(state.copyWith(secondFactions: updatedSelection));
   }
 
   bool get isFormComplete {
