@@ -31,14 +31,14 @@ class InstructionSection extends StatelessWidget {
     );
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: needDecoration ? const EdgeInsets.all(16) : null,
       decoration: needDecoration ? decoration : null,
       child: Column(
         crossAxisAlignment: .start,
         children: [
           Text(
             t.workout_instruction.howToPerform,
-            style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
+            style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
           ),
           const SizedBox(height: 8),
           if (entriesList.isEmpty)

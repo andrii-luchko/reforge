@@ -530,7 +530,8 @@
         "howToPerform": "How to perform",
         "instructionsPlaceholder": "We are currently working on\ninstructions for this exercise",
         "videoInstructions": "Video instructions",
-        "aboutExercise": "About the exercise"
+        "aboutExercise": "About the exercise",
+        "coachNote": "Coach note"
     },
     "workout_share": {
         "share": "Share",

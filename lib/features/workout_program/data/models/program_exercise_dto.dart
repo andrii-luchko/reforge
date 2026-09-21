@@ -18,6 +18,7 @@ sealed class ProgramExerciseDTO with _$ProgramExerciseDTO {
     required String executionMode,
     @JsonKey(name: 'exercise') required ExerciseDetailsDTO exerciseDetails,
     @JsonKey(name: 'segments') @Default([]) List<ExerciseSegmentDTO> segments,
+    String? notes,
   }) = _ProgramExerciseDTO;
 
   factory ProgramExerciseDTO.fromJson(Map<String, dynamic> json) => _$ProgramExerciseDTOFromJson(json);
@@ -30,6 +31,7 @@ extension ProgramExerciseToEntityX on ProgramExerciseDTO {
       programDayId: programDayId,
       sets: sets,
       order: order,
+      notes: notes,
       executionMode: ExecutionMode.fromJson(executionMode),
       exerciseDetails: exerciseDetails.toEntity(),
       segments: segments.map((e) => e.toEntity()).toList(),

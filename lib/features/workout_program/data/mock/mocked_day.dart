@@ -1,3 +1,4 @@
+import 'package:reforge/features/workout_program/data/enums/execution_mode.dart';
 import 'package:reforge/features/workout_program/data/models/exercise_details_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_day_dto.dart';
 import 'package:reforge/features/workout_program/data/models/program_exercise_dto.dart';
@@ -79,13 +80,14 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
   name: 'Day 1 with Intervals',
   dayNumber: 1,
   exercises: [
-    // ProgramExerciseDTO(
-    //   id: 1,
-    //   order: 1,
-    //   executionMode: ExecutionMode.standard.name,
-    //   sets: 4,
-    //   exerciseDetails: newMockExercises[0],
-    // ),
+    ProgramExerciseDTO(
+      id: 1,
+      order: 1,
+      executionMode: ExecutionMode.standard.name,
+      sets: 4,
+      notes: 'Keep your back neutral, brace your core, and drive through your heels on every rep.',
+      exerciseDetails: newMockExercises[0],
+    ),
 
     // ProgramExerciseDTO(
     //   id: 2,
@@ -99,6 +101,7 @@ final ProgramDayEntity mockProgramDay = ProgramDayDTO(
       order: 3,
       executionMode: 'segmented',
       sets: 2,
+      notes: 'Keep the pace controlled during the run intervals and recover fully during each walk.',
       exerciseDetails: ExerciseDetailsDTO(
         id: 4,
         name: 'Running Intervals',

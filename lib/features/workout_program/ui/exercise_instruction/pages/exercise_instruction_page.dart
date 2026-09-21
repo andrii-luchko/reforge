@@ -1,27 +1,24 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reforge/features/workout_program/controllers/workout_program_cubit.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/exercise_description_section.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/instruction_section.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/video_section.dart';
 import 'package:reforge/features/workout_program/ui/widgets/app_tags_list_view.dart';
+import 'package:reforge/features/workout_program/ui/widgets/coach_note_section.dart';
+import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
 import 'package:reforge/shared/uikit/default_background.dart';
-import 'package:reforge/shared/uikit/screen_loading_indicator.dart';
 
 class ExerciseInstructionPage extends StatelessWidget {
   const ExerciseInstructionPage({
-    required this.name,
-    required this.workoutId,
-    this.exercise,
+    required this.exercise,
+    this.coachNote,
     super.key,
   });
 
-  final String name;
-  final int workoutId;
-  final ExerciseDetailsEntity? exercise;
+  final ExerciseDetailsEntity exercise;
+  final String? coachNote;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +29,8 @@ class ExerciseInstructionPage extends StatelessWidget {
 
       body: DefaultBackground(
         body: ExerciseInstructionBody(
-          name: name,
-          workoutId: workoutId,
           exercise: exercise,
+          coachNote: coachNote,
         ),
       ),
     );
@@ -43,69 +39,66 @@ class ExerciseInstructionPage extends StatelessWidget {
 
 class ExerciseInstructionBody extends StatelessWidget {
   const ExerciseInstructionBody({
-    required this.name,
-    required this.workoutId,
-    this.exercise,
+    required this.exercise,
+    this.coachNote,
     super.key,
   });
 
-  final String name;
-  final int workoutId;
-  final ExerciseDetailsEntity? exercise;
+  final ExerciseDetailsEntity exercise;
+  final String? coachNote;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkoutProgramCubit, WorkoutProgramState>(
-      builder: (context, state) {
-        final programDay = state.programDay;
-
-        final resolvedExercise =
-            exercise ??
-            programDay?.sortedExercises.map((e) => e.exerciseDetails).firstWhereOrNull((e) => e.id == workoutId);
-
-        if (resolvedExercise == null) {
-          return const ScreenLoadingIndicator();
-        }
-        return SafeArea(
-          top: false,
-          bottom: false,
-          child: CustomScrollView(
-            slivers: [
-              DefaultSliverAppBar(onPressed: Navigator.of(context).pop, title: name),
-              SliverPadding(
-                padding: const .symmetric(horizontal: 16, vertical: 16),
-                sliver: SliverToBoxAdapter(
-                  child: VideoSection(
-                    videoUrl: resolvedExercise.videoInstructionUrl,
-                  ),
-                ),
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: CustomScrollView(
+        slivers: [
+          DefaultSliverAppBar(onPressed: Navigator.of(context).pop, title: exercise.name),
+          SliverPadding(
+            padding: const .symmetric(horizontal: 16, vertical: 16),
+            sliver: SliverToBoxAdapter(
+              child: VideoSection(
+                videoUrl: exercise.videoInstructionUrl,
               ),
-              const SliverPadding(
-                padding: .symmetric(horizontal: 16, vertical: 16),
-                sliver: SliverToBoxAdapter(
-                  child: AppTagsListView(tags: []),
-                ),
-              ),
-              SliverPadding(
-                padding: const .symmetric(horizontal: 16),
-                sliver: SliverToBoxAdapter(
-                  child: ExerciseDescriptionSection(
-                    description: resolvedExercise.description,
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const .symmetric(horizontal: 16, vertical: 16),
-                sliver: SliverToBoxAdapter(
-                  child: InstructionSection(
-                    steps: resolvedExercise.instructionsSteps,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+          SliverPadding(
+            padding: const .only(left: 16, right: 16, bottom: 16),
+            sliver: SliverToBoxAdapter(
+              child: AppTagsListView(tags: exercise.availableTags(t)),
+            ),
+          ),
+          SliverPadding(
+            padding: const .only(left: 16, right: 16, bottom: 16, top: 16),
+            sliver: SliverToBoxAdapter(
+              child: ExerciseDescriptionSection(
+                description: exercise.description,
+              ),
+            ),
+          ),
+          if (coachNote?.trim().isNotEmpty ?? false)
+            SliverPadding(
+              padding: const .only(left: 16, right: 16, top: 8, bottom: 8),
+              sliver: SliverToBoxAdapter(
+                child: CoachNoteSection(
+                  note: coachNote!,
+                ),
+              ),
+            ),
+          SliverPadding(
+            padding: const .only(left: 16, right: 16, top: 16),
+            sliver: AppBottomPaddingWidget.sliver(
+              extraSpace: 0,
+              child: SliverToBoxAdapter(
+                child: InstructionSection(
+                  steps: exercise.instructionsSteps,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

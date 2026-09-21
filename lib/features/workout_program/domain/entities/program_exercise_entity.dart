@@ -13,12 +13,14 @@ class ProgramExerciseEntity {
     required this.exerciseDetails,
     required this.executionMode,
     required this.segments,
+    this.notes,
   });
 
   final int id;
   final int? programDayId;
   final int sets;
   final int order;
+  final String? notes;
   final ExecutionMode executionMode;
   final ExerciseDetailsEntity exerciseDetails;
   final List<ExerciseSegmentEntity> segments;
@@ -49,6 +51,6 @@ class ProgramExerciseEntity {
 
   @override
   String toString() {
-    return 'ProgramExerciseEntity(\nid: $id, \nprogramDayId: $programDayId, \nsets: $sets, \norder: $order, \nexerciseDetails: $exerciseDetails,\n segments:$segments )';
+    return 'ProgramExerciseEntity(\nid: $id, \nprogramDayId: $programDayId, \nsets: $sets, \norder: $order, \nnotes: $notes, \nexerciseDetails: $exerciseDetails,\n segments:$segments )';
   }
 }

@@ -58,7 +58,7 @@ import 'package:reforge/features/subscription/ui/pages/paywall_page.dart';
 import 'package:reforge/features/subscription/ui/pages/subscription_page.dart';
 import 'package:reforge/features/workout_congratulations/ui/pages/workout_congratulations_page.dart';
 import 'package:reforge/features/workout_program/controllers/free_run_details_cubit.dart';
-import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/ui/exercise_instruction/models/exercise_instruction_args.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/pages/exercise_instruction_page.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/pages/scheduled_workout_details_page.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/pages/workout_details_page.dart';
@@ -668,21 +668,16 @@ class ScheduledWorkoutDetailsPageRoute extends GoRouteData
 
 class ExerciseInstructionPageRoute extends GoRouteData with $ExerciseInstructionPageRoute {
   const ExerciseInstructionPageRoute({
-    required this.name,
-    required this.workoutId,
-    this.$extra,
+    required this.$extra,
   });
 
-  final String name;
-  final int workoutId;
-  final ExerciseDetailsEntity? $extra;
+  final ExerciseInstructionArgs $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return ExerciseInstructionPage(
-      name: name,
-      workoutId: workoutId,
-      exercise: $extra,
+      exercise: $extra.exercise,
+      coachNote: $extra.coachNote,
     );
   }
 }

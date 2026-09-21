@@ -62,6 +62,8 @@ class ActiveExerciseCubit extends Cubit<ActiveExerciseState> {
 
   ExerciseDetailsEntity get effectiveExercise => state.effectiveExercise;
 
+  String? get coachNote => execution.spec.coachNote;
+
   int? get workoutProgramExerciseId => execution.spec.workoutProgramExerciseId;
 
   bool get isRunningExercise =>

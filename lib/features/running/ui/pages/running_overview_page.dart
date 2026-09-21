@@ -113,7 +113,10 @@ class RunningOverviewPage extends StatelessWidget {
                               ),
                             ),
 
-                            WorkoutSection(exercise: exerciseDetails),
+                            WorkoutSection(
+                              exercise: exerciseDetails,
+                              coachNote: activeExerciseCubit.coachNote,
+                            ),
                             const SizedBox(height: 12),
                             const ExerciseSwapButton(),
                             const SizedBox(height: 24),

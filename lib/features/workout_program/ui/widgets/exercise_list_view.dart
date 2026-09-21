@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/ui/exercise_instruction/models/exercise_instruction_args.dart';
 import 'package:reforge/features/workout_program/ui/widgets/workout_list_tile.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 class ExerciseListView extends StatelessWidget {
   const ExerciseListView({required this.exercises, super.key});
 
-  final List<ExerciseDetailsEntity> exercises;
+  final List<ExerciseInstructionArgs> exercises;
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -16,7 +17,8 @@ class ExerciseListView extends StatelessWidget {
       itemCount: exercises.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
-        final exercise = exercises[index];
+        final args = exercises[index];
+        final exercise = args.exercise;
 
         return StaticWorkoutTile(
           title: exercise.name,
@@ -25,9 +27,7 @@ class ExerciseListView extends StatelessWidget {
           tags: exercise.availableTags(t),
           onTap: () async {
             await ExerciseInstructionPageRoute(
-              name: exercise.name,
-              workoutId: exercise.id,
-              $extra: exercise,
+              $extra: args,
               // ignore: inference_failure_on_function_invocation
             ).push(context);
           },

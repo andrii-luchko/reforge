@@ -20,6 +20,7 @@ class WorkoutExecutionPlan {
             details: exercise.exerciseDetails,
             targetSetCount: exercise.sets,
             segments: exercise.segments,
+            coachNote: exercise.notes,
             programBinding: WorkoutProgramExerciseBinding(
               programDayId: day.id,
               programExerciseId: exercise.id,

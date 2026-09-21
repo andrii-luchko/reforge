@@ -58,7 +58,10 @@ class RegularExercisePage extends StatelessWidget {
                               ),
                             ),
 
-                            WorkoutSection(exercise: exerciseDetails),
+                            WorkoutSection(
+                              exercise: exerciseDetails,
+                              coachNote: cubit.coachNote,
+                            ),
                             const SizedBox(height: 12),
                             const ExerciseSwapButton(),
                             const SizedBox(height: 24),

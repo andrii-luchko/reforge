@@ -8,7 +8,7 @@ import 'package:reforge/core/analytics/domain/analytics_service.dart';
 import 'package:reforge/features/workout_program/controllers/free_run_details_cubit.dart';
 import 'package:reforge/features/workout_program/controllers/workout_program_cubit.dart';
 import 'package:reforge/features/workout_program/data/mock/mocked_day.dart';
-import 'package:reforge/features/workout_program/domain/entities/exercise_details_entity.dart';
+import 'package:reforge/features/workout_program/ui/exercise_instruction/models/exercise_instruction_args.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/widgets/exercise_section.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/widgets/start_workout_button.dart';
 import 'package:reforge/features/workout_program/ui/workout_day_details/widgets/workout_details_section.dart';
@@ -43,7 +43,14 @@ class WorkoutDetailsBody extends StatelessWidget {
               enabled: isLoading,
               child: _WorkoutDetailsContent(
                 title: programDay.name,
-                exercises: programDay.sortedExercises.map((e) => e.exerciseDetails).toList(),
+                exercises: programDay.sortedExercises
+                    .map(
+                      (exercise) => ExerciseInstructionArgs(
+                        exercise: exercise.exerciseDetails,
+                        coachNote: exercise.notes,
+                      ),
+                    )
+                    .toList(),
                 onStartWorkout: onStartWorkout,
               ),
             );
@@ -81,7 +88,7 @@ class FreeRunDetailsBody extends StatelessWidget {
             }
             return _WorkoutDetailsContent(
               title: context.t.workout_details.freeRunTitle,
-              exercises: [state.exercise!],
+              exercises: [ExerciseInstructionArgs(exercise: state.exercise!)],
               onStartWorkout: onStartWorkout,
             );
           },
@@ -99,7 +106,7 @@ class _WorkoutDetailsContent extends StatelessWidget {
   });
 
   final String title;
-  final List<ExerciseDetailsEntity> exercises;
+  final List<ExerciseInstructionArgs> exercises;
   final Future<void> Function() onStartWorkout;
 
   @override

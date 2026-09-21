@@ -11,6 +11,7 @@ class WorkoutExerciseSpec {
     required this.targetSetCount,
     required this.segments,
     required this.programBinding,
+    this.coachNote,
   });
 
   final String executionKey;
@@ -18,6 +19,7 @@ class WorkoutExerciseSpec {
   final int? targetSetCount;
   final List<ExerciseSegmentEntity> segments;
   final WorkoutProgramExerciseBinding? programBinding;
+  final String? coachNote;
 
   int get exerciseId => details.id;
 

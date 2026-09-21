@@ -170,8 +170,15 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
               _ExpandableBody(
                 heightFactor: _heightFactor,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(
+                      widget.description,
+                      style: subheadH6Regular.copyWith(color: appTheme.beige600),
+                    ),
+                  ),
                   if (widget.tags != null && widget.tags!.isNotEmpty) ...[
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 12),
                     AppTagsListView(tags: widget.tags!),
                   ],
                   ...widget.children,
@@ -291,24 +298,15 @@ class _WorkoutDetails extends StatelessWidget {
           title,
           style: subheadH3Medium.copyWith(color: appTheme.beige100),
         ),
-        const SizedBox(height: 7),
-        AnimatedCrossFade(
-          firstChild: Text(
+        if (!isExpanded) ...[
+          const SizedBox(height: 7),
+          Text(
             description,
             style: descriptionStyle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          secondChild: Text(
-            description,
-            style: descriptionStyle,
-          ),
-          crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 300),
-          alignment: Alignment.topLeft,
-          firstCurve: Curves.easeOut,
-          secondCurve: Curves.easeOut,
-        ),
+        ],
         if (tags != null && tags!.isNotEmpty) ...[
           const SizedBox(height: 7),
           AppTagsListView(tags: tags!),
