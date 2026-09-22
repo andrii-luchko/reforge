@@ -54,7 +54,7 @@ FutureOr<String?> appRedirect(
           case SubscriptionAccessStatus.active:
             break;
           case SubscriptionAccessStatus.checking:
-            if (!splash) return const SplashPageRoute().location;
+            if (!onAuth) return const SplashPageRoute().location;
             return null;
 
           case SubscriptionAccessStatus.inactive:
