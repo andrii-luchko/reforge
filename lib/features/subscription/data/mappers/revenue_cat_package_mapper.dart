@@ -45,15 +45,6 @@ String? displayTrialPeriod(int? unitsCount, PeriodUnit? unit) {
   }
 }
 
-Package? findPackageById(Offerings offerings, String packageId) {
-  final current = offerings.current;
-  if (current == null) return null;
-  for (final p in current.availablePackages) {
-    if (p.identifier == packageId) return p;
-  }
-  return null;
-}
-
 SubscriptionPackage mapPackage(Package rcPackage) {
   final product = rcPackage.storeProduct;
   return SubscriptionPackage(
@@ -62,10 +53,7 @@ SubscriptionPackage mapPackage(Package rcPackage) {
     price: product.price,
     priceString: product.priceString,
     currencyCode: product.currencyCode,
-    productIdentifier: product.identifier,
-    rcPackageGroupId: rcPackage.identifier,
     periodType: periodTypeFromPackageType(rcPackage.packageType),
-    period: product.subscriptionPeriod,
     trialInfo: product.introductoryPrice != null
         ? SubscriptionTrialInfo(
             price: product.introductoryPrice!.price,

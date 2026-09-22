@@ -1,27 +1,36 @@
-import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
+import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 
 /// Current subscription status of the user.
 class SubscriptionEntity {
   const SubscriptionEntity({
-    required this.isActive,
     this.expirationDate,
-    this.entitlementId,
-    this.productIdentifier,
-    this.productPlanIdentifier,
-    this.matchedPackage,
-    this.managementUrl,
+    this.periodType = SubscriptionPeriodType.unknown,
+    this.store = SubscriptionStore.unknown,
   });
 
-  final bool isActive;
   final DateTime? expirationDate;
-  final String? entitlementId;
-  final String? productIdentifier;
-  final String? productPlanIdentifier;
-  final SubscriptionPackage? matchedPackage;
-  final String? managementUrl;
+  final SubscriptionPeriodType periodType;
+  final SubscriptionStore store;
+
+  bool get isLifetime => periodType == SubscriptionPeriodType.lifetime;
 
   @override
   String toString() {
-    return 'SubscriptionEntity(isActive: $isActive, expirationDate: $expirationDate, entitlementId: $entitlementId, productIdentifier: $productIdentifier, productPlanIdentifier: $productPlanIdentifier)';
+    return 'SubscriptionEntity(expirationDate: $expirationDate, periodType: $periodType, store: $store)';
   }
+}
+
+enum SubscriptionStore {
+  appStore,
+  macAppStore,
+  playStore,
+  stripe,
+  promotional,
+  amazon,
+  revenueCatBilling,
+  paddle,
+  testStore,
+  external,
+  galaxy,
+  unknown,
 }

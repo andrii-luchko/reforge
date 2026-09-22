@@ -6,18 +6,13 @@ class SubscriptionPackagesListContent extends StatelessWidget {
   const SubscriptionPackagesListContent({
     required this.packages,
     required this.selectedPackage,
-    required this.currentPackage,
     required this.onPackageSelected,
-    this.annualSavings,
     super.key,
   });
 
   final List<SubscriptionPackage> packages;
   final SubscriptionPackage? selectedPackage;
-  final SubscriptionPackage? currentPackage;
   final ValueChanged<SubscriptionPackage> onPackageSelected;
-
-  final double? annualSavings;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +25,7 @@ class SubscriptionPackagesListContent extends StatelessWidget {
                 child: SubscriptionCard(
                   package: package,
                   isSelected: selectedPackage?.id == package.id,
-                  isCurrentPlan: currentPackage != null && package.id == currentPackage!.id,
                   onTap: () => onPackageSelected(package),
-                  annualSavings: annualSavings,
                 ),
               ),
             ),

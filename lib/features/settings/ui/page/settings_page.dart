@@ -265,7 +265,8 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final subscription = context.watch<SubscriptionCubit>().state.currentSubscription;
+    final subscriptionState = context.watch<SubscriptionCubit>().state;
+    final subscription = subscriptionState.currentSubscription;
     logger.d(subscription ?? '');
 
     return SliverMainAxisGroup(
@@ -305,7 +306,7 @@ class SettingsGroup extends StatelessWidget {
         ),
         const SliverPadding(padding: .only(bottom: 32)),
 
-        if (subscription == null) const NoSubscriptionWidget(),
+        if (subscriptionState.accessStatus == SubscriptionAccessStatus.inactive) const NoSubscriptionWidget(),
 
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -324,7 +325,7 @@ class SettingsGroup extends StatelessWidget {
             itemCount: WorkoutSettings.values.length,
             itemBuilder: (context, index) {
               final setting = WorkoutSettings.values[index];
-              if (setting == WorkoutSettings.subscription && subscription == null) {
+              if (setting == WorkoutSettings.subscription && !subscriptionState.hasActiveSubscription) {
                 return const SizedBox.shrink();
               }
 
@@ -347,7 +348,9 @@ class SettingsGroup extends StatelessWidget {
             },
             separatorBuilder: (context, index) {
               final setting = WorkoutSettings.values[index];
-              if (setting == WorkoutSettings.subscription && subscription == null) return const SizedBox.shrink();
+              if (setting == WorkoutSettings.subscription && !subscriptionState.hasActiveSubscription) {
+                return const SizedBox.shrink();
+              }
               return const SizedBox(height: 12);
             },
           ),

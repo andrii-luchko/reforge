@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
@@ -47,6 +49,10 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
   @override
   void initState() {
     super.initState();
+    final cubit = context.read<SubscriptionCubit>();
+    if (cubit.state.accessStatus != SubscriptionAccessStatus.checking) {
+      unawaited(cubit.checkSubscriptionStatus());
+    }
   }
 
   @override
@@ -65,25 +71,17 @@ class _SubscriptionsContentState extends State<SubscriptionsContent> {
           prev.error != curr.error ||
           prev.currentSubscription != curr.currentSubscription,
       builder: (context, state) {
-        if (state.offerings != null && state.offerings!.packages.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            final current = state.currentPackage;
-
-            if (current != null) return;
-
-            if (_selectedPackage == null) {
-              setState(() => _selectedPackage = state.offerings!.packages.first);
-            }
-          });
-        }
+        final packages = state.offerings?.packages ?? [];
+        final selectedPackage = packages.any((p) => p.id == _selectedPackage?.id)
+            ? _selectedPackage
+            : (packages.isNotEmpty ? packages.first : null);
         return SubscriptionContentBody(
           state: state,
-          selectedPackage: _selectedPackage,
+          selectedPackage: selectedPackage,
           onPackageSelected: (p) => setState(() => _selectedPackage = p),
           onPurchase: () async {
-            if (_selectedPackage != null) {
-              await context.read<SubscriptionCubit>().purchase(_selectedPackage!);
+            if (selectedPackage != null) {
+              await context.read<SubscriptionCubit>().purchase(selectedPackage);
             }
           },
           onRestorePurchases: () => context.read<SubscriptionCubit>().restorePurchases(),

@@ -13,30 +13,23 @@ class SubscriptionCard extends StatelessWidget {
     required this.package,
     required this.isSelected,
     this.onTap,
-    this.isCurrentPlan = false,
     this.margin = const EdgeInsets.only(bottom: 16),
-    this.annualSavings,
     super.key,
   });
 
   final SubscriptionPackage package;
   final bool isSelected;
   final VoidCallback? onTap;
-  final bool isCurrentPlan;
   final EdgeInsetsGeometry? margin;
-
-  final double? annualSavings;
 
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
-    final tag = isCurrentPlan ? t.subscription.currentPlan : package.periodType.displayTag(t);
-
-    final formattedAnnualSavings = annualSavings == null ? '' : package.formattedPrice(annualSavings!);
+    final tag = package.periodType.displayTag(t);
 
     return PressableAnimation(
       scaleAmount: 0.98,
-      onTap: isCurrentPlan ? () {} : onTap,
+      onTap: onTap,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -82,7 +75,7 @@ class SubscriptionCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        package.periodType.description(t, formattedAnnualSavings),
+                        package.periodType.description(t),
                         style: subheadH6Regular.copyWith(color: appTheme.beige700),
                       ),
                     ),

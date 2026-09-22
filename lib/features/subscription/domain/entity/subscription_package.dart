@@ -25,9 +25,6 @@ class SubscriptionPackage {
     required this.priceString,
     required this.currencyCode,
     required this.periodType,
-    this.productIdentifier,
-    this.rcPackageGroupId,
-    this.period,
     this.trialInfo,
   });
 
@@ -37,13 +34,7 @@ class SubscriptionPackage {
   final String priceString;
   final String currencyCode;
   final SubscriptionPeriodType periodType;
-  final String? period;
   final SubscriptionTrialInfo? trialInfo;
-  final String? productIdentifier;
-
-  /// Cross-platform package group id (e.g. RC package identifier). Used to match
-  /// subscription from another platform when productIdentifier differs.
-  final String? rcPackageGroupId;
 
   String get displayPrice {
     final code = currencyCode;
@@ -67,30 +58,9 @@ class SubscriptionPackage {
     }
   }
 
-  String formattedPrice(double amount) {
-    final code = trialInfo?.currencyCode ?? currencyCode;
-
-    try {
-      final formatter = NumberFormat.simpleCurrency(name: code);
-
-      final symbol = formatter.currencySymbol;
-
-      final numberFormatter = NumberFormat.decimalPattern()
-        ..minimumFractionDigits = 2
-        ..maximumFractionDigits = 2;
-
-      final formattedNumber = numberFormatter.format(amount);
-
-      return '$symbol\u00A0$formattedNumber';
-      // ignore: avoid_catches_without_on_clauses
-    } catch (e) {
-      return '$code $amount';
-    }
-  }
-
   @override
   String toString() {
-    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, period: $period, trialInfo: $trialInfo, productIdentifier: $productIdentifier, rcPackageGroupId: $rcPackageGroupId)';
+    return 'SubscriptionPackage(id: $id, title: $title, price: $price, priceString: $priceString, currencyCode: $currencyCode, periodType: $periodType, trialInfo: $trialInfo)';
   }
 }
 
@@ -102,7 +72,5 @@ extension SubscriptionPackagePlaceholder on SubscriptionPackage {
     priceString: r'$9.99',
     currencyCode: 'USD',
     periodType: SubscriptionPeriodType.monthly,
-    // ignore: avoid_redundant_argument_values
-    rcPackageGroupId: null,
   );
 }

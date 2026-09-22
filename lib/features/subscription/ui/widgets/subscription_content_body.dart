@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/utils/extensions/animations_extension.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
-import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_footer_actions.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_lifetime_status_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_recurring_status_card.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_status_card.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 class SubscriptionContentBody extends StatelessWidget {
@@ -26,47 +25,39 @@ class SubscriptionContentBody extends StatelessWidget {
   final VoidCallback onPurchase;
   final VoidCallback onRestorePurchases;
 
-  String _buttonLabel() {
-    if (state.hasLifetime) return '';
-    if (state.hasActiveSubscription && state.currentPackage != null) {
-      if (selectedPackage != null && selectedPackage!.id == state.currentPackage!.id) {
-        return t.subscription.currentPlan;
-      }
-      return selectedPackage?.periodType.isUpgradeFrom(state.currentPackage!.periodType) ?? false
-          ? t.subscription.upgrade
-          : t.subscription.changePlan;
-    }
-    return t.common.continue_button;
-  }
-
-  bool _canPurchase() {
-    if (state.hasLifetime) return false;
-    if (selectedPackage == null) return false;
-    if (state.hasActiveSubscription && state.currentPackage != null) {
-      if (selectedPackage!.id == state.currentPackage!.id) return false;
-    }
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (state.hasLifetime) {
+    if (state.accessStatus == SubscriptionAccessStatus.checking) {
       return const SliverFillRemaining(
         hasScrollBody: false,
-        child: Align(
-          child: SubscriptionLifetimeStatusCard(),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (state.accessStatus == SubscriptionAccessStatus.error) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(t.subscription.loadErrorSubtitle),
+              TextButton(
+                onPressed: () => context.read<SubscriptionCubit>().retry(),
+                child: Text(t.subscription.tryAgain),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    if (state.hasActiveSubscription && state.currentPackage != null) {
+    if (state.hasActiveSubscription) {
       return SliverMainAxisGroup(
         slivers: [
           SliverToBoxAdapter(
-            child: SubscriptionRecurringStatusCard(
-              currentPackage: state.currentPackage!,
-              expirationDate: state.currentSubscription!.expirationDate,
-              managementUrl: state.currentSubscription!.managementUrl,
+            child: SubscriptionStatusCard(
+              subscription: state.currentSubscription!,
             ).animateEntrance(),
           ),
         ],
@@ -80,11 +71,18 @@ class SubscriptionContentBody extends StatelessWidget {
           selectedPackage: selectedPackage,
           onPackageSelected: onPackageSelected,
         ),
+        if (state.offerings == null || state.offerings!.packages.isEmpty)
+          SliverToBoxAdapter(
+            child: TextButton(
+              onPressed: () => context.read<SubscriptionCubit>().loadOfferings(),
+              child: Text(t.subscription.tryAgain),
+            ),
+          ),
         SliverFillRemaining(
           hasScrollBody: false,
           child: SubscriptionFooterAction(
-            buttonLabel: _buttonLabel(),
-            onPressed: _canPurchase() ? onPurchase : null,
+            buttonLabel: t.common.continue_button,
+            onPressed: selectedPackage != null ? onPurchase : null,
             onRestorePurchases: onRestorePurchases,
           ),
         ),

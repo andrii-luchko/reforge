@@ -21,28 +21,13 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   }
 
   final _subscriptionUpdates = StreamController<SubscriptionEntity?>.broadcast();
-  List<SubscriptionPackage>? _packages;
-  String? _fallbackRcPackageGroupId;
+  final Map<String, Package> _packagesById = {};
 
   @override
   Stream<SubscriptionEntity?> get subscriptionUpdates => _subscriptionUpdates.stream;
 
   void _onCustomerInfoUpdated(CustomerInfo info) {
-    _subscriptionUpdates.add(
-      mapCustomerInfo(
-        info,
-        packages: _packages,
-        fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
-      ),
-    );
-  }
-
-  void _setSubscriptionContext({
-    List<SubscriptionPackage>? packages,
-    String? fallbackRcPackageGroupId,
-  }) {
-    _packages = packages;
-    _fallbackRcPackageGroupId = fallbackRcPackageGroupId;
+    _subscriptionUpdates.add(mapCustomerInfo(info));
   }
 
   @override
@@ -55,10 +40,14 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
       );
 
       final current = offerings.current;
+      _packagesById.clear();
       if (current == null || current.availablePackages.isEmpty) {
         return const Result.success(SubscriptionOfferings(packages: []));
       }
       final packages = current.availablePackages.map(mapPackage).toList();
+      for (final package in current.availablePackages) {
+        _packagesById[package.identifier] = package;
+      }
       return Result.success(
         SubscriptionOfferings(
           packages: packages,
@@ -75,13 +64,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
     SubscriptionPackage package,
   ) async {
     try {
-      final offerings = await makeRequest(
-        Purchases.getOfferings,
-        label: 'getOfferings',
-        transformError: transformRevenueCatError,
-      );
-      final current = offerings.current;
-      final rcPackage = findPackageById(offerings, package.id);
+      final rcPackage = _packagesById[package.id];
       if (rcPackage == null) {
         return Result.error(
           Exception('Package ${package.id} not found in offerings'),
@@ -92,8 +75,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
         label: 'purchasePackage',
         transformError: transformRevenueCatError,
       );
-      final packages = current?.availablePackages.map(mapPackage).toList() ?? [];
-      return Result.success(mapCustomerInfo(result.customerInfo, packages: packages));
+      return Result.success(mapCustomerInfo(result.customerInfo));
     } on PurchaseCancelledException {
       return const Result.error(PurchaseCancelledException());
     } on Exception catch (e) {
@@ -102,54 +84,28 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   }
 
   @override
-  Future<Result<SubscriptionEntity?>> getCurrentSubscription({
-    List<SubscriptionPackage>? packages,
-    String? fallbackRcPackageGroupId,
-  }) async {
+  Future<Result<SubscriptionEntity?>> getCurrentSubscription() async {
     try {
-      _setSubscriptionContext(
-        packages: packages,
-        fallbackRcPackageGroupId: fallbackRcPackageGroupId,
-      );
       final info = await makeRequest(
         Purchases.getCustomerInfo,
         label: 'getCurrentSubscription',
         transformError: transformRevenueCatError,
       );
-      return Result.success(
-        mapCustomerInfo(
-          info,
-          packages: packages,
-          fallbackRcPackageGroupId: fallbackRcPackageGroupId,
-        ),
-      );
+      return Result.success(mapCustomerInfo(info));
     } on Exception catch (e) {
       return Result.error(e);
     }
   }
 
   @override
-  Future<Result<SubscriptionEntity?>> restorePurchases({
-    List<SubscriptionPackage>? packages,
-    String? fallbackRcPackageGroupId,
-  }) async {
+  Future<Result<SubscriptionEntity?>> restorePurchases() async {
     try {
-      _setSubscriptionContext(
-        packages: packages,
-        fallbackRcPackageGroupId: fallbackRcPackageGroupId,
-      );
       final info = await makeRequest(
         Purchases.restorePurchases,
         label: 'restorePurchases',
         transformError: transformRevenueCatError,
       );
-      return Result.success(
-        mapCustomerInfo(
-          info,
-          packages: packages,
-          fallbackRcPackageGroupId: fallbackRcPackageGroupId,
-        ),
-      );
+      return Result.success(mapCustomerInfo(info));
     } on Exception catch (e) {
       return Result.error(e);
     }
@@ -158,9 +114,9 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<void>> login(int id) async {
     try {
-      final user = await Purchases.getCustomerInfo();
-      logger.d('${user.originalAppUserId} ==  $id: ${user.originalAppUserId == id.toString()}');
-      if (user.originalAppUserId == id.toString()) {
+      _packagesById.clear();
+      final appUserId = await Purchases.appUserID;
+      if (appUserId == id.toString()) {
         logger.d('revenueCat loginResult: same id, already up to date ');
         return const Result.success(null);
       }
@@ -181,6 +137,7 @@ class SubscriptionRepositoryImpl with RepositoryErrorHandler implements domain.S
   @override
   Future<Result<void>> logout() async {
     try {
+      _packagesById.clear();
       final isAnonymous = await Purchases.isAnonymous;
 
       if (isAnonymous) return const Result.success(null);

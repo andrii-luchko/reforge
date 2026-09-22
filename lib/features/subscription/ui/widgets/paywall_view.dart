@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/constants/env.dart';
@@ -10,10 +12,10 @@ import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/data/services/paywall_config_service.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_lifetime_status_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list.dart';
-import 'package:reforge/features/subscription/ui/widgets/subscription_recurring_status_card.dart';
+import 'package:reforge/features/subscription/ui/widgets/subscription_status_card.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
 import 'package:reforge/shared/uikit/buttons/thirty_button.dart';
 import 'package:toastification/toastification.dart';
@@ -28,6 +30,15 @@ class PaywallView extends StatefulWidget {
 class _PaywallViewState extends State<PaywallView> {
   SubscriptionPackage? _selectedPackage;
   final PaywallConfigService _paywallConfigService = di.getIt<PaywallConfigService>();
+
+  @override
+  void initState() {
+    super.initState();
+    final cubit = context.read<SubscriptionCubit>();
+    if (cubit.state.accessStatus != SubscriptionAccessStatus.checking) {
+      unawaited(cubit.checkSubscriptionStatus());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +56,11 @@ class _PaywallViewState extends State<PaywallView> {
           prev.error != curr.error ||
           prev.currentSubscription != curr.currentSubscription,
       builder: (context, state) {
-        if (state.offerings != null && state.offerings!.packages.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            if (state.currentPackage != null) return;
-            if (_selectedPackage == null) {
-              setState(() => _selectedPackage = state.offerings!.packages.first);
-            }
-          });
-        }
-
-        final hasPurchased = state.hasLifetime || (state.hasActiveSubscription && state.currentPackage != null);
+        final packages = state.offerings?.packages ?? [];
+        final selectedPackage = packages.any((p) => p.id == _selectedPackage?.id)
+            ? _selectedPackage
+            : (packages.isNotEmpty ? packages.first : null);
+        final hasPurchased = state.hasActiveSubscription;
 
         return CustomScrollView(
           slivers: [
@@ -73,8 +78,25 @@ class _PaywallViewState extends State<PaywallView> {
             ),
             if (hasPurchased)
               ..._buildAfterPurchaseSlivers(context, state)
+            else if (state.accessStatus == SubscriptionAccessStatus.checking)
+              const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+            else if (state.accessStatus == SubscriptionAccessStatus.error)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(t.subscription.loadErrorSubtitle),
+                      TextButton(
+                        onPressed: () => context.read<SubscriptionCubit>().retry(),
+                        child: Text(t.subscription.tryAgain),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             else
-              ..._buildBeforePurchaseSlivers(context, state),
+              ..._buildBeforePurchaseSlivers(context, state, selectedPackage),
           ],
         );
       },
@@ -89,13 +111,9 @@ class _PaywallViewState extends State<PaywallView> {
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         sliver: SliverToBoxAdapter(
-          child: state.hasLifetime
-              ? const SubscriptionLifetimeStatusCard()
-              : SubscriptionRecurringStatusCard(
-                  currentPackage: state.currentPackage!,
-                  expirationDate: state.currentSubscription!.expirationDate,
-                  managementUrl: state.currentSubscription!.managementUrl,
-                ),
+          child: SubscriptionStatusCard(
+            subscription: state.currentSubscription!,
+          ),
         ),
       ),
       SliverFillRemaining(
@@ -120,62 +138,73 @@ class _PaywallViewState extends State<PaywallView> {
   List<Widget> _buildBeforePurchaseSlivers(
     BuildContext context,
     SubscriptionState state,
+    SubscriptionPackage? selectedPackage,
   ) {
     return [
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         sliver: SubscriptionPackagesList(
           state: state,
-          selectedPackage: _selectedPackage,
+          selectedPackage: selectedPackage,
           onPackageSelected: (p) => setState(() => _selectedPackage = p),
         ),
       ),
-      SliverFillRemaining(
-        hasScrollBody: false,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (_paywallConfigService.skipButtonEnabled) ...[
-                ThirtyButton(
-                  text: t.common.skip_button,
-                  onPressed: () => const HomePageRoute().go(context),
-                  style: subheadH6Medium,
-                ),
-                const SizedBox(height: 32),
-              ],
-              PrimaryButton(
-                text: t.common.continue_button,
-                onPressed: _selectedPackage != null
-                    ? () async {
-                        await context.read<SubscriptionCubit>().purchase(_selectedPackage!);
-                      }
-                    : null,
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+      if (state.offerings == null || state.offerings!.packages.isEmpty)
+        SliverToBoxAdapter(
+          child: TextButton(
+            onPressed: () => context.read<SubscriptionCubit>().loadOfferings(),
+            child: Text(t.subscription.tryAgain),
+          ),
+        ),
+      AppBottomPaddingWidget.sliver(
+        extraSpace: 0,
+        child: SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (_paywallConfigService.skipButtonEnabled) ...[
                   ThirtyButton(
-                    text: t.subscription.restorePurchases,
-                    onPressed: () => context.read<SubscriptionCubit>().restorePurchases(),
+                    text: t.common.skip_button,
+                    onPressed: () => const HomePageRoute().go(context),
                     style: subheadH6Medium,
                   ),
-                  ThirtyButton(
-                    text: t.subscription.termsButton,
-                    onPressed: () => LaunchUrl.launchAppLink(Env.termsOfUseUrl),
-                    style: subheadH6Medium,
-                  ),
-                  ThirtyButton(
-                    text: t.subscription.privacyButton,
-                    onPressed: () => LaunchUrl.launchAppLink(Env.privacyPolicyUrl),
-                    style: subheadH6Medium,
-                  ),
+                  const SizedBox(height: 32),
                 ],
-              ),
-            ],
+                PrimaryButton(
+                  text: t.common.continue_button,
+                  onPressed: selectedPackage != null && !state.isPurchasing
+                      ? () async {
+                          await context.read<SubscriptionCubit>().purchase(selectedPackage);
+                        }
+                      : null,
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ThirtyButton(
+                      text: t.subscription.restorePurchases,
+                      onPressed: () => context.read<SubscriptionCubit>().restorePurchases(),
+                      style: subheadH6Medium,
+                    ),
+                    ThirtyButton(
+                      text: t.subscription.termsButton,
+                      onPressed: () => LaunchUrl.launchAppLink(Env.termsOfUseUrl),
+                      style: subheadH6Medium,
+                    ),
+                    ThirtyButton(
+                      text: t.subscription.privacyButton,
+                      onPressed: () => LaunchUrl.launchAppLink(Env.privacyPolicyUrl),
+                      style: subheadH6Medium,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

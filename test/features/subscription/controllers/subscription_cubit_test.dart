@@ -1,406 +1,199 @@
 import 'dart:async';
 
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
-import 'package:reforge/core/user/data/models/user_subscription.dart' as user_model;
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
-import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
+
 import '../../../core/user/mocks/mock_user_cubit.dart';
 import '../mocks/mock_subscription_repository.dart';
 
-SubscriptionPackage createTestPackage({
-  String id = 'monthly',
-  String title = 'Monthly',
-  double price = 9.99,
-  String priceString = r'$9.99',
-  String currencyCode = 'USD',
-  SubscriptionPeriodType periodType = SubscriptionPeriodType.monthly,
-}) {
-  return SubscriptionPackage(
-    id: id,
-    title: title,
-    price: price,
-    priceString: priceString,
-    currencyCode: currencyCode,
-    periodType: periodType,
-  );
-}
+const package = SubscriptionPackage(
+  id: 'monthly',
+  title: 'Monthly',
+  price: 9.99,
+  priceString: r'$9.99',
+  currencyCode: 'USD',
+  periodType: SubscriptionPeriodType.monthly,
+);
+const offerings = SubscriptionOfferings(packages: [package]);
+const activeSubscription = SubscriptionEntity();
 
-SubscriptionOfferings createTestOfferings({
-  List<SubscriptionPackage>? packages,
-}) {
-  return SubscriptionOfferings(
-    packages: packages ?? [createTestPackage()],
-    currentOfferingId: 'default',
-  );
-}
-
-SubscriptionEntity createTestSubscription({
-  bool isActive = true,
-  SubscriptionPackage? matchedPackage,
-}) {
-  return SubscriptionEntity(
-    isActive: isActive,
-    expirationDate: DateTime(2025, 12, 31),
-    entitlementId: 'premium',
-    matchedPackage: matchedPackage,
-  );
-}
-
-OnboardedUser createTestUser({user_model.UserSubscription? subscription, String? email}) => OnboardedUser(
-  id: 1,
-  email: email,
+OnboardedUser user(int id) => OnboardedUser(
+  id: id,
   measurementSystem: MeasurementSystem.metric,
   factionId: 1,
   birthDate: DateTime(1990),
   workoutsPerWeek: 3,
-  subscription: subscription,
 );
 
+Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 10));
+
 void main() {
-  late MockSubscriptionRepository mockRepository;
-  late MockUserCubit mockUserCubit;
-  setUpAll(() {
-    registerFallbackValue(createTestPackage());
-  });
+  late MockSubscriptionRepository repository;
+  late MockUserCubit userCubit;
+  late StreamController<UserState> users;
+  late StreamController<SubscriptionEntity?> updates;
+  SubscriptionCubit? cubit;
+
+  setUpAll(() => registerFallbackValue(package));
 
   setUp(() {
-    mockRepository = MockSubscriptionRepository();
-    mockUserCubit = MockUserCubit();
-    when(() => mockRepository.subscriptionUpdates).thenAnswer((_) => const Stream.empty());
-    when(() => mockUserCubit.stream).thenAnswer((_) => const Stream.empty());
-    when(() => mockUserCubit.state).thenReturn(const UserState.initial());
+    repository = MockSubscriptionRepository();
+    userCubit = MockUserCubit();
+    users = StreamController<UserState>.broadcast();
+    updates = StreamController<SubscriptionEntity?>.broadcast();
+    when(() => userCubit.state).thenReturn(const UserState.initial());
+    when(() => userCubit.stream).thenAnswer((_) => users.stream);
+    when(() => repository.subscriptionUpdates).thenAnswer((_) => updates.stream);
+    when(() => repository.login(any())).thenAnswer((_) async => const Result.success(null));
+    when(() => repository.logout()).thenAnswer((_) async => const Result.success(null));
+    when(() => repository.getOfferings()).thenAnswer((_) async => const Result.success(offerings));
+    when(() => repository.getCurrentSubscription()).thenAnswer((_) async => const Result.success(null));
   });
 
-  group('SubscriptionCubit', () {
-    group('loadOfferings', () {
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits loading then loaded when repository succeeds',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        act: (cubit) => cubit.loadOfferings(),
-        expect: () => [
-          const SubscriptionState(isLoading: true),
-          isA<SubscriptionState>()
-              .having((s) => s.offerings, 'offerings', isNotNull)
-              .having(
-                (s) => s.currentSubscription,
-                'currentSubscription',
-                isNotNull,
-              )
-              .having((s) => s.isLoading, 'isLoading', false),
-        ],
-      );
+  tearDown(() async {
+    await cubit?.close();
+    await users.close();
+    await updates.close();
+    cubit = null;
+  });
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'currentPackage equals matchedPackage from subscription by id',
-        build: () {
-          final package = createTestPackage(id: 'annual', periodType: SubscriptionPeriodType.annual);
-          final offerings = createTestOfferings(
-            packages: [
-              // ignore: avoid_redundant_argument_values
-              createTestPackage(id: 'monthly'),
-              package,
-            ],
-          );
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(offerings),
-          );
-          when(
-            () => mockRepository.getCurrentSubscription(packages: any(named: 'packages')),
-          ).thenAnswer((_) async => Result.success(createTestSubscription(matchedPackage: package)));
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        act: (cubit) => cubit.loadOfferings(),
-        expect: () => [
-          const SubscriptionState(isLoading: true),
-          isA<SubscriptionState>()
-              .having((s) => s.currentPackage?.id, 'currentPackage.id', 'annual')
-              .having((s) => s.hasActiveSubscription, 'hasActiveSubscription', true),
-        ],
-      );
+  test('active access loads when offerings fail', () async {
+    when(() => repository.getOfferings()).thenAnswer((_) async => Result.error(Exception('offline')));
+    when(() => repository.getCurrentSubscription()).thenAnswer((_) async => const Result.success(activeSubscription));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits loading then error when getOfferings fails',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.error(Exception('Network error')),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        act: (cubit) => cubit.loadOfferings(),
-        expect: () => [
-          const SubscriptionState(isLoading: true),
-          isA<SubscriptionState>()
-              .having((s) => s.error, 'error', contains('Failed to load offerings'))
-              .having((s) => s.isLoading, 'isLoading', false),
-        ],
-      );
+    expect(cubit!.state.hasActiveSubscription, isTrue);
+    expect(cubit!.state.offerings, isNull);
+    verify(() => repository.getCurrentSubscription()).called(1);
+  });
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits loaded with null currentSubscription when getCurrentSubscription fails',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.error(Exception('Not found')),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        act: (cubit) => cubit.loadOfferings(),
-        expect: () => [
-          const SubscriptionState(isLoading: true),
-          isA<SubscriptionState>()
-              .having(
-                (s) => s.offerings?.packages.length,
-                'packages count',
-                1,
-              )
-              .having(
-                (s) => s.currentSubscription,
-                'currentSubscription',
-                isNull,
-              )
-              .having((s) => s.isLoading, 'isLoading', false),
-        ],
-      );
-    });
+  test('user change clears previous access before RevenueCat login finishes', () async {
+    final secondLogin = Completer<Result<void>>();
+    when(() => repository.login(2)).thenAnswer((_) => secondLogin.future);
+    when(() => repository.getCurrentSubscription()).thenAnswer((_) async => const Result.success(activeSubscription));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    expect(cubit!.state.hasActiveSubscription, isTrue);
 
-    group('purchase', () {
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'does nothing when state is not loaded',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.error(Exception('')),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => const SubscriptionState(),
-        act: (cubit) => cubit.purchase(createTestPackage()),
-        expect: () => <SubscriptionState>[],
-      );
+    users.add(UserState.loaded(user(2)));
+    await settle();
+    expect(cubit!.state.accessStatus, SubscriptionAccessStatus.checking);
+    expect(cubit!.state.currentSubscription, isNull);
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits purchasing then loaded with updated subscription on success',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          when(() => mockRepository.purchasePackage(any())).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) => cubit.purchase(createTestPackage()),
-        expect: () => [
-          isA<SubscriptionState>()
-              .having((s) => s.isPurchasing, 'isPurchasing', true)
-              .having((s) => s.offerings, 'offerings', isNotNull),
-          isA<SubscriptionState>()
-              .having(
-                (s) => s.currentSubscription?.isActive,
-                'currentSubscription.isActive',
-                true,
-              )
-              .having((s) => s.isPurchasing, 'isPurchasing', false),
-        ],
-      );
+    secondLogin.complete(const Result.success(null));
+    await settle();
+  });
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits purchasing then loaded when user cancels',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          when(() => mockRepository.purchasePackage(any())).thenAnswer(
-            (_) async => const Result.error(PurchaseCancelledException()),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) => cubit.purchase(createTestPackage()),
-        expect: () => [
-          isA<SubscriptionState>()
-              .having((s) => s.isPurchasing, 'isPurchasing', true)
-              .having((s) => s.offerings, 'offerings', isNotNull),
-          isA<SubscriptionState>()
-              .having(
-                (s) => s.offerings?.packages.length,
-                'packages count',
-                1,
-              )
-              .having((s) => s.isPurchasing, 'isPurchasing', false),
-        ],
-      );
+  test('failed RevenueCat login does not load another account access', () async {
+    when(() => repository.login(1)).thenAnswer((_) async => Result.error(Exception('login failed')));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'emits purchasing then error when purchase fails',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          when(() => mockRepository.purchasePackage(any())).thenAnswer(
-            (_) async => Result.error(Exception('Payment failed')),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) => cubit.purchase(createTestPackage()),
-        expect: () => [
-          isA<SubscriptionState>()
-              .having((s) => s.isPurchasing, 'isPurchasing', true)
-              .having((s) => s.offerings, 'offerings', isNotNull),
-          isA<SubscriptionState>()
-              .having(
-                (s) => s.error,
-                'error',
-                contains('Purchase failed'),
-              )
-              .having((s) => s.isPurchasing, 'isPurchasing', false),
-        ],
-      );
-    });
+    expect(cubit!.state.accessStatus, SubscriptionAccessStatus.error);
+    verifyNever(() => repository.getCurrentSubscription());
+    verifyNever(() => repository.getOfferings());
+  });
 
-    group('checkSubscriptionStatus', () {
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'updates currentSubscription when in loaded state',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.success(createTestSubscription()),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) => cubit.checkSubscriptionStatus(),
-        expect: () => [
-          isA<SubscriptionState>().having(
-            (s) => s.currentSubscription?.isActive,
-            'currentSubscription',
-            true,
-          ),
-        ],
-      );
+  test('listener updates access without offerings', () async {
+    when(() => repository.getOfferings()).thenAnswer((_) async => Result.error(Exception('offline')));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    updates.add(activeSubscription);
+    await settle();
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'does nothing when getCurrentSubscription fails',
-        build: () {
-          when(() => mockRepository.getOfferings()).thenAnswer(
-            (_) async => Result.success(createTestOfferings()),
-          );
-          when(() => mockRepository.getCurrentSubscription(packages: any(named: 'packages'))).thenAnswer(
-            (_) async => Result.error(Exception('Error')),
-          );
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) => cubit.checkSubscriptionStatus(),
-        expect: () => <SubscriptionState>[],
-      );
-    });
+    expect(cubit!.state.hasActiveSubscription, isTrue);
+    expect(cubit!.state.offerings, isNull);
+  });
 
-    group('subscriptionUpdates', () {
-      late StreamController<SubscriptionEntity?> updates;
+  test('purchase activates access from returned CustomerInfo', () async {
+    when(() => repository.purchasePackage(package)).thenAnswer((_) async => const Result.success(activeSubscription));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    await cubit!.purchase(package);
 
-      blocTest<SubscriptionCubit, SubscriptionState>(
-        'updates the current subscription from RevenueCat listener events',
-        build: () {
-          updates = StreamController<SubscriptionEntity?>();
-          when(() => mockRepository.subscriptionUpdates).thenAnswer((_) => updates.stream);
-          addTearDown(updates.close);
-          return SubscriptionCubit(mockRepository, mockUserCubit);
-        },
-        seed: () => SubscriptionState(offerings: createTestOfferings()),
-        act: (cubit) async {
-          updates.add(createTestSubscription());
-          await Future<void>.delayed(Duration.zero);
-        },
-        expect: () => [
-          isA<SubscriptionState>().having(
-            (state) => state.currentSubscription?.isActive,
-            'currentSubscription.isActive',
-            true,
-          ),
-        ],
-      );
-    });
+    expect(cubit!.state.hasActiveSubscription, isTrue);
+    expect(cubit!.state.isPurchasing, isFalse);
+  });
 
-    test('reacts only to identity and subscription changes', () async {
-      final userChanges = StreamController<UserState>.broadcast();
-      final initialUser = createTestUser(email: 'old@example.com');
-      when(() => mockUserCubit.state).thenReturn(UserState.loaded(initialUser));
-      when(() => mockUserCubit.stream).thenAnswer((_) => userChanges.stream);
-      when(() => mockRepository.login(1)).thenAnswer((_) async => const Result.success(null));
-      when(() => mockRepository.logout()).thenAnswer((_) async => const Result.success(null));
-      when(() => mockRepository.getOfferings()).thenAnswer((_) async => Result.success(createTestOfferings()));
-      when(
-        () => mockRepository.getCurrentSubscription(packages: any(named: 'packages')),
-      ).thenAnswer((_) async => const Result.success(null));
+  test('purchase without active entitlement keeps paywall', () async {
+    when(() => repository.purchasePackage(package)).thenAnswer((_) async => const Result.success(null));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    await cubit!.purchase(package);
 
-      final cubit = SubscriptionCubit(mockRepository, mockUserCubit);
-      await Future<void>.delayed(Duration.zero);
-      verify(() => mockRepository.login(1)).called(1);
-      verify(() => mockRepository.getOfferings()).called(1);
+    expect(cubit!.state.accessStatus, SubscriptionAccessStatus.inactive);
+    expect(cubit!.state.error, isNotNull);
+  });
 
-      userChanges.add(UserState.loaded(initialUser.copyWith(email: 'new@example.com')));
-      await Future<void>.delayed(Duration.zero);
-      verifyNever(() => mockRepository.login(1));
-      verifyNever(() => mockRepository.getOfferings());
+  test('restore activates access without offerings', () async {
+    when(() => repository.getOfferings()).thenAnswer((_) async => Result.error(Exception('offline')));
+    when(() => repository.restorePurchases()).thenAnswer((_) async => const Result.success(activeSubscription));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    await cubit!.restorePurchases();
 
-      final subscription = user_model.UserSubscription(
-        id: 10,
-        isActive: true,
-        expiresAt: DateTime(2030),
-        createdAt: DateTime(2026),
-        updatedAt: DateTime(2026),
-        package: const user_model.Package(
-          id: 5,
-          name: 'Premium',
-          rcProductId: 'premium',
-          rcPackageGroupId: 'premium-group',
-        ),
-      );
-      userChanges.add(UserState.loaded(initialUser.copyWith(subscription: subscription)));
-      await Future<void>.delayed(Duration.zero);
-      verify(() => mockRepository.getOfferings()).called(1);
-      verifyNever(() => mockRepository.login(1));
+    expect(cubit!.state.hasActiveSubscription, isTrue);
+  });
 
-      userChanges.add(const UserState.initial());
-      await Future<void>.delayed(Duration.zero);
-      verify(() => mockRepository.logout()).called(1);
-      expect(cubit.state, const SubscriptionState());
+  test('status failure does not imply inactive access', () async {
+    when(() => repository.getCurrentSubscription()).thenAnswer((_) async => Result.error(Exception('offline')));
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
 
-      await cubit.close();
-      await userChanges.close();
-    });
+    expect(cubit!.state.accessStatus, SubscriptionAccessStatus.error);
+    expect(cubit!.state.hasActiveSubscription, isFalse);
+  });
+
+  test('older status response cannot overwrite a newer one', () async {
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+
+    final first = Completer<Result<SubscriptionEntity?>>();
+    final second = Completer<Result<SubscriptionEntity?>>();
+    var calls = 0;
+    when(() => repository.getCurrentSubscription()).thenAnswer((_) => ++calls == 1 ? first.future : second.future);
+
+    final firstCheck = cubit!.checkSubscriptionStatus();
+    final secondCheck = cubit!.checkSubscriptionStatus();
+    second.complete(const Result.success(activeSubscription));
+    await secondCheck;
+    first.complete(const Result.success(null));
+    await firstCheck;
+
+    expect(cubit!.state.hasActiveSubscription, isTrue);
+  });
+
+  test('identity operations stay ordered during rapid account changes', () async {
+    final firstLogin = Completer<Result<void>>();
+    when(() => repository.login(1)).thenAnswer((_) => firstLogin.future);
+    cubit = SubscriptionCubit(repository, userCubit);
+    users.add(UserState.loaded(user(1)));
+    await settle();
+    users.add(UserState.loaded(user(2)));
+    await settle();
+    verifyNever(() => repository.login(2));
+
+    firstLogin.complete(const Result.success(null));
+    await settle();
+    verify(() => repository.login(2)).called(1);
   });
 }

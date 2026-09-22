@@ -1,26 +1,20 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:reforge/app/utils/helpers/result.dart';
 import 'package:reforge/app/utils/logger/logger.dart';
-import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
-import 'package:reforge/core/user/data/models/user_subscription.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_offerings.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
-import 'package:reforge/features/subscription/domain/entity/subscription_period_type.dart';
 import 'package:reforge/features/subscription/domain/exceptions/purchase_cancelled_exception.dart';
 import 'package:reforge/features/subscription/domain/repositories/subscription_repository.dart' as domain;
 import 'package:reforge/generated/i18n/translations.g.dart';
 
 part 'subscription_cubit.freezed.dart';
 part 'subscription_state.dart';
-
-typedef _UserSubscriptionProjection = ({int id, UserSubscription? subscription});
 
 @injectable
 class SubscriptionCubit extends Cubit<SubscriptionState> {
@@ -34,57 +28,78 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   final UserCubit _userCubit;
   StreamSubscription<UserState>? _userSubscription;
   StreamSubscription<SubscriptionEntity?>? _subscriptionUpdatesSubscription;
-  _UserSubscriptionProjection? _lastUser;
+  int? _lastUserId;
   int _userRevision = 0;
+  int _statusRevision = 0;
+  bool _identityReady = false;
+  Future<void> _identityOperation = Future<void>.value();
 
-  /// Cross-platform fallback: when subscription was bought on another platform,
-  /// RC returns different productIdentifier; backend's rcPackageGroupId allows
-  /// matching to the correct package in current platform offerings.
-  String? get _fallbackRcPackageGroupId {
-    final user = _userCubit.state.userOrNull;
-    if (user case OnboardedUser(subscription: final sub?)) {
-      return sub.package.rcPackageGroupId;
-    }
-    return null;
-  }
-
-  Future<void> _onUserChanges(UserState state) async {
-    final projection = switch (state) {
-      Loaded(:final user) => (
-        id: user.id,
-        subscription: user is OnboardedUser ? user.subscription : null,
-      ),
+  Future<void> _onUserChanges(UserState userState) async {
+    final userId = switch (userState) {
+      Loaded(:final user) => user.id,
       Initial() || Deleted() => null,
-      _ => _lastUser,
+      _ => _lastUserId,
     };
 
-    if (projection == _lastUser) return;
-    final previous = _lastUser;
-    _lastUser = projection;
+    if (userId == _lastUserId) return;
+    final previous = _lastUserId;
+    _lastUserId = userId;
     final revision = ++_userRevision;
+    _statusRevision++;
+    _identityReady = false;
+    emit(const SubscriptionState());
 
-    if (projection == null) {
-      if (previous != null) await _repository.logout();
+    final operation = _identityOperation.then((_) async {
       if (revision != _userRevision) return;
-      emit(const SubscriptionState());
+      if (userId == null) {
+        if (previous != null) await _repository.logout();
+      } else {
+        await _connectUser(userId, revision);
+      }
+    });
+    _identityOperation = operation;
+    await operation;
+  }
+
+  Future<void> _connectUser(int userId, int revision) async {
+    final loginResult = await _repository.login(userId);
+    if (revision != _userRevision) return;
+    if (loginResult case Failure(:final error)) {
+      emit(state.copyWith(accessStatus: SubscriptionAccessStatus.error, error: error.toString()));
       return;
     }
+    _identityReady = true;
+    unawaited(loadOfferings());
+    unawaited(checkSubscriptionStatus());
+  }
 
-    if (previous == null || previous.id != projection.id) {
-      await _repository.login(projection.id);
-      if (revision != _userRevision) return;
-      await loadOfferings();
+  Future<void> retry() async {
+    if (!_identityReady) {
+      final userId = _lastUserId;
+      if (userId == null) return;
+      emit(state.copyWith(accessStatus: SubscriptionAccessStatus.checking, error: null));
+      final revision = _userRevision;
+      final operation = _identityOperation.then((_) async {
+        if (revision == _userRevision) await _connectUser(userId, revision);
+      });
+      _identityOperation = operation;
+      await operation;
       return;
     }
-
-    if (previous.subscription != projection.subscription) {
-      await loadOfferings();
-    }
+    await Future.wait([loadOfferings(), checkSubscriptionStatus()]);
   }
 
   void _onSubscriptionUpdated(SubscriptionEntity? subscription) {
-    if (state.offerings == null) return;
-    emit(state.copyWith(currentSubscription: subscription));
+    if (!_identityReady) return;
+    _statusRevision++;
+    emit(
+      state.copyWith(
+        currentSubscription: subscription,
+        accessStatus: subscription != null
+            ? SubscriptionAccessStatus.active
+            : SubscriptionAccessStatus.inactive,
+      ),
+    );
   }
 
   Future<void> loadOfferings() async {
@@ -93,24 +108,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     final offeringsResult = await _repository.getOfferings();
     if (revision != _userRevision) return;
-    SubscriptionEntity? currentSubscription;
     switch (offeringsResult) {
       case Success(value: final offerings):
-        final subscriptionResult = await _repository.getCurrentSubscription(
-          packages: offerings.packages,
-          fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
-        );
-        if (revision != _userRevision) return;
-        switch (subscriptionResult) {
-          case Success(value: final sub):
-            currentSubscription = sub;
-          case Failure():
-            break;
-        }
         emit(
           state.copyWith(
             offerings: offerings,
-            currentSubscription: currentSubscription,
             isLoading: false,
           ),
         );
@@ -126,22 +128,30 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   Future<void> purchase(SubscriptionPackage package) async {
     final current = state;
-    if (current.offerings == null) return;
+    if (current.offerings == null || current.isPurchasing || current.hasActiveSubscription) return;
 
+    final revision = _userRevision;
     emit(state.copyWith(isPurchasing: true));
 
     final result = await _repository.purchasePackage(package);
+    if (revision != _userRevision) return;
 
     switch (result) {
-      case Success(value: final subscription):
+      case Success(value: final subscription) when subscription != null:
+        _statusRevision++;
         emit(
           state.copyWith(
             currentSubscription: subscription,
+            accessStatus: SubscriptionAccessStatus.active,
             isPurchasing: false,
           ),
         );
 
         logger.d('Subscription purchased: $subscription');
+        return;
+      case Success():
+        emit(state.copyWith(error: t.subscription.activationPending, isPurchasing: false));
+        return;
       case Failure(:final error):
         if (error is PurchaseCancelledException) {
           emit(state.copyWith(isPurchasing: false));
@@ -153,6 +163,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
             ),
           );
         }
+        return;
     }
   }
 
@@ -161,36 +172,47 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   }
 
   Future<void> checkSubscriptionStatus() async {
-    final result = await _repository.getCurrentSubscription(
-      packages: state.offerings?.packages,
-      fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
-    );
-
-    switch (result) {
-      case Success(value: final subscription):
-        if (state.offerings != null) {
-          emit(state.copyWith(currentSubscription: subscription));
-        }
-      case Failure():
-        break;
-    }
-  }
-
-  Future<void> restorePurchases() async {
-    if (state.offerings == null) return;
-
-    emit(state.copyWith(isPurchasing: true, error: null));
-
-    final result = await _repository.restorePurchases(
-      packages: state.offerings!.packages,
-      fallbackRcPackageGroupId: _fallbackRcPackageGroupId,
-    );
+    if (!_identityReady) return;
+    final revision = _userRevision;
+    final statusRevision = ++_statusRevision;
+    final result = await _repository.getCurrentSubscription();
+    if (revision != _userRevision || statusRevision != _statusRevision) return;
 
     switch (result) {
       case Success(value: final subscription):
         emit(
           state.copyWith(
             currentSubscription: subscription,
+            accessStatus: subscription != null
+                ? SubscriptionAccessStatus.active
+                : SubscriptionAccessStatus.inactive,
+          ),
+        );
+      case Failure():
+        if (state.accessStatus == SubscriptionAccessStatus.checking) {
+          emit(state.copyWith(accessStatus: SubscriptionAccessStatus.error));
+        }
+    }
+  }
+
+  Future<void> restorePurchases() async {
+    if (!_identityReady || state.isPurchasing) return;
+
+    final revision = _userRevision;
+    emit(state.copyWith(isPurchasing: true, error: null));
+
+    final result = await _repository.restorePurchases();
+    if (revision != _userRevision) return;
+
+    switch (result) {
+      case Success(value: final subscription):
+        _statusRevision++;
+        emit(
+          state.copyWith(
+            currentSubscription: subscription,
+            accessStatus: subscription != null
+                ? SubscriptionAccessStatus.active
+                : SubscriptionAccessStatus.inactive,
             isPurchasing: false,
           ),
         );

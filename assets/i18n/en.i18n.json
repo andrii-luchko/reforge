@@ -683,12 +683,30 @@
         "seeAllPlans": "See all Plans"
     },
     "subscription": {
+        "premiumTitle": "Reforge Premium",
         "lifetimeStatus": "You have lifetime access",
         "lifetimeTitle": "Lifetime Access",
         "lifetimeSubtitle": "Thank you for your support. All premium features are yours forever.",
         "activeUntil": "Active until $date",
         "manageSubscription": "Manage subscription",
         "currentPlan": "Current plan",
+        "activeStatus": "Subscription active",
+        "purchasedThrough": "Purchased through $store",
+        "store": {
+            "appStore": "App Store",
+            "macAppStore": "Mac App Store",
+            "playStore": "Google Play",
+            "stripe": "Stripe",
+            "promotional": "RevenueCat promotion",
+            "amazon": "Amazon Appstore",
+            "revenueCatBilling": "RevenueCat",
+            "paddle": "Paddle",
+            "testStore": "RevenueCat Test Store",
+            "external": "an external store",
+            "galaxy": "Galaxy Store",
+            "unknown": "Unknown"
+        },
+        "tryAgain": "Try again",
         "upgrade": "Upgrade",
         "changePlan": "Change plan",
         "loadErrorTitle": "Couldn't load subscriptions",
@@ -702,6 +720,7 @@
         "paywallTitle": "Choose Your Plan and Unlock Full Access",
         "loadOfferingsError": "Failed to load offerings: $error",
         "purchaseFailed": "Purchase failed: $error",
+        "activationPending": "Purchase is processing. Please check again shortly or restore purchases.",
         "restoreFailed": "Restore failed: $error",
         "periodType": {
             "unknown": "Unknown",

@@ -29,11 +29,8 @@ class SubscriptionPackagesList extends StatelessWidget {
           ? const SubscriptionPackagesSkeleton()
           : state.offerings != null
           ? SubscriptionPackagesListContent(
-              packages: state.hasActiveSubscription && state.currentPackage != null
-                  ? state.offerings!.packages.where((p) => p.id != state.currentPackage!.id).toList()
-                  : state.offerings!.packages,
+              packages: state.offerings!.packages,
               selectedPackage: selectedPackage,
-              currentPackage: state.currentPackage,
               onPackageSelected: onPackageSelected,
             )
           : SliverEmptyListMessage(

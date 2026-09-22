@@ -60,20 +60,6 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
     }
   }
 
-  int get tier => switch (this) {
-    SubscriptionPeriodType.lifetime => 100,
-    SubscriptionPeriodType.annual => 4,
-    SubscriptionPeriodType.sixMonth => 3,
-    SubscriptionPeriodType.threeMonth => 2,
-    SubscriptionPeriodType.monthly => 1,
-    SubscriptionPeriodType.weekly => 0,
-    _ => -1,
-  };
-
-  bool isUpgradeFrom(SubscriptionPeriodType other) => tier > other.tier;
-
-  bool isDowngradeFrom(SubscriptionPeriodType other) => tier < other.tier && tier >= 0;
-
   String? displayTag(Translations t) {
     switch (this) {
       case SubscriptionPeriodType.unknown:
@@ -96,7 +82,7 @@ extension SubscriptionPeriodTypeX on SubscriptionPeriodType {
     }
   }
 
-  String description(Translations t, String savings) {
+  String description(Translations t) {
     switch (this) {
       case SubscriptionPeriodType.unknown:
       case SubscriptionPeriodType.custom:
