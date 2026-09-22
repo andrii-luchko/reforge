@@ -25,14 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.2.0"
-  android_libcpp_shared:
-    dependency: transitive
-    description:
-      name: android_libcpp_shared
-      sha256: "2702d05134c2fb2173f451a3bd3723909f105d623ac405235aa83ab3b4a0611a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
   ansicolor:
     dependency: transitive
     description:
@@ -193,14 +185,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  cassowary:
-    dependency: transitive
-    description:
-      name: cassowary
-      sha256: f304452beaf93b9349daaeeda23f853578c9dd8674c06c6100fda0319c46b967
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.3"
   characters:
     dependency: transitive
     description:
@@ -253,10 +237,10 @@ packages:
     dependency: transitive
     description:
       name: code_assets
-      sha256: "83ccdaa064c980b5596c35dd64a8d3ecc68620174ab9b90b6343b753aa721687"
+      sha256: bf394f466ba9205f1812a0433b392d6af280f155f56651eda7c18cc32ed493b8
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.2.1"
   code_builder:
     dependency: transitive
     description:
@@ -297,14 +281,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.15.1"
-  croppy:
-    dependency: "direct main"
-    description:
-      name: croppy
-      sha256: "6193bb0c47890b6fb6beba577a011818480412f8f80257b4448afde7cf6af43d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.5.3"
   cross_file:
     dependency: transitive
     description:
@@ -1233,10 +1209,10 @@ packages:
     dependency: transitive
     description:
       name: hooks
-      sha256: "025f060e86d2d4c3c47b56e33caf7f93bf9283340f26d23424ebcfccf34f621e"
+      sha256: "9a62a50b50b769a737bc0a8ff381f333529df3ab746b2f6b02e83760231455ba"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3"
+    version: "2.0.2"
   hotreloader:
     dependency: transitive
     description:
@@ -1569,10 +1545,10 @@ packages:
     dependency: transitive
     description:
       name: native_toolchain_c
-      sha256: "6ba77bb18063eebe9de401f5e6437e95e1438af0a87a3a39084fbd37c90df572"
+      sha256: f9c168717100ae6d9fee9ffb0be379bf1f8b26b0f6bcbd4fdddcd931993a6a72
       url: "https://pub.dev"
     source: hosted
-    version: "0.17.6"
+    version: "0.19.2"
   nested:
     dependency: transitive
     description:
@@ -1593,10 +1569,10 @@ packages:
     dependency: transitive
     description:
       name: objective_c
-      sha256: "100a1c87616ab6ed41ec263b083c0ef3261ee6cd1dc3b0f35f8ddfa4f996fe52"
+      sha256: b7fb95a6d9a4f009edd63dc5ac69f07420b23a16161c6dd8660290b59c602e8e
       url: "https://pub.dev"
     source: hosted
-    version: "9.3.0"
+    version: "9.5.0"
   octo_image:
     dependency: transitive
     description:
