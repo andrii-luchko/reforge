@@ -8,18 +8,26 @@ class AppTag extends StatelessWidget {
     required this.text,
     this.textStyle,
     this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-
+    this.fitted = false,
     super.key,
   });
 
   final String text;
   final TextStyle? textStyle;
   final EdgeInsetsGeometry padding;
+  final bool fitted;
+
   @override
   Widget build(BuildContext context) {
     final appTheme = context.appTheme;
 
     final ts = textStyle ?? subheadH5Medium.copyWith(color: appTheme.beige100);
+
+    final wg = Text(
+      text,
+      style: ts,
+    );
+
     return Container(
       padding: padding,
       decoration: BoxDecoration(
@@ -34,12 +42,7 @@ class AppTag extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          text,
-          style: ts,
-        ),
-      ),
+      child: fitted ? wg : Center(child: wg),
     );
   }
 }

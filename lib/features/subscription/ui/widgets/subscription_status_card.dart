@@ -10,6 +10,7 @@ import 'package:reforge/features/subscription/controllers/subscription_cubit.dar
 import 'package:reforge/features/subscription/domain/entity/subscription_entity.dart';
 
 import 'package:reforge/generated/i18n/translations.g.dart';
+import 'package:reforge/shared/uikit/app_tag.dart';
 import 'package:reforge/shared/uikit/buttons/secondary_button.dart';
 
 class SubscriptionStatusCard extends StatelessWidget {
@@ -36,57 +37,52 @@ class SubscriptionStatusCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 24,
+          spacing: 16,
           children: [
-            Text(
-              t.subscription.premiumTitle,
-              style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
-            ),
-            Text(
-              subscription.isLifetime ? t.subscription.lifetimeStatus : t.subscription.activeStatus,
-              style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
+            Row(
+              spacing: 16,
+
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                Text(
+                  t.subscription.premiumTitle,
+                  style: subheadH2Medium.copyWith(color: context.appTheme.beige100),
+                ),
+                AppTag(
+                  text: subscription.status.displayName(t),
+                  textStyle: subheadH6Medium.copyWith(fontSize: 12),
+                  padding: const .symmetric(horizontal: 8, vertical: 4),
+                  fitted: true,
+                ),
+              ],
             ),
             if (!subscription.isLifetime && subscription.expirationDate != null)
               Text(
-                t.subscription.activeUntil(date: subscription.expirationDate!.toDateTimeString()),
+                t.subscription.activeUntil(date: subscription.expirationDate!.toDotString()),
                 style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
               ),
             if (subscription.store != SubscriptionStore.unknown)
               Text(
-                t.subscription.purchasedThrough(store: _storeName(subscription.store)),
-                style: subheadH4Semibold.copyWith(color: context.appTheme.beige700),
+                t.subscription.purchasedThrough(store: subscription.store.displayName(t)),
+                style: subheadH6Regular.copyWith(color: context.appTheme.beige700),
               ),
-            SecondaryButton(
-              text: t.subscription.manageSubscription,
-              onPressed: () async {
-                final cubit = context.read<SubscriptionCubit>();
-                await RevenueCatUI.presentCustomerCenter(
-                  onRestoreCompleted: (_) => unawaited(cubit.checkSubscriptionStatus()),
-                  onPromotionalOfferSucceeded: (_, _, _) => unawaited(cubit.checkSubscriptionStatus()),
-                );
-                if (context.mounted) await cubit.checkSubscriptionStatus();
-              },
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: SecondaryButton(
+                text: t.subscription.manageSubscription,
+                onPressed: () async {
+                  final cubit = context.read<SubscriptionCubit>();
+                  await RevenueCatUI.presentCustomerCenter(
+                    onRestoreCompleted: (_) => unawaited(cubit.checkSubscriptionStatus()),
+                    onPromotionalOfferSucceeded: (_, _, _) => unawaited(cubit.checkSubscriptionStatus()),
+                  );
+                  if (context.mounted) await cubit.checkSubscriptionStatus();
+                },
+              ),
             ),
           ],
         ),
       ),
     );
-  }
-
-  String _storeName(SubscriptionStore store) {
-    return switch (store) {
-      SubscriptionStore.appStore => t.subscription.store.appStore,
-      SubscriptionStore.macAppStore => t.subscription.store.macAppStore,
-      SubscriptionStore.playStore => t.subscription.store.playStore,
-      SubscriptionStore.stripe => t.subscription.store.stripe,
-      SubscriptionStore.promotional => t.subscription.store.promotional,
-      SubscriptionStore.amazon => t.subscription.store.amazon,
-      SubscriptionStore.revenueCatBilling => t.subscription.store.revenueCatBilling,
-      SubscriptionStore.paddle => t.subscription.store.paddle,
-      SubscriptionStore.testStore => t.subscription.store.testStore,
-      SubscriptionStore.external => t.subscription.store.external,
-      SubscriptionStore.galaxy => t.subscription.store.galaxy,
-      SubscriptionStore.unknown => t.subscription.store.unknown,
-    };
   }
 }

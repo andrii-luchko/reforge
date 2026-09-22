@@ -16,7 +16,7 @@ import 'package:reforge/generated/i18n/translations.g.dart';
 part 'subscription_cubit.freezed.dart';
 part 'subscription_state.dart';
 
-@injectable
+@singleton
 class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repository, this._userCubit) : super(const SubscriptionState()) {
     unawaited(_onUserChanges(_userCubit.state));
@@ -95,9 +95,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     emit(
       state.copyWith(
         currentSubscription: subscription,
-        accessStatus: subscription != null
-            ? SubscriptionAccessStatus.active
-            : SubscriptionAccessStatus.inactive,
+        accessStatus: subscription != null ? SubscriptionAccessStatus.active : SubscriptionAccessStatus.inactive,
       ),
     );
   }
@@ -183,9 +181,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             currentSubscription: subscription,
-            accessStatus: subscription != null
-                ? SubscriptionAccessStatus.active
-                : SubscriptionAccessStatus.inactive,
+            accessStatus: subscription != null ? SubscriptionAccessStatus.active : SubscriptionAccessStatus.inactive,
           ),
         );
       case Failure():
@@ -210,9 +206,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(
           state.copyWith(
             currentSubscription: subscription,
-            accessStatus: subscription != null
-                ? SubscriptionAccessStatus.active
-                : SubscriptionAccessStatus.inactive,
+            accessStatus: subscription != null ? SubscriptionAccessStatus.active : SubscriptionAccessStatus.inactive,
             isPurchasing: false,
           ),
         );

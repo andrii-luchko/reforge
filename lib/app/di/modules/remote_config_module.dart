@@ -20,7 +20,7 @@ abstract class RemoteConfigModule {
       ),
     );
 
-    await remoteConfig.setDefaults(const {'paywall_skip_button_enabled': false});
+    await remoteConfig.setDefaults(const {'subscription_required': true});
 
     try {
       await remoteConfig.fetchAndActivate();

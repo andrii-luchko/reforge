@@ -19,7 +19,6 @@ import 'package:reforge/features/home/controller/cubit/home_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_feed_cubit.dart';
 import 'package:reforge/features/notifications/controller/notification_permission_cubit.dart';
 import 'package:reforge/features/running/data/services/background_running_service.dart';
-import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 import 'package:reforge/features/workout_program/controllers/workout_program_cubit.dart';
 import 'package:reforge/features/workout_session/controllers/workout_restore_cubit.dart';
 import 'package:reforge/features/workout_session/controllers/workout_session_flow_cubit.dart';
@@ -89,10 +88,7 @@ class App extends StatelessWidget {
         BlocProvider(create: (_) => di.getIt<HomeCubit>()),
 
         BlocProvider(create: (_) => di.getIt<CalendarCubit>()),
-        BlocProvider(
-          create: (_) => di.getIt<SubscriptionCubit>(),
-          lazy: false,
-        ),
+        BlocProvider.value(value: subscriptionCubit),
         BlocProvider(
           create: (_) => di.getIt<WorkoutProgramCubit>(),
         ),

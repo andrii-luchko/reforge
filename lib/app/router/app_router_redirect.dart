@@ -7,8 +7,16 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/auth/data/models/user.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
 
-FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthState authState, UserState userState) {
+FutureOr<String?> appRedirect(
+  BuildContext context,
+  GoRouterState state,
+  AuthState authState,
+  UserState userState,
+  SubscriptionState subscriptionState,
+  bool subscriptionRequired,
+) {
   final currentPath = state.matchedLocation;
 
   final splash = currentPath == const SplashPageRoute().location;
@@ -17,6 +25,7 @@ FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthSta
   final signingUp = currentPath.contains(const SignUpPageRoute().location);
 
   final resetPassword = currentPath.contains('/create-new-password');
+  final paywall = currentPath == const PayWallPageRoute().location;
 
   final onAuth = splash || onboarding || signingIn || signingUp || resetPassword;
 
@@ -39,6 +48,19 @@ FutureOr<String?> appRedirect(BuildContext context, GoRouterState state, AuthSta
       }
     },
     authenticated: (tokens) {
+      if (subscriptionRequired && userState.userOrNull is OnboardedUser) {
+        switch (subscriptionState.accessStatus) {
+          case SubscriptionAccessStatus.checking:
+            if (!splash && !paywall) return const SplashPageRoute().location;
+            return null;
+          case SubscriptionAccessStatus.active:
+            break;
+          case SubscriptionAccessStatus.inactive:
+          case SubscriptionAccessStatus.error:
+            if (!paywall) return const PayWallPageRoute().location;
+        }
+      }
+
       if (!onAuth) return null;
 
       return userState.maybeWhen(

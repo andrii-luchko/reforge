@@ -5,9 +5,9 @@ import 'package:injectable/injectable.dart';
 class PaywallConfigService {
   PaywallConfigService(this._remoteConfig);
 
-  static const _skipButtonEnabledKey = 'paywall_skip_button_enabled';
+  static const _subscriptionRequiredKey = 'subscription_required';
 
   final FirebaseRemoteConfig _remoteConfig;
 
-  bool get skipButtonEnabled => _remoteConfig.getBool(_skipButtonEnabledKey);
+  bool get subscriptionRequired => _remoteConfig.getBool(_subscriptionRequiredKey);
 }

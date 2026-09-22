@@ -64,18 +64,19 @@ class _PaywallViewState extends State<PaywallView> {
 
         return CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  t.subscription.paywallTitle,
-                  style: subheadH1Medium.copyWith(
-                    fontSize: 32,
-                    color: context.appTheme.beige100,
+            if (!hasPurchased)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    t.subscription.paywallTitle,
+                    style: subheadH1Medium.copyWith(
+                      fontSize: 32,
+                      color: context.appTheme.beige100,
+                    ),
                   ),
                 ),
               ),
-            ),
             if (hasPurchased)
               ..._buildAfterPurchaseSlivers(context, state)
             else if (state.accessStatus == SubscriptionAccessStatus.checking)
@@ -109,7 +110,7 @@ class _PaywallViewState extends State<PaywallView> {
   ) {
     final slivers = <Widget>[
       SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
         sliver: SliverToBoxAdapter(
           child: SubscriptionStatusCard(
             subscription: state.currentSubscription!,
@@ -165,7 +166,7 @@ class _PaywallViewState extends State<PaywallView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (_paywallConfigService.skipButtonEnabled) ...[
+                if (!_paywallConfigService.subscriptionRequired) ...[
                   ThirtyButton(
                     text: t.common.skip_button,
                     onPressed: () => const HomePageRoute().go(context),

@@ -8,9 +8,13 @@ import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/core/analytics/data/observers/analytics_route_observer.dart';
 import 'package:reforge/core/auth/controller/auth_cubit.dart';
 import 'package:reforge/core/user/controller/user_cubit.dart';
+import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
+import 'package:reforge/features/subscription/data/services/paywall_config_service.dart';
 
 final AuthCubit authCubit = di.getIt<AuthCubit>();
 final UserCubit userCubit = di.getIt<UserCubit>();
+final SubscriptionCubit subscriptionCubit = di.getIt<SubscriptionCubit>();
+final PaywallConfigService paywallConfigService = di.getIt<PaywallConfigService>();
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
@@ -21,9 +25,17 @@ final router = GoRouter(
   refreshListenable: GoRouterRefreshStream([
     authCubit.stream,
     userCubit.stream,
+    subscriptionCubit.stream,
   ]),
 
-  redirect: (context, state) => appRedirect(context, state, authCubit.state, userCubit.state),
+  redirect: (context, state) => appRedirect(
+    context,
+    state,
+    authCubit.state,
+    userCubit.state,
+    subscriptionCubit.state,
+    paywallConfigService.subscriptionRequired,
+  ),
   observers: [
     di.getIt<RouteObserver<ModalRoute<void>>>(),
     di.getIt<AnalyticsRouteObserver>(),

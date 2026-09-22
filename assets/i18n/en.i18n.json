@@ -692,6 +692,14 @@
         "currentPlan": "Current plan",
         "activeStatus": "Subscription active",
         "purchasedThrough": "Purchased through $store",
+        "status": {
+            "active": "Active",
+            "trial": "Trial",
+            "introductory": "Intro",
+            "canceled": "Canceled",
+            "billing": "Billing",
+            "lifetime": "Lifetime"
+        },
         "store": {
             "appStore": "App Store",
             "macAppStore": "Mac App Store",

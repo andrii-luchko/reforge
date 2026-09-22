@@ -16,13 +16,25 @@ SubscriptionEntity? mapCustomerInfo(CustomerInfo info) {
   if (entitlement.expirationDate != null) {
     expirationDate = DateTime.tryParse(entitlement.expirationDate!);
   }
+  final isLifetime = reforgeLifetimeProductIds.contains(entitlement.productIdentifier);
   return SubscriptionEntity(
     expirationDate: expirationDate,
-    periodType: reforgeLifetimeProductIds.contains(entitlement.productIdentifier)
-        ? SubscriptionPeriodType.lifetime
-        : SubscriptionPeriodType.unknown,
+    periodType: isLifetime ? SubscriptionPeriodType.lifetime : SubscriptionPeriodType.unknown,
     store: _mapStore(entitlement.store),
+    status: _mapStatus(entitlement, isLifetime: isLifetime),
   );
+}
+
+SubscriptionStatus _mapStatus(EntitlementInfo entitlement, {required bool isLifetime}) {
+  if (isLifetime) return SubscriptionStatus.lifetime;
+  if (entitlement.billingIssueDetectedAt != null) return SubscriptionStatus.billing;
+  if (entitlement.unsubscribeDetectedAt != null) return SubscriptionStatus.canceled;
+
+  return switch (entitlement.periodType) {
+    PeriodType.trial => SubscriptionStatus.trial,
+    PeriodType.intro => SubscriptionStatus.introductory,
+    PeriodType.normal || PeriodType.prepaid || PeriodType.unknown => SubscriptionStatus.active,
+  };
 }
 
 SubscriptionStore _mapStore(Store store) {
