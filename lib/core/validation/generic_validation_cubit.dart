@@ -19,6 +19,10 @@ class GenericValidationCubit<T> extends Cubit<GenericValidationState<T>> {
     }
   }
 
+  void updateWithoutValidation(T newValue) {
+    emit(GenericValidationInitial(newValue));
+  }
+
   Future<void> save() async {
     if (state.isLoading) return;
 

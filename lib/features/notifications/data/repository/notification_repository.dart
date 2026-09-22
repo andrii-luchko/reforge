@@ -48,6 +48,7 @@ class NotificationRepositoryImpl with RepositoryErrorHandler implements Notifica
       AuthorizationStatus.denied => NotificationPermissionStatus.denied,
       AuthorizationStatus.notDetermined => NotificationPermissionStatus.notDetermined,
       AuthorizationStatus.provisional => NotificationPermissionStatus.provisional,
+      AuthorizationStatus.deniedPermanently => .deniedPermanently,
     };
   }
 

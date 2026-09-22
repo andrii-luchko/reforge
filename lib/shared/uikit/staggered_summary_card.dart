@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -30,7 +28,7 @@ class _StaggeredSummaryCardState extends State<StaggeredSummaryCard> with Single
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    unawaited(_controller.forward());
+    _controller.forward();
   }
 
   @override

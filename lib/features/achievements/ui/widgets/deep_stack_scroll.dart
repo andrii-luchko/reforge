@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class DeepStackScroll extends StatefulWidget {
@@ -78,11 +76,9 @@ class _DeepStackScrollState extends State<DeepStackScroll> with SingleTickerProv
         if (target < 0) target = 0;
         if (target > _maxIndex) target = _maxIndex;
 
-        unawaited(
-          _controller.animateTo(
-            target,
-            curve: Curves.easeOutQuart,
-          ),
+        _controller.animateTo(
+          target,
+          curve: Curves.easeOutQuart,
         );
       },
       child: ColoredBox(

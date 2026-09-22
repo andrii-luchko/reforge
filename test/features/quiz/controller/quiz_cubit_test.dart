@@ -59,13 +59,13 @@ void main() {
       );
 
       blocTest<QuizCubit, QuizState>(
-        'setDateOfBirth with null emits state with error',
+        'setDateOfBirth with null clears the date without showing an error while typing',
         build: createCubit,
         act: (cubit) => cubit.setDateOfBirth(null),
         expect: () => [
           isA<QuizState>()
               .having((s) => s.dateOfBirth, 'dateOfBirth', isNull)
-              .having((s) => s.dateOfBirthError, 'dateOfBirthError', isNotNull),
+              .having((s) => s.dateOfBirthError, 'dateOfBirthError', isNull),
         ],
       );
 

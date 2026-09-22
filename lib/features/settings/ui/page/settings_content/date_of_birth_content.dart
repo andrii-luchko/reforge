@@ -70,7 +70,13 @@ class DateOfBirthContent extends StatelessWidget {
                 field: DateInputField(
                   initialDate: dateData.dateTime,
                   errorText: dateData.error,
-                  onDateSelected: cubit.onChanged,
+                  onDateSelected: (date) {
+                    if (date == null) {
+                      cubit.updateWithoutValidation(null);
+                    } else {
+                      cubit.onChanged(date);
+                    }
+                  },
                 ),
               ),
             );

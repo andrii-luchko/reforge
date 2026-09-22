@@ -55,7 +55,7 @@ class QuizCubit extends Cubit<QuizState> {
   }
 
   void setDateOfBirth(DateTime? date) {
-    final error = validateDateOfBirth(date);
+    final error = date == null ? null : validateDateOfBirth(date);
     emit(state.copyWith(dateOfBirth: date, dateOfBirthError: error));
   }
 

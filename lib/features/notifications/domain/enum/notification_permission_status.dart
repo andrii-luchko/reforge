@@ -3,6 +3,7 @@ enum NotificationPermissionStatus {
   denied,
   notDetermined,
   provisional,
+  deniedPermanently,
 }
 
 extension NotificationPermissionStatusX on NotificationPermissionStatus {

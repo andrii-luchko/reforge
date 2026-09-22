@@ -124,7 +124,7 @@
         "date_of_birth_required": "Valid date of birth is required",
         "date_of_birth_future": "Date of birth cannot be in the future",
         "date_of_birth_invalid": "Please enter a valid date",
-        "date_of_birth_too_young": "Please enter a valid date $mimAge",
+        "date_of_birth_too_young": "You must be at least $mimAge years old",
         "nameRequired": "Name is required",
         "nameMinLength": "Name must be at least 2 characters",
         "nameMaxLength": "Name must be less than 100 characters",

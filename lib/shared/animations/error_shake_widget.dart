@@ -60,7 +60,7 @@ class _ShakeWidgetState extends State<ShakeWidget> with SingleTickerProviderStat
     super.didUpdateWidget(oldWidget);
 
     if (widget.shake) {
-      unawaited(_controller.forward(from: 0));
+      _controller.forward(from: 0);
       unawaited(HapticFeedback.lightImpact());
     }
   }

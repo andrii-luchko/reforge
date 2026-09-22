@@ -153,7 +153,6 @@ class FireParticlesController extends ChangeNotifier {
     _endG = (endColor.g * 255.0).round().clamp(0, 255).toDouble();
     _endB = (endColor.b * 255.0).round().clamp(0, 255).toDouble();
 
-    // ignore: discarded_futures
     _ticker = vsync.createTicker(_onTick)..start();
   }
 

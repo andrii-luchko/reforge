@@ -1,5 +1,4 @@
 // ignore_for_file: no_empty_block
-import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -60,9 +59,9 @@ class _RisingAuraEffectState extends State<RisingAuraEffect> with SingleTickerPr
   void _start() {
     _lastElapsed = Duration.zero;
     if (widget.autoStopDuration != null) {
-      unawaited(_controller.forward(from: 0));
+      _controller.forward(from: 0);
     } else {
-      unawaited(_controller.repeat());
+      _controller.repeat();
     }
   }
 

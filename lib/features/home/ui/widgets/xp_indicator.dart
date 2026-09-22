@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import 'package:reforge/app/theme/app_theme.dart';
@@ -35,7 +33,7 @@ class _XpIndicatorWidgetState extends State<XpIndicatorWidget> with SingleTicker
       curve: Curves.easeIn,
     );
 
-    unawaited(_controller.forward());
+    _controller.forward();
   }
 
   @override

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:reforge/app/theme/app_theme.dart';
@@ -126,9 +125,9 @@ class _ExpandableWorkoutTileState extends State<ExpandableWorkoutTile> with Sing
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
-        unawaited(_controller.forward());
+        _controller.forward();
       } else {
-        unawaited(_controller.reverse());
+        _controller.reverse();
       }
     });
     widget.onTap?.call();

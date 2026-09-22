@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import 'package:reforge/shared/uikit/buttons/primary_button.dart';
@@ -94,12 +92,10 @@ class _MultiStepFormState extends State<MultiStepForm> {
         _currentStep--;
       });
 
-      unawaited(
-        _controller.animateToPage(
-          _currentStep - 1,
-          duration: widget.pageTransitionDuration,
-          curve: widget.pageTransitionCurve,
-        ),
+      _controller.animateToPage(
+        _currentStep - 1,
+        duration: widget.pageTransitionDuration,
+        curve: widget.pageTransitionCurve,
       );
       widget.onStepChanged?.call(_currentStep - 1);
     }
@@ -119,12 +115,11 @@ class _MultiStepFormState extends State<MultiStepForm> {
       setState(() {
         _currentStep++;
       });
-      unawaited(
-        _controller.animateToPage(
-          _currentStep - 1,
-          duration: widget.pageTransitionDuration,
-          curve: widget.pageTransitionCurve,
-        ),
+
+      _controller.animateToPage(
+        _currentStep - 1,
+        duration: widget.pageTransitionDuration,
+        curve: widget.pageTransitionCurve,
       );
       widget.onStepChanged?.call(_currentStep - 1);
     } else {

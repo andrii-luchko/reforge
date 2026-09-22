@@ -32,7 +32,6 @@ class _StartRunningPageState extends State<StartRunningPage> with SingleTickerPr
     _mainController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
-      // ignore: discarded_futures
     )..repeat(reverse: true);
 
     _breatheAnimation = CurvedAnimation(

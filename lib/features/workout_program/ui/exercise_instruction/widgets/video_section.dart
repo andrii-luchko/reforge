@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
@@ -42,12 +40,10 @@ class _VideoSectionState extends State<VideoSection> with WidgetsBindingObserver
   void _scrollToVideo() {
     final ctx = _videoKey.currentContext;
     if (ctx != null) {
-      unawaited(
-        Scrollable.ensureVisible(
-          ctx,
-          alignment: 0.5,
-          duration: const Duration(milliseconds: 10),
-        ),
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 10),
       );
     }
   }

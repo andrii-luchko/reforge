@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
@@ -35,7 +34,7 @@ class _SmoothTimerTextState extends State<SmoothTimerText> with SingleTickerProv
     super.didUpdateWidget(oldWidget);
     if (oldWidget.text != widget.text) {
       _oldText = oldWidget.text;
-      unawaited(_controller.forward(from: 0));
+      _controller.forward(from: 0);
     }
   }
 

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reforge/app/constants/env.dart';
+import 'package:reforge/app/di/service_injector.dart' as di;
 import 'package:reforge/app/router/routes.dart';
 import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/launch_url_recognizer.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
 import 'package:reforge/features/subscription/controllers/subscription_cubit.dart';
+import 'package:reforge/features/subscription/data/services/paywall_config_service.dart';
 import 'package:reforge/features/subscription/domain/entity/subscription_package.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_lifetime_status_card.dart';
 import 'package:reforge/features/subscription/ui/widgets/subscription_packages_list.dart';
@@ -25,6 +27,7 @@ class PaywallView extends StatefulWidget {
 
 class _PaywallViewState extends State<PaywallView> {
   SubscriptionPackage? _selectedPackage;
+  final PaywallConfigService _paywallConfigService = di.getIt<PaywallConfigService>();
 
   @override
   Widget build(BuildContext context) {
@@ -134,12 +137,14 @@ class _PaywallViewState extends State<PaywallView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              ThirtyButton(
-                text: t.common.skip_button,
-                onPressed: () => const HomePageRoute().go(context),
-                style: subheadH6Medium,
-              ),
-              const SizedBox(height: 32),
+              if (_paywallConfigService.skipButtonEnabled) ...[
+                ThirtyButton(
+                  text: t.common.skip_button,
+                  onPressed: () => const HomePageRoute().go(context),
+                  style: subheadH6Medium,
+                ),
+                const SizedBox(height: 32),
+              ],
               PrimaryButton(
                 text: t.common.continue_button,
                 onPressed: _selectedPackage != null

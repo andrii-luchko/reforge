@@ -13,15 +13,19 @@ typedef StepModel = ({
 class InstructionSection extends StatelessWidget {
   const InstructionSection({
     required this.steps,
+    this.coachNote,
     this.needDecoration = true,
     super.key,
   });
 
   final Map<String, String> steps;
+  final String? coachNote;
   final bool needDecoration;
   @override
   Widget build(BuildContext context) {
     final entriesList = steps.entries.toList();
+    final note = coachNote?.trim();
+    final hasCoachNote = note?.isNotEmpty ?? false;
     final decoration = BoxDecoration(
       color: context.appTheme.beige900,
       borderRadius: BorderRadius.circular(20),
@@ -41,7 +45,16 @@ class InstructionSection extends StatelessWidget {
             style: subheadH3Medium.copyWith(color: context.appTheme.beige100),
           ),
           const SizedBox(height: 8),
-          if (entriesList.isEmpty)
+          if (hasCoachNote) ...[
+            Text(
+              note!,
+              style: subheadH6Regular.copyWith(
+                color: context.appTheme.beige600,
+              ),
+            ),
+            if (entriesList.isNotEmpty) const SizedBox(height: 24),
+          ],
+          if (entriesList.isEmpty && !hasCoachNote)
             const InstructionEmpty()
           else
             ...List.generate(entriesList.length, (index) {

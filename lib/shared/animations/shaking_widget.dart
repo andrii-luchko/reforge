@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class ShakingWidget extends StatefulWidget {
@@ -43,7 +41,7 @@ class _ShakingWidgetState extends State<ShakingWidget> with SingleTickerProvider
           ),
         );
     if (widget.enabled) {
-      unawaited(_controller.repeat(reverse: true));
+      _controller.repeat(reverse: true);
     }
   }
 

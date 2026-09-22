@@ -7,8 +7,8 @@ echo "🚀 Starting deep clean for iOS dependencies..."
 
 # 1. Flutter clean and pub get
 echo "🧹 Cleaning Flutter project..."
-flutter clean
-flutter pub get
+fvm flutter clean
+fvm flutter pub get
 
 # 2. Navigate to ios directory
 cd ios || { echo "❌ iOS directory not found!"; exit 1; }

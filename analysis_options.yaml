@@ -32,3 +32,4 @@ analyzer:
     inference_failure_on_instance_creation: ignore
     document_ignores: ignore
     invalid_annotation_target: ignore
+    discarded_futures: ignore

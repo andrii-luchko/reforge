@@ -1,7 +1,8 @@
-.PHONY: aab ipa test
+.PHONY: setup aab ipa test
 
 DEBUG_INFO_DIR := debug_symbols
 DESKTOP_BUILD_DIR := $(HOME)/Desktop/reforge_builds
+FLUTTER := fvm flutter
 
 define increment_build_number
 $(shell \
@@ -25,6 +26,10 @@ test:
 	@echo "Makefile is alive!"
 	@echo "Desktop path: $(DESKTOP_BUILD_DIR)"
 
+setup:
+	fvm install
+	$(FLUTTER) pub get
+
 aab:
 	$(eval VERSION := $(word 2,$(MAKECMDGOALS)))
 	$(eval CLEAN := $(word 3,$(MAKECMDGOALS)))
@@ -35,10 +40,10 @@ aab:
 	@mkdir -p $(DEBUG_INFO_DIR)
 	@if [ "$(CLEAN)" = "clean" ]; then \
 		echo "🧹 Cleaning project..."; \
-		flutter clean; \
-		flutter pub get; \
+		$(FLUTTER) clean; \
+		$(FLUTTER) pub get; \
 	fi
-	flutter build appbundle --release \
+	$(FLUTTER) build appbundle --release \
 		--build-name=$(VERSION) \
 		--build-number=$(BUILD_NUMBER) \
 		--dart-define-from-file=env.json \
@@ -58,10 +63,10 @@ ipa:
 	@mkdir -p $(DEBUG_INFO_DIR)
 	@if [ "$(CLEAN)" = "clean" ]; then \
 		echo "🧹 Cleaning project..."; \
-		flutter clean; \
-		flutter pub get; \
+		$(FLUTTER) clean; \
+		$(FLUTTER) pub get; \
 	fi
-	flutter build ipa --release \
+	$(FLUTTER) build ipa --release \
 		--build-name=$(VERSION) \
 		--build-number=$(BUILD_NUMBER) \
 		--dart-define-from-file=env.json \

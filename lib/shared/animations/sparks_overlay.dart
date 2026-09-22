@@ -34,7 +34,6 @@ class _SparksOverlayState extends State<SparksOverlay> with SingleTickerProvider
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
-      // ignore: discarded_futures
     )..repeat();
   }
 

@@ -152,7 +152,7 @@ class _SunRaysShaderWidgetState extends State<SunRaysShaderWidget> with SingleTi
 
   @override
   void didPopNext() {
-    if (!(_ticker?.isActive ?? false)) unawaited(_ticker?.start());
+    if (!(_ticker?.isActive ?? false)) _ticker?.start();
   }
 
   @override

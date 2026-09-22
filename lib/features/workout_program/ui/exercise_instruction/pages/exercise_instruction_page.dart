@@ -4,7 +4,6 @@ import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/instruction_section.dart';
 import 'package:reforge/features/workout_program/ui/exercise_instruction/widgets/video_section.dart';
 import 'package:reforge/features/workout_program/ui/widgets/app_tags_list_view.dart';
-import 'package:reforge/features/workout_program/ui/widgets/coach_note_section.dart';
 import 'package:reforge/generated/i18n/translations.g.dart';
 import 'package:reforge/shared/app_bottom_padding_widget.dart';
 import 'package:reforge/shared/default_sliver_app_bar.dart';
@@ -77,15 +76,6 @@ class ExerciseInstructionBody extends StatelessWidget {
               ),
             ),
           ),
-          if (coachNote?.trim().isNotEmpty ?? false)
-            SliverPadding(
-              padding: const .only(left: 16, right: 16, top: 8, bottom: 8),
-              sliver: SliverToBoxAdapter(
-                child: CoachNoteSection(
-                  note: coachNote!,
-                ),
-              ),
-            ),
           SliverPadding(
             padding: const .only(left: 16, right: 16, top: 16),
             sliver: AppBottomPaddingWidget.sliver(
@@ -93,6 +83,7 @@ class ExerciseInstructionBody extends StatelessWidget {
               child: SliverToBoxAdapter(
                 child: InstructionSection(
                   steps: exercise.instructionsSteps,
+                  coachNote: coachNote,
                 ),
               ),
             ),
