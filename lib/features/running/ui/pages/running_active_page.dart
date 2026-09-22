@@ -282,7 +282,10 @@ class ActiveTreadmillSession extends StatelessWidget {
                 ),
               ),
 
-              WorkoutSection(exercise: exerciseDetails),
+              WorkoutSection(
+                exercise: exerciseDetails,
+                coachNote: context.read<ActiveExerciseCubit>().coachNote,
+              ),
               const SizedBox(height: 32),
 
               if (lap != null)

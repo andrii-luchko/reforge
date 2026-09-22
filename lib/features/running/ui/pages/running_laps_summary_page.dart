@@ -6,6 +6,7 @@ import 'package:reforge/app/theme/app_theme.dart';
 import 'package:reforge/app/theme/typography_theme.dart';
 import 'package:reforge/app/utils/helpers/keyboard_visibility_provider.dart';
 import 'package:reforge/app/utils/toasts/show_toast.dart';
+import 'package:reforge/features/exercise_session/controllers/active_exercise/active_exercise_cubit.dart';
 import 'package:reforge/features/exercise_session/data/models/workout_set.dart';
 import 'package:reforge/features/exercise_session/ui/active_exercise/widgets/workout_section.dart';
 import 'package:reforge/features/quiz/domain/enums/measure_system.dart';
@@ -99,7 +100,10 @@ class RunningLapsSummaryPage extends StatelessWidget {
                               ),
                             ),
 
-                            WorkoutSection(exercise: exerciseDetails),
+                            WorkoutSection(
+                              exercise: exerciseDetails,
+                              coachNote: context.read<ActiveExerciseCubit>().coachNote,
+                            ),
                             const SizedBox(height: 16),
 
                             RunningLapsList(
