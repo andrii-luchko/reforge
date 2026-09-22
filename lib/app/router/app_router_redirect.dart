@@ -15,6 +15,7 @@ FutureOr<String?> appRedirect(
   AuthState authState,
   UserState userState,
   SubscriptionState subscriptionState,
+  // ignore: avoid_positional_boolean_parameters
   bool subscriptionRequired,
 ) {
   final currentPath = state.matchedLocation;
@@ -50,11 +51,12 @@ FutureOr<String?> appRedirect(
     authenticated: (tokens) {
       if (subscriptionRequired && userState.userOrNull is OnboardedUser) {
         switch (subscriptionState.accessStatus) {
-          case SubscriptionAccessStatus.checking:
-            if (!splash && !paywall) return const SplashPageRoute().location;
-            return null;
           case SubscriptionAccessStatus.active:
             break;
+          case SubscriptionAccessStatus.checking:
+            if (!splash) return const SplashPageRoute().location;
+            return null;
+
           case SubscriptionAccessStatus.inactive:
           case SubscriptionAccessStatus.error:
             if (!paywall) return const PayWallPageRoute().location;
