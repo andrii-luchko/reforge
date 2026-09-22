@@ -23,7 +23,7 @@ class SliverBadgesGrid extends StatelessWidget {
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         // childAspectRatio: 0.75,
-        mainAxisExtent: 149,
+        mainAxisExtent: 151,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {

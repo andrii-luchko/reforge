@@ -47,7 +47,7 @@ class BadgesPreview extends StatelessWidget {
 
   Widget _buildPreview({required bool interactionEnabled}) {
     return SizedBox(
-      height: 149,
+      height: 151,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final itemWidth = (constraints.maxWidth - 32) / 3;
